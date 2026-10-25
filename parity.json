@@ -165,9 +165,9 @@
     "airvisual/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/airvisual/airvisual.go",
-      "native_files": ["src/detectors/fifth_batch.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/airvisual.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "evidence": ["tests/detectors/test_airvisual.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_fifth_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "aiven/Scanner": {

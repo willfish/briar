@@ -149,21 +149,6 @@ static int verify_airtable_pat(const br_scan_ctx *ctx, const char *token, br_res
     return verify_redacted(ctx, &request, result);
 }
 
-static int verify_airvisual(const br_scan_ctx *ctx, const char *key, br_result *result)
-{
-    char url[128], auth[44];
-    snprintf(url, sizeof(url), "https://api.airvisual.com/v2/countries?key=%s", key);
-    snprintf(auth, sizeof(auth), "Bearer %s", key);
-    const br_header headers[] = {
-        {"Accept", "application/vnd.airvisual+json; version=3"}, {"Authorization", auth},
-    };
-    const br_http_request request = {
-        .method = "GET", .url = url, .headers = headers, .nheaders = 2,
-        .profile = BR_HTTP_SANE, .detector_type = 498,
-    };
-    return verify_unredacted(ctx, &request, result);
-}
-
 static int verify_aiven(const br_scan_ctx *ctx, const char *key, br_result *result)
 {
     char auth[381];
@@ -227,21 +212,14 @@ static int scan_airtable_pat(const br_detector *detector, const br_scan_ctx *ctx
     return scan_unique_keys(detector, ctx, verify, input, out, error, "token", verify_airtable_pat);
 }
 
-static int scan_airvisual(const br_detector *detector, const br_scan_ctx *ctx,
-                           bool verify, br_slice input, br_results *out, char **error)
-{
-    return scan_unique_keys(detector, ctx, verify, input, out, error, "key", verify_airvisual);
-}
-
 static int scan_aiven(const br_detector *detector, const br_scan_ctx *ctx,
                        bool verify, br_slice input, br_results *out, char **error)
 {
     return scan_unique_keys(detector, ctx, verify, input, out, error, "key", verify_aiven);
 }
 
-static detector_patterns airtable_pat_patterns, airvisual_patterns, aiven_patterns;
+static detector_patterns airtable_pat_patterns, aiven_patterns;
 static const char *const airtable_keywords[] = {"airtable"};
-static const char *const airvisual_keywords[] = {"airvisual"};
 static const char *const aiven_keywords[] = {"aiven"};
 
 static const br_detector airtable_pat = {
@@ -251,13 +229,6 @@ static const br_detector airtable_pat = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .state = &airtable_pat_patterns, .scan = scan_airtable_pat,
 };
-static const br_detector airvisual = {
-    .type = 498, .version = 0, .name = "AirVisual", .custom_name = "",
-    .description = "AirVisual provides air quality information and monitoring. The API key allows access to various air quality data and services.",
-    .keywords = airvisual_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
-    .state = &airvisual_patterns, .scan = scan_airvisual,
-};
 static const br_detector aiven = {
     .type = 917, .version = 0, .name = "Aiven", .custom_name = "",
     .description = "Aiven is a managed cloud service that provides various open-source data infrastructure services. Aiven API keys can be used to access and manage these services.",
@@ -265,7 +236,7 @@ static const br_detector aiven = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .state = &aiven_patterns, .scan = scan_aiven,
 };
-static const br_detector *implemented[] = {&airtable_pat, &airvisual, &aiven, NULL};
+static const br_detector *implemented[] = {&airtable_pat, NULL, &aiven, NULL};
 
 static int compile_prefixed(const br_detector *detector, const char *capture,
                              br_regex **out, char **error)
@@ -294,8 +265,8 @@ int br_fifth_batch(const br_detector *const **out, size_t *count, char **error)
     if (count) *count = 0;
     if (!out || !count) return fail(error, "invalid fifth-batch outputs");
     if (br_alchemy_init(&implemented[3], error) != 0 ||
+        br_airvisual_init(&implemented[1], error) != 0 ||
         compile_prefixed(&airtable_pat, "\\b(pat[[:alnum:]]{14}\\.[a-f0-9]{64})\\b", &airtable_pat_patterns.key, error) != 0 ||
-        compile_prefixed(&airvisual, "\\b([a-z0-9-]{36})\\b", &airvisual_patterns.key, error) != 0 ||
         compile_prefixed(&aiven, "([a-zA-Z0-9/+=]{372})", &aiven_patterns.key, error) != 0)
         return -1;
     *out = implemented;
