@@ -18,5 +18,11 @@ int br_agora_init(const br_detector **out, char **error);
 int br_aha_init(const br_detector **out, char **error);
 int br_airbrakeprojectkey_init(const br_detector **out, char **error);
 int br_airbrakeuserkey_init(const br_detector **out, char **error);
+int br_airship_init(const br_detector **out, char **error);
+int br_airtableoauth_init(const br_detector **out, char **error);
+int br_airtablepersonalaccesstoken_init(const br_detector **out, char **error);
+int br_airvisual_init(const br_detector **out, char **error);
+int br_aiven_init(const br_detector **out, char **error);
+int br_alchemy_init(const br_detector **out, char **error);
 
 #endif
