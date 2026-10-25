@@ -77,51 +77,6 @@ static int find_unique(const br_regex *regex, br_slice input, captures *values, 
     return rc;
 }
 
-static int verify_status_only(const br_scan_ctx *ctx, const br_http_request *request,
-                               br_result *result)
-{
-    br_http_response response = {0};
-    char *error = NULL;
-    int rc = 0;
-    /* All three upstream callers omit secrets from SetVerificationError. */
-    if (br_http_send(ctx, request, &response, &error) != 0) {
-        rc = br_result_set_verification_error(result, error ? error : "HTTP transport failed", NULL, 0);
-    } else {
-        /* Their deferred body drains ignore errors, so only status matters. */
-        switch (response.status) {
-        case 200: result->verified = true; break;
-        case 401:
-        case 403: break;
-        default: {
-            char message[80];
-            snprintf(message, sizeof(message), "unexpected status code: %d", response.status);
-            rc = br_result_set_verification_error(result, message, NULL, 0);
-            break;
-        }
-        }
-    }
-    br_http_release(ctx, &response);
-    free(error);
-    return rc;
-}
-
-static int verify_airship(const br_scan_ctx *ctx, const char *key,
-                           const char *id, br_result *result)
-{
-    (void)id;
-    char auth[99];
-    snprintf(auth, sizeof(auth), "Bearer %s", key);
-    const br_header headers[] = {
-        {"Accept", "application/vnd.urbanairship+json; version=3"}, {"Authorization", auth},
-    };
-    const br_http_request request = {
-        .method = "GET", .url = "https://go.urbanairship.com/api/schedules",
-        .headers = headers, .nheaders = 2,
-        .profile = BR_HTTP_SANE, .detector_type = 277,
-    };
-    return verify_status_only(ctx, &request, result);
-}
-
 static int verify_airtable_oauth(const br_scan_ctx *ctx, const char *token,
                                   const char *id, br_result *result)
 {
@@ -232,29 +187,15 @@ static int scan_unique_keys(const br_detector *detector, const br_scan_ctx *ctx,
     return rc;
 }
 
-static int scan_airship(const br_detector *detector, const br_scan_ctx *ctx,
-                         bool verify, br_slice input, br_results *out, char **error)
-{
-    return scan_unique_keys(detector, ctx, verify, input, out, error, "key", verify_airship);
-}
-
 static int scan_airtable_oauth(const br_detector *detector, const br_scan_ctx *ctx,
                                 bool verify, br_slice input, br_results *out, char **error)
 {
     return scan_unique_keys(detector, ctx, verify, input, out, error, "token", verify_airtable_oauth);
 }
 
-static detector_patterns airship_patterns, airtable_oauth_patterns;
-static const char *const airship_keywords[] = {"airship"};
+static detector_patterns airtable_oauth_patterns;
 static const char *const airtable_keywords[] = {"airtable"};
 
-static const br_detector airship = {
-    .type = 277, .version = 0, .name = "Airship", .custom_name = "",
-    .description = "Airship is a customer engagement platform that provides tools for mobile app messaging, in-app messaging, and web notifications. Airship API keys can be used to access and manage these messaging services.",
-    .keywords = airship_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
-    .state = &airship_patterns, .scan = scan_airship,
-};
 static const br_detector airtable_oauth = {
     .type = 1014, .version = 0, .name = "AirtableOAuth", .custom_name = "",
     .description = "Airtable is a cloud collaboration service that offers database-like features. Airtable OAuth tokens can be used to access and modify data within Airtable bases.",
@@ -263,28 +204,8 @@ static const br_detector airtable_oauth = {
     .state = &airtable_oauth_patterns, .scan = scan_airtable_oauth,
 };
 static const br_detector *implemented[] = {
-    NULL, NULL, &airship, &airtable_oauth,
+    NULL, NULL, NULL, &airtable_oauth,
 };
-
-static int compile_prefixed(const br_detector *detector, const char *capture,
-                             br_regex **out, char **error)
-{
-    if (*out) return 0;
-    char *prefix = NULL;
-    if (br_prefix_regex(detector->keywords, detector->nkeywords, &prefix) != 0)
-        return fail(error, "cannot allocate detector prefix pattern");
-    size_t len = strlen(prefix) + strlen(capture) + 1;
-    char *pattern = malloc(len);
-    if (!pattern) {
-        free(prefix);
-        return fail(error, "cannot allocate detector pattern");
-    }
-    snprintf(pattern, len, "%s%s", prefix, capture);
-    int rc = br_regex_compile(pattern, out, error);
-    free(pattern);
-    free(prefix);
-    return rc;
-}
 
 int br_fourth_batch(const br_detector *const **out, size_t *count, char **error)
 {
@@ -294,7 +215,7 @@ int br_fourth_batch(const br_detector *const **out, size_t *count, char **error)
     if (!out || !count) return fail(error, "invalid fourth-batch outputs");
     if (br_airbrakeprojectkey_init(&implemented[0], error) != 0 ||
         br_airbrakeuserkey_init(&implemented[1], error) != 0 ||
-        compile_prefixed(&airship, "\\b([0-9a-zA-Z]{91})\\b", &airship_patterns.key, error) != 0)
+        br_airship_init(&implemented[2], error) != 0)
         return -1;
     if (!airtable_oauth_patterns.key &&
         br_regex_compile("\\b([[:alnum:]]+\\.v1\\.[a-zA-Z0-9_-]+\\.[a-f0-9]+)\\b",

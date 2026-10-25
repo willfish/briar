@@ -141,9 +141,9 @@
     "airship/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/airship/airship.go",
-      "native_files": ["src/detectors/fourth_batch.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/airship.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_airship.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_fourth_batch.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "airtableoauth/Scanner": {
