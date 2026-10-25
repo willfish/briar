@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
+#include "detectors.h"
 #include "first_batch.h"
 #include "second_batch.h"
 #include "third_batch.h"
@@ -7,6 +8,11 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+typedef int (*detector_factory)(const br_detector **, char **);
+static const detector_factory named_factories[] = {
+    br_abyssale_init,
+};
 
 static int fail(char **error, const char *message)
 {
@@ -31,19 +37,22 @@ int br_registry(const br_detector *const **out, size_t *count, char **error)
         const br_detector *const *first = NULL, *const *second = NULL;
         const br_detector *const *third = NULL, *const *fourth = NULL, *const *fifth = NULL;
         size_t nfirst = 0, nsecond = 0, nthird = 0, nfourth = 0, nfifth = 0;
+        size_t at = 0;
+        for (size_t i = 0; i < sizeof(named_factories) / sizeof(named_factories[0]); ++i)
+            if (named_factories[i](&implemented[at++], error) != 0) return -1;
         if (br_first_batch(&first, &nfirst, error) != 0 ||
             br_second_batch(&second, &nsecond, error) != 0 ||
             br_third_batch(&third, &nthird, error) != 0 ||
             br_fourth_batch(&fourth, &nfourth, error) != 0 ||
             br_fifth_batch(&fifth, &nfifth, error) != 0) return -1;
-        if (nfirst != 3 || nsecond != 4 || nthird != 4 || nfourth != 4 || nfifth != 4)
+        if (nfirst != 2 || nsecond != 4 || nthird != 4 || nfourth != 4 || nfifth != 4)
             return fail(error, "unexpected compiled detector batch sizes");
-        /* Batches retain pinned defaults-list order, including disabled entries. */
-        for (size_t i = 0; i < nfirst; ++i) implemented[i] = first[i];
-        for (size_t i = 0; i < nsecond; ++i) implemented[nfirst + i] = second[i];
-        for (size_t i = 0; i < nthird; ++i) implemented[nfirst + nsecond + i] = third[i];
-        for (size_t i = 0; i < nfourth; ++i) implemented[nfirst + nsecond + nthird + i] = fourth[i];
-        for (size_t i = 0; i < nfifth; ++i) implemented[nfirst + nsecond + nthird + nfourth + i] = fifth[i];
+        /* Retain pinned defaults-list order while legacy modules are migrated. */
+        for (size_t i = 0; i < nfirst; ++i) implemented[at++] = first[i];
+        for (size_t i = 0; i < nsecond; ++i) implemented[at++] = second[i];
+        for (size_t i = 0; i < nthird; ++i) implemented[at++] = third[i];
+        for (size_t i = 0; i < nfourth; ++i) implemented[at++] = fourth[i];
+        for (size_t i = 0; i < nfifth; ++i) implemented[at++] = fifth[i];
         initialized = true;
     }
     *out = implemented;
@@ -54,6 +63,8 @@ int br_registry(const br_detector *const **out, size_t *count, char **error)
 bool br_detector_is_default(const br_detector *detector, const br_json *feature_flags)
 {
     (void)feature_flags; /* None of these nineteen implementations has a feature gate. */
+    if (detector && detector->type == 239 && detector->version == 0 &&
+        (!detector->custom_name || !detector->custom_name[0])) return true;
     return br_first_batch_is_default(detector) || br_second_batch_is_default(detector) ||
            br_third_batch_is_default(detector) || br_fourth_batch_is_default(detector) ||
            br_fifth_batch_is_default(detector);

@@ -103,31 +103,6 @@ static int verify_abuseipdb(const br_scan_ctx *ctx, const char *key, br_result *
     return rc;
 }
 
-static int verify_abyssale(const br_scan_ctx *ctx, const char *key, br_result *result)
-{
-    const br_header headers[] = {{"x-api-key", key}};
-    const br_http_request request = {
-        .method = "GET", .url = "https://api.abyssale.com/ready",
-        .headers = headers, .nheaders = 1,
-        .profile = BR_HTTP_SANE, .detector_type = 239,
-    };
-    br_http_response response = {0};
-    char *error = NULL;
-    int rc = 0;
-    if (br_http_send(ctx, &request, &response, &error) != 0) {
-        rc = verification_error(result, error ? error : "HTTP transport failed");
-    } else {
-        switch (response.status) {
-        case 200: result->verified = true; break;
-        case 403: break;
-        default: rc = unexpected_status(result, response.status); break;
-        }
-    }
-    br_http_release(ctx, &response);
-    free(error);
-    return rc;
-}
-
 static int scan_abstract(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
                          br_slice input, br_results *out, char **error)
 {
@@ -140,15 +115,8 @@ static int scan_abuseipdb(const br_detector *detector, const br_scan_ctx *ctx, b
     return br_scan_key(detector, ctx, verify, input, out, "key", verify_abuseipdb, error);
 }
 
-static int scan_abyssale(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
-                        br_slice input, br_results *out, char **error)
-{
-    return br_scan_key(detector, ctx, verify, input, out, "key", verify_abyssale, error);
-}
-
 static const char *const abstract_keywords[] = {"abstract"};
 static const char *const abuseipdb_keywords[] = {"abuseipdb"};
-static const char *const abyssale_keywords[] = {"abyssale"};
 
 static br_detector abstract_detector = {
     .type = 384, .version = 0, .name = "Abstract", .custom_name = "",
@@ -166,17 +134,9 @@ static br_detector abuseipdb_detector = {
     .scan = scan_abuseipdb,
 };
 
-static br_detector abyssale_detector = {
-    .type = 239, .version = 0, .name = "Abyssale", .custom_name = "",
-    .description = "Abyssale is a service offering various API functionalities for marketing automation and services such as images and ad campaigns. Abyssale API keys can be used to access and interact with this data.",
-    .keywords = abyssale_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
-    .scan = scan_abyssale,
-};
-
 /* Keep upstream default-list order, with its commented Abstract available directly. */
 static const br_detector *const implemented[] = {
-    &abyssale_detector, &abstract_detector, &abuseipdb_detector,
+    &abstract_detector, &abuseipdb_detector,
 };
 
 int br_first_batch(const br_detector *const **out, size_t *count, char **error)
@@ -185,8 +145,7 @@ int br_first_batch(const br_detector *const **out, size_t *count, char **error)
     if (out) *out = NULL;
     if (count) *count = 0;
     if (!out || !count) return scan_error(error, "invalid first-batch outputs");
-    if (br_key_pattern_init(&abyssale_detector, "\\b([a-z0-9A-Z]{40})\\b", error) != 0 ||
-        br_key_pattern_init(&abstract_detector, "\\b([0-9a-z]{32})\\b", error) != 0 ||
+    if (br_key_pattern_init(&abstract_detector, "\\b([0-9a-z]{32})\\b", error) != 0 ||
         br_key_pattern_init(&abuseipdb_detector, "\\b([a-z0-9]{80})\\b", error) != 0)
         return -1;
     *out = implemented;
@@ -198,5 +157,5 @@ bool br_first_batch_is_default(const br_detector *detector)
 {
     if (!detector || detector->version != 0 ||
         (detector->custom_name && detector->custom_name[0])) return false;
-    return detector->type == abyssale_detector.type || detector->type == abuseipdb_detector.type;
+    return detector->type == abuseipdb_detector.type;
 }
