@@ -37,41 +37,6 @@ static int unexpected_status(br_result *result, int status)
     return key_error(result, message);
 }
 
-static int verify_aeroworkflow(const br_scan_ctx *ctx, const char *key,
-                               const char *id, br_result *result)
-{
-    static const char prefix[] = "https://api.aeroworkflow.com/api/";
-    static const char suffix[] = "/me";
-    size_t id_len = strlen(id);
-    if (id_len > SIZE_MAX - sizeof(prefix) - sizeof(suffix)) return -1;
-    size_t len = sizeof(prefix) - 1 + id_len + sizeof(suffix);
-    char *url = malloc(len);
-    if (!url) return -1;
-    snprintf(url, len, "%s%s%s", prefix, id, suffix);
-    const br_header headers[] = {{"Accept", "application/json"}, {"apikey", key}};
-    const br_http_request request = {
-        .method = "GET", .url = url, .headers = headers, .nheaders = 2,
-        .profile = BR_HTTP_SANE, .detector_type = 693,
-    };
-    br_http_response response = {0};
-    char *error = NULL;
-    int rc = 0;
-    if (br_http_send(ctx, &request, &response, &error) != 0) {
-        rc = key_error(result, error ? error : "HTTP transport failed");
-    } else {
-        switch (response.status) {
-        case 200: result->verified = true; break;
-        case 401:
-        case 403: break;
-        default: rc = unexpected_status(result, response.status); break;
-        }
-    }
-    br_http_release(ctx, &response);
-    free(error);
-    free(url);
-    return rc;
-}
-
 static void agora_basic_auth(const char *key, const char *secret, char out[95])
 {
     static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -206,12 +171,6 @@ static int scan_ordered_pairs(const br_detector *detector, const br_scan_ctx *ct
     return rc;
 }
 
-static int scan_aeroworkflow(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
-                             br_slice input, br_results *out, char **error)
-{
-    return scan_ordered_pairs(detector, ctx, verify, input, out, error, "id", false, verify_aeroworkflow);
-}
-
 static int scan_agora(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
                        br_slice input, br_results *out, char **error)
 {
@@ -237,21 +196,13 @@ static int scan_aha(const br_detector *detector, const br_scan_ctx *ctx, bool ve
     return rc;
 }
 
-static detector_patterns aeroworkflow_patterns, agora_patterns, aha_patterns;
-static const char *const aeroworkflow_keywords[] = {"aeroworkflow"};
+static detector_patterns agora_patterns, aha_patterns;
 static const char *const agora_keywords[] = {"agora"};
 static const char *const aha_keywords[] = {"aha.io"};
 static const char *const agora_key_prefix[] = {"agora", "key", "token"};
 static const char *const agora_secret_prefix[] = {"agora", "secret"};
 static const char *const aha_key_prefix[] = {"aha"};
 
-static const br_detector aeroworkflow = {
-    .type = 693, .version = 0, .name = "Aeroworkflow", .custom_name = "",
-    .description = "Aeroworkflow is a service for managing workflows. Aeroworkflow API keys and Account IDs can be used to access and manage workflows.",
-    .keywords = aeroworkflow_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = 1024,
-    .state = &aeroworkflow_patterns, .scan = scan_aeroworkflow,
-};
 static const br_detector agora = {
     .type = 197, .version = 0, .name = "Agora", .custom_name = "",
     .description = "Agora is a real-time engagement platform providing APIs for voice, video, and messaging. Agora API keys can be used to access and manage these services.",
@@ -266,7 +217,7 @@ static const br_detector aha = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = 1024,
     .state = &aha_patterns, .scan = scan_aha,
 };
-static const br_detector *implemented[] = {NULL, &aeroworkflow, &agora, &aha};
+static const br_detector *implemented[] = {NULL, NULL, &agora, &aha};
 
 static int compile_prefixed(const char *const *keywords, size_t count, const char *capture,
                              br_regex **out, char **error)
@@ -282,8 +233,7 @@ int br_third_batch(const br_detector *const **out, size_t *count, char **error)
     if (count) *count = 0;
     if (!out || !count) return fail(error, "invalid third-batch outputs");
     if (br_adzuna_init(&implemented[0], error) != 0 ||
-        compile_prefixed(aeroworkflow_keywords, 1, "\\b([a-zA-Z0-9^!?#:*;]{20})", &aeroworkflow_patterns.key, error) != 0 ||
-        compile_prefixed(aeroworkflow_keywords, 1, "\\b([0-9]{1,})\\b", &aeroworkflow_patterns.part, error) != 0 ||
+        br_aeroworkflow_init(&implemented[1], error) != 0 ||
         compile_prefixed(agora_key_prefix, 3, "\\b([a-z0-9]{32})\\b", &agora_patterns.key, error) != 0 ||
         compile_prefixed(agora_secret_prefix, 2, "\\b([a-z0-9]{32})\\b", &agora_patterns.part, error) != 0 ||
         compile_prefixed(aha_key_prefix, 1, "\\b([0-9a-f]{64})\\b", &aha_patterns.key, error) != 0)

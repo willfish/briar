@@ -101,9 +101,9 @@
     "aeroworkflow/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/aeroworkflow/aeroworkflow.go",
-      "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/aeroworkflow.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_aeroworkflow.c", "tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "agora/Scanner": {
