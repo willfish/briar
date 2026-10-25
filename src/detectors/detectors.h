@@ -14,5 +14,9 @@ int br_accuweather_v2_init(const br_detector **out, char **error);
 int br_adobeio_init(const br_detector **out, char **error);
 int br_adzuna_init(const br_detector **out, char **error);
 int br_aeroworkflow_init(const br_detector **out, char **error);
+int br_agora_init(const br_detector **out, char **error);
+int br_aha_init(const br_detector **out, char **error);
+int br_airbrakeprojectkey_init(const br_detector **out, char **error);
+int br_airbrakeuserkey_init(const br_detector **out, char **error);
 
 #endif

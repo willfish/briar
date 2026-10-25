@@ -109,6 +109,8 @@ bool br_known_false_positive(br_slice, const char *const *terms, size_t nterms,
 int br_http_send(const br_scan_ctx *, const br_http_request *,
                  br_http_response *, char **error);
 void br_http_release(const br_scan_ctx *, br_http_response *);
+/* Build an owned, NUL-terminated Basic Authorization value without I/O. */
+int br_http_basic_auth(br_slice username, br_slice password, char **out, char **error);
 
 /* Registry implementations are owned by src/detectors. Initialize pre-workers. */
 int br_registry(const br_detector *const **out, size_t *count, char **error);

@@ -16,6 +16,42 @@ static int fail(char **error, const char *message)
     return 1;
 }
 
+int br_http_basic_auth(br_slice username, br_slice password, char **out, char **error)
+{
+    static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    if (error) *error = NULL;
+    if (out) *out = NULL;
+    if (!out || (!username.data && username.len) || (!password.data && password.len))
+        return fail(error, "invalid Basic authentication arguments");
+    if (password.len == SIZE_MAX || username.len > SIZE_MAX - password.len - 1)
+        return fail(error, "Basic authentication value too large");
+    size_t total = username.len + 1 + password.len;
+    size_t groups = total / 3 + (total % 3 != 0);
+    if (groups > (SIZE_MAX - 7) / 4)
+        return fail(error, "Basic authentication value too large");
+    char *value = malloc(7 + groups * 4);
+    if (!value) return fail(error, "out of memory constructing Basic authentication");
+    memcpy(value, "Basic ", 6);
+    size_t at = 6;
+    for (size_t i = 0; i < total; i += 3) {
+        size_t remaining = total - i;
+        unsigned int word = 0;
+        for (size_t j = 0; j < 3 && j < remaining; ++j) {
+            size_t pos = i + j;
+            unsigned char byte = pos < username.len ? username.data[pos] :
+                                 pos == username.len ? ':' : password.data[pos - username.len - 1];
+            word |= (unsigned int)byte << (16 - 8 * j);
+        }
+        value[at++] = alphabet[(word >> 18) & 63];
+        value[at++] = alphabet[(word >> 12) & 63];
+        value[at++] = remaining > 1 ? alphabet[(word >> 6) & 63] : '=';
+        value[at++] = remaining > 2 ? alphabet[word & 63] : '=';
+    }
+    value[at] = '\0';
+    *out = value;
+    return 0;
+}
+
 static int64_t now_ms(void)
 {
     struct timespec t;

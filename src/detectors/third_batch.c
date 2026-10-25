@@ -37,34 +37,13 @@ static int unexpected_status(br_result *result, int status)
     return key_error(result, message);
 }
 
-static void agora_basic_auth(const char *key, const char *secret, char out[95])
-{
-    static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    unsigned char credentials[65];
-    /* SetBasicAuth(secret, key): the secret is the username, not the password. */
-    memcpy(credentials, secret, 32);
-    credentials[32] = ':';
-    memcpy(credentials + 33, key, 32);
-    memcpy(out, "Basic ", 6);
-    size_t at = 6;
-    for (size_t i = 0; i < sizeof(credentials); i += 3) {
-        size_t remaining = sizeof(credentials) - i;
-        unsigned int word = (unsigned int)credentials[i] << 16;
-        if (remaining > 1) word |= (unsigned int)credentials[i + 1] << 8;
-        if (remaining > 2) word |= credentials[i + 2];
-        out[at++] = alphabet[(word >> 18) & 63];
-        out[at++] = alphabet[(word >> 12) & 63];
-        out[at++] = remaining > 1 ? alphabet[(word >> 6) & 63] : '=';
-        out[at++] = remaining > 2 ? alphabet[word & 63] : '=';
-    }
-    out[at] = '\0';
-}
-
 static int verify_agora(const br_scan_ctx *ctx, const char *key,
                          const char *secret, br_result *result)
 {
-    char auth[95];
-    agora_basic_auth(key, secret, auth);
+    char *auth = NULL;
+    /* SetBasicAuth(secret, key): the secret is the username. */
+    if (br_http_basic_auth((br_slice){(const unsigned char *)secret, 32},
+                           (br_slice){(const unsigned char *)key, 32}, &auth, NULL) != 0) return -1;
     const br_header headers[] = {{"Authorization", auth}};
     const br_http_request request = {
         .method = "GET", .url = "https://api.agora.io/dev/v1/projects",
@@ -87,6 +66,7 @@ static int verify_agora(const br_scan_ctx *ctx, const char *key,
     }
     br_http_release(ctx, &response);
     free(error);
+    free(auth);
     return rc;
 }
 

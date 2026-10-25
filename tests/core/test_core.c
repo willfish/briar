@@ -227,6 +227,23 @@ static bool always_cancelled(void *user) { (void)user; return true; }
 
 static void http_tests(void)
 {
+    const struct { br_slice user, password; const char *expected; } auth_cases[] = {
+        {SLICE("secret"), SLICE("key"), "Basic c2VjcmV0OmtleQ=="},
+        {SLICE("a"), SLICE("b"), "Basic YTpi"},
+        {SLICE(""), SLICE("a"), "Basic OmE="},
+        {SLICE(""), SLICE(""), "Basic Og=="},
+        {SLICE("a\0"), SLICE("b"), "Basic YQA6Yg=="},
+    };
+    char *auth = NULL, *auth_error = NULL;
+    for (size_t i = 0; i < sizeof(auth_cases) / sizeof(auth_cases[0]); ++i) {
+        CHECK(!br_http_basic_auth(auth_cases[i].user, auth_cases[i].password, &auth, &auth_error));
+        CHECK(!auth_error && !strcmp(auth, auth_cases[i].expected));
+        free(auth); auth = NULL;
+    }
+    CHECK(br_http_basic_auth((br_slice){NULL, 1}, (br_slice){0}, &auth, &auth_error) != 0);
+    CHECK(!auth && auth_error);
+    free(auth_error);
+
     fake f = { .timeout = 5000 };
     const br_transport transport = { &f, fake_send, fake_release };
     br_scan_ctx ctx = { .transport = &transport, .user_agent = "synthetic-tests" };
