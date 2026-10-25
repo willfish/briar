@@ -135,41 +135,6 @@ static int verify_accuweather(const br_scan_ctx *ctx, const char *key,
     return rc;
 }
 
-static int verify_adobeio(const br_scan_ctx *ctx, const char *key,
-                          const char *id, br_result *result)
-{
-    const br_header headers[] = {{"x-api-key", key}, {"x-product", id}};
-    const br_http_request request = {
-        .method = "GET",
-        .url = "https://stock.adobe.io/Rest/Media/1/Search/Files?locale=en_US%2526search_parameters%255Bwords%255D=kittens",
-        .headers = headers, .nheaders = 2,
-        .profile = BR_HTTP_SANE, .detector_type = 136,
-    };
-    br_http_response response = {0};
-    char *error = NULL;
-    int rc = 0;
-    if (br_http_send(ctx, &request, &response, &error) != 0) {
-        /* AdobeIO supplies no secrets to SetVerificationError upstream. */
-        rc = br_result_set_verification_error(result, error ? error : "HTTP transport failed", NULL, 0);
-    } else {
-        /* Upstream drains the body on close, but ignores copy/read errors. */
-        switch (response.status) {
-        case 200: result->verified = true; break;
-        case 401:
-        case 403: break;
-        default: {
-            char message[80];
-            snprintf(message, sizeof(message), "unexpected status code: %d", response.status);
-            rc = br_result_set_verification_error(result, message, NULL, 0);
-            break;
-        }
-        }
-    }
-    br_http_release(ctx, &response);
-    free(error);
-    return rc;
-}
-
 static int add_part(br_json *parts, const char *name, const char *value)
 {
     br_json *string = json_object_new_string(value);
@@ -235,29 +200,8 @@ static int scan_accuweather(const br_detector *detector, const br_scan_ctx *ctx,
     return rc;
 }
 
-static int scan_adobeio(const br_detector *detector, const br_scan_ctx *ctx,
-                        bool verify, br_slice input, br_results *out, char **error)
-{
-    if (valid_scan(detector, input, out, error) != 0) return -1;
-    const detector_patterns *patterns = detector->state;
-    if (!patterns->id) return fail(error, "uninitialized AdobeIO ID pattern");
-    captures keys = {0}, ids = {0};
-    int rc = find_captures(patterns->key, input, &keys, true, false, error);
-    if (rc == 0) rc = find_captures(patterns->id, input, &ids, true, false, error);
-    /* Independent sets are paired as a Cartesian product, not by position or distance. */
-    for (size_t k = 0; rc == 0 && k < keys.len; ++k)
-        for (size_t i = 0; rc == 0 && i < ids.len; ++i)
-            rc = emit_result(detector, ctx, verify, keys.items[k], ids.items[i],
-                             verify_adobeio, out, error);
-    captures_clear(&keys);
-    captures_clear(&ids);
-    return rc;
-}
-
 static detector_patterns accuweather_v1_patterns, accuweather_v2_patterns;
-static detector_patterns adobeio_patterns;
 static const char *const accuweather_keywords[] = {"accuweather"};
-static const char *const adobeio_keywords[] = {"adobe"};
 
 static const br_detector accuweather_v1 = {
     .type = 303, .version = 1, .name = "Accuweather", .custom_name = "",
@@ -273,16 +217,8 @@ static const br_detector accuweather_v2 = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .state = &accuweather_v2_patterns, .scan = scan_accuweather,
 };
-/* Commented out in the pinned upstream defaults, but directly callable here. */
-static const br_detector adobeio = {
-    .type = 136, .version = 0, .name = "AdobeIO", .custom_name = "",
-    .description = "AdobeIO provides APIs for integrating with Adobe services. These credentials can be used to access Adobe services and data.",
-    .keywords = adobeio_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = 1024,
-    .state = &adobeio_patterns, .scan = scan_adobeio,
-};
 static const br_detector *implemented[] = {
-    &accuweather_v1, &accuweather_v2, NULL, &adobeio,
+    &accuweather_v1, &accuweather_v2, NULL, NULL,
 };
 
 static int compile_pattern(const br_detector *detector, const char *capture,
@@ -313,14 +249,11 @@ int br_second_batch(const br_detector *const **out, size_t *count, char **error)
     if (count) *count = 0;
     if (!out || !count) return fail(error, "invalid second-batch outputs");
     if (br_adafruitio_init(&implemented[2], error) != 0 ||
+        br_adobeio_init(&implemented[3], error) != 0 ||
         compile_pattern(&accuweather_v1, "([a-z0-9A-Z\\%]{35})\\b", true,
                         &accuweather_v1_patterns.key, error) != 0 ||
         compile_pattern(&accuweather_v2, "\\b([a-zA-Z0-9]{32})\\b", true,
-                        &accuweather_v2_patterns.key, error) != 0 ||
-        compile_pattern(&adobeio, "\\b([a-z0-9]{32})\\b", true,
-                        &adobeio_patterns.key, error) != 0 ||
-        compile_pattern(&adobeio, "\\b([a-zA-Z0-9.]{12})\\b", true,
-                        &adobeio_patterns.id, error) != 0)
+                        &accuweather_v2_patterns.key, error) != 0)
         return -1;
     *out = implemented;
     *count = sizeof(implemented) / sizeof(implemented[0]);
