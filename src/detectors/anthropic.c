@@ -43,15 +43,6 @@ static int read_error_envelope(void *user, br_slice name, br_json *value, br_sli
     return br_json_each_member(encoded_value, read_error_field, user);
 }
 
-static bool only_trailing_space(br_slice body, size_t end)
-{
-    for (; end < body.len; ++end) {
-        unsigned char c = body.data[end];
-        if (c != ' ' && c != '\t' && c != '\r' && c != '\n') return false;
-    }
-    return true;
-}
-
 static int api_error(const br_http_response *response, char **cause)
 {
     char status[80];
@@ -61,16 +52,14 @@ static int api_error(const br_http_response *response, char **cause)
     api_error_fields fields = {0};
     br_json *root = NULL;
     char *decode_cause = NULL;
-    size_t end = 0;
     bool enrich = false;
     int rc = 0;
     /* LimitReader hides failures after its cap. Earlier read failures suppress
      * enrichment even when the bytes already contain a complete JSON object. */
     if (!response->body_error || response->body.len >= MAX_ERROR_BODY_SIZE) {
-        int decoded = br_json_first_document(body, NULL, &root, &end, &decode_cause);
+        int decoded = br_json_document(body, &root, &decode_cause);
         if (decoded < 0) { rc = -1; goto done; }
-        if (!decoded && only_trailing_space(body, end) &&
-            root && json_object_is_type(root, json_type_object)) {
+        if (!decoded && root && json_object_is_type(root, json_type_object)) {
             int visited = br_json_each_member(body, read_error_envelope, &fields);
             if (visited < 0) { rc = -1; goto done; }
             enrich = !visited && br_json_text(fields.type).len != 0;

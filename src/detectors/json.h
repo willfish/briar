@@ -8,6 +8,9 @@
  * 0 on success (including JSON null), 1 for a decode cause, -1 on allocation failure. */
 int br_json_first_document(br_slice body, const char *read_error, br_json **out,
                             size_t *end, char **cause);
+/* Decode a whole body: reject trailing non-whitespace instead of ignoring it.
+ * Ownership and return codes match br_json_first_document. */
+int br_json_document(br_slice body, br_json **out, char **cause);
 
 /* Visit a validated object in source order, including duplicate members.
  * Name, value and its original JSON bytes are borrowed for the callback. Retain

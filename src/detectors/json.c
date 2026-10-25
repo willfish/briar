@@ -19,7 +19,7 @@ static int decode_cause(char **cause, const char *message)
     return *cause ? 1 : -1;
 }
 
-static int syntax_cause(enum json_tokener_error code, br_slice body, size_t offset, char **cause)
+static int invalid_character(br_slice body, size_t offset, const char *context, char **cause)
 {
     unsigned char c = offset < body.len ? body.data[offset] : 0;
     char byte[16], message[192];
@@ -30,6 +30,12 @@ static int syntax_cause(enum json_tokener_error code, br_slice body, size_t offs
     else if (c == '\'') strcpy(byte, "'\\\''");
     else if (c < 32 || c >= 127) snprintf(byte, sizeof(byte), "'\\x%02x'", c);
     else snprintf(byte, sizeof(byte), "'%c'", c);
+    snprintf(message, sizeof(message), "invalid character %s %s", byte, context);
+    return decode_cause(cause, message);
+}
+
+static int syntax_cause(enum json_tokener_error code, br_slice body, size_t offset, char **cause)
+{
     const char *context;
     switch (code) {
     case json_tokener_error_parse_object_key_name: context = "looking for beginning of object key string"; break;
@@ -38,8 +44,7 @@ static int syntax_cause(enum json_tokener_error code, br_slice body, size_t offs
     case json_tokener_error_parse_array: context = "after array element"; break;
     default: context = "looking for beginning of value"; break;
     }
-    snprintf(message, sizeof(message), "invalid character %s %s", byte, context);
-    return decode_cause(cause, message);
+    return invalid_character(body, offset, context, cause);
 }
 
 int br_json_first_document(br_slice body, const char *read_error, br_json **out,
@@ -89,6 +94,26 @@ int br_json_first_document(br_slice body, const char *read_error, br_json **out,
             *out = NULL;
             return syntax_cause(json_tokener_error_parse_unexpected, body, i, cause);
         }
+    }
+    return 0;
+}
+
+int br_json_document(br_slice body, br_json **out, char **cause)
+{
+    size_t end = 0;
+    int rc = br_json_first_document(body, NULL, out, &end, cause);
+    if (rc) {
+        if (rc == 1 && (!strcmp(*cause, "EOF") || !strcmp(*cause, "unexpected EOF"))) {
+            free(*cause);
+            return decode_cause(cause, "unexpected end of JSON input");
+        }
+        return rc;
+    }
+    for (; end < body.len; ++end) {
+        if (json_space(body.data[end])) continue;
+        json_object_put(*out);
+        *out = NULL;
+        return invalid_character(body, end, "after top-level value", cause);
     }
     return 0;
 }
