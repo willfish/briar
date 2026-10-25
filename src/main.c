@@ -187,14 +187,6 @@ static int selectors(const char *csv, const br_detector *const *registry, size_t
     return 0;
 }
 
-static size_t find_bytes(br_slice s, br_slice needle, size_t start)
-{
-    if (start > s.len || needle.len > s.len - start) return SIZE_MAX;
-    for (size_t i = start; i <= s.len - needle.len; ++i)
-        if (!needle.len || !memcmp(s.data + i, needle.data, needle.len)) return i;
-    return SIZE_MAX;
-}
-
 static bool same_bytes(br_slice a, br_slice b)
 {
     return a.len == b.len && (!a.len || !memcmp(a.data, b.data, a.len));
@@ -223,7 +215,7 @@ static void duplicate_offsets(br_slice input, br_results *results)
         size_t from = 0;
         for (size_t j = i; j < results->len; ++j) {
             if (!same_bytes(key, effective_secret(&results->items[j]))) continue;
-            size_t pos = find_bytes(input, key, from);
+            size_t pos = br_slice_find(input, key, from);
             if (pos == SIZE_MAX) break;
             results->items[j].chunk_offset = (int64_t)pos;
             results->items[j].chunk_offset_set = true;
@@ -239,7 +231,7 @@ static bool locate(result_frame *frame)
     br_result *r = frame->result;
     br_slice key = effective_secret(r);
     size_t offset = r->chunk_offset_set && r->chunk_offset >= 0
-        ? (size_t)r->chunk_offset : find_bytes(s->data, key, 0);
+        ? (size_t)r->chunk_offset : br_slice_find(s->data, key, 0);
     frame->line = s->first_line;
     if (offset == SIZE_MAX || offset > s->data.len || key.len > s->data.len - offset) return false;
     int64_t line_offset = 0;
@@ -250,7 +242,7 @@ static bool locate(result_frame *frame)
     while (end < s->data.len && s->data.data[end] != '\n') ++end;
     br_slice tail = { s->data.data + start, end - start };
     static const unsigned char tag[] = "trufflehog:ignore";
-    return find_bytes(tail, (br_slice){ tag, sizeof(tag) - 1 }, 0) != SIZE_MAX;
+    return br_slice_find(tail, (br_slice){ tag, sizeof(tag) - 1 }, 0) != SIZE_MAX;
 }
 
 static int jadd(br_json *object, const char *key, br_json *value)

@@ -93,6 +93,9 @@ struct br_detector {
     const char *cloud_endpoint;
 };
 
+/* Search borrowed bytes from start; SIZE_MAX means absent. An empty needle matches start. */
+size_t br_slice_find(br_slice input, br_slice needle, size_t start);
+
 void br_result_clear(br_result *);
 void br_results_clear(br_results *);
 /* Move and zero owned only on success. */
