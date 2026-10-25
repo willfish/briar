@@ -19,6 +19,7 @@ for family in ("-4", "-6"):
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.server.paths.append(self.path)
+        assert self.headers["Content-Length"] is None
         assert self.headers["User-Agent"] == "TruffleHog native-http-fixture"
         if self.path == "/destination":
             body, status = b"destination-body", 200
@@ -37,6 +38,7 @@ class Handler(BaseHTTPRequestHandler):
         assert self.headers["User-Agent"] == "TruffleHog native-http-fixture"
         assert self.path in ("/post", "/post-empty", "/post-typed", "/redirect")
         expected = b"" if self.path == "/post-empty" else b"synthetic\x00body"
+        assert self.headers["Content-Length"] == str(len(expected))
         assert self.rfile.read(int(self.headers["Content-Length"])) == expected
         assert self.headers["Content-Type"] == ("application/json" if self.path == "/post-typed" else None)
         body = b"redirect-body" if self.path == "/redirect" else b"posted-body"
@@ -61,6 +63,8 @@ for profile, path, expected_paths in (
     ("SANE-POST-empty", "/post-empty", ["/post-empty"]),
     ("SANE-POST-type", "/post-typed", ["/post-typed"]),
     ("SANE-POST-redirect", "/redirect", ["/redirect"]),
+    ("SANE-length-GET", "/destination", ["/destination"]),
+    ("SANE-length-POST", "/post", ["/post"]),
 ):
     with HTTPServer(("127.0.0.1", 0), Handler) as server, tempfile.TemporaryDirectory(prefix="briar-http-home-") as home:
         server.paths = []
@@ -78,4 +82,4 @@ for profile, path, expected_paths in (
         print(result.stdout, end="", flush=True)
         assert result.returncode == 0, result.stderr
         assert server.paths == expected_paths, (profile, server.paths)
-print("PASS: LOCAL/SANE redirect policy, binary/empty POST bodies and Content-Type; PUBLIC and unported POST redirects fail closed; loopback-only namespace")
+print("PASS: LOCAL/SANE redirects, binary/empty bodies and body-derived framing; PUBLIC and unported POST redirects fail closed; loopback-only namespace")

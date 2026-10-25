@@ -276,6 +276,9 @@ static int curl_send(void *user, const br_scan_ctx *ctx, const br_http_request *
         headers = next;
     }
     for (size_t i = 0; i < req->nheaders; ++i) {
+        /* Go ignores Header[Content-Length] and derives framing from the body.
+         * Preserve the logical header for injected transports, not on curl's wire. */
+        if (!strcasecmp(req->headers[i].name, "Content-Length")) continue;
         size_t a = strlen(req->headers[i].name), b = strlen(req->headers[i].value);
         if (a > SIZE_MAX - b - 3) goto memory_error;
         char *line = malloc(a + b + 3);
