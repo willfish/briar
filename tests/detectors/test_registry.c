@@ -33,6 +33,7 @@ static const registration expected[] = {
     {375, 0, "Alegra", "alegra", 20, true, -1},
     {522, 0, "AletheiaApi", "aletheiaapi", 32, true, -1},
     {170, 0, "AlgoliaAdminKey", "algolia", 32, true, 1024},
+    {0, 0, "Alibaba", "LTAI", 30, true, 1024},
     {399, 0, "AlienVault", "alienvault", 64, true, -1},
     {473, 0, "Allsports", "allsports", 64, true, -1},
     {453, 0, "Amadeus", "amadeus", 32, true, 1024},
@@ -47,6 +48,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 390) memcpy(key, "aio_", 4);
     const char *secondary = NULL, *secondary_name = NULL;
     switch (entry->type) {
+    case 0: secondary = "LTAIB7c9D2e5F6g8H3j4K"; secondary_name = "id"; break;
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
     case 170: secondary = "B7C9D2E5F6"; secondary_name = "id"; break;
@@ -116,7 +118,7 @@ int main(void)
     CHECK(BR_ABI_REVISION == 1);
     CHECK(br_registry(&detectors, &count, &error) == 0 && error == NULL);
     CHECK(count == sizeof(expected) / sizeof(expected[0]));
-    CHECK(!br_detector_type_name(-1) && !br_detector_type_name(0));
+    CHECK(!br_detector_type_name(-1));
     CHECK(!br_detector_type_name(1)); /* AWS has no implementation yet. */
     CHECK(!br_detector_is_default(NULL, NULL));
     br_detector missing = {.type = 1};

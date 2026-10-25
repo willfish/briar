@@ -218,6 +218,14 @@
       "evidence": ["tests/detectors/test_algoliaadminkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and malformed-input diagnostic wording", "Native curl DNS error classification does not yet establish the source's no-such-host cache path; injected errors and twelve-hour expiry are covered"]
     },
+    "alibaba/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/alibaba/alibaba.go",
+      "native_files": ["src/detectors/alibaba.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_alibaba.c", "tests/detectors/test_registry.c", "tests/core/http_profiles.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and diagnostics", "ABI1's NUL-terminated verification-error storage cannot preserve embedded-NUL Message/Code error bytes", "RNG failure fails closed with a nonfatal construction error rather than Go's irrecoverable termination"]
+    },
     "alienvault/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/alienvault/alienvault.go",
