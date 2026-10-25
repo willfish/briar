@@ -392,6 +392,9 @@ def fixtures():
          b"apifonica c7d8e9f0g1h-i2j3-k4l5-m6n7-o8p9q0r1s2t3"),
         ("apify", 391, b"apify_api_" + alnum("apify-oracle", 36)),
         ("apilayer", 788, b"apilayer " + alnum("apilayer-oracle", 32)),
+        ("apimatic", 637, b"apimatic\n" + b"." * 64 + b"\napikey " + alnum("apimatic-oracle", 64)),
+        ("apimetrics", 1004, b"apimetrics " + alnum("apimetrics-oracle", 32)),
+        ("apitemplate", 768, b"apitemplate " + alnum("apitemplate-oracle", 39)),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
