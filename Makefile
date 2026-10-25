@@ -22,8 +22,9 @@ all: build/briar build/libbriar.a
 build/briar: build/src/main.o build/libbriar.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-build/libbriar.a: $(OBJECTS)
-	$(AR) rcs $@ $^
+build/libbriar.a: $(OBJECTS) Makefile
+	@rm -f $@
+	$(AR) rcs $@ $(OBJECTS)
 
 build/%.o: %.c include/briar.h
 	@mkdir -p $(@D)
@@ -33,7 +34,7 @@ build/tests/core/%: tests/core/%.c build/libbriar.a include/briar.h
 	@mkdir -p $(@D)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $< build/libbriar.a $(LDLIBS)
 
-build/tests/detectors/%: tests/detectors/%.c build/libbriar.a include/briar.h
+build/tests/detectors/%: tests/detectors/%.c build/libbriar.a include/briar.h tests/support/detector_test.h
 	@mkdir -p $(@D)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $< build/libbriar.a $(LDLIBS)
 

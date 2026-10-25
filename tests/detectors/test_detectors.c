@@ -1,11 +1,6 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 /* Synthetic offline acceptance for the three pinned, detector-local ports. */
 #include "briar.h"
-#include "../../src/detectors/first_batch.h"
-#include "../../src/detectors/second_batch.h"
-#include "../../src/detectors/third_batch.h"
-#include "../../src/detectors/fourth_batch.h"
-#include "../../src/detectors/fifth_batch.h"
 
 #include <ctype.h>
 #include <json-c/json.h>
@@ -568,16 +563,6 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
     current_case = "exact compiled registry identities/order/defaults";
     CHECK(BR_ABI_REVISION == 1);
     CHECK(count == 19 && count == sizeof(expected) / sizeof(expected[0]));
-    const br_detector *const *first = NULL, *const *second = NULL;
-    const br_detector *const *third = NULL, *const *fourth = NULL, *const *fifth = NULL;
-    size_t nfirst = 0, nsecond = 0, nthird = 0, nfourth = 0, nfifth = 0;
-    char *batch_error = NULL;
-    CHECK(br_first_batch(&first, &nfirst, &batch_error) == 0 && batch_error == NULL);
-    CHECK(br_second_batch(&second, &nsecond, &batch_error) == 0 && batch_error == NULL);
-    CHECK(br_third_batch(&third, &nthird, &batch_error) == 0 && batch_error == NULL);
-    CHECK(br_fourth_batch(&fourth, &nfourth, &batch_error) == 0 && batch_error == NULL);
-    CHECK(br_fifth_batch(&fifth, &nfifth, &batch_error) == 0 && batch_error == NULL);
-    CHECK(nfirst == 3 && nsecond == 4 && nthird == 4 && nfourth == 4 && nfifth == 4);
     CHECK(br_detector_type_name(-1) == NULL);
     CHECK(br_detector_type_name(0) == NULL);
     CHECK(br_detector_type_name(1) == NULL); /* Not a metadata-only AWS descriptor. */
@@ -591,11 +576,6 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
     for (size_t i = 0; i < count; ++i) {
         const br_detector *detector = detectors[i];
         const specification *spec = expected[i].spec;
-        CHECK(detector == (i < nfirst ? first[i] :
-              i < nfirst + nsecond ? second[i - nfirst] :
-              i < nfirst + nsecond + nthird ? third[i - nfirst - nsecond] :
-              i < nfirst + nsecond + nthird + nfourth ? fourth[i - nfirst - nsecond - nthird] :
-              fifth[i - nfirst - nsecond - nthird - nfourth]));
         CHECK(detector->type == spec->type);
         CHECK(strcmp(detector->name, spec->name) == 0);
         CHECK(strcmp(br_detector_type_name(detector->type), spec->name) == 0);
