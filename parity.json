@@ -2,8 +2,127 @@
   "upstream_commit": "cc1fe982afc515d2991365ce8d4d0dd07170fcad",
   "objective": "Reproduce TruffleHog 3.97.2 in its entirety in C.",
   "completion": "incomplete",
-  "detectors": {},
-  "components": {},
+  "detectors": {
+    "abstract/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/abstract/abstract.go",
+      "scope_notes": "No detector-local filter/cleaner or Version method exists upstream. Verified filtering/versioning records mean preserving those absences, not completion of global engine filtering.",
+      "native_files": ["src/detectors/first_batch.c"],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "verified",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": ["tests/detectors/test_detectors.c", "tests/core/test_core.c", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared RE2/PCRE2 and invalid-byte semantics are not fully reproduced", "Full native HTTP-client behavior is not established", "Disabled upstream constructor has no CLI oracle execution; direct native behavior is covered by source-derived fixtures"]
+    },
+    "abuseipdb/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/abuseipdb/abuseipdb.go",
+      "scope_notes": "No detector-local filter/cleaner or Version method exists upstream. Verified filtering/versioning records mean preserving those absences, not completion of global engine filtering.",
+      "native_files": ["src/detectors/first_batch.c"],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "verified",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": ["tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared RE2/PCRE2 and invalid-byte semantics are not fully reproduced", "Full native HTTP-client behavior is not established", "Reference CLI comparisons cover the selected implemented ASCII path, not the complete engine"]
+    },
+    "abyssale/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/abyssale/abyssale.go",
+      "scope_notes": "No detector-local filter/cleaner or Version method exists upstream. Verified filtering/versioning records mean preserving those absences, not completion of global engine filtering.",
+      "native_files": ["src/detectors/first_batch.c"],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "verified",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": ["tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared RE2/PCRE2 and invalid-byte semantics are not fully reproduced", "Full native HTTP-client behavior is not established", "Reference CLI comparisons cover the selected implemented ASCII path, not the complete engine"]
+    },
+    "accuweather/v1/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/accuweather/v1/accuweather.go",
+      "native_files": ["src/detectors/second_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "scope_notes": "Preserves 35-byte percent-containing captures, entropy threshold, uniqueness and version 1; metadata/request/status branches have synthetic native evidence.",
+      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity"]
+    },
+    "accuweather/v2/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/accuweather/v2/accuweather.go",
+      "native_files": ["src/detectors/second_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "scope_notes": "Preserves the 32-byte capture override, inherited v1 processing and metadata, and distinct version 2 registry identity.",
+      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity"]
+    },
+    "adafruitio/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/adafruitio/adafruitio.go",
+      "native_files": ["src/detectors/second_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "scope_notes": "No detector-local filtering/cleaner or Version method exists upstream. Capture order/duplicates and all verifier status/error branches have native fixtures.",
+      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity"]
+    },
+    "adobeio/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/adobeio/adobeio.go",
+      "native_files": ["src/detectors/second_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "scope_notes": "Preserves unique component sets, Cartesian pairing, metadata, verifier branches and disabled default membership; no Version method exists upstream.",
+      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity", "Disabled constructor has source-derived fixtures, not a direct CLI oracle"]
+    }
+  },
+  "components": {
+    "detector_support": {
+      "status": "partial",
+      "native_files": ["include/briar.h", "src/result.c", "src/regex.c", "src/http.c", "src/falsepositives.c", "src/wordlists.c"],
+      "evidence": ["tests/core/test_core.c", "tests/detectors/test_detectors.c", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "HTTP profiles, redirects, timing and non-GET requests", "Remaining shared detector helpers and protocol adapters"]
+    },
+    "engine": {
+      "status": "partial",
+      "native_files": ["src/main.c"],
+      "evidence": ["tests/core/e2e.py", "tests/cli_reference.py"],
+      "remaining": ["Full registry selection and feature gates", "Decoding, chunking, overlap and concurrency", "Verification/cache/entropy and all remaining engine branches"]
+    },
+    "cli": {
+      "status": "partial",
+      "native_files": ["src/main.c"],
+      "evidence": ["tests/core/e2e.py", "tests/cli_reference.py"],
+      "remaining": ["All default/all scans remain explicitly unsupported", "All remaining commands, flags, configuration, environment, help and exit behavior"]
+    },
+    "sources": {
+      "status": "partial",
+      "native_files": ["src/main.c"],
+      "evidence": ["tests/core/e2e.py", "tests/cli_reference.py"],
+      "remaining": ["Current CLI accepts only ASCII stdin or explicit regular files up to 64 KiB", "Traversal, archives, source enumeration, source metadata and all other source integrations"]
+    },
+    "output": {
+      "status": "partial",
+      "native_files": ["src/main.c"],
+      "evidence": ["tests/cli_reference.py"],
+      "remaining": ["JSON envelope is checked only for selected implemented input paths", "Other printers, source/decoder combinations and structured result variants"]
+    }
+  },
   "rules": {
     "missing_entries": "not_started",
     "detector_required_aspects": ["extraction", "filtering", "verification", "result_metadata", "versioning", "registry_behavior", "acceptance_evidence"],

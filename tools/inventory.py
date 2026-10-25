@@ -34,10 +34,30 @@ def generate(reference):
     for alias, package in re.findall(r'^\s*(?:(\w+)\s+)?"' + re.escape(MODULE) + r'([^\"]+)"', registry, re.M):
         aliases[alias or package.rsplit("/", 1)[-1]] = package
     listed = {}
+    registration_kind = {}
     for alias, receiver in re.findall(r"(?m)^\s*&([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\{", registry):
         if alias not in aliases:
             raise ValueError(f"unresolved registry constructor alias: {alias}")
-        listed[f"{aliases[alias]}/{receiver}"] = f"{alias}.{receiver}"
+        key = f"{aliases[alias]}/{receiver}"
+        listed[key] = f"{alias}.{receiver}"
+        registration_kind[key] = "composite"
+    for alias, factory in re.findall(r"(?m)^\s*([A-Za-z_]\w*)\.([A-Za-z_]\w*)\(\s*\)\s*,\s*$", registry):
+        if alias not in aliases:
+            raise ValueError(f"unresolved registry factory alias: {alias}")
+        package = aliases[alias]
+        candidates = set()
+        declaration = re.compile(r"func\s+" + re.escape(factory) + r"\s*\(.*?\)\s*\*\s*([A-Za-z_]\w*)\s*\{", re.S)
+        for path in (reference / "pkg/detectors" / package).glob("*.go"):
+            if not path.name.endswith("_test.go"):
+                candidates.update(declaration.findall(path.read_text()))
+        if len(candidates) != 1:
+            raise ValueError(f"factory needs manual receiver resolution: {alias}.{factory}")
+        receiver = candidates.pop()
+        key = f"{package}/{receiver}"
+        if key in listed:
+            raise ValueError(f"duplicate detector registration: {key}")
+        listed[key] = f"{alias}.{factory}()"
+        registration_kind[key] = "factory"
 
     detectors = {}
     source_count = 0
@@ -69,6 +89,7 @@ def generate(reference):
                 "source_line": text.count("\n", 0, method.start()) + 1,
                 "methods": sorted(receiver_methods),
                 "registry_constructor": listed.get(key),
+                "registry_kind": registration_kind.get(key),
                 "listed_in_registry": key in listed,
                 "test_files": [str(p.relative_to(reference)) for p in sorted(path.parent.glob("*_test.go"))],
             }
@@ -82,6 +103,7 @@ def generate(reference):
                 "id": key, "package": package, "receiver": receiver,
                 "source": None, "source_sha256": None, "source_line": None,
                 "methods": [], "registry_constructor": listed[key],
+                "registry_kind": registration_kind[key],
                 "listed_in_registry": True, "test_files": [],
                 "requires_manual_resolution": True,
             }
@@ -96,6 +118,14 @@ def generate(reference):
             "source_directory": str(package.relative_to(reference)),
             "source_files": [{"path": str(p.relative_to(reference)), "sha256": digest(p)} for p in files],
         })
+    detector_sources = {item["source"] for item in detectors.values() if item["source"]}
+    detector_support = [p for p in sorted((reference / "pkg/detectors").rglob("*"))
+                        if p.is_file() and not p.name.endswith("_test.go")
+                        and str(p.relative_to(reference)) not in detector_sources]
+    components.append({
+        "id": "detector_support", "source_directory": "pkg/detectors",
+        "source_files": [{"path": str(p.relative_to(reference)), "sha256": digest(p)} for p in detector_support],
+    })
     root_runtime = [p for p in sorted(reference.glob("*.go")) if not p.name.endswith("_test.go")]
     components.append({"id": "cli", "source_directory": ".", "source_files": [{"path": p.name, "sha256": digest(p)} for p in root_runtime]})
     distribution = ["Dockerfile", "Dockerfile.goreleaser", "action.yml", "entrypoint.sh", "PreCommit.md"]
@@ -105,6 +135,8 @@ def generate(reference):
         "detector_source_files": source_count,
         "detector_implementations": len(detectors),
         "registry_constructor_candidates": len(listed),
+        "registry_composite_candidates": sum(kind == "composite" for kind in registration_kind.values()),
+        "registry_factory_candidates": sum(kind == "factory" for kind in registration_kind.values()),
         "unresolved_registry_constructors": unresolved,
         "registry_note": "List membership only; feature gating and disabled/versioned behavior require separate parity evidence.",
         "detectors": [detectors[key] for key in sorted(detectors)],

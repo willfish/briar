@@ -30,9 +30,11 @@ def main():
         else:
             partial.append(name)
     components_complete = [name for name, record in ledger["components"].items() if record.get("status") == "verified"]
+    components_partial = [name for name, record in ledger["components"].items() if record.get("status") != "verified"]
     missing = len(ids) - len(complete) - len(partial)
+    component_missing = len(component_ids) - len(components_complete) - len(components_partial)
     print(f"Detectors: {len(complete)}/{len(ids)} verified; {len(partial)} partial; {missing} not started")
-    print(f"Supporting components: {len(components_complete)}/{len(component_ids)} verified")
+    print(f"Supporting components: {len(components_complete)}/{len(component_ids)} verified; {len(components_partial)} partial; {component_missing} not started")
     print(f"Registry: {inventory['registry_constructor_candidates']} constructor candidates; disabled and feature-gated behavior still needs individual evidence")
     print("Goal remains incomplete" if len(complete) != len(ids) or len(components_complete) != len(component_ids) else "Ledger fully populated; independent full-scope completion audit still required")
     if ledger.get("completion") == "complete":
