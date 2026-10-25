@@ -1,0 +1,10 @@
+.reference/
+.direnv/
+.env
+.env.*
+/build/
+/state/
+__pycache__/
+*.pyc
+/result
+/result-*

@@ -1,0 +1,11 @@
+{
+  "project": "TruffleHog",
+  "repository": "https://github.com/trufflesecurity/trufflehog",
+  "version": "3.97.2",
+  "tag": "v3.97.2",
+  "commit": "cc1fe982afc515d2991365ce8d4d0dd07170fcad",
+  "source_nar_hash": "sha256-/8QOjJuFB0+8+fbHmJTtVUQTIrX6Dt/8MF+jSOfOEIk=",
+  "license": "AGPL-3.0-only",
+  "local_reference_directory": ".reference/trufflehog",
+  "scope": "Complete C reproduction of the pinned project: every detector and its extraction, filtering, verification and metadata, plus decoders, sources, engine, analysis, configuration, CLI and output behavior."
+}

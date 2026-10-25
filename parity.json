@@ -1,0 +1,13 @@
+{
+  "upstream_commit": "cc1fe982afc515d2991365ce8d4d0dd07170fcad",
+  "objective": "Reproduce TruffleHog 3.97.2 in its entirety in C.",
+  "completion": "incomplete",
+  "detectors": {},
+  "components": {},
+  "rules": {
+    "missing_entries": "not_started",
+    "detector_required_aspects": ["extraction", "filtering", "verification", "result_metadata", "versioning", "registry_behavior", "acceptance_evidence"],
+    "counted_complete_status": "verified",
+    "evidence": "A status record is bookkeeping, not proof. Full completion requires inspecting actual source, behavior and fresh applicable checks."
+  }
+}

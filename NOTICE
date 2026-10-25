@@ -1,0 +1,10 @@
+Briar is a work-in-progress C reimplementation of TruffleHog.
+
+Upstream: https://github.com/trufflesecurity/trufflehog
+Reference: v3.97.2, commit cc1fe982afc515d2991365ce8d4d0dd07170fcad
+Copyright and licensing for upstream-derived detection patterns, algorithms and
+other material remain with their respective upstream authors and contributors.
+TruffleHog is distributed under the GNU Affero General Public License version 3.
+See LICENSE. This repository preserves that license for the derivative work.
+
+Briar is not affiliated with or endorsed by Truffle Security.
