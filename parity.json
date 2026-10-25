@@ -217,6 +217,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_algoliaadminkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and malformed-input diagnostic wording", "Native curl DNS error classification does not yet establish the source's no-such-host cache path; injected errors and twelve-hour expiry are covered"]
+    },
+    "alienvault/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/alienvault/alienvault.go",
+      "native_files": ["src/detectors/alienvault.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_alienvault.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },
   "components": {

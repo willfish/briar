@@ -33,6 +33,7 @@ static const registration expected[] = {
     {375, 0, "Alegra", "alegra", 20, true, -1},
     {522, 0, "AletheiaApi", "aletheiaapi", 32, true, -1},
     {170, 0, "AlgoliaAdminKey", "algolia", 32, true, 1024},
+    {399, 0, "AlienVault", "alienvault", 64, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
