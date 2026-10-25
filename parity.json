@@ -127,7 +127,7 @@
       "upstream_source": "pkg/detectors/airbrakeprojectkey/airbrakeprojectkey.go",
       "native_files": ["src/detectors/airbrakeprojectkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_airbrakeprojectkey.c", "tests/detectors/test_fourth_batch.c", "tests/detectors/test_registry.c", "tests/core/http_profiles.c"],
+      "evidence": ["tests/detectors/test_airbrakeprojectkey.c", "tests/detectors/test_registry.c", "tests/core/http_profiles.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Verifier performs a state-changing POST; only synthetic offline requests have been tested"]
     },
     "airbrakeuserkey/Scanner": {
@@ -135,7 +135,7 @@
       "upstream_source": "pkg/detectors/airbrakeuserkey/airbrakeuserkey.go",
       "native_files": ["src/detectors/airbrakeuserkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_airbrakeuserkey.c", "tests/detectors/test_fourth_batch.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_airbrakeuserkey.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "airship/Scanner": {
@@ -143,23 +143,23 @@
       "upstream_source": "pkg/detectors/airship/airship.go",
       "native_files": ["src/detectors/airship.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_airship.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_fourth_batch.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_airship.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "airtableoauth/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/airtableoauth/airtableoauth.go",
-      "native_files": ["src/detectors/fourth_batch.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/airtable.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_airtable.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "airtablepersonalaccesstoken/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/airtablepersonalaccesstoken/airtablepersonalaccesstoken.go",
-      "native_files": ["src/detectors/fifth_batch.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/airtable.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "evidence": ["tests/detectors/test_airtable.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "airvisual/Scanner": {
@@ -167,7 +167,7 @@
       "upstream_source": "pkg/detectors/airvisual/airvisual.go",
       "native_files": ["src/detectors/airvisual.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_airvisual.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_fifth_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "evidence": ["tests/detectors/test_airvisual.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "aiven/Scanner": {
@@ -175,7 +175,7 @@
       "upstream_source": "pkg/detectors/aiven/aiven.go",
       "native_files": ["src/detectors/aiven.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_aiven.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_fifth_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "evidence": ["tests/detectors/test_aiven.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "alchemy/Scanner": {
@@ -183,15 +183,15 @@
       "upstream_source": "pkg/detectors/alchemy/alchemy.go",
       "native_files": ["src/detectors/alchemy.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_alchemy.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_fifth_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "evidence": ["tests/detectors/test_alchemy.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },
   "components": {
     "detector_support": {
       "status": "partial",
-      "native_files": ["include/briar.h", "src/result.c", "src/regex.c", "src/http.c", "src/falsepositives.c", "src/wordlists.c"],
-      "evidence": ["tests/core/test_core.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
+      "native_files": ["include/briar.h", "src/result.c", "src/regex.c", "src/http.c", "src/falsepositives.c", "src/wordlists.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c"],
+      "evidence": ["tests/core/test_core.c", "tests/detectors/test_findings.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "Complete native HTTP profiles, redirects, DNS/proxy policy and timing; SANE/LOCAL GET and POST slices are implemented, PUBLIC and SANE POST redirects fail closed", "Remaining shared detector helpers and protocol adapters"]
     },
     "decoders": {

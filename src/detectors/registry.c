@@ -1,7 +1,5 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "detectors.h"
-#include "fourth_batch.h"
-#include "fifth_batch.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +17,14 @@ static const detector_factory named_factories[] = {
     br_aeroworkflow_init,
     br_agora_init,
     br_aha_init,
+    br_airbrakeprojectkey_init,
+    br_airbrakeuserkey_init,
+    br_airship_init,
+    br_airtableoauth_init,
+    br_airtablepersonalaccesstoken_init,
+    br_airvisual_init,
+    br_aiven_init,
+    br_alchemy_init,
 };
 
 static int fail(char **error, const char *message)
@@ -34,25 +40,16 @@ static int fail(char **error, const char *message)
 int br_registry(const br_detector *const **out, size_t *count, char **error)
 {
     /* Initialization is deliberately pre-worker, as required by ABI revision 1. */
-    static const br_detector *implemented[19];
+    static const br_detector *implemented[sizeof(named_factories) / sizeof(named_factories[0])];
     static bool initialized;
     if (error) *error = NULL;
     if (out) *out = NULL;
     if (count) *count = 0;
     if (!out || !count) return fail(error, "invalid detector registry outputs");
     if (!initialized) {
-        const br_detector *const *fourth = NULL, *const *fifth = NULL;
-        size_t nfourth = 0, nfifth = 0;
-        size_t at = 0;
+        /* Keep the pinned upstream defaults-list order, including disabled types. */
         for (size_t i = 0; i < sizeof(named_factories) / sizeof(named_factories[0]); ++i)
-            if (named_factories[i](&implemented[at++], error) != 0) return -1;
-        if (br_fourth_batch(&fourth, &nfourth, error) != 0 ||
-            br_fifth_batch(&fifth, &nfifth, error) != 0) return -1;
-        if (nfourth != 4 || nfifth != 4)
-            return fail(error, "unexpected compiled detector batch sizes");
-        /* Retain pinned defaults-list order while legacy modules are migrated. */
-        for (size_t i = 0; i < nfourth; ++i) implemented[at++] = fourth[i];
-        for (size_t i = 0; i < nfifth; ++i) implemented[at++] = fifth[i];
+            if (named_factories[i](&implemented[i], error) != 0) return -1;
         initialized = true;
     }
     *out = implemented;
@@ -62,17 +59,17 @@ int br_registry(const br_detector *const **out, size_t *count, char **error)
 
 bool br_detector_is_default(const br_detector *detector, const br_json *feature_flags)
 {
-    (void)feature_flags; /* None of these nineteen implementations has a feature gate. */
+    (void)feature_flags; /* The currently compiled providers have no feature gates. */
     if (detector && (!detector->custom_name || !detector->custom_name[0])) {
         switch (detector->type) {
         case 303: return detector->version == 1 || detector->version == 2;
         case 239: case 521: case 390: case 431: case 693: case 197: case 802:
+        case 125: case 126: case 277: case 1014: case 1015: case 498: case 917: case 907:
             return detector->version == 0;
         default: break;
         }
     }
-    return br_fourth_batch_is_default(detector) ||
-           br_fifth_batch_is_default(detector);
+    return false;
 }
 
 const char *br_detector_type_name(int32_t type)
