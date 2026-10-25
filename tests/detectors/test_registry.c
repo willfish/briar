@@ -39,6 +39,7 @@ static const registration expected[] = {
     {453, 0, "Amadeus", "amadeus", 32, true, 1024},
     {457, 0, "Ambee", "ambee", 64, true, -1},
     {42, 0, "AmplitudeApiKey", "amplitude", 32, true, 1024},
+    {933, 0, "Anthropic", "sk-ant-api03", 108, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -83,6 +84,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         break;
     case 522:
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789ABCDEF"[i % 16];
+        break;
+    case 933:
+        memcpy(key, "sk-ant-api03-", 13);
+        key[106] = key[107] = 'A';
         break;
     case 1014: strcpy(key, "Native7.v1.Synthetic_-Payload.1a2b3c"); break;
     case 1015:
@@ -147,10 +152,11 @@ int main(void)
         CHECK(!strcmp(br_detector_type_name(detector->type), entry->name));
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
-        CHECK(detector->nkeywords == (entry->type == 907 || entry->type == 170 ? 2u : 1u));
+        CHECK(detector->nkeywords == (entry->type == 907 || entry->type == 170 || entry->type == 933 ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 907) CHECK(!strcmp(detector->keywords[1], "alcht_"));
         if (entry->type == 170) CHECK(!strcmp(detector->keywords[1], "docsearch"));
+        if (entry->type == 933) CHECK(!strcmp(detector->keywords[1], "sk-ant-admin01"));
         CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
