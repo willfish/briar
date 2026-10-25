@@ -255,7 +255,7 @@
       "upstream_source": "pkg/detectors/ambee/ambee.go",
       "native_files": ["src/detectors/ambee.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_ambee.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_ambee.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "amplitudeapikey/Scanner": {
@@ -263,7 +263,7 @@
       "upstream_source": "pkg/detectors/amplitudeapikey/amplitudeapikey.go",
       "native_files": ["src/detectors/amplitudeapikey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_amplitudeapikey.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_amplitudeapikey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "anthropic/Scanner": {
@@ -271,7 +271,7 @@
       "upstream_source": "pkg/detectors/anthropic/anthropic.go",
       "native_files": ["src/detectors/anthropic.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_anthropic.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_anthropic.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoding semantics", "ABI1's NUL-terminated verification-error storage cannot preserve embedded-NUL server error bytes", "Streaming read-error boundaries at the 4096-byte cap need native parity evidence"]
     },
     "anypoint/Scanner": {
@@ -279,7 +279,7 @@
       "upstream_source": "pkg/detectors/anypoint/anypoint.go",
       "native_files": ["src/detectors/anypoint.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_anypoint.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_anypoint.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },

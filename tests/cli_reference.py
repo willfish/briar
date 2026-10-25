@@ -369,6 +369,13 @@ def fixtures():
         ("alienvault", 399, b"alienvault " + synthetic("alienvault-oracle", 64)),
         ("allsports", 473, b"allsports " + synthetic("allsports-oracle", 64)),
         ("amadeus", 453, b"amadeus " + alnum("amadeus-key-oracle", 32) + b"\namadeus " + alnum("amadeus-secret-oracle", 16)),
+        ("ambee", 457, b"ambee " + synthetic("ambee-oracle", 64)),
+        ("amplitude", 42, b"amplitude " + synthetic("amplitude-key-oracle", 32) +
+         b"\namplitude " + synthetic("amplitude-secret-oracle", 32)),
+        ("anthropic_api", 933, b"sk-ant-api03-" + alnum("anthropic-api-oracle", 93) + b"AA"),
+        ("anthropic_admin", 933, b"sk-ant-admin01-" + alnum("anthropic-admin-oracle", 93) + b"AA"),
+        ("anypoint", 179, b"anypoint b7c9d2e5-f6g8-h3j4-k1m0-n2p4q6r8s1t3\n"
+         b"org c7d8e9f0-g1h2-i3j4-k5l6-m7n8o9p0q1r2"),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
