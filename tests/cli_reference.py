@@ -387,6 +387,11 @@ def fixtures():
         ("api2cart", 458, b"api2cart " + synthetic("api2cart-oracle", 32)),
         ("apideck", 212, b"apideck sk_live_" + alnum("apideck-key-oracle", 93) +
          b"\napideck " + alnum("apideck-id-oracle", 40)),
+        ("apiflash", 401, b"apiflash " + alnum("apiflash-oracle", 32).lower()),
+        ("apifonica", 484, b"apifonica b7c9d2e5f6g-h3j4-k1m0-n2p4-q6r8s1t3u5v7\n"
+         b"apifonica c7d8e9f0g1h-i2j3-k4l5-m6n7-o8p9q0r1s2t3"),
+        ("apify", 391, b"apify_api_" + alnum("apify-oracle", 36)),
+        ("apilayer", 788, b"apilayer " + alnum("apilayer-oracle", 32)),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
