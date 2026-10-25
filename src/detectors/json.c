@@ -1,8 +1,9 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
-/* Shared response-document mechanics extracted from the Algolia detector. */
+/* Shared response-document parsing and ordered member visits. */
 #include "json.h"
 
 #include <json-c/json.h>
+#include <errno.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +48,129 @@ static int syntax_cause(enum json_tokener_error code, br_slice body, size_t offs
     return invalid_character(body, offset, context, cause);
 }
 
+static bool digit(unsigned char c) { return c >= '0' && c <= '9'; }
+
+/* Locate a complete JSON number without interpreting its magnitude. */
+static size_t number_end(br_slice body, size_t at, bool *integer)
+{
+    size_t i = at;
+    *integer = true;
+    if (body.data[i] == '-') ++i;
+    if (i == body.len || !digit(body.data[i])) return at;
+    if (body.data[i] == '0') {
+        ++i;
+        if (i < body.len && digit(body.data[i])) return at;
+    } else while (i < body.len && digit(body.data[i])) ++i;
+    if (i < body.len && body.data[i] == '.') {
+        *integer = false;
+        if (++i == body.len || !digit(body.data[i])) return at;
+        while (i < body.len && digit(body.data[i])) ++i;
+    }
+    if (i < body.len && (body.data[i] == 'e' || body.data[i] == 'E')) {
+        *integer = false;
+        ++i;
+        if (i < body.len && (body.data[i] == '+' || body.data[i] == '-')) ++i;
+        if (i == body.len || !digit(body.data[i])) return at;
+        while (i < body.len && digit(body.data[i])) ++i;
+    }
+    return i;
+}
+
+/* json-c STRICT conflates integer range with JSON syntax. Validate range-limited
+ * input using an offset-preserving shadow, never return the shadow's values. */
+static int range_shadow(br_slice body, char **out)
+{
+    *out = malloc(body.len + 1);
+    if (!*out) return -1;
+    memcpy(*out, body.data, body.len);
+    (*out)[body.len] = '\0';
+    bool string = false, escape = false, changed = false;
+    unsigned char previous = 0;
+    for (size_t i = 0; i < body.len;) {
+        unsigned char c = body.data[i];
+        if (string) {
+            if (escape) escape = false;
+            else if (c == '\\') escape = true;
+            else if (c == '"') { string = false; previous = '"'; }
+            ++i;
+            continue;
+        }
+        if (c == '"') { string = true; ++i; continue; }
+        if (json_space(c)) { ++i; continue; }
+        bool boundary = !previous || previous == '[' || previous == '{' || previous == ':' || previous == ',';
+        if (boundary && (c == '-' || digit(c))) {
+            bool integer;
+            size_t end = number_end(body, i, &integer);
+            if (end != i) {
+                if (integer) {
+                    char saved = (*out)[end];
+                    (*out)[end] = '\0';
+                    errno = 0;
+                    (void)strtoll(*out + i, NULL, 10);
+                    bool outside = errno == ERANGE;
+                    (*out)[end] = saved;
+                    if (outside) {
+                        memset(*out + i, ' ', end - i);
+                        (*out)[i] = '0';
+                        changed = true;
+                    }
+                }
+                previous = body.data[end - 1];
+                i = end;
+                continue;
+            }
+        }
+        previous = c;
+        ++i;
+    }
+    if (!changed) { free(*out); *out = NULL; }
+    return 0;
+}
+
+static int native_value(br_slice body, bool strict, bool finish, br_json **value,
+                        enum json_tokener_error *code, size_t *offset, bool *incomplete)
+{
+    struct json_tokener *tokener = json_tokener_new_ex(10001);
+    if (!tokener) return -1;
+    json_tokener_set_flags(tokener, JSON_TOKENER_ALLOW_TRAILING_CHARS | (strict ? JSON_TOKENER_STRICT : 0));
+    *value = json_tokener_parse_ex(tokener, body.data ? (const char *)body.data : "", (int)body.len);
+    *code = json_tokener_get_error(tokener);
+    *offset = json_tokener_get_parse_end(tokener);
+    *incomplete = *code == json_tokener_continue;
+    if (*incomplete && finish) {
+        *value = json_tokener_parse_ex(tokener, " ", 1);
+        *code = json_tokener_get_error(tokener);
+    }
+    json_tokener_free(tokener);
+    return 0;
+}
+
+static int response_value(br_slice body, bool finish, br_json **value,
+                          enum json_tokener_error *code, size_t *offset, bool *incomplete)
+{
+    int rc = native_value(body, true, finish, value, code, offset, incomplete);
+    if (rc || *code != json_tokener_error_parse_number) return rc;
+    char *shadow = NULL;
+    if (range_shadow(body, &shadow) != 0) return -1;
+    if (!shadow) return 0;
+    br_json *validated = NULL;
+    enum json_tokener_error checked;
+    size_t end;
+    bool partial;
+    rc = native_value((br_slice){(const unsigned char *)shadow, body.len}, true, finish,
+                      &validated, &checked, &end, &partial);
+    if (!rc && checked == json_tokener_success) {
+        json_object_put(*value);
+        *value = NULL;
+        /* Syntax is strict-validated; now decode ORIGINAL bytes using json-c's
+         * native range handling. Typed numeric fields use encoded_value. */
+        rc = native_value(body, false, finish, value, code, offset, incomplete);
+    }
+    json_object_put(validated);
+    free(shadow);
+    return rc;
+}
+
 int br_json_first_document(br_slice body, const char *read_error, br_json **out,
                             size_t *end, char **cause)
 {
@@ -54,16 +178,13 @@ int br_json_first_document(br_slice body, const char *read_error, br_json **out,
     *end = 0;
     *cause = NULL;
     if (body.len > INT_MAX) return -1;
-    struct json_tokener *tokener = json_tokener_new_ex(10001);
-    if (!tokener) return -1;
-    json_tokener_set_flags(tokener, JSON_TOKENER_STRICT | JSON_TOKENER_ALLOW_TRAILING_CHARS);
-    br_json *value = json_tokener_parse_ex(tokener, body.data ? (const char *)body.data : "", (int)body.len);
-    enum json_tokener_error code = json_tokener_get_error(tokener);
-    size_t offset = json_tokener_get_parse_end(tokener);
-    bool incomplete = code == json_tokener_continue;
-    if (incomplete && !read_error) {
-        value = json_tokener_parse_ex(tokener, " ", 1);
-        code = json_tokener_get_error(tokener);
+    br_json *value = NULL;
+    enum json_tokener_error code;
+    size_t offset;
+    bool incomplete;
+    if (response_value(body, !read_error, &value, &code, &offset, &incomplete) != 0) {
+        json_object_put(value);
+        return -1;
     }
     if (code != json_tokener_success) {
         int rc;
@@ -74,13 +195,11 @@ int br_json_first_document(br_slice body, const char *read_error, br_json **out,
             rc = decode_cause(cause, read_error ? read_error : empty ? "EOF" : "unexpected EOF");
         } else rc = syntax_cause(code, body, offset, cause);
         json_object_put(value);
-        json_tokener_free(tokener);
         return rc;
     }
     *out = value;
     *end = incomplete ? body.len : offset;
-    json_tokener_free(tokener);
-    /* json-c accepts these non-JSON constants even with strict parsing enabled. */
+    /* json-c STRICT still accepts non-JSON constants and leading-zero numbers. */
     bool string = false, escape = false;
     for (size_t i = 0; i < *end; ++i) {
         unsigned char c = body.data[i];
@@ -89,7 +208,16 @@ int br_json_first_document(br_slice body, const char *read_error, br_json **out,
             else if (c == '\\') escape = true;
             else if (c == '"') string = false;
         } else if (c == '"') string = true;
-        else if (c == 'N' || c == 'I' || c == 'i') {
+        else if (c == '-' || digit(c)) {
+            bool integer;
+            size_t next = number_end((br_slice){body.data, *end}, i, &integer);
+            if (next == i) {
+                json_object_put(*out);
+                *out = NULL;
+                return syntax_cause(json_tokener_error_parse_unexpected, body, i, cause);
+            }
+            i = next - 1;
+        } else if (c == 'N' || c == 'I' || c == 'i') {
             json_object_put(*out);
             *out = NULL;
             return syntax_cause(json_tokener_error_parse_unexpected, body, i, cause);
@@ -158,14 +286,14 @@ bool br_json_field_name(br_slice name, const char *expected)
 
 static int member_value(br_slice body, size_t *at, br_json **out)
 {
-    struct json_tokener *tokener = json_tokener_new_ex(10001);
-    if (!tokener) return -1;
-    json_tokener_set_flags(tokener, JSON_TOKENER_STRICT | JSON_TOKENER_ALLOW_TRAILING_CHARS);
-    *out = json_tokener_parse_ex(tokener, (const char *)body.data + *at, (int)(body.len - *at));
-    int rc = json_tokener_get_error(tokener) == json_tokener_success ? 0 : -1;
-    *at += json_tokener_get_parse_end(tokener);
-    json_tokener_free(tokener);
-    return rc;
+    enum json_tokener_error code;
+    size_t offset;
+    bool incomplete;
+    int rc = response_value((br_slice){body.data + *at, body.len - *at}, false,
+                            out, &code, &offset, &incomplete);
+    if (rc) return rc;
+    *at += offset;
+    return code == json_tokener_success ? 0 : -1;
 }
 
 br_slice br_json_text(br_json *value)

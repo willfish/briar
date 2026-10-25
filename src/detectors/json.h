@@ -14,7 +14,8 @@ int br_json_document(br_slice body, br_json **out, char **cause);
 
 /* Visit a validated object in source order, including duplicate members.
  * Name, value and its original JSON bytes are borrowed for the callback. Retain
- * values with json_object_get. Use the bytes to visit nested members in source order.
+ * values with json_object_get. Use the bytes for typed numeric conversion (native
+ * values have json-c's range limits) and nested visits that preserve source order.
  * Return the callback's nonzero result, or -1 on allocation/internal failure. */
 typedef int (*br_json_member_fn)(void *, br_slice name, br_json *value, br_slice encoded_value);
 int br_json_each_member(br_slice object, br_json_member_fn, void *user);
