@@ -2,6 +2,7 @@
 /* Derived from TruffleHog v3.97.2, airbrakeprojectkey, airbrakeuserkey,
  * airship and airtableoauth detector implementations. */
 #include "fourth_batch.h"
+#include "detectors.h"
 
 #include <json-c/json.h>
 #include <stdio.h>
@@ -102,20 +103,6 @@ static int verify_status_only(const br_scan_ctx *ctx, const br_http_request *req
     br_http_release(ctx, &response);
     free(error);
     return rc;
-}
-
-static int verify_airbrake_project(const br_scan_ctx *ctx, const char *key,
-                                    const char *id, br_result *result)
-{
-    static const unsigned char payload[] = "{\"environment\":\"production\",\"username\":\"john\",\"email\":\"john@smith.com\",\"repository\":\"https://github.com/airbrake/airbrake\",\"revision\":\"38748467ea579e7ae64f7815452307c9d05e05c5\",\"version\":\"v2.0\"}";
-    char url[160];
-    snprintf(url, sizeof(url), "https://api.airbrake.io/api/v4/projects/%s/deploys?key=%s", id, key);
-    const br_http_request request = {
-        .method = "POST", .url = url, .body = {payload, sizeof(payload) - 1},
-        .profile = BR_HTTP_SANE, .detector_type = 125,
-    };
-    /* Upstream sets no Content-Type for this JSON body. Do not invent one. */
-    return verify_status_only(ctx, &request, result);
 }
 
 static int verify_airbrake_user(const br_scan_ctx *ctx, const char *key,
@@ -243,24 +230,6 @@ static int valid_scan(const br_detector *detector, br_slice input, br_results *o
     return 0;
 }
 
-static int scan_airbrake_project(const br_detector *detector, const br_scan_ctx *ctx,
-                                 bool verify, br_slice input, br_results *out, char **error)
-{
-    if (valid_scan(detector, input, out, error) != 0) return -1;
-    const detector_patterns *patterns = detector->state;
-    if (!patterns->id) return fail(error, "uninitialized Airbrake project ID pattern");
-    captures keys = {0}, ids = {0};
-    int rc = find_unique(patterns->key, input, &keys, error);
-    if (rc == 0) rc = find_unique(patterns->id, input, &ids, error);
-    for (size_t k = 0; rc == 0 && k < keys.len; ++k)
-        for (size_t i = 0; rc == 0 && i < ids.len; ++i)
-            rc = emit_result(detector, ctx, verify, keys.items[k], ids.items[i], "key",
-                             verify_airbrake_project, out, error);
-    captures_clear(&keys);
-    captures_clear(&ids);
-    return rc;
-}
-
 static int scan_unique_keys(const br_detector *detector, const br_scan_ctx *ctx,
                              bool verify, br_slice input, br_results *out, char **error,
                              const char *part_name, verifier check)
@@ -293,19 +262,12 @@ static int scan_airtable_oauth(const br_detector *detector, const br_scan_ctx *c
     return scan_unique_keys(detector, ctx, verify, input, out, error, "token", verify_airtable_oauth);
 }
 
-static detector_patterns airbrake_project_patterns, airbrake_user_patterns;
+static detector_patterns airbrake_user_patterns;
 static detector_patterns airship_patterns, airtable_oauth_patterns;
 static const char *const airbrake_keywords[] = {"airbrake"};
 static const char *const airship_keywords[] = {"airship"};
 static const char *const airtable_keywords[] = {"airtable"};
 
-static const br_detector airbrake_project = {
-    .type = 125, .version = 0, .name = "AirbrakeProjectKey", .custom_name = "",
-    .description = "Airbrake is an error and performance monitoring service for web applications. Airbrake project keys can be used to report and track errors in applications.",
-    .keywords = airbrake_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = 1024,
-    .state = &airbrake_project_patterns, .scan = scan_airbrake_project,
-};
 static const br_detector airbrake_user = {
     .type = 126, .version = 0, .name = "AirbrakeUserKey", .custom_name = "",
     .description = "Airbrake is an error and performance monitoring service. Airbrake User Keys can be used to access and manage error reports and performance data.",
@@ -327,8 +289,8 @@ static const br_detector airtable_oauth = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .state = &airtable_oauth_patterns, .scan = scan_airtable_oauth,
 };
-static const br_detector *const implemented[] = {
-    &airbrake_project, &airbrake_user, &airship, &airtable_oauth,
+static const br_detector *implemented[] = {
+    NULL, &airbrake_user, &airship, &airtable_oauth,
 };
 
 static int compile_prefixed(const br_detector *detector, const char *capture,
@@ -357,8 +319,7 @@ int br_fourth_batch(const br_detector *const **out, size_t *count, char **error)
     if (out) *out = NULL;
     if (count) *count = 0;
     if (!out || !count) return fail(error, "invalid fourth-batch outputs");
-    if (compile_prefixed(&airbrake_project, "\\b([a-zA-Z-0-9]{32})\\b", &airbrake_project_patterns.key, error) != 0 ||
-        compile_prefixed(&airbrake_project, "\\b([0-9]{6})\\b", &airbrake_project_patterns.id, error) != 0 ||
+    if (br_airbrakeprojectkey_init(&implemented[0], error) != 0 ||
         compile_prefixed(&airbrake_user, "\\b([a-zA-Z-0-9]{40})\\b", &airbrake_user_patterns.key, error) != 0 ||
         compile_prefixed(&airship, "\\b([0-9a-zA-Z]{91})\\b", &airship_patterns.key, error) != 0)
         return -1;
