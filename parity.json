@@ -57,19 +57,19 @@
     "accuweather/v1/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/accuweather/v1/accuweather.go",
-      "native_files": ["src/detectors/second_batch.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/accuweather.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "scope_notes": "Preserves 35-byte percent-containing captures, entropy threshold, uniqueness and version 1; metadata/request/status branches have synthetic native evidence.",
-      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_accuweather.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity"]
     },
     "accuweather/v2/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/accuweather/v2/accuweather.go",
-      "native_files": ["src/detectors/second_batch.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/accuweather.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "scope_notes": "Preserves the 32-byte capture override, inherited v1 processing and metadata, and distinct version 2 registry identity.",
-      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_accuweather.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity"]
     },
     "adafruitio/Scanner": {
@@ -78,7 +78,7 @@
       "native_files": ["src/detectors/adafruitio.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "scope_notes": "No detector-local filtering/cleaner or Version method exists upstream. Capture order/duplicates and all verifier status/error branches have native fixtures.",
-      "evidence": ["tests/detectors/test_adafruitio.c", "tests/detectors/test_second_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_adafruitio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity"]
     },
     "adobeio/Scanner": {
@@ -87,7 +87,7 @@
       "native_files": ["src/detectors/adobeio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "scope_notes": "Preserves unique component sets, Cartesian pairing, metadata, verifier branches and disabled default membership; no Version method exists upstream.",
-      "evidence": ["tests/detectors/test_adobeio.c", "tests/detectors/test_second_batch.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_adobeio.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity", "Disabled constructor has source-derived fixtures, not a direct CLI oracle"]
     },
     "adzuna/Scanner": {
