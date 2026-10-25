@@ -28,5 +28,18 @@ int main(void)
     CHECK(!result.extra_data && !result.structured_data && !result.redacted);
     br_result_clear(&result);
     CHECK(!result.raw.data && !result.raw_v2.data && !result.secret_parts);
+
+    const unsigned char id[] = {'x', 0, 'y'};
+    const unsigned char combined[] = {'t', 'o', 'k', 'e', 'n', ':', 'x', 0, 'y'};
+    CHECK(br_finding_pair_bytes(&result, 375,
+        (br_slice){(const unsigned char *)"token", 5}, "token", (br_slice){id, sizeof(id)}, "id",
+        (br_slice){(const unsigned char *)":", 1}) == 0);
+    CHECK(result.raw.len == 5 && !memcmp(result.raw.data, "token", 5));
+    CHECK(result.raw_v2.len == sizeof(combined) && !memcmp(result.raw_v2.data, combined, sizeof(combined)));
+    CHECK(json_object_object_get_ex(result.secret_parts, "id", &part));
+    CHECK(json_object_get_string_len(part) == (int)sizeof(id));
+    CHECK(!memcmp(json_object_get_string(part), id, sizeof(id)));
+    br_result_clear(&result);
+    CHECK(!result.raw.data && !result.raw_v2.data && !result.secret_parts);
     return test_finish("Finding construction");
 }

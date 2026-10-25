@@ -21,31 +21,52 @@ void br_captures_clear(br_captures *values)
 {
     for (size_t i = 0; i < values->len; ++i) free(values->items[i]);
     free(values->items);
+    free(values->lengths);
     memset(values, 0, sizeof(*values));
+}
+
+br_slice br_captures_at(const br_captures *values, size_t index)
+{
+    return (br_slice){(const unsigned char *)values->items[index], values->lengths[index]};
 }
 
 int br_captures_push(br_captures *values, br_slice value, bool unique, char **error)
 {
-    if (!value.data || !value.len) return fail(error, "invalid detector capture");
+    if (!value.data || !value.len || value.len == SIZE_MAX)
+        return fail(error, "invalid detector capture");
     if (unique) {
         for (size_t i = 0; i < values->len; ++i)
-            if (strlen(values->items[i]) == value.len &&
+            if (values->lengths[i] == value.len &&
                 !memcmp(values->items[i], value.data, value.len)) return 0;
     }
     if (values->len == values->cap) {
         size_t cap = values->cap ? values->cap * 2 : 8;
-        if (cap < values->cap || cap > SIZE_MAX / sizeof(*values->items))
+        if (cap < values->cap || cap > SIZE_MAX / sizeof(*values->items) ||
+            cap > SIZE_MAX / sizeof(*values->lengths))
             return fail(error, "too many detector captures");
-        void *items = realloc(values->items, cap * sizeof(*values->items));
-        if (!items) return fail(error, "out of memory collecting detector captures");
+        char **items = malloc(cap * sizeof(*items));
+        size_t *lengths = malloc(cap * sizeof(*lengths));
+        if (!items || !lengths) {
+            free(items);
+            free(lengths);
+            return fail(error, "out of memory collecting detector captures");
+        }
+        if (values->len) {
+            memcpy(items, values->items, values->len * sizeof(*items));
+            memcpy(lengths, values->lengths, values->len * sizeof(*lengths));
+        }
+        free(values->items);
+        free(values->lengths);
         values->items = items;
+        values->lengths = lengths;
         values->cap = cap;
     }
     char *copy = malloc(value.len + 1);
     if (!copy) return fail(error, "out of memory copying detector capture");
     memcpy(copy, value.data, value.len);
     copy[value.len] = '\0';
-    values->items[values->len++] = copy;
+    values->items[values->len] = copy;
+    values->lengths[values->len++] = value.len;
     return 0;
 }
 

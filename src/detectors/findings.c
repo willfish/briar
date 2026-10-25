@@ -6,9 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int add_part(br_result *result, const char *name, const char *value)
+static int add_part(br_result *result, const char *name, br_slice value)
 {
-    br_json *part = json_object_new_string(value);
+    if ((!value.data && value.len) || value.len > INT_MAX) return -1;
+    br_json *part = json_object_new_string_len(value.data ? (const char *)value.data : "",
+                                              (int)value.len);
     if (!part) return -1;
     if (json_object_object_add(result->secret_parts, name, part) != 0) {
         json_object_put(part);
@@ -26,12 +28,7 @@ int br_finding_key_bytes(br_result *result, int32_t type, br_slice key, const ch
     if (!result->raw.data || !result->secret_parts) goto failed;
     if (key.len) memcpy(result->raw.data, key.data, key.len);
     result->raw.len = key.len;
-    br_json *part = json_object_new_string_len(key.data ? (const char *)key.data : "", (int)key.len);
-    if (!part) goto failed;
-    if (json_object_object_add(result->secret_parts, part_name, part) != 0) {
-        json_object_put(part);
-        goto failed;
-    }
+    if (add_part(result, part_name, key) != 0) goto failed;
     return 0;
 failed:
     br_result_clear(result);
@@ -44,20 +41,32 @@ int br_finding_key(br_result *result, int32_t type, const char *key, const char 
                                 (br_slice){(const unsigned char *)key, strlen(key)}, part_name);
 }
 
-int br_finding_pair(br_result *result, int32_t type, const char *key, const char *key_name,
-                    const char *secondary, const char *secondary_name)
+int br_finding_pair_bytes(br_result *result, int32_t type, br_slice key, const char *key_name,
+                          br_slice secondary, const char *secondary_name, br_slice separator)
 {
-    if (br_finding_key(result, type, key, key_name) != 0) return -1;
-    size_t first = result->raw.len, second = strlen(secondary);
-    if (second > SIZE_MAX - first) goto failed;
-    result->raw_v2.len = first + second;
+    if (br_finding_key_bytes(result, type, key, key_name) != 0) return -1;
+    if ((!secondary.data && secondary.len) || (!separator.data && separator.len) ||
+        separator.len > SIZE_MAX - key.len || secondary.len > SIZE_MAX - key.len - separator.len)
+        goto failed;
+    result->raw_v2.len = key.len + separator.len + secondary.len;
     result->raw_v2.data = malloc(result->raw_v2.len ? result->raw_v2.len : 1);
     if (!result->raw_v2.data) goto failed;
-    memcpy(result->raw_v2.data, key, first);
-    memcpy(result->raw_v2.data + first, secondary, second);
+    if (key.len) memcpy(result->raw_v2.data, key.data, key.len);
+    if (separator.len) memcpy(result->raw_v2.data + key.len, separator.data, separator.len);
+    if (secondary.len)
+        memcpy(result->raw_v2.data + key.len + separator.len, secondary.data, secondary.len);
     if (add_part(result, secondary_name, secondary) != 0) goto failed;
     return 0;
 failed:
     br_result_clear(result);
     return -1;
+}
+
+int br_finding_pair(br_result *result, int32_t type, const char *key, const char *key_name,
+                    const char *secondary, const char *secondary_name)
+{
+    return br_finding_pair_bytes(result, type,
+                                 (br_slice){(const unsigned char *)key, strlen(key)}, key_name,
+                                 (br_slice){(const unsigned char *)secondary, strlen(secondary)},
+                                 secondary_name, (br_slice){0});
 }

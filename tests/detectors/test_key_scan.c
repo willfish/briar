@@ -47,5 +47,20 @@ int main(void)
     CHECK(!results.items[0].verified && !results.items[1].verified);
     br_results_clear(&results);
     br_regex_free(pattern);
+
+    pattern = NULL;
+    CHECK(br_regex_compile("(a\\x00[b-c])", &pattern, &error) == 0 && !error);
+    detector.state = pattern;
+    static const unsigned char opaque[] = {'a', 0, 'b', ' ', 'a', 0, 'c', ' ', 'a', 0, 'b'};
+    CHECK(br_scan_unique_key(&detector, NULL, false, (br_slice){opaque, sizeof(opaque)},
+                             &results, "key", verify_key, &error) == 0);
+    CHECK(!error && results.len == 2 && !verification_calls);
+    CHECK(results.items[0].raw.len == 3 && !memcmp(results.items[0].raw.data, opaque, 3));
+    CHECK(results.items[1].raw.len == 3 && !memcmp(results.items[1].raw.data, opaque + 4, 3));
+    br_json *part = NULL;
+    CHECK(json_object_object_get_ex(results.items[0].secret_parts, "key", &part));
+    CHECK(json_object_get_string_len(part) == 3 && !memcmp(json_object_get_string(part), opaque, 3));
+    br_results_clear(&results);
+    br_regex_free(pattern);
     return test_finish("Single-key occurrence and unique scanning");
 }

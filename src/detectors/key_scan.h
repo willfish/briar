@@ -12,8 +12,9 @@ int br_scan_key(const br_detector *, const br_scan_ctx *, bool verify,
                 br_slice input, br_results *, const char *secret_part,
                 br_key_verifier, char **error);
 
-/* The same finding mechanics for nonempty captured C strings, retaining only
- * each key's first occurrence. Use when upstream collects a unique-key map. */
+/* The same finding mechanics for nonempty byte captures, retaining only each
+ * key's first occurrence. Verifiers receive NUL-terminated copies; detectors
+ * requiring opaque verification arguments must use their own scanner. */
 int br_scan_unique_key(const br_detector *, const br_scan_ctx *, bool verify,
                        br_slice input, br_results *, const char *secret_part,
                        br_key_verifier, char **error);

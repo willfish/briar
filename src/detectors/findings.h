@@ -8,6 +8,9 @@
  * Pair findings use captured strings: Raw=key, RawV2=key+secondary, no separator. */
 int br_finding_key_bytes(br_result *, int32_t type, br_slice key, const char *part_name);
 int br_finding_key(br_result *, int32_t type, const char *key, const char *part_name);
+/* Raw=key; RawV2=key+separator+secondary. All byte strings are copied. */
+int br_finding_pair_bytes(br_result *, int32_t type, br_slice key, const char *key_name,
+                          br_slice secondary, const char *secondary_name, br_slice separator);
 int br_finding_pair(br_result *, int32_t type, const char *key, const char *key_name,
                     const char *secondary, const char *secondary_name);
 

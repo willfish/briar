@@ -73,8 +73,7 @@ static int scan_keys(const br_detector *detector, const br_scan_ctx *ctx, bool v
         br_captures keys = {0};
         rc = br_captures_find(detector->state, input, &keys, true, &regex_error);
         for (size_t i = 0; !rc && i < keys.len; ++i)
-            rc = append_key(&matches, (br_slice){(const unsigned char *)keys.items[i],
-                                                strlen(keys.items[i])});
+            rc = append_key(&matches, br_captures_at(&keys, i));
         br_captures_clear(&keys);
     } else {
         rc = br_regex_each(detector->state, input, emit_key, &matches, &regex_error);
