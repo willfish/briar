@@ -24,5 +24,9 @@ int br_airtablepersonalaccesstoken_init(const br_detector **out, char **error);
 int br_airvisual_init(const br_detector **out, char **error);
 int br_aiven_init(const br_detector **out, char **error);
 int br_alchemy_init(const br_detector **out, char **error);
+int br_alconost_init(const br_detector **out, char **error);
+int br_alegra_init(const br_detector **out, char **error);
+int br_aletheiaapi_init(const br_detector **out, char **error);
+int br_algoliaadminkey_init(const br_detector **out, char **error);
 
 #endif
