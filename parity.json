@@ -353,6 +353,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_apimatic.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Request-local timeout does not reproduce shared-client mutation or cross-request/concurrency effects"]
+    },
+    "apimetrics/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/apimetrics/apimetrics.go",
+      "native_files": ["src/detectors/apimetrics.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_apimetrics.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },
   "components": {

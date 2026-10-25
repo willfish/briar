@@ -46,6 +46,7 @@ static const detector_factory named_factories[] = {
     br_apify_init,
     br_apilayer_init,
     br_apimatic_init,
+    br_apimetrics_init,
 };
 
 static int fail(char **error, const char *message)
@@ -88,7 +89,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 917: case 907:
         case 375: case 522: case 170: case 399: case 473: case 453:
         case 457: case 42: case 933: case 179: case 1032: case 632: case 212: case 458:
-        case 401: case 391: case 484: case 788: case 637:
+        case 401: case 391: case 484: case 788: case 637: case 1004:
             return detector->version == 0;
         default: break;
         }
@@ -135,6 +136,7 @@ const char *br_detector_type_name(int32_t type)
     case 907: return "Alchemy";
     case 917: return "Aiven";
     case 933: return "Anthropic";
+    case 1004: return "ApiMetrics";
     case 1014: return "AirtableOAuth";
     case 1015: return "AirtablePersonalAccessToken";
     case 1032: return "AnypointOAuth2";

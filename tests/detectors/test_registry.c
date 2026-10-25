@@ -50,6 +50,7 @@ static const registration expected[] = {
     {391, 0, "Apify", "apify", 46, true, -1},
     {788, 0, "Apilayer", "apilayer", 32, true, -1},
     {637, 0, "APIMatic", "apimatic", 64, true, 1024},
+    {1004, 0, "ApiMetrics", "apimetrics", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
