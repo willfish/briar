@@ -35,6 +35,7 @@ static const registration expected[] = {
     {170, 0, "AlgoliaAdminKey", "algolia", 32, true, 1024},
     {399, 0, "AlienVault", "alienvault", 64, true, -1},
     {473, 0, "Allsports", "allsports", 64, true, -1},
+    {453, 0, "Amadeus", "amadeus", 32, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -51,6 +52,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 170: secondary = "B7C9D2E5F6"; secondary_name = "id"; break;
     case 375: secondary = "fixture@example.test"; secondary_name = "id"; break;
     case 431: secondary = "c7d8e9f0"; secondary_name = "id"; break;
+    case 453: secondary = "B7c9D2e5F6g8H3j4"; secondary_name = "secret"; break;
     case 693: secondary = "00042"; secondary_name = "id"; break;
     case 197:
         test_secret(secondary_buffer, 32, 11);
