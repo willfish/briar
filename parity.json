@@ -95,7 +95,7 @@
       "upstream_source": "pkg/detectors/adzuna/adzuna.go",
       "native_files": ["src/detectors/adzuna.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_adzuna.c", "tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_adzuna.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "aeroworkflow/Scanner": {
@@ -103,15 +103,15 @@
       "upstream_source": "pkg/detectors/aeroworkflow/aeroworkflow.go",
       "native_files": ["src/detectors/aeroworkflow.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_aeroworkflow.c", "tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_aeroworkflow.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "agora/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/agora/agora.go",
-      "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/agora.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_agora.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "aha/Scanner": {
@@ -119,7 +119,7 @@
       "upstream_source": "pkg/detectors/aha/aha.go",
       "native_files": ["src/detectors/aha.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_aha.c", "tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c", "tests/core/test_core.c"],
+      "evidence": ["tests/detectors/test_aha.c", "tests/detectors/test_registry.c", "tests/core/test_core.c"],
       "remaining": ["Native PUBLIC HTTP profile fails closed; complete all-address DNS checks, proxy handling, timeout and no-redirect behavior", "Complete source options, Unicode-prefilter and concurrency parity", "Complete shared regexp/engine behavior"]
     },
     "airbrakeprojectkey/Scanner": {
