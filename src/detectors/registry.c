@@ -41,6 +41,7 @@ static const detector_factory named_factories[] = {
     br_apacta_init,
     br_api2cart_init,
     br_apideck_init,
+    br_apiflash_init,
 };
 
 static int fail(char **error, const char *message)
@@ -83,6 +84,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 917: case 907:
         case 375: case 522: case 170: case 399: case 473: case 453:
         case 457: case 42: case 933: case 179: case 1032: case 632: case 212: case 458:
+        case 401:
             return detector->version == 0;
         default: break;
         }
@@ -110,6 +112,7 @@ const char *br_detector_type_name(int32_t type)
     case 384: return "Abstract";
     case 390: return "AdafruitIO";
     case 399: return "AlienVault";
+    case 401: return "Apiflash";
     case 431: return "Adzuna";
     case 453: return "Amadeus";
     case 457: return "Ambee";

@@ -45,6 +45,7 @@ static const registration expected[] = {
     {632, 0, "Apacta", "apacta", 36, true, -1},
     {458, 0, "Api2Cart", "api2cart", 32, true, -1},
     {212, 0, "ApiDeck", "apideck", 101, true, 1024},
+    {401, 0, "Apiflash", "apiflash", 32, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */

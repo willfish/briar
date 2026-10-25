@@ -313,6 +313,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_apideck.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "apiflash/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/apiflash/apiflash.go",
+      "native_files": ["src/detectors/apiflash.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_apiflash.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native PUBLIC client policy remains fail-closed; source suppresses transport errors, so mocked success is not native verification support"]
     }
   },
   "components": {
