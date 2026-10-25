@@ -2,6 +2,7 @@
 /* Derived from TruffleHog v3.97.2, airtablepersonalaccesstoken, airvisual,
  * aiven and alchemy detector implementations. */
 #include "fifth_batch.h"
+#include "detectors.h"
 
 #include <json-c/json.h>
 #include <stdio.h>
@@ -176,16 +177,6 @@ static int verify_aiven(const br_scan_ctx *ctx, const char *key, br_result *resu
     return verify_unredacted(ctx, &request, result);
 }
 
-static int verify_alchemy(const br_scan_ctx *ctx, const char *token, br_result *result)
-{
-    char url[160];
-    snprintf(url, sizeof(url), "https://eth-mainnet.g.alchemy.com/v2/%s/getNFTs/?owner=vitalik.eth", token);
-    const br_http_request request = {
-        .method = "GET", .url = url, .profile = BR_HTTP_SANE, .detector_type = 907,
-    };
-    return verify_redacted(ctx, &request, result);
-}
-
 static int emit_result(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
                         const char *key, const char *part_name, verifier check,
                         br_results *out, char **error)
@@ -248,17 +239,10 @@ static int scan_aiven(const br_detector *detector, const br_scan_ctx *ctx,
     return scan_unique_keys(detector, ctx, verify, input, out, error, "key", verify_aiven);
 }
 
-static int scan_alchemy(const br_detector *detector, const br_scan_ctx *ctx,
-                         bool verify, br_slice input, br_results *out, char **error)
-{
-    return scan_unique_keys(detector, ctx, verify, input, out, error, "key", verify_alchemy);
-}
-
-static detector_patterns airtable_pat_patterns, airvisual_patterns, aiven_patterns, alchemy_patterns;
+static detector_patterns airtable_pat_patterns, airvisual_patterns, aiven_patterns;
 static const char *const airtable_keywords[] = {"airtable"};
 static const char *const airvisual_keywords[] = {"airvisual"};
 static const char *const aiven_keywords[] = {"aiven"};
-static const char *const alchemy_keywords[] = {"alchemy", "alcht_"};
 
 static const br_detector airtable_pat = {
     .type = 1015, .version = 0, .name = "AirtablePersonalAccessToken", .custom_name = "",
@@ -281,21 +265,13 @@ static const br_detector aiven = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .state = &aiven_patterns, .scan = scan_aiven,
 };
-static const br_detector alchemy = {
-    .type = 907, .version = 0, .name = "Alchemy", .custom_name = "",
-    .description = "Alchemy is a blockchain development platform that provides a suite of tools and services for building and scaling decentralized applications. Alchemy API keys can be used to access these services.",
-    .keywords = alchemy_keywords, .nkeywords = 2,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
-    .state = &alchemy_patterns, .scan = scan_alchemy,
-};
-static const br_detector *const implemented[] = {&airtable_pat, &airvisual, &aiven, &alchemy};
+static const br_detector *implemented[] = {&airtable_pat, &airvisual, &aiven, NULL};
 
 static int compile_prefixed(const br_detector *detector, const char *capture,
                              br_regex **out, char **error)
 {
     if (*out) return 0;
     char *prefix = NULL;
-    /* Alchemy's second keyword is prefilter-only; PrefixRegex uses "alchemy". */
     if (br_prefix_regex(detector->keywords, 1, &prefix) != 0)
         return fail(error, "cannot allocate detector prefix pattern");
     size_t len = strlen(prefix) + strlen(capture) + 1;
@@ -317,10 +293,10 @@ int br_fifth_batch(const br_detector *const **out, size_t *count, char **error)
     if (out) *out = NULL;
     if (count) *count = 0;
     if (!out || !count) return fail(error, "invalid fifth-batch outputs");
-    if (compile_prefixed(&airtable_pat, "\\b(pat[[:alnum:]]{14}\\.[a-f0-9]{64})\\b", &airtable_pat_patterns.key, error) != 0 ||
+    if (br_alchemy_init(&implemented[3], error) != 0 ||
+        compile_prefixed(&airtable_pat, "\\b(pat[[:alnum:]]{14}\\.[a-f0-9]{64})\\b", &airtable_pat_patterns.key, error) != 0 ||
         compile_prefixed(&airvisual, "\\b([a-z0-9-]{36})\\b", &airvisual_patterns.key, error) != 0 ||
-        compile_prefixed(&aiven, "([a-zA-Z0-9/+=]{372})", &aiven_patterns.key, error) != 0 ||
-        compile_prefixed(&alchemy, "\\b([0-9a-zA-Z_]{32}|alcht_[0-9a-zA-Z]{30})\\b", &alchemy_patterns.key, error) != 0)
+        compile_prefixed(&aiven, "([a-zA-Z0-9/+=]{372})", &aiven_patterns.key, error) != 0)
         return -1;
     *out = implemented;
     *count = sizeof(implemented) / sizeof(implemented[0]);
