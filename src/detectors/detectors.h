@@ -44,5 +44,9 @@ int br_apiflash_init(const br_detector **out, char **error);
 int br_apifonica_init(const br_detector **out, char **error);
 int br_apify_init(const br_detector **out, char **error);
 int br_apilayer_init(const br_detector **out, char **error);
+int br_apimatic_init(const br_detector **out, char **error);
+int br_apimetrics_init(const br_detector **out, char **error);
+int br_apitemplate_init(const br_detector **out, char **error);
+int br_apollo_init(const br_detector **out, char **error);
 
 #endif
