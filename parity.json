@@ -75,10 +75,10 @@
     "adafruitio/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/adafruitio/adafruitio.go",
-      "native_files": ["src/detectors/second_batch.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/adafruitio.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "scope_notes": "No detector-local filtering/cleaner or Version method exists upstream. Capture order/duplicates and all verifier status/error branches have native fixtures.",
-      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_adafruitio.c", "tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity"]
     },
     "adobeio/Scanner": {

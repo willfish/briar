@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 /* Derived from TruffleHog v3.97.2, accuweather/{v1,v2}, adafruitio and adobeio. */
 #include "second_batch.h"
+#include "detectors.h"
 
 #include <json-c/json.h>
 #include <math.h>
@@ -134,37 +135,6 @@ static int verify_accuweather(const br_scan_ctx *ctx, const char *key,
     return rc;
 }
 
-static int verify_adafruitio(const br_scan_ctx *ctx, const char *key,
-                             const char *id, br_result *result)
-{
-    (void)id;
-    char url[128];
-    snprintf(url, sizeof(url), "https://io.adafruit.com/api/v2/ladybugtest/feeds/?x-aio-key=%s", key);
-    const br_http_request request = {
-        .method = "GET", .url = url, .profile = BR_HTTP_SANE, .detector_type = 390,
-    };
-    br_http_response response = {0};
-    char *error = NULL;
-    int rc = 0;
-    if (br_http_send(ctx, &request, &response, &error) != 0) {
-        rc = key_error(result, error ? error : "HTTP transport failed");
-    } else {
-        switch (response.status) {
-        case 200: result->verified = true; break;
-        case 401: break;
-        default: {
-            char message[80];
-            snprintf(message, sizeof(message), "unexpected HTTP response status %d", response.status);
-            rc = key_error(result, message);
-            break;
-        }
-        }
-    }
-    br_http_release(ctx, &response);
-    free(error);
-    return rc;
-}
-
 static int verify_adobeio(const br_scan_ctx *ctx, const char *key,
                           const char *id, br_result *result)
 {
@@ -265,21 +235,6 @@ static int scan_accuweather(const br_detector *detector, const br_scan_ctx *ctx,
     return rc;
 }
 
-static int scan_adafruitio(const br_detector *detector, const br_scan_ctx *ctx,
-                           bool verify, br_slice input, br_results *out, char **error)
-{
-    if (valid_scan(detector, input, out, error) != 0) return -1;
-    const detector_patterns *patterns = detector->state;
-    captures keys = {0};
-    /* Capture alphabets exclude whitespace, so upstream TrimSpace changes nothing. */
-    int rc = find_captures(patterns->key, input, &keys, false, false, error);
-    for (size_t i = 0; rc == 0 && i < keys.len; ++i)
-        rc = emit_result(detector, ctx, verify, keys.items[i], NULL,
-                         verify_adafruitio, out, error);
-    captures_clear(&keys);
-    return rc;
-}
-
 static int scan_adobeio(const br_detector *detector, const br_scan_ctx *ctx,
                         bool verify, br_slice input, br_results *out, char **error)
 {
@@ -300,9 +255,8 @@ static int scan_adobeio(const br_detector *detector, const br_scan_ctx *ctx,
 }
 
 static detector_patterns accuweather_v1_patterns, accuweather_v2_patterns;
-static detector_patterns adafruitio_patterns, adobeio_patterns;
+static detector_patterns adobeio_patterns;
 static const char *const accuweather_keywords[] = {"accuweather"};
-static const char *const adafruitio_keywords[] = {"aio_"};
 static const char *const adobeio_keywords[] = {"adobe"};
 
 static const br_detector accuweather_v1 = {
@@ -319,13 +273,6 @@ static const br_detector accuweather_v2 = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .state = &accuweather_v2_patterns, .scan = scan_accuweather,
 };
-static const br_detector adafruitio = {
-    .type = 390, .version = 0, .name = "AdafruitIO", .custom_name = "",
-    .description = "Adafruit IO is a cloud service used for IoT applications. Adafruit IO keys can be used to access and control data and devices connected to the platform.",
-    .keywords = adafruitio_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
-    .state = &adafruitio_patterns, .scan = scan_adafruitio,
-};
 /* Commented out in the pinned upstream defaults, but directly callable here. */
 static const br_detector adobeio = {
     .type = 136, .version = 0, .name = "AdobeIO", .custom_name = "",
@@ -334,8 +281,8 @@ static const br_detector adobeio = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = 1024,
     .state = &adobeio_patterns, .scan = scan_adobeio,
 };
-static const br_detector *const implemented[] = {
-    &accuweather_v1, &accuweather_v2, &adafruitio, &adobeio,
+static const br_detector *implemented[] = {
+    &accuweather_v1, &accuweather_v2, NULL, &adobeio,
 };
 
 static int compile_pattern(const br_detector *detector, const char *capture,
@@ -365,12 +312,11 @@ int br_second_batch(const br_detector *const **out, size_t *count, char **error)
     if (out) *out = NULL;
     if (count) *count = 0;
     if (!out || !count) return fail(error, "invalid second-batch outputs");
-    if (compile_pattern(&accuweather_v1, "([a-z0-9A-Z\\%]{35})\\b", true,
+    if (br_adafruitio_init(&implemented[2], error) != 0 ||
+        compile_pattern(&accuweather_v1, "([a-z0-9A-Z\\%]{35})\\b", true,
                         &accuweather_v1_patterns.key, error) != 0 ||
         compile_pattern(&accuweather_v2, "\\b([a-zA-Z0-9]{32})\\b", true,
                         &accuweather_v2_patterns.key, error) != 0 ||
-        compile_pattern(&adafruitio, "\\b(aio\\_[a-zA-Z0-9]{28})\\b", false,
-                        &adafruitio_patterns.key, error) != 0 ||
         compile_pattern(&adobeio, "\\b([a-z0-9]{32})\\b", true,
                         &adobeio_patterns.key, error) != 0 ||
         compile_pattern(&adobeio, "\\b([a-zA-Z0-9.]{12})\\b", true,
