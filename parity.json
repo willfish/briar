@@ -17,7 +17,7 @@
         "registry_behavior": "verified",
         "acceptance_evidence": "partial"
       },
-      "evidence": ["tests/detectors/test_abstract.c", "tests/detectors/test_detectors.c", "tests/core/test_core.c", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_abstract.c", "tests/detectors/test_registry.c", "tests/core/test_core.c", "docs/ACCEPTANCE.md"],
       "remaining": ["Shared RE2/PCRE2 and invalid-byte semantics are not fully reproduced", "Full native HTTP-client behavior is not established", "Disabled upstream constructor has no CLI oracle execution; direct native behavior is covered by source-derived fixtures"]
     },
     "abuseipdb/Scanner": {
@@ -34,7 +34,7 @@
         "registry_behavior": "verified",
         "acceptance_evidence": "partial"
       },
-      "evidence": ["tests/detectors/test_abuseipdb.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_abuseipdb.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Shared RE2/PCRE2 and invalid-byte semantics are not fully reproduced", "Full native HTTP-client behavior is not established", "Reference CLI comparisons cover the selected implemented ASCII path, not the complete engine"]
     },
     "abyssale/Scanner": {
@@ -51,7 +51,7 @@
         "registry_behavior": "verified",
         "acceptance_evidence": "partial"
       },
-      "evidence": ["tests/detectors/test_abyssale.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_abyssale.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Shared RE2/PCRE2 and invalid-byte semantics are not fully reproduced", "Full native HTTP-client behavior is not established", "Reference CLI comparisons cover the selected implemented ASCII path, not the complete engine"]
     },
     "accuweather/v1/Scanner": {
@@ -60,7 +60,7 @@
       "native_files": ["src/detectors/second_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "scope_notes": "Preserves 35-byte percent-containing captures, entropy threshold, uniqueness and version 1; metadata/request/status branches have synthetic native evidence.",
-      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity"]
     },
     "accuweather/v2/Scanner": {
@@ -69,7 +69,7 @@
       "native_files": ["src/detectors/second_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "scope_notes": "Preserves the 32-byte capture override, inherited v1 processing and metadata, and distinct version 2 registry identity.",
-      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity"]
     },
     "adafruitio/Scanner": {
@@ -78,7 +78,7 @@
       "native_files": ["src/detectors/adafruitio.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "scope_notes": "No detector-local filtering/cleaner or Version method exists upstream. Capture order/duplicates and all verifier status/error branches have native fixtures.",
-      "evidence": ["tests/detectors/test_adafruitio.c", "tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_adafruitio.c", "tests/detectors/test_second_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity"]
     },
     "adobeio/Scanner": {
@@ -87,7 +87,7 @@
       "native_files": ["src/detectors/second_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "scope_notes": "Preserves unique component sets, Cartesian pairing, metadata, verifier branches and disabled default membership; no Version method exists upstream.",
-      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity", "Disabled constructor has source-derived fixtures, not a direct CLI oracle"]
     },
     "adzuna/Scanner": {
@@ -95,7 +95,7 @@
       "upstream_source": "pkg/detectors/adzuna/adzuna.go",
       "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c"],
+      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "aeroworkflow/Scanner": {
@@ -103,7 +103,7 @@
       "upstream_source": "pkg/detectors/aeroworkflow/aeroworkflow.go",
       "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c"],
+      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "agora/Scanner": {
@@ -111,7 +111,7 @@
       "upstream_source": "pkg/detectors/agora/agora.go",
       "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c"],
+      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "aha/Scanner": {
@@ -119,7 +119,7 @@
       "upstream_source": "pkg/detectors/aha/aha.go",
       "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c", "tests/core/test_core.c"],
+      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c", "tests/core/test_core.c"],
       "remaining": ["Native PUBLIC HTTP profile fails closed; complete all-address DNS checks, proxy handling, timeout and no-redirect behavior", "Complete source options, Unicode-prefilter and concurrency parity", "Complete shared regexp/engine behavior"]
     },
     "airbrakeprojectkey/Scanner": {
@@ -127,7 +127,7 @@
       "upstream_source": "pkg/detectors/airbrakeprojectkey/airbrakeprojectkey.go",
       "native_files": ["src/detectors/fourth_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_detectors.c", "tests/core/http_profiles.c"],
+      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_registry.c", "tests/core/http_profiles.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Verifier performs a state-changing POST; only synthetic offline requests have been tested"]
     },
     "airbrakeuserkey/Scanner": {
@@ -135,7 +135,7 @@
       "upstream_source": "pkg/detectors/airbrakeuserkey/airbrakeuserkey.go",
       "native_files": ["src/detectors/fourth_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_detectors.c"],
+      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "airship/Scanner": {
@@ -143,7 +143,7 @@
       "upstream_source": "pkg/detectors/airship/airship.go",
       "native_files": ["src/detectors/fourth_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_detectors.c"],
+      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "airtableoauth/Scanner": {
@@ -151,7 +151,7 @@
       "upstream_source": "pkg/detectors/airtableoauth/airtableoauth.go",
       "native_files": ["src/detectors/fourth_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_detectors.c"],
+      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "airtablepersonalaccesstoken/Scanner": {
@@ -159,7 +159,7 @@
       "upstream_source": "pkg/detectors/airtablepersonalaccesstoken/airtablepersonalaccesstoken.go",
       "native_files": ["src/detectors/fifth_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py"],
+      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "airvisual/Scanner": {
@@ -167,7 +167,7 @@
       "upstream_source": "pkg/detectors/airvisual/airvisual.go",
       "native_files": ["src/detectors/fifth_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py"],
+      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "aiven/Scanner": {
@@ -175,7 +175,7 @@
       "upstream_source": "pkg/detectors/aiven/aiven.go",
       "native_files": ["src/detectors/fifth_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py"],
+      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "alchemy/Scanner": {
@@ -183,7 +183,7 @@
       "upstream_source": "pkg/detectors/alchemy/alchemy.go",
       "native_files": ["src/detectors/fifth_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py"],
+      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },
@@ -191,7 +191,7 @@
     "detector_support": {
       "status": "partial",
       "native_files": ["include/briar.h", "src/result.c", "src/regex.c", "src/http.c", "src/falsepositives.c", "src/wordlists.c"],
-      "evidence": ["tests/core/test_core.c", "tests/detectors/test_detectors.c", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/core/test_core.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "Complete native HTTP profiles, redirects, DNS/proxy policy and timing; SANE/LOCAL GET and POST slices are implemented, PUBLIC and SANE POST redirects fail closed", "Remaining shared detector helpers and protocol adapters"]
     },
     "decoders": {

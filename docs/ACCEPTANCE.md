@@ -1,16 +1,17 @@
-# Acceptance evidence and remaining scope
+# Acceptance and remaining scope
 
-Reference: TruffleHog 3.97.2, commit `cc1fe982afc515d2991365ce8d4d0dd07170fcad`. This is evidence for an implemented slice, not completion of the project.
+Reference: TruffleHog 3.97.2, commit `cc1fe982afc515d2991365ce8d4d0dd07170fcad`. Passing the implemented slice does not establish full reproduction. `parity.json` records detector/component evidence and unresolved behavior; `upstream-inventory.json` is the complete migration queue.
 
-## Native slice
+## Verification workflow
 
-The C library contains nineteen detector implementations: Abstract, AbuseIPDB, Abyssale, Accuweather v1/v2, AdafruitIO, AdobeIO, Adzuna, Aeroworkflow, Agora, Aha, Airbrake project/user keys, Airship, Airtable OAuth/personal access tokens, AirVisual, Aiven and Alchemy. The registry preserves source order, versions and disabled Abstract/AdobeIO membership. Verification fixtures use synthetic candidates and injected/loopback transport, never real credentials against services.
+Compile during implementation. When a detector is finished, run its named test, for example:
 
-Raw input is split into 10 KiB content plus 3 KiB forward peek before decoding. Filesystem base lines advance over content only; stdin retains its distinct metadata behavior. Keyword spans merge when overlapping or adjacent, with pinned multipart/max-size/start-offset overrides. RawV2-aware deduplication and decoded result locations are compared against the reference.
+```sh
+direnv exec . make build/tests/detectors/test_adafruitio
+direnv exec . build/tests/detectors/test_adafruitio
+```
 
-PLAIN/UTF8, Base64 and UTF16 initially receive original bytes independently. Non-PLAIN fan-out preserves intermediate findings and iterates to default depth five with bounded seen-data scheduling. UTF16 reproduces the source's printable-ASCII extraction, with LE results before BE results, not a general Unicode conversion. Escaped Unicode has a tested native helper but is not yet wired into the CLI. HTML remains unported.
-
-## Reproduce checks
+Run broad checks at the integrated end step, not on every build:
 
 ```sh
 direnv exec . make -j2 all check
@@ -18,44 +19,28 @@ direnv exec . python3 tools/inventory.py --check
 direnv exec . python3 tools/test_inventory.py
 direnv exec . python3 tools/progress.py
 direnv exec . python3 tests/cli_reference.py --reference "$BRIAR_REFERENCE_BINARY"
-nix hash path .reference/trufflehog
 ```
 
-The reference tree must match `UPSTREAM.json.source_nar_hash`; executable bits are significant. The README's restore procedure exports the pinned Git tree without Git metadata and preserves those bits. Source bytes and the whole-tree hash were checked against the pinned Nix source.
+The reference binary must be the pinned 3.97.2 executable. The comparison script checks its version and runs both programs in network namespaces with empty HOME and verification disabled. Reference-only updater/concurrency controls do not imply native support for those flags.
 
-`BRIAR_REFERENCE_BINARY` must identify the pinned 3.97.2 executable. Comparisons check its version and run both programs in Linux network namespaces with empty HOME and verification disabled. Reference-only updater/concurrency controls do not imply native support for those flags.
+Verify `.reference/trufflehog` with `nix hash path`; its hash must equal `UPSTREAM.json.source_nar_hash`. Executable bits are significant. The README restoration procedure exports the pinned Git tree without Git metadata and preserves those bits.
 
-Observed fresh results:
+## What the checks establish
 
-| Check | Coverage | Result |
-| --- | --- | --- |
-| Strict C11 build/checks | `-Wall -Wextra -Wpedantic -Werror` | Passed |
-| Shared core | 249 assertions | Zero failures |
-| PLAIN/UTF8 | 29 cases, 188 assertions | Zero failures |
-| Base64 | 25 cases, 154 assertions | Zero failures |
-| UTF16 | 17 library cases, 106 assertions; CLI comparisons | Zero failures |
-| Escaped Unicode library helper | 38 cases, 243 assertions | Zero failures |
-| Detectors | 956 cases, 24,976 assertions | Zero failures |
-| Native CLI | 333 assertions | Zero failures |
-| Proxy CONNECT/TLS regression | 32 assertions | Zero failures |
-| Native HTTP profiles/body handling | Nine loopback-only cases, 94 assertions | Zero failures |
-| Source-inventory regressions | Four tests | Zero failures |
-| Pinned-reference comparisons | 204 selected input/decoder/window cases | Zero failures |
+Named detector tests cover provider-specific extraction, filtering, pairing, metadata and verifier request/status/body/error behavior. Shared fixtures use synthetic candidates and injected HTTP, never real credentials against services. Registry tests cover identities, versions, defaults, order and dispatch to real scanners, without depending on implementation file grouping.
 
-Detector checks cover extraction, pairing/uniqueness, metadata and verifier request/status/body/error branches. Reference checks cover complete JSON rows, multipart/source boundaries, nested Base64/UTF16 paths, decoded locations, defaults and version selection. The 2,048/2,049-byte keyword separation and 11,000/15,000-byte bridged-window cases distinguish faithful source pairing from unsafe whole-file merging.
+Core tests cover result ownership, matching and decoder behavior. CLI checks cover source boundaries, multipart windows, decoded locations and selection. The source-window counterexamples distinguish correct credential pairing from unsafe whole-file merging. Loopback-only HTTP fixtures cover implemented profile/body handling and the CONNECT-success-followed-by-TLS-failure regression.
 
-The upstream notifier can race when multiple decoders produce one finding. Native follows deterministic default decoder order. Seven named duplicate fixtures permit only observed PLAIN/BASE64/UTF16 label alternatives at otherwise identical identities and fields. Repeated isolated runs confirmed the UTF16 alternatives; negative guards reject candidate, metadata, detector and unobserved-case mismatches. Full concurrency parity is not established.
+Pinned-reference comparisons check complete JSON rows for selected cases, not the entire upstream engine. Named duplicate fixtures permit only observed decoder-label alternatives at otherwise identical identities and fields; native decoder ordering is deterministic. Full concurrency parity is not established.
 
-The CONNECT regression prevents a successful proxy tunnel response from becoming an origin response after TLS failure. Abstract and Abyssale retain an error with `verified=false`.
+## Current boundaries
 
-## Remaining boundaries and verification risks
+The CLI requires explicit supported detector selection, JSON and disabled verification. Input is stdin or explicit regular files up to 64 KiB, split into 10 KiB content plus 3 KiB forward peek before decoding. Filesystem line advancement uses content only. RawV2-aware deduplication and decoded locations remain distinct from original-byte ownership.
 
-All nineteen detector records and all supporting components remain incomplete in `parity.json`; another 902 detector implementations are not started. Passing this slice does not establish full TruffleHog reproduction.
+PLAIN/UTF8, Base64 and UTF16 receive original bytes independently; non-PLAIN iteration preserves intermediate findings through the default depth of five. UTF16 is upstream's printable-ASCII heuristic, not general Unicode conversion. Escaped Unicode has a library helper but is not yet wired into the CLI. HTML, traversal, archives, configurable depth and broad source/configuration/output behavior remain unported. Unported commands/options fail explicitly.
 
-The CLI requires explicit supported selection, JSON and disabled verification. Inputs remain stdin or explicit regular files up to 64 KiB. Traversal, archives, configurable depth, full source/configuration/output and unported options remain unsupported and fail explicitly.
+Native HTTP supports GET/POST in SANE/LOCAL slices. LOCAL does not follow redirects. POST preserves opaque/empty bodies without inventing Content-Type. SANE POST redirects remain unsupported. PUBLIC rejects before I/O until all-answer DNS checks, proxy semantics, cancellation and redirect policy are ported. Injected transports own the requested policy; mock success does not prove native PUBLIC support.
 
-Native HTTP supports GET/POST in SANE/LOCAL slices. LOCAL does not follow redirects; POST preserves opaque/empty bodies without inventing Content-Type. SANE POST redirects remain unsupported. PUBLIC rejects before network I/O until all-answer DNS checks, proxy semantics, cancellation and redirect policy are ported. Injected transports own the requested profile's policies; mock success is not native PUBLIC support.
+Some verifiers mutate services: Airbrake project-key verification posts a deploy record and must not be treated as read-only. Some upstream verifiers omit secrets from error-redaction helpers; injected transports must not include credentials in those errors. Verification here is synthetic/offline, not evidence of live service acceptance.
 
-Some verifiers mutate services: Airbrake project-key verification posts a deploy record and must not be treated as read-only. Several source verifiers omit secret arguments to error helpers, so injected transports must not include credentials in errors. All verification here is synthetic/offline; service acceptance is untested.
-
-Shared regexp behavior, other decoders, remaining helpers and complete engine/source/concurrency behavior remain unfinished. Nothing is deployed into Pi or used as a production security boundary.
+Shared regexp/arbitrary-byte semantics, remaining detectors and helpers, complete engine/source/concurrency behavior and global parity remain unfinished. Nothing is deployed into Pi or used as a production security boundary.
