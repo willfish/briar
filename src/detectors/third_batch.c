@@ -70,38 +70,6 @@ static int verify_agora(const br_scan_ctx *ctx, const char *key,
     return rc;
 }
 
-static int verify_aha(const br_scan_ctx *ctx, const char *key,
-                       const char *host, br_result *result)
-{
-    char url[128], auth[72];
-    snprintf(url, sizeof(url), "https://%s/api/v1/me", host);
-    snprintf(auth, sizeof(auth), "Bearer %s", key);
-    const br_header headers[] = {
-        {"Accept", "application/vnd.aha+json; version=3"}, {"Authorization", auth},
-    };
-    const br_http_request request = {
-        .method = "GET", .url = url, .headers = headers, .nheaders = 2,
-        .profile = BR_HTTP_DETECTOR_PUBLIC, .detector_type = 802,
-    };
-    br_http_response response = {0};
-    char *error = NULL;
-    int rc = 0;
-    if (br_http_send(ctx, &request, &response, &error) != 0) {
-        rc = key_error(result, error ? error : "HTTP transport failed");
-    } else {
-        switch (response.status) {
-        case 200: result->verified = true; break;
-        case 401:
-        case 404:
-        case 403: break;
-        default: rc = unexpected_status(result, response.status); break;
-        }
-    }
-    br_http_release(ctx, &response);
-    free(error);
-    return rc;
-}
-
 static int emit_result(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
                         const char *key, const char *part, const char *part_name,
                         verifier check, br_results *out, char **error)
@@ -157,31 +125,10 @@ static int scan_agora(const br_detector *detector, const br_scan_ctx *ctx, bool 
     return scan_ordered_pairs(detector, ctx, verify, input, out, error, "secret", true, verify_agora);
 }
 
-static int scan_aha(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
-                     br_slice input, br_results *out, char **error)
-{
-    if (valid_scan(detector, input, out, error) != 0) return -1;
-    const detector_patterns *patterns = detector->state;
-    br_captures keys = {0}, hosts = {0};
-    int rc = br_captures_find(patterns->key, input, &keys, false, error);
-    if (rc == 0) rc = br_captures_find(patterns->part, input, &hosts, true, error);
-    if (rc == 0 && hosts.len == 0)
-        rc = br_captures_push(&hosts, (br_slice){(const unsigned char *)"aha.io", 6}, false, error);
-    for (size_t k = 0; rc == 0 && k < keys.len; ++k)
-        for (size_t h = 0; rc == 0 && h < hosts.len; ++h)
-            rc = emit_result(detector, ctx, verify, keys.items[k], hosts.items[h],
-                             "url", verify_aha, out, error);
-    br_captures_clear(&keys);
-    br_captures_clear(&hosts);
-    return rc;
-}
-
-static detector_patterns agora_patterns, aha_patterns;
+static detector_patterns agora_patterns;
 static const char *const agora_keywords[] = {"agora"};
-static const char *const aha_keywords[] = {"aha.io"};
 static const char *const agora_key_prefix[] = {"agora", "key", "token"};
 static const char *const agora_secret_prefix[] = {"agora", "secret"};
-static const char *const aha_key_prefix[] = {"aha"};
 
 static const br_detector agora = {
     .type = 197, .version = 0, .name = "Agora", .custom_name = "",
@@ -190,14 +137,7 @@ static const br_detector agora = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = 1024,
     .state = &agora_patterns, .scan = scan_agora,
 };
-static const br_detector aha = {
-    .type = 802, .version = 0, .name = "Aha", .custom_name = "",
-    .description = "Aha is a product management software suite. Aha API keys can be used to access and modify product data and workflows.",
-    .keywords = aha_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = 1024,
-    .state = &aha_patterns, .scan = scan_aha,
-};
-static const br_detector *implemented[] = {NULL, NULL, &agora, &aha};
+static const br_detector *implemented[] = {NULL, NULL, &agora, NULL};
 
 static int compile_prefixed(const char *const *keywords, size_t count, const char *capture,
                              br_regex **out, char **error)
@@ -214,13 +154,10 @@ int br_third_batch(const br_detector *const **out, size_t *count, char **error)
     if (!out || !count) return fail(error, "invalid third-batch outputs");
     if (br_adzuna_init(&implemented[0], error) != 0 ||
         br_aeroworkflow_init(&implemented[1], error) != 0 ||
+        br_aha_init(&implemented[3], error) != 0 ||
         compile_prefixed(agora_key_prefix, 3, "\\b([a-z0-9]{32})\\b", &agora_patterns.key, error) != 0 ||
-        compile_prefixed(agora_secret_prefix, 2, "\\b([a-z0-9]{32})\\b", &agora_patterns.part, error) != 0 ||
-        compile_prefixed(aha_key_prefix, 1, "\\b([0-9a-f]{64})\\b", &aha_patterns.key, error) != 0)
+        compile_prefixed(agora_secret_prefix, 2, "\\b([a-z0-9]{32})\\b", &agora_patterns.part, error) != 0)
         return -1;
-    if (!aha_patterns.part &&
-        br_regex_compile("\\b([A-Za-z0-9](?:[A-Za-z0-9\\-]{0,61}[A-Za-z0-9])\\.aha\\.io)",
-                         &aha_patterns.part, error) != 0) return -1;
     *out = implemented;
     *count = sizeof(implemented) / sizeof(implemented[0]);
     return 0;
