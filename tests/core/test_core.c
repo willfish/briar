@@ -146,6 +146,12 @@ static void regex_tests(void)
     c = match("x$", SLICE("x\n")); CHECK(c.count == 0);
     c = match("\\b(x)\\b", SLICE("\xc3\xa9x\xc3\xa9")); CHECK(c.count == 1);
     c = match("x", SLICE("x\0x")); CHECK(c.count == 2 && c.spans[1][0].begin == 2);
+    c = match("(ab)", SLICE("\xff" "ab\xc0" "ab"));
+    CHECK(c.count == 2 && c.spans[0][1].begin == 1 && c.spans[0][1].end == 3 &&
+          c.spans[1][1].begin == 4 && c.spans[1][1].end == 6);
+    c = match("a(?s:.)b", SLICE("a\xff" "b")); CHECK(c.count == 0);
+    c = match("a(?s:.)b", SLICE("a\xef\xbf\xbd" "b")); CHECK(c.count == 1);
+    c = match("a$|^b", SLICE("a\xff" "b")); CHECK(c.count == 0);
     c = match("(?i:keyword)([a-z]+)", SLICE("KEYWORDa KEYWORDA")); CHECK(c.count == 1);
     br_regex *re = NULL;
     char *error = NULL;
@@ -159,8 +165,8 @@ static void regex_tests(void)
     CHECK(br_regex_each(re, SLICE("xx"), capture, &c, &error) == 7 && c.count == 1 && error);
     free(error); error = NULL;
     c = (captures){0};
-    CHECK(br_regex_each(re, SLICE("\xffx"), capture, &c, &error) != 0 && error && !c.count);
-    free(error); error = NULL;
+    CHECK(!br_regex_each(re, SLICE("\xffx"), capture, &c, &error) && !error && c.count == 1);
+    CHECK(c.spans[0][0].begin == 1 && c.spans[0][0].end == 2);
     br_regex_free(re);
     CHECK(!br_regex_compile("(a+)+$", &re, &error));
     c = (captures){0};

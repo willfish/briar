@@ -67,9 +67,11 @@ int br_regex_compile(const char *pattern, br_regex **out, char **error)
     pcre2_compile_context *cc = pcre2_compile_context_create(NULL);
     if (!cc) return fail(error, "out of memory compiling regex");
     pcre2_set_newline(cc, PCRE2_NEWLINE_LF);
-    /* UTF counts runes for '.', but without UCP, word/digit classes stay ASCII. */
+    /* UTF counts runes for '.', but without UCP, word/digit classes stay ASCII.
+     * Pinned RE2 treats invalid UTF-8 as a match barrier, not a subject-wide
+     * error or RuneError substitution that would let matches cross bad bytes. */
     pcre2_code *compiled = pcre2_compile((PCRE2_SPTR)pattern, PCRE2_ZERO_TERMINATED,
-                                       PCRE2_UTF | PCRE2_DOLLAR_ENDONLY,
+                                       PCRE2_UTF | PCRE2_MATCH_INVALID_UTF | PCRE2_DOLLAR_ENDONLY,
                                        &code, &offset, cc);
     pcre2_compile_context_free(cc);
     if (!compiled) {

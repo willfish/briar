@@ -204,9 +204,12 @@ for depth in range(1, 7):
 _, rows = invoke(["stdin", *base], rb"\UFFFFFFFF !!" + escaped)
 check(not rows, "unchanged invalid high-priority output is scanned but not rescheduled")
 for payload in (b"\xff" + escaped, b"U+0020\xc3\xa9U+0061 byssale " + key40.encode()):
-    proc, _ = invoke(["stdin", *base], payload, code=1)
-    check(b"regex execution: UTF-8 error:" in proc.stderr,
-          "unsupported malformed decoded UTF-8 fails explicitly without partial output")
+    _, rows = invoke(["stdin", *base], payload)
+    check(len(rows) == 1 and rows[0]["Raw"] == key40 and rows[0]["DecoderName"] == "ESCAPED_UNICODE",
+          "malformed decoded UTF-8 does not suppress a later valid credential")
+for gap, count in ((b"\xff", 0), (b"\xef\xbf\xbd", 1)):
+    _, rows = invoke(["stdin", *base], escaped_bytes(b"abyssale ") + gap + key40.encode())
+    check(len(rows) == count, "RE2 matches may cross a literal RuneError but not invalid UTF-8 bytes")
 
 part = "c7d8e9f0"
 second_part = "d8e9f0a1"

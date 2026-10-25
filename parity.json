@@ -288,13 +288,13 @@
       "status": "partial",
       "native_files": ["include/briar.h", "src/bytes.c", "src/result.c", "src/regex.c", "src/http.c", "src/falsepositives.c", "src/wordlists.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/detectors/json.c"],
       "evidence": ["tests/core/test_core.c", "tests/detectors/test_captures.c", "tests/detectors/test_findings.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
-      "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "Complete native HTTP profiles, redirects, DNS/proxy policy and timing; SANE/LOCAL GET and POST slices are implemented, PUBLIC and SANE POST redirects fail closed", "Complete response-document semantics and byte-preserving verification-error representation", "Remaining shared detector helpers and protocol adapters"]
+      "remaining": ["Complete regexp semantics, including remaining Go regexp/RE2 differences and arbitrary-byte behavior", "Unicode false-positive handling", "Complete native HTTP profiles, redirects, DNS/proxy policy and timing; SANE/LOCAL GET and POST slices are implemented, PUBLIC and SANE POST redirects fail closed", "Complete response-document semantics and byte-preserving verification-error representation", "Remaining shared detector helpers and protocol adapters"]
     },
     "decoders": {
       "status": "partial",
       "native_files": ["src/utf8.c", "src/base64.c", "src/utf16.c", "src/escaped_unicode.c", "include/briar_decoders.h", "src/main.c"],
       "evidence": ["tests/core/test_utf8.c", "tests/core/test_base64.c", "tests/core/test_utf16.c", "tests/core/test_escaped_unicode.c", "tests/cli_reference.py"],
-      "remaining": ["HTML decoder and feature gating; selected C HTML5 parser needs compatibility work", "Complete decoder/engine/metadata/concurrency parity beyond selected fixtures", "Malformed UTF-8 in decoded detector windows fails explicitly; arbitrary-byte regexp parity remains incomplete"]
+      "remaining": ["HTML decoder and feature gating; selected C HTML5 parser needs compatibility work", "Complete decoder/engine/metadata/concurrency parity beyond selected fixtures"]
     },
     "engine": {
       "status": "partial",

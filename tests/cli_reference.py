@@ -202,7 +202,8 @@ def escaped_bytes(payload):
 
 
 def escaped_unicode_fixtures():
-    plain = b"abyssale " + synthetic("abyssale", 40)
+    key = synthetic("abyssale", 40)
+    plain = b"abyssale " + key
     formats = {
         "long": r"\U{:08x}", "brace": r"\u{{{:x}}}", "perl": r"\x{{{:x}}}",
         "html_hex": "&#x{:x};", "percent": "%u{:04x}", "escaped": r"\u{:04x}",
@@ -218,6 +219,10 @@ def escaped_unicode_fixtures():
         ("escaped_to_utf16", escaped_bytes(utf16_bytes(plain))),
         ("escaped_b64_utf16", escaped_bytes(base64.b64encode(utf16_bytes(plain, "be")))),
         ("invalid_priority", rb"\UFFFFFFFF !!" + escaped),
+        ("bad_before_keyword", b"\xff" + escaped),
+        ("restored_continuation", b"U+0020\xc3\xa9U+0061 byssale " + key),
+        ("bad_prefix_gap", escaped_bytes(b"abyssale ") + b"\xff" + key),
+        ("valid_replacement_gap", escaped_bytes(b"abyssale ") + b"\xef\xbf\xbd" + key),
     ):
         cases.append(("escaped_" + name, payload, "239", "stdin", False))
     nested = plain
