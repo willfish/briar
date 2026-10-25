@@ -25,6 +25,7 @@ static const detector_factory named_factories[] = {
     br_airvisual_init,
     br_aiven_init,
     br_alchemy_init,
+    br_alconost_init,
 };
 
 static int fail(char **error, const char *message)
@@ -81,6 +82,7 @@ const char *br_detector_type_name(int32_t type)
     case 197: return "Agora";
     case 239: return "Abyssale";
     case 277: return "Airship";
+    case 301: return "Alconost";
     case 303: return "Accuweather";
     case 384: return "Abstract";
     case 390: return "AdafruitIO";

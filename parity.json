@@ -185,6 +185,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_alchemy.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "alconost/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/alconost/alconost.go",
+      "native_files": ["src/detectors/alconost.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_alconost.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Disabled upstream constructor has no positive CLI oracle execution; direct behavior uses pinned source-derived synthetic fixtures"]
     }
   },
   "components": {

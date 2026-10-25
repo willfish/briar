@@ -29,6 +29,7 @@ static const registration expected[] = {
     {498, 0, "AirVisual", "airvisual", 36, true, -1},
     {917, 0, "Aiven", "aiven", 372, true, -1},
     {907, 0, "Alchemy", "alchemy", 32, true, -1},
+    {301, 0, "Alconost", "alconost", 32, false, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
