@@ -37,6 +37,7 @@ static const detector_factory named_factories[] = {
     br_amplitudeapikey_init,
     br_anthropic_init,
     br_anypoint_init,
+    br_anypointoauth2_init,
 };
 
 static int fail(char **error, const char *message)
@@ -78,7 +79,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 0: case 239: case 521: case 390: case 431: case 693: case 197: case 802:
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 917: case 907:
         case 375: case 522: case 170: case 399: case 473: case 453:
-        case 457: case 42: case 933: case 179:
+        case 457: case 42: case 933: case 179: case 1032:
             return detector->version == 0;
         default: break;
         }
@@ -119,6 +120,7 @@ const char *br_detector_type_name(int32_t type)
     case 933: return "Anthropic";
     case 1014: return "AirtableOAuth";
     case 1015: return "AirtablePersonalAccessToken";
+    case 1032: return "AnypointOAuth2";
     default: return NULL;
     }
 }

@@ -41,6 +41,7 @@ static const registration expected[] = {
     {42, 0, "AmplitudeApiKey", "amplitude", 32, true, 1024},
     {933, 0, "Anthropic", "sk-ant-api03", 108, true, -1},
     {179, 0, "Anypoint", "anypoint", 36, true, 1024},
+    {1032, 0, "AnypointOAuth2", "anypoint", 32, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -95,6 +96,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(key, "sk-ant-api03-", 13);
         key[106] = key[107] = 'A';
         break;
+    case 1032:
+        for (size_t i = 0; i < 32; ++i) key[i] = "0123456789ABCDEF"[i % 16];
+        secondary = "b7c9d2e5f6a8b3c4d1e0f2a4b6c8d0e2";
+        secondary_name = "client_id";
+        break;
     case 1014: strcpy(key, "Native7.v1.Synthetic_-Payload.1a2b3c"); break;
     case 1015:
         memcpy(key, "patN7c4P9d2R5s8T1.", 18);
@@ -120,8 +126,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
-    const char *key_name = entry->type == 375 || entry->type == 1014 || entry->type == 1015
-                           ? "token" : "key";
+    const char *key_name = entry->type == 1032 ? "client_secret" :
+                           entry->type == 375 || entry->type == 1014 || entry->type == 1015 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
     CHECK(json_object_object_length(result->secret_parts) == (secondary ? 2 : 1));
@@ -129,7 +135,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[1024];
-        if (entry->type == 170) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
+        if (entry->type == 170 || entry->type == 1032) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 375 ? "%s:%s" : "%s%s", key, secondary);
         CHECK(result->raw_v2.len == strlen(raw_v2));
         CHECK(!memcmp(result->raw_v2.data, raw_v2, strlen(raw_v2)));
