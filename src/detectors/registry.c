@@ -26,6 +26,7 @@ static const detector_factory named_factories[] = {
     br_aiven_init,
     br_alchemy_init,
     br_alconost_init,
+    br_alegra_init,
     br_aletheiaapi_init,
 };
 
@@ -67,7 +68,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 303: return detector->version == 1 || detector->version == 2;
         case 239: case 521: case 390: case 431: case 693: case 197: case 802:
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 917: case 907:
-        case 522:
+        case 375: case 522:
             return detector->version == 0;
         default: break;
         }
@@ -86,6 +87,7 @@ const char *br_detector_type_name(int32_t type)
     case 277: return "Airship";
     case 301: return "Alconost";
     case 303: return "Accuweather";
+    case 375: return "Alegra";
     case 384: return "Abstract";
     case 390: return "AdafruitIO";
     case 431: return "Adzuna";

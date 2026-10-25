@@ -30,6 +30,7 @@ static const registration expected[] = {
     {917, 0, "Aiven", "aiven", 372, true, -1},
     {907, 0, "Alchemy", "alchemy", 32, true, -1},
     {301, 0, "Alconost", "alconost", 32, false, -1},
+    {375, 0, "Alegra", "alegra", 20, true, -1},
     {522, 0, "AletheiaApi", "aletheiaapi", 32, true, -1},
 };
 
@@ -44,6 +45,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     switch (entry->type) {
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
+    case 375: secondary = "fixture@example.test"; secondary_name = "id"; break;
     case 431: secondary = "c7d8e9f0"; secondary_name = "id"; break;
     case 693: secondary = "00042"; secondary_name = "id"; break;
     case 197:
@@ -83,16 +85,18 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
-    const char *key_name = entry->type == 1014 || entry->type == 1015 ? "token" : "key";
+    const char *key_name = entry->type == 375 || entry->type == 1014 || entry->type == 1015
+                           ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
     CHECK(json_object_object_length(result->secret_parts) == (secondary ? 2 : 1));
     if (secondary) {
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
-        CHECK(result->raw_v2.len == entry->key_len + strlen(secondary));
-        CHECK(!memcmp(result->raw_v2.data, key, entry->key_len));
-        CHECK(!memcmp(result->raw_v2.data + entry->key_len, secondary, strlen(secondary)));
+        char raw_v2[1024];
+        snprintf(raw_v2, sizeof(raw_v2), entry->type == 375 ? "%s:%s" : "%s%s", key, secondary);
+        CHECK(result->raw_v2.len == strlen(raw_v2));
+        CHECK(!memcmp(result->raw_v2.data, raw_v2, strlen(raw_v2)));
     } else CHECK(!result->raw_v2.data && !result->raw_v2.len);
     br_results_clear(&results);
 }
