@@ -43,6 +43,7 @@ static const registration expected[] = {
     {179, 0, "Anypoint", "anypoint", 36, true, 1024},
     {1032, 0, "AnypointOAuth2", "anypoint", 32, true, 1024},
     {632, 0, "Apacta", "apacta", 36, true, -1},
+    {212, 0, "ApiDeck", "apideck", 101, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -89,6 +90,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         break;
     case 457:
         for (size_t i = 0; i < 64; ++i) key[i] = "0123456789abcdef"[i % 16];
+        break;
+    case 212:
+        memcpy(key, "sk_live_", 8);
+        test_secret(secondary_buffer, 40, 7);
+        secondary = secondary_buffer;
+        secondary_name = "id";
         break;
     case 522:
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789ABCDEF"[i % 16];
