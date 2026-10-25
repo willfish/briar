@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare implemented CLI slices and PLAIN/BASE64 decoding with the pinned reference.
+"""Compare implemented CLI slices and PLAIN/BASE64/UTF16 with the pinned reference.
 
 Both programs run in a network namespace with an empty HOME. This is a slice
 acceptance check, not a declaration of global TruffleHog parity. Fixtures are
@@ -138,6 +138,65 @@ def chunk_fixtures():
     return cases
 
 
+def utf16_bytes(source, endian="le"):
+    return source.decode("ascii").encode("utf-16" + endian)
+
+
+def utf16_fixtures():
+    key = synthetic("abyssale", 40)
+    other_key = synthetic("utf16-second", 40)
+    plain, other = b"abyssale " + key, b"abyssale " + other_key
+    leading = b" " + plain  # Even length keeps the sibling UTF16 block aligned.
+    mixed = utf16_bytes(plain + b" ", "be") + utf16_bytes(other + b" ")
+    encoded = base64.b64encode(plain)
+    cases = []
+    for label, source in (
+        ("le", utf16_bytes(plain)),
+        ("be", utf16_bytes(plain, "be")),
+        ("le_odd_invalid_tail", utf16_bytes(plain) + b"\xff"),
+        ("be_odd_printable_tail", utf16_bytes(plain, "be") + b"Q"),
+        ("mixed_endian_blocks", mixed),
+        ("interleaved_endian_pairs", b"".join(bytes((c, 0)) if i % 2 == 0 else bytes((0, c)) for i, c in enumerate(plain))),
+        ("printable_only", ("abyssale " + key[:20].decode() + "\u00e9" + key[20:].decode()).encode("utf-16le")),
+        ("controls_removed", utf16_bytes(b"heading\n" + plain + b" \r\n")),
+        ("duplicates", utf16_bytes(plain + b" \n" + plain + b" ")),
+        ("no_keyword", utf16_bytes(key)),
+        ("b64_to_le", base64.b64encode(utf16_bytes(plain))),
+        ("b64_to_be", base64.b64encode(utf16_bytes(plain, "be"))),
+        ("le_to_b64", utf16_bytes(encoded)),
+        ("be_to_b64", utf16_bytes(encoded, "be")),
+        ("b64_utf16_b64", base64.b64encode(utf16_bytes(encoded))),
+        ("utf16_b64_utf16", utf16_bytes(base64.b64encode(utf16_bytes(plain)))),
+        ("mixed_plain", leading + b"!!" + utf16_bytes(other)),
+        ("mixed_b64_intermediate", base64.b64encode(leading) + b"!!" + utf16_bytes(other)),
+        ("plain_duplicate", leading + b"!!" + utf16_bytes(plain)),
+        ("b64_duplicate", base64.b64encode(leading) + b"!!" + utf16_bytes(plain)),
+        ("convergent_frontier", base64.b64encode(encoded) + b"!!" + utf16_bytes(encoded)),
+        ("stdin_ignore", utf16_bytes(plain + b" # trufflehog:ignore")),
+    ):
+        cases.append(("utf16_" + label, source, "239", "stdin", False))
+    cases.append(("utf16_mixed_endian_cleaning", mixed, "239", "stdin", True))
+    nested = plain
+    for depth in range(1, 7):
+        nested = utf16_bytes(nested) if depth % 2 else base64.b64encode(nested)
+        if depth >= 2:
+            cases.append((f"utf16_alternating_depth_{depth}", nested, "239", "stdin", False))
+    for label, source in (
+        ("filesystem_le_controls", utf16_bytes(b"heading\n" + plain + b" \n")),
+        ("filesystem_be_controls", utf16_bytes(b"heading\n" + plain + b" \n", "be")),
+        ("filesystem_duplicates", utf16_bytes(plain + b" \n" + plain + b" ")),
+        ("filesystem_nested_b64", utf16_bytes(base64.b64encode(b"heading\n" + plain))),
+        ("filesystem_encoded_ignore", utf16_bytes(plain + b" # trufflehog:ignore")),
+        ("filesystem_peek", positioned([(0, b"header\n"), (10240, utf16_bytes(plain))])),
+        ("filesystem_nested_peek", positioned([(0, b"header\n"), (10240, utf16_bytes(encoded))])),
+    ):
+        cases.append(("utf16_" + label, source, "239", "filesystem", False))
+    part_key = b"b7c9d2e5f6g8h3j4k1m0n2p4q6r8s1t3u5v7w9x2"[:32]
+    pair = b"heading\nadzuna " + part_key + b" \nadzuna c7d8e9f0 "
+    cases.append(("utf16_multipart_metadata", utf16_bytes(pair), "431", "filesystem", False))
+    return cases
+
+
 def fixtures():
     cases = []
     for name, length, number in (("abuseipdb", 80, 521), ("abyssale", 40, 239)):
@@ -262,8 +321,19 @@ def fixtures():
     for label, number, payload in fourth:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
         cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
+    fifth = (
+        ("airtable_pat", 1015, b"airtable pat" + alnum("airtable-pat", 14) + b"." + synthetic("airtable-pat-suffix", 64)),
+        ("airvisual", 498, b"airvisual " + synthetic("airvisual-oracle", 36)),
+        ("aiven", 917, b"aiven " + alnum("aiven-oracle", 372)),
+        ("alchemy_legacy", 907, b"alchemy " + alnum("alchemy-legacy", 32)),
+        ("alchemy_prefixed", 907, b"alchemy alcht_" + alnum("alchemy-prefixed", 30)),
+    )
+    for label, number, payload in fifth:
+        cases.append((label + "_stdin", payload, str(number), "stdin", False))
+        cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
     cases.extend(multipart_fixtures())
     cases.extend(chunk_fixtures())
+    cases.extend(utf16_fixtures())
     return cases
 
 
@@ -305,9 +375,13 @@ def reference_matches(case, actual, expected):
     # retain either label for a finding present in PLAIN and BASE64. Native
     # ordering stays PLAIN-first; only these observed duplicate identities vary.
     racing = {
-        "base64_mixed_plain_encoded", "base64_mixed_encoded_plain",
-        "base64_plain_encoded_duplicate", "base64_encoded_plain_duplicate",
-        "base64_filesystem_mixed_duplicate",
+        "base64_mixed_plain_encoded": ("PLAIN", "BASE64"),
+        "base64_mixed_encoded_plain": ("PLAIN", "BASE64"),
+        "base64_plain_encoded_duplicate": ("PLAIN", "BASE64"),
+        "base64_encoded_plain_duplicate": ("PLAIN", "BASE64"),
+        "base64_filesystem_mixed_duplicate": ("PLAIN", "BASE64"),
+        "utf16_plain_duplicate": ("PLAIN", "UTF16"),
+        "utf16_b64_duplicate": ("BASE64", "UTF16"),
     }
     name, source, _, kind, _ = case
     if len(actual) != len(expected):
@@ -315,13 +389,21 @@ def reference_matches(case, actual, expected):
     for got, want in zip(actual, expected):
         if got == want:
             continue
-        if name not in racing or got["DecoderName"] != "PLAIN" or want["DecoderName"] != "BASE64":
+        if (got["DecoderName"], want["DecoderName"]) != racing.get(name):
             return False
-        offset = source.find(got["Raw"].encode())
-        if offset < 0:
-            return False
-        if kind == "filesystem" and got["SourceMetadata"]["Data"]["Filesystem"]["line"] != 1 + source[:offset].count(b"\n"):
-            return False
+        if got["DecoderName"] == "PLAIN":
+            offset = source.find(got["Raw"].encode())
+            if offset < 0:
+                return False
+            if kind == "filesystem" and got["SourceMetadata"]["Data"]["Filesystem"]["line"] != 1 + source[:offset].count(b"\n"):
+                return False
+        else:
+            # This one observed fixture contains the same Raw in independent
+            # Base64 and UTF16 branches, not as contiguous PLAIN source bytes.
+            left, right = source.split(b"!!", 1)
+            raw = got["Raw"].encode()
+            if raw not in base64.b64decode(left, validate=True) or raw not in right.decode("utf-16le").encode("ascii"):
+                return False
         if {key: value for key, value in got.items() if key != "DecoderName"} != {key: value for key, value in want.items() if key != "DecoderName"}:
             return False
     return True

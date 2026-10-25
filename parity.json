@@ -153,6 +153,38 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_detectors.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "airtablepersonalaccesstoken/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/airtablepersonalaccesstoken/airtablepersonalaccesstoken.go",
+      "native_files": ["src/detectors/fifth_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "airvisual/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/airvisual/airvisual.go",
+      "native_files": ["src/detectors/fifth_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "aiven/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/aiven/aiven.go",
+      "native_files": ["src/detectors/fifth_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "alchemy/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/alchemy/alchemy.go",
+      "native_files": ["src/detectors/fifth_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fifth_batch.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },
   "components": {
@@ -164,9 +196,9 @@
     },
     "decoders": {
       "status": "partial",
-      "native_files": ["src/utf8.c", "src/base64.c", "src/utf16.c", "include/briar_decoders.h", "src/main.c"],
-      "evidence": ["tests/core/test_utf8.c", "tests/core/test_base64.c", "tests/core/test_utf16.c", "tests/cli_reference.py"],
-      "remaining": ["UTF16 engine wiring; its source-derived native heuristic is library-only", "Escaped Unicode and HTML decoders", "Full decoder/engine interaction, chunking and metadata parity"]
+      "native_files": ["src/utf8.c", "src/base64.c", "src/utf16.c", "src/escaped_unicode.c", "include/briar_decoders.h", "src/main.c"],
+      "evidence": ["tests/core/test_utf8.c", "tests/core/test_base64.c", "tests/core/test_utf16.c", "tests/core/test_escaped_unicode.c", "tests/cli_reference.py"],
+      "remaining": ["Escaped Unicode engine wiring; its native helper is library-only", "HTML decoder and feature gating; selected C HTML5 parser needs compatibility work", "Complete decoder/engine/metadata/concurrency parity beyond selected fixtures"]
     },
     "engine": {
       "status": "partial",

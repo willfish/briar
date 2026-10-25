@@ -21,7 +21,10 @@ extern const br_transport *br_curl_transport_init(char **error);
 #define INPUT_LIMIT (64 * 1024)
 #define SOURCE_CONTENT_SIZE (10 * 1024)
 #define SOURCE_PEEK_SIZE (3 * 1024)
-#define BASE64_MAX_DEPTH 5 /* Pinned CLI default; other depth options remain unsupported. */
+#define DECODE_MAX_DEPTH 5 /* Pinned CLI default; other depth options remain unsupported. */
+/* Two non-PLAIN codecs produce at most 2+4+8+16+32 owned views. */
+#define DECODE_VIEW_LIMIT ((1u << (DECODE_MAX_DEPTH + 1)) - 2u)
+#define DECODE_FRONTIER_LIMIT (1u << (DECODE_MAX_DEPTH - 1))
 
 typedef struct {
     bool json, no_verification, clean, fail;
@@ -65,9 +68,10 @@ static void usage(void)
          "         --filter-unverified  --results CSV  --fail\n"
          "Native slice: explicit supported detector selection required; default/all scans fail.\n"
          "Only selected upstream-enabled implementations run; Abstract remains disabled.\n"
-         "Inputs: explicit regular files or stdin, PLAIN/BASE64, at most 64 KiB each.\n"
+         "Inputs: explicit regular files or stdin, PLAIN/BASE64/UTF16, at most 64 KiB each.\n"
          "Source chunks: 10 KiB content + 3 KiB forward peek, before decoding.\n"
-         "PLAIN runs first; Base64 uses original chunk bytes, up to five decoding passes.\n"
+         "PLAIN runs first; independent Base64/UTF16 fan-out iterates to depth five.\n"
+         "UTF16 is the pinned printable-ASCII heuristic, not general Unicode decoding.\n"
          "No directory traversal, archives, other decoders, depth options, CLI verification/cache,\n"
          "entropy, custom configuration, non-JSON printers or other sources yet.\n"
          "Unported options and commands fail explicitly. JSON is newline-delimited.");
@@ -460,31 +464,55 @@ static int scan_decoders(const cli_options *o, const source_frame *source,
     free(plain_storage.data);
     if (rc) return rc;
 
-    /* Each depth-zero decoder gets its own copy of the original chunk. With
-     * only Base64 ported beyond PLAIN, iterativeDecode has one next input per
-     * depth. Do not feed PLAIN's sanitized bytes to Base64 or rerun PLAIN later. */
-    br_slice input = source->original;
-    br_bytes decoded[BASE64_MAX_DEPTH] = {0};
-    for (size_t depth = 0; depth < BASE64_MAX_DEPTH; ++depth) {
-        if (stopped) { rc = fail(error, "context canceled"); break; }
-        bool applied = false;
-        rc = br_base64_decode(input, &decoded[depth], &applied, error);
-        if (rc || !applied) break;
-        source_frame chunk = *source;
-        chunk.decoder_name = "BASE64";
-        chunk.data = (br_slice){ decoded[depth].data, decoded[depth].len };
-        /* Keep intermediate findings; metadata uses this decoded view, while
-         * chunk_data still points to the immutable original bytes. DecoderName
-         * is intentionally absent from the existing location-aware dedup key. */
-        rc = scan_source(o, &chunk, ctx, registry, count, selected, output, keys, error);
-        if (rc) break;
-        bool seen = false;
-        for (size_t i = 0; i < depth; ++i)
-            if (same_bytes(chunk.data, (br_slice){ decoded[i].data, decoded[i].len })) seen = true;
-        if (same_bytes(chunk.data, input) || seen) break;
-        input = chunk.data;
+    /* Breadth-first iterativeDecode for the two ported non-PLAIN codecs.
+     * Both first see original bytes, never PLAIN's sanitized view. Keep owned
+     * outputs alive for frontier/seen slices; neither cache includes metadata. */
+    br_bytes owned[DECODE_VIEW_LIMIT] = {0};
+    br_slice current[DECODE_FRONTIER_LIMIT] = {0}, next[DECODE_FRONTIER_LIMIT] = {0};
+    br_slice seen[DECODE_VIEW_LIMIT] = {0};
+    size_t nowned = 0, nseen = 0, ncurrent = 1;
+    current[0] = source->original;
+    for (size_t depth = 0; !rc && ncurrent && depth < DECODE_MAX_DEPTH; ++depth) {
+        size_t nnext = 0;
+        for (size_t i = 0; !rc && i < ncurrent; ++i) {
+            /* Preserve DefaultDecoders order: Base64, then UTF16. */
+            for (size_t codec = 0; !rc && codec < 2; ++codec) {
+                if (stopped) { rc = fail(error, "context canceled"); break; }
+                bool applied = false;
+                br_bytes decoded = {0};
+                rc = codec == 0 ? br_base64_decode(current[i], &decoded, &applied, error)
+                                : br_utf16_decode(current[i], &decoded, &applied, error);
+                if (rc || !applied) { free(decoded.data); continue; }
+                if (nowned == DECODE_VIEW_LIMIT) {
+                    free(decoded.data);
+                    rc = fail(error, "decoder view bound exceeded");
+                    break;
+                }
+                owned[nowned++] = decoded;
+                source_frame chunk = *source;
+                chunk.decoder_name = codec == 0 ? "BASE64" : "UTF16";
+                chunk.data = (br_slice){ decoded.data, decoded.len };
+                /* Append/scan intermediate results even if their data was seen.
+                 * Only scheduling is deduplicated; verification-cache flags and
+                 * original chunk metadata must not be changed by decoder reuse. */
+                rc = scan_source(o, &chunk, ctx, registry, count, selected, output, keys, error);
+                if (rc || depth + 1 == DECODE_MAX_DEPTH || same_bytes(chunk.data, current[i])) continue;
+                bool repeat = false;
+                for (size_t j = 0; j < nseen; ++j)
+                    if (same_bytes(chunk.data, seen[j])) repeat = true;
+                if (repeat) continue;
+                if (nseen == DECODE_VIEW_LIMIT || nnext == DECODE_FRONTIER_LIMIT) {
+                    rc = fail(error, "decoder frontier bound exceeded");
+                    break;
+                }
+                seen[nseen++] = chunk.data;
+                next[nnext++] = chunk.data;
+            }
+        }
+        memcpy(current, next, nnext * sizeof(*current));
+        ncurrent = nnext;
     }
-    for (size_t i = 0; i < BASE64_MAX_DEPTH; ++i) free(decoded[i].data);
+    for (size_t i = 0; i < nowned; ++i) free(owned[i].data);
     return rc;
 }
 
@@ -574,7 +602,7 @@ int main(int argc, char **argv)
     curl_initialized = true;
     output = json_object_new_array(); keys = json_object_new_array();
     if (!output || !keys) { fail(&error, "out of memory initializing output"); goto done; }
-    fprintf(stderr, "briar: limited native slice, %zu explicitly selected enabled detector(s); 10 KiB + 3 KiB source chunks, PLAIN/BASE64 only (five Base64 passes), no other decoders or CLI verification\n", nselected);
+    fprintf(stderr, "briar: limited native slice, %zu explicitly selected enabled detector(s); 10 KiB + 3 KiB source chunks, PLAIN/BASE64/UTF16 only (decode depth five), no other decoders or CLI verification\n", nselected);
     size_t nsources = !strcmp(options.command, "stdin") ? 1 : options.npaths;
     for (size_t i = 0; i < nsources; ++i) {
         bool is_stdin = !strcmp(options.command, "stdin");

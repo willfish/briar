@@ -108,6 +108,61 @@ check(not rows, "decoded results pass through the normal false-positive filter")
 _, rows = invoke(["stdin", *base, "--results=filtered_unverified"], fp_encoded)
 check(len(rows) == 1 and rows[0]["DecoderName"] == "BASE64", "decoded false positives can be retained")
 
+def utf16_bytes(payload, endian="le"):
+    return payload.decode("ascii").encode("utf-16" + endian)
+
+
+for payload in (utf16_bytes(plain), utf16_bytes(plain, "be"), utf16_bytes(plain) + b"\xff",
+                utf16_bytes(plain, "be") + b"Q",
+                ("abyssale " + key40[:20] + "\u00e9" + key40[20:]).encode("utf-16le")):
+    _, rows = invoke(["stdin", *base], payload)
+    check(len(rows) == 1 and rows[0]["Raw"] == key40 and rows[0]["DecoderName"] == "UTF16",
+          "UTF16 extracts printable ASCII from original LE/BE bytes and ignores odd tails")
+    check(rows[0]["SourceMetadata"] == {"Data": {"Stdin": {}}} and not rows[0]["VerificationFromCache"] and
+          not rows[0]["Verified"] and rows[0]["SecretParts"] == {"key": key40},
+          "decoder seen-data cache does not invent verification or source metadata")
+_, rows = invoke(["stdin", *base], utf16_bytes(plain + b" \n" + plain + b" "))
+check(len(rows) == 1 and rows[0]["DecoderName"] == "UTF16", "decoded UTF16 stdin duplicates collapse")
+mixed_utf16 = utf16_bytes(plain + b" ", "be") + utf16_bytes(other + b" ")
+_, rows = invoke(["stdin", *base], mixed_utf16)
+check([r["Raw"] for r in rows] == [other_key40, key40], "UTF16 concatenates LE buffer before BE, not physical input order")
+_, rows = invoke(["stdin", *base, "--filter-unverified"], mixed_utf16)
+check(len(rows) == 1 and rows[0]["Raw"] == other_key40, "cleaning sees the LE-first decoded result order")
+interleaved = b"".join(bytes((c, 0)) if i % 2 == 0 else bytes((0, c)) for i, c in enumerate(plain))
+_, rows = invoke(["stdin", *base], interleaved)
+check(not rows, "UTF16 heuristic does not reconstruct physical-order mixed-endian characters")
+for payload, label in (
+    (base64.b64encode(utf16_bytes(plain)), "UTF16"),
+    (base64.b64encode(utf16_bytes(plain, "be")), "UTF16"),
+    (utf16_bytes(encoded), "BASE64"),
+    (utf16_bytes(encoded, "be"), "BASE64"),
+    (base64.b64encode(utf16_bytes(encoded)), "BASE64"),
+    (utf16_bytes(base64.b64encode(utf16_bytes(plain))), "UTF16"),
+):
+    _, rows = invoke(["stdin", *base], payload)
+    check(len(rows) == 1 and rows[0]["Raw"] == key40 and rows[0]["DecoderName"] == label,
+          "nested Base64/UTF16 result uses the final successful decoder name")
+leading = b" " + plain
+for prefix, label in ((leading, "PLAIN"), (base64.b64encode(leading), "BASE64")):
+    _, rows = invoke(["stdin", *base], prefix + b"!!" + utf16_bytes(other))
+    check([(r["Raw"], r["DecoderName"]) for r in rows] == [(key40, label), (other_key40, "UTF16")],
+          "independent original-chunk fan-out retains intermediate and converging-path findings")
+    _, rows = invoke(["stdin", *base], prefix + b"!!" + utf16_bytes(plain))
+    check(len(rows) == 1 and rows[0]["DecoderName"] == label,
+          "breadth-first default decoder order wins native cross-decoder duplicate identities")
+_, rows = invoke(["stdin", *base], base64.b64encode(encoded) + b"!!" + utf16_bytes(encoded))
+check(len(rows) == 1 and rows[0]["DecoderName"] == "BASE64", "convergent next-input data still yields its finding")
+nested = plain
+for depth in range(1, 7):
+    nested = utf16_bytes(nested) if depth % 2 else base64.b64encode(nested)
+    if depth >= 2:
+        _, rows = invoke(["stdin", *base], nested)
+        check(len(rows) == (1 if depth <= 5 else 0), "shared default depth is five across alternating codecs")
+        if rows:
+            check(rows[0]["DecoderName"] == "UTF16", "the innermost successful codec determines DecoderName")
+_, rows = invoke(["stdin", *base], utf16_bytes(plain + b" # trufflehog:ignore"))
+check(len(rows) == 1, "UTF16 stdin does not acquire filesystem ignore semantics")
+
 part = "c7d8e9f0"
 second_part = "d8e9f0a1"
 secret = key32[::-1]
@@ -253,6 +308,37 @@ with tempfile.TemporaryDirectory(prefix="briar-core-") as directory:
     check(len(rows) == 1 and rows[0]["DecoderName"] == "BASE64" and rows[0]["RawV2"] == key32 + part and
           rows[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 2,
           "source chunks precede Base64 decoding and decoded multipart line placement")
+    utf16_file = Path(directory) / "utf16.txt"
+    for endian in ("le", "be"):
+        utf16_file.write_bytes(utf16_bytes(b"heading\n" + plain + b" \n", endian))
+        _, rows = invoke(["filesystem", str(utf16_file), *base])
+        check(len(rows) == 1 and rows[0]["DecoderName"] == "UTF16" and
+              rows[0]["SourceMetadata"]["Data"]["Filesystem"] == {"file": str(utf16_file), "line": 1},
+              "UTF16 discards control newlines; filesystem location uses the decoded chunk")
+    utf16_file.write_bytes(utf16_bytes(plain + b" \n" + plain + b" "))
+    _, rows = invoke(["filesystem", str(utf16_file), *base])
+    check(len(rows) == 1 and rows[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 1,
+          "UTF16 physical source lines may deduplicate onto one decoded location")
+    utf16_file.write_bytes(utf16_bytes(base64.b64encode(b"heading\n" + plain)))
+    _, rows = invoke(["filesystem", str(utf16_file), *base])
+    check(len(rows) == 1 and rows[0]["DecoderName"] == "BASE64" and
+          rows[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 2,
+          "nested location comes from final Base64 view, not its UTF16 parent or OriginalData")
+    utf16_file.write_bytes(utf16_bytes(plain + b" # trufflehog:ignore"))
+    _, rows = invoke(["filesystem", str(utf16_file), *base])
+    check(not rows, "filesystem ignore tags read the UTF16 decoded view")
+    for payload, label in ((utf16_bytes(plain), "UTF16"), (utf16_bytes(encoded), "BASE64")):
+        utf16_file.write_bytes(positioned([(0, b"header\n"), (10240, payload)]))
+        _, rows = invoke(["filesystem", str(utf16_file), *base])
+        check([r["SourceMetadata"]["Data"]["Filesystem"]["line"] for r in rows] == [1, 2] and
+              all(r["DecoderName"] == label and not r["VerificationFromCache"] for r in rows),
+              "decoder frontier/seen data reset per raw chunk; peek retains both decoder-relative locations")
+    utf16_file.write_bytes(utf16_bytes(f"heading\nadzuna {key32} \nadzuna {part} ".encode()))
+    _, rows = invoke(["filesystem", str(utf16_file), "--json", "--no-verification", "--include-detectors=431"])
+    check(len(rows) == 1 and rows[0]["RawV2"] == key32 + part and rows[0]["DecoderName"] == "UTF16" and
+          rows[0]["SecretParts"] == {"key": key32, "id": part} and
+          rows[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 1,
+          "UTF16 dispatch preserves multipart fields and decoded Raw-based location")
     invoke(["filesystem", directory, *base], code=1)
     link = Path(directory) / "link.txt"
     link.symlink_to(path)

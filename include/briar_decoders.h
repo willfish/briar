@@ -18,6 +18,10 @@ int br_base64_decode(br_slice input, br_bytes *decoded, bool *applied, char **er
  * it is not a general Unicode conversion. Same output ownership as Base64. */
 int br_utf16_decode(br_slice input, br_bytes *decoded, bool *applied, char **error);
 
+/* Pinned escape-pattern priority and replacement rules; an invalid scalar still
+ * counts as applied when its syntax matched. Same ownership as Base64. */
+int br_escaped_unicode_decode(br_slice input, br_bytes *decoded, bool *applied, char **error);
+
 #ifdef __cplusplus
 }
 #endif
