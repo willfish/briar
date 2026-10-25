@@ -164,10 +164,12 @@ int br_json_each_member(br_slice object, br_json_member_fn callback, void *user)
         while (at < object.len && json_space(object.data[at])) ++at;
         if (at == object.len || object.data[at++] != ':') { json_object_put(name); return -1; }
         while (at < object.len && json_space(object.data[at])) ++at;
+        size_t begin = at;
         if (member_value(object, &at, &value) != 0) {
             json_object_put(name); json_object_put(value); return -1;
         }
-        int rc = callback(user, br_json_text(name), value);
+        br_slice encoded_value = {object.data + begin, at - begin};
+        int rc = callback(user, br_json_text(name), value, encoded_value);
         json_object_put(name);
         json_object_put(value);
         if (rc) return rc;

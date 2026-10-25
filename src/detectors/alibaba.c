@@ -122,8 +122,9 @@ static int signed_url(const char *key, const char *id, char *url, size_t cap, si
     return n < 0 || (size_t)n >= cap ? -1 : 0;
 }
 
-static int response_member(void *user, br_slice name, br_json *value)
+static int response_member(void *user, br_slice name, br_json *value, br_slice encoded_value)
 {
+    (void)encoded_value;
     alibaba_reply *reply = user;
     const char *field;
     br_json **destination = NULL;

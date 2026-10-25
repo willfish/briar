@@ -32,5 +32,9 @@ int br_alibaba_init(const br_detector **out, char **error);
 int br_alienvault_init(const br_detector **out, char **error);
 int br_allsports_init(const br_detector **out, char **error);
 int br_amadeus_init(const br_detector **out, char **error);
+int br_ambee_init(const br_detector **out, char **error);
+int br_amplitudeapikey_init(const br_detector **out, char **error);
+int br_anthropic_init(const br_detector **out, char **error);
+int br_anypoint_init(const br_detector **out, char **error);
 
 #endif

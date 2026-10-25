@@ -191,8 +191,9 @@ typedef struct {
     size_t acl_len;
 } response_fields;
 
-static int read_field(void *user, br_slice name, br_json *value)
+static int read_field(void *user, br_slice name, br_json *value, br_slice encoded_value)
 {
+    (void)encoded_value;
     response_fields *fields = user;
     int rc = 0;
     if (br_json_field_name(name, "acl")) {
