@@ -209,6 +209,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_aletheiaapi.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "The source's client timeout mutation is expressed as a request-local ten-second timeout; broader client configuration and concurrency parity remains incomplete"]
+    },
+    "algoliaadminkey/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/algoliaadminkey/algoliaadminkey.go",
+      "native_files": ["src/detectors/algoliaadminkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_algoliaadminkey.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and malformed-input diagnostic wording", "Native curl DNS error classification does not yet establish the source's no-such-host cache path; injected errors and twelve-hour expiry are covered"]
     }
   },
   "components": {

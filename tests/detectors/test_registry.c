@@ -32,6 +32,7 @@ static const registration expected[] = {
     {301, 0, "Alconost", "alconost", 32, false, -1},
     {375, 0, "Alegra", "alegra", 20, true, -1},
     {522, 0, "AletheiaApi", "aletheiaapi", 32, true, -1},
+    {170, 0, "AlgoliaAdminKey", "algolia", 32, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -45,6 +46,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     switch (entry->type) {
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
+    case 170: secondary = "B7C9D2E5F6"; secondary_name = "id"; break;
     case 375: secondary = "fixture@example.test"; secondary_name = "id"; break;
     case 431: secondary = "c7d8e9f0"; secondary_name = "id"; break;
     case 693: secondary = "00042"; secondary_name = "id"; break;
@@ -94,7 +96,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[1024];
-        snprintf(raw_v2, sizeof(raw_v2), entry->type == 375 ? "%s:%s" : "%s%s", key, secondary);
+        if (entry->type == 170) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
+        else snprintf(raw_v2, sizeof(raw_v2), entry->type == 375 ? "%s:%s" : "%s%s", key, secondary);
         CHECK(result->raw_v2.len == strlen(raw_v2));
         CHECK(!memcmp(result->raw_v2.data, raw_v2, strlen(raw_v2)));
     } else CHECK(!result->raw_v2.data && !result->raw_v2.len);
@@ -124,9 +127,10 @@ int main(void)
         CHECK(!strcmp(br_detector_type_name(detector->type), entry->name));
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
-        CHECK(detector->nkeywords == (entry->type == 907 ? 2u : 1u));
+        CHECK(detector->nkeywords == (entry->type == 907 || entry->type == 170 ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 907) CHECK(!strcmp(detector->keywords[1], "alcht_"));
+        if (entry->type == 170) CHECK(!strcmp(detector->keywords[1], "docsearch"));
         CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);

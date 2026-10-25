@@ -28,6 +28,7 @@ static const detector_factory named_factories[] = {
     br_alconost_init,
     br_alegra_init,
     br_aletheiaapi_init,
+    br_algoliaadminkey_init,
 };
 
 static int fail(char **error, const char *message)
@@ -68,7 +69,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 303: return detector->version == 1 || detector->version == 2;
         case 239: case 521: case 390: case 431: case 693: case 197: case 802:
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 917: case 907:
-        case 375: case 522:
+        case 375: case 522: case 170:
             return detector->version == 0;
         default: break;
         }
@@ -82,6 +83,7 @@ const char *br_detector_type_name(int32_t type)
     case 125: return "AirbrakeProjectKey";
     case 126: return "AirbrakeUserKey";
     case 136: return "AdobeIO";
+    case 170: return "AlgoliaAdminKey";
     case 197: return "Agora";
     case 239: return "Abyssale";
     case 277: return "Airship";
