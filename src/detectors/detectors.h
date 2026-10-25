@@ -48,5 +48,9 @@ int br_apimatic_init(const br_detector **out, char **error);
 int br_apimetrics_init(const br_detector **out, char **error);
 int br_apitemplate_init(const br_detector **out, char **error);
 int br_apollo_init(const br_detector **out, char **error);
+int br_appcues_init(const br_detector **out, char **error);
+int br_appfollow_init(const br_detector **out, char **error);
+int br_appointedd_init(const br_detector **out, char **error);
+int br_appsynergy_init(const br_detector **out, char **error);
 
 #endif
