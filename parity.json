@@ -257,6 +257,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_ambee.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "amplitudeapikey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/amplitudeapikey/amplitudeapikey.go",
+      "native_files": ["src/detectors/amplitudeapikey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_amplitudeapikey.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },
   "components": {

@@ -38,6 +38,7 @@ static const registration expected[] = {
     {473, 0, "Allsports", "allsports", 64, true, -1},
     {453, 0, "Amadeus", "amadeus", 32, true, 1024},
     {457, 0, "Ambee", "ambee", 64, true, -1},
+    {42, 0, "AmplitudeApiKey", "amplitude", 32, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -50,6 +51,15 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     const char *secondary = NULL, *secondary_name = NULL;
     switch (entry->type) {
     case 0: secondary = "LTAIB7c9D2e5F6g8H3j4K"; secondary_name = "id"; break;
+    case 42:
+        for (size_t i = 0; i < 32; ++i) {
+            key[i] = "0123456789abcdef"[i % 16];
+            secondary_buffer[i] = "0123456789abcdef"[(i + 5) % 16];
+        }
+        secondary_buffer[32] = '\0';
+        secondary = secondary_buffer;
+        secondary_name = "secret";
+        break;
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
     case 170: secondary = "B7C9D2E5F6"; secondary_name = "id"; break;
@@ -91,7 +101,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
-    CHECK(results.len == 1);
+    CHECK(results.len == (entry->type == 42 ? 2u : 1u));
     const br_result *result = &results.items[0];
     CHECK(result->detector_type == entry->type);
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
