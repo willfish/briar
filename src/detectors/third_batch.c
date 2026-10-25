@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 /* Derived from TruffleHog v3.97.2, pkg/detectors/{adzuna,aeroworkflow,agora,aha}. */
 #include "third_batch.h"
+#include "captures.h"
+#include "findings.h"
 
 #include <json-c/json.h>
 #include <stdio.h>
@@ -8,13 +10,6 @@
 #include <string.h>
 
 typedef struct { br_regex *key, *part; } detector_patterns;
-typedef struct { char **items; size_t len, cap; } captures;
-typedef struct {
-    br_slice input;
-    captures *values;
-    bool unique;
-    char *error;
-} capture_context;
 typedef int (*verifier)(const br_scan_ctx *, const char *, const char *, br_result *);
 
 static int fail(char **error, const char *message)
@@ -25,62 +20,6 @@ static int fail(char **error, const char *message)
         if (*error) memcpy(*error, message, len);
     }
     return -1;
-}
-
-static void captures_clear(captures *values)
-{
-    for (size_t i = 0; i < values->len; ++i) free(values->items[i]);
-    free(values->items);
-    memset(values, 0, sizeof(*values));
-}
-
-static int capture_push(captures *values, const unsigned char *data, size_t len,
-                         bool unique, char **error)
-{
-    if (unique) {
-        for (size_t i = 0; i < values->len; ++i)
-            if (strlen(values->items[i]) == len && !memcmp(values->items[i], data, len)) return 0;
-    }
-    if (values->len == values->cap) {
-        size_t cap = values->cap ? values->cap * 2 : 8;
-        if (cap < values->cap || cap > SIZE_MAX / sizeof(*values->items))
-            return fail(error, "too many detector captures");
-        void *items = realloc(values->items, cap * sizeof(*values->items));
-        if (!items) return fail(error, "out of memory collecting detector captures");
-        values->items = items;
-        values->cap = cap;
-    }
-    char *copy = malloc(len + 1);
-    if (!copy) return fail(error, "out of memory copying detector capture");
-    memcpy(copy, data, len);
-    copy[len] = '\0';
-    values->items[values->len++] = copy;
-    return 0;
-}
-
-static int collect_capture(void *user, const br_span *groups, size_t ngroups)
-{
-    capture_context *context = user;
-    if (ngroups < 2 || groups[1].begin == SIZE_MAX ||
-        groups[1].end <= groups[1].begin || groups[1].end > context->input.len)
-        return fail(&context->error, "invalid detector capture");
-    return capture_push(context->values, context->input.data + groups[1].begin,
-                        groups[1].end - groups[1].begin, context->unique, &context->error);
-}
-
-static int find_captures(const br_regex *regex, br_slice input, captures *values,
-                         bool unique, char **error)
-{
-    capture_context context = {input, values, unique, NULL};
-    char *regex_error = NULL;
-    int rc = br_regex_each(regex, input, collect_capture, &context, &regex_error);
-    if (context.error) {
-        free(regex_error);
-        regex_error = context.error;
-    }
-    if (error) *error = regex_error;
-    else free(regex_error);
-    return rc;
 }
 
 static int key_error(br_result *result, const char *cause)
@@ -242,35 +181,13 @@ static int verify_aha(const br_scan_ctx *ctx, const char *key,
     return rc;
 }
 
-static int add_part(br_json *parts, const char *name, const char *value)
-{
-    br_json *string = json_object_new_string(value);
-    if (!string) return -1;
-    if (json_object_object_add(parts, name, string) != 0) {
-        json_object_put(string);
-        return -1;
-    }
-    return 0;
-}
-
 static int emit_result(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
                         const char *key, const char *part, const char *part_name,
                         verifier check, br_results *out, char **error)
 {
-    size_t key_len = strlen(key), part_len = strlen(part);
-    br_result result = {.detector_type = detector->type};
-    if (part_len > SIZE_MAX - key_len) goto memory_error;
-    result.raw.data = malloc(key_len);
-    result.raw_v2.data = malloc(key_len + part_len);
-    result.secret_parts = json_object_new_object();
-    if (!result.raw.data || !result.raw_v2.data || !result.secret_parts) goto memory_error;
-    memcpy(result.raw.data, key, key_len);
-    result.raw.len = key_len;
-    memcpy(result.raw_v2.data, key, key_len);
-    memcpy(result.raw_v2.data + key_len, part, part_len);
-    result.raw_v2.len = key_len + part_len;
-    if (add_part(result.secret_parts, "key", key) != 0 ||
-        add_part(result.secret_parts, part_name, part) != 0) goto memory_error;
+    br_result result = {0};
+    if (br_finding_pair(&result, detector->type, key, "key", part, part_name) != 0)
+        goto memory_error;
     if (verify && check(ctx, key, part, &result) != 0) goto memory_error;
     if (br_results_push(out, &result) != 0) goto memory_error;
     return 0;
@@ -297,9 +214,9 @@ static int scan_ordered_pairs(const br_detector *detector, const br_scan_ctx *ct
 {
     if (valid_scan(detector, input, out, error) != 0) return -1;
     const detector_patterns *patterns = detector->state;
-    captures keys = {0}, parts = {0};
-    int rc = find_captures(patterns->key, input, &keys, false, error);
-    if (rc == 0) rc = find_captures(patterns->part, input, &parts, false, error);
+    br_captures keys = {0}, parts = {0};
+    int rc = br_captures_find(patterns->key, input, &keys, false, error);
+    if (rc == 0) rc = br_captures_find(patterns->part, input, &parts, false, error);
     /* All capture alphabets exclude whitespace: upstream TrimSpace is a no-op. */
     for (size_t k = 0; rc == 0 && k < keys.len; ++k) {
         for (size_t p = 0; rc == 0 && p < parts.len; ++p) {
@@ -308,8 +225,8 @@ static int scan_ordered_pairs(const br_detector *detector, const br_scan_ctx *ct
                              part_name, check, out, error);
         }
     }
-    captures_clear(&keys);
-    captures_clear(&parts);
+    br_captures_clear(&keys);
+    br_captures_clear(&parts);
     return rc;
 }
 
@@ -336,17 +253,17 @@ static int scan_aha(const br_detector *detector, const br_scan_ctx *ctx, bool ve
 {
     if (valid_scan(detector, input, out, error) != 0) return -1;
     const detector_patterns *patterns = detector->state;
-    captures keys = {0}, hosts = {0};
-    int rc = find_captures(patterns->key, input, &keys, false, error);
-    if (rc == 0) rc = find_captures(patterns->part, input, &hosts, true, error);
+    br_captures keys = {0}, hosts = {0};
+    int rc = br_captures_find(patterns->key, input, &keys, false, error);
+    if (rc == 0) rc = br_captures_find(patterns->part, input, &hosts, true, error);
     if (rc == 0 && hosts.len == 0)
-        rc = capture_push(&hosts, (const unsigned char *)"aha.io", 6, false, error);
+        rc = br_captures_push(&hosts, (br_slice){(const unsigned char *)"aha.io", 6}, false, error);
     for (size_t k = 0; rc == 0 && k < keys.len; ++k)
         for (size_t h = 0; rc == 0 && h < hosts.len; ++h)
             rc = emit_result(detector, ctx, verify, keys.items[k], hosts.items[h],
                              "url", verify_aha, out, error);
-    captures_clear(&keys);
-    captures_clear(&hosts);
+    br_captures_clear(&keys);
+    br_captures_clear(&hosts);
     return rc;
 }
 
@@ -393,20 +310,7 @@ static int compile_prefixed(const char *const *keywords, size_t count, const cha
                              br_regex **out, char **error)
 {
     if (*out) return 0;
-    char *prefix = NULL;
-    if (br_prefix_regex(keywords, count, &prefix) != 0)
-        return fail(error, "cannot allocate detector prefix pattern");
-    size_t len = strlen(prefix) + strlen(capture) + 1;
-    char *pattern = malloc(len);
-    if (!pattern) {
-        free(prefix);
-        return fail(error, "cannot allocate detector pattern");
-    }
-    snprintf(pattern, len, "%s%s", prefix, capture);
-    int rc = br_regex_compile(pattern, out, error);
-    free(pattern);
-    free(prefix);
-    return rc;
+    return br_regex_compile_prefixed(keywords, count, capture, out, error);
 }
 
 int br_third_batch(const br_detector *const **out, size_t *count, char **error)

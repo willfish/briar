@@ -190,3 +190,30 @@ int br_prefix_regex(const char *const *keywords, size_t count, char **pattern)
     *pattern = p;
     return 0;
 }
+
+int br_regex_compile_prefixed(const char *const *keywords, size_t count,
+                              const char *capture, br_regex **out, char **error)
+{
+    if (error) *error = NULL;
+    if (out) *out = NULL;
+    if (!capture || !out) return fail(error, "invalid prefixed regex arguments");
+    char *prefix = NULL;
+    if (br_prefix_regex(keywords, count, &prefix) != 0)
+        return fail(error, "cannot allocate detector prefix pattern");
+    size_t first = strlen(prefix), second = strlen(capture);
+    if (second > SIZE_MAX - first - 1) {
+        free(prefix);
+        return fail(error, "detector pattern too large");
+    }
+    char *pattern = malloc(first + second + 1);
+    if (!pattern) {
+        free(prefix);
+        return fail(error, "cannot allocate detector pattern");
+    }
+    memcpy(pattern, prefix, first);
+    memcpy(pattern + first, capture, second + 1);
+    int rc = br_regex_compile(pattern, out, error);
+    free(pattern);
+    free(prefix);
+    return rc;
+}

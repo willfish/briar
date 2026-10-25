@@ -1,9 +1,8 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 /* Shared single-key extraction, derived from TruffleHog v3.97.2 detectors. */
 #include "key_scan.h"
+#include "findings.h"
 
-#include <json-c/json.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -36,23 +35,11 @@ static int emit_key(void *user, const br_span *groups, size_t ngroups)
     memcpy(key, matches->input.data + groups[1].begin, len);
     key[len] = '\0';
 
-    br_result result = {.detector_type = matches->detector->type};
-    result.raw.data = malloc(len);
-    result.secret_parts = json_object_new_object();
-    br_json *value = json_object_new_string_len(key, (int)len);
-    if (!result.raw.data || !result.secret_parts || !value) {
-        if (value) json_object_put(value);
+    br_result result = {0};
+    if (br_finding_key_bytes(&result, matches->detector->type,
+                            (br_slice){(const unsigned char *)key, len}, matches->secret_part) != 0) {
         free(key);
-        br_result_clear(&result);
         return fail(&matches->error, "out of memory creating detector result");
-    }
-    memcpy(result.raw.data, key, len);
-    result.raw.len = len;
-    if (json_object_object_add(result.secret_parts, matches->secret_part, value) != 0) {
-        json_object_put(value);
-        free(key);
-        br_result_clear(&result);
-        return fail(&matches->error, "out of memory creating secret parts");
     }
     int rc = 0;
     if (matches->verify && matches->verifier(matches->ctx, key, &result) != 0)
@@ -87,20 +74,9 @@ int br_scan_key(const br_detector *detector, const br_scan_ctx *ctx, bool verify
 int br_key_pattern_init(br_detector *detector, const char *capture, char **error)
 {
     if (detector->state) return 0;
-    char *prefix = NULL;
-    if (br_prefix_regex(detector->keywords, detector->nkeywords, &prefix) != 0)
-        return fail(error, "cannot allocate detector prefix pattern");
-    size_t len = strlen(prefix) + strlen(capture) + 1;
-    char *pattern = malloc(len);
-    if (!pattern) {
-        free(prefix);
-        return fail(error, "cannot allocate detector pattern");
-    }
-    snprintf(pattern, len, "%s%s", prefix, capture);
     br_regex *regex = NULL;
-    int rc = br_regex_compile(pattern, &regex, error);
-    free(pattern);
-    free(prefix);
+    int rc = br_regex_compile_prefixed(detector->keywords, detector->nkeywords,
+                                      capture, &regex, error);
     if (!rc) detector->state = regex;
     return rc;
 }

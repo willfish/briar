@@ -128,6 +128,8 @@ int br_regex_compile(const char *pattern, br_regex **out, char **error);
 int br_regex_each(const br_regex *, br_slice, br_match_fn, void *, char **error);
 void br_regex_free(br_regex *);
 int br_prefix_regex(const char *const *keywords, size_t count, char **pattern);
+int br_regex_compile_prefixed(const char *const *keywords, size_t count,
+                              const char *capture, br_regex **out, char **error);
 
 #ifdef __cplusplus
 }
