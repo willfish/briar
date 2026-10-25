@@ -13,7 +13,7 @@
         in {
           default = pkgs.mkShell {
             packages = with pkgs; [ pkg-config gnumake python3 ];
-            buildInputs = with pkgs; [ pcre2 curl json_c ];
+            buildInputs = with pkgs; [ pcre2 curl json_c openssl ];
           };
         });
     };

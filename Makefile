@@ -2,10 +2,11 @@
 CC ?= cc
 AR ?= ar
 PKG_CONFIG ?= pkg-config
-CPPFLAGS += -Iinclude -D_POSIX_C_SOURCE=200809L $(shell $(PKG_CONFIG) --cflags libpcre2-8 libcurl json-c)
+LIB_PACKAGES := libpcre2-8 libcurl json-c libcrypto
+CPPFLAGS += -Iinclude -D_POSIX_C_SOURCE=200809L $(shell $(PKG_CONFIG) --cflags $(LIB_PACKAGES))
 CFLAGS ?= -O2 -g
 CFLAGS += -std=c11 -Wall -Wextra -Wpedantic -Werror
-LDLIBS += $(shell $(PKG_CONFIG) --libs libpcre2-8 libcurl json-c) -lm
+LDLIBS += $(shell $(PKG_CONFIG) --libs $(LIB_PACKAGES)) -lm
 
 CORE_SOURCES := $(filter-out src/main.c,$(wildcard src/*.c))
 DETECTOR_SOURCES := $(shell find src/detectors -type f -name '*.c' 2>/dev/null)
