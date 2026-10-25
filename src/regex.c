@@ -163,7 +163,9 @@ void br_regex_free(br_regex *re)
 int br_prefix_regex(const char *const *keywords, size_t count, char **pattern)
 {
     static const char pre[] = "(?i:";
-    static const char post[] = ")(?:.|[\\n\\r]){0,40}?";
+    /* RE2's (?:.|[\n\r]) accepts every rune. A single DOTALL atom has the
+     * same language without PCRE2 backtracking over two ways to consume CR. */
+    static const char post[] = ")(?s:.){0,40}?";
     if (!pattern) return 1;
     *pattern = NULL;
     if (count && !keywords) return 1;

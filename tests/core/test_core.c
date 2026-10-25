@@ -120,10 +120,19 @@ static void regex_tests(void)
     const char *const keywords[] = { "ab.tract", "abyssale" };
     char *prefix = NULL;
     CHECK(!br_prefix_regex(keywords, 2, &prefix));
-    CHECK(!strcmp(prefix, "(?i:ab.tract|abyssale)(?:.|[\\n\\r]){0,40}?"));
+    CHECK(!strcmp(prefix, "(?i:ab.tract|abyssale)(?s:.){0,40}?"));
+    char prefixed[128], padded[64];
+    snprintf(prefixed, sizeof(prefixed), "%s(key)", prefix);
+    for (size_t gap = 40; gap <= 41; ++gap) {
+        memcpy(padded, "abyssale", 8);
+        memset(padded + 8, '\r', gap);
+        memcpy(padded + 8 + gap, "key", 3);
+        captures padding = match(prefixed, (br_slice){(unsigned char *)padded, 11 + gap});
+        CHECK(padding.count == (gap == 40 ? 1u : 0u));
+    }
     free(prefix);
     CHECK(!br_prefix_regex(NULL, 0, &prefix));
-    CHECK(!strcmp(prefix, "(?i:)(?:.|[\\n\\r]){0,40}?"));
+    CHECK(!strcmp(prefix, "(?i:)(?s:.){0,40}?"));
     free(prefix);
     captures c = match("(a)?(b)", SLICE("b ab"));
     CHECK(c.count == 2 && c.ngroups[0] == 3);
