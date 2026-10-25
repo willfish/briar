@@ -7,7 +7,7 @@
       "state": "partial",
       "upstream_source": "pkg/detectors/abstract/abstract.go",
       "scope_notes": "No detector-local filter/cleaner or Version method exists upstream. Verified filtering/versioning records mean preserving those absences, not completion of global engine filtering.",
-      "native_files": ["src/detectors/first_batch.c"],
+      "native_files": ["src/detectors/abstract.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {
         "extraction": "partial",
         "filtering": "verified",
@@ -17,7 +17,7 @@
         "registry_behavior": "verified",
         "acceptance_evidence": "partial"
       },
-      "evidence": ["tests/detectors/test_detectors.c", "tests/core/test_core.c", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_abstract.c", "tests/detectors/test_detectors.c", "tests/core/test_core.c", "docs/ACCEPTANCE.md"],
       "remaining": ["Shared RE2/PCRE2 and invalid-byte semantics are not fully reproduced", "Full native HTTP-client behavior is not established", "Disabled upstream constructor has no CLI oracle execution; direct native behavior is covered by source-derived fixtures"]
     },
     "abuseipdb/Scanner": {

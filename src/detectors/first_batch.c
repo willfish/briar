@@ -31,34 +31,6 @@ static int unexpected_status(br_result *result, int status)
     return verification_error(result, message);
 }
 
-static int verify_abstract(const br_scan_ctx *ctx, const char *key, br_result *result)
-{
-    char url[160];
-    snprintf(url, sizeof(url),
-             "https://exchange-rates.abstractapi.com/v1/live/?api_key=%s&base=USD", key);
-    const br_header headers[] = {{"Content-Type", "application/json"}};
-    const br_http_request request = {
-        .method = "GET", .url = url, .headers = headers, .nheaders = 1,
-        .profile = BR_HTTP_SANE, .detector_type = 384,
-    };
-    br_http_response response = {0};
-    char *error = NULL;
-    int rc = 0;
-    if (br_http_send(ctx, &request, &response, &error) != 0) {
-        rc = verification_error(result, error ? error : "HTTP transport failed");
-    } else {
-        /* Upstream only inspects status; even a failed body read is irrelevant. */
-        switch (response.status) {
-        case 200: result->verified = true; break;
-        case 401: break;
-        default: rc = unexpected_status(result, response.status); break;
-        }
-    }
-    br_http_release(ctx, &response);
-    free(error);
-    return rc;
-}
-
 static bool contains_ip_address(br_slice body)
 {
     static const unsigned char needle[] = "ipAddress";
@@ -103,28 +75,13 @@ static int verify_abuseipdb(const br_scan_ctx *ctx, const char *key, br_result *
     return rc;
 }
 
-static int scan_abstract(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
-                         br_slice input, br_results *out, char **error)
-{
-    return br_scan_key(detector, ctx, verify, input, out, "key", verify_abstract, error);
-}
-
 static int scan_abuseipdb(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
                          br_slice input, br_results *out, char **error)
 {
     return br_scan_key(detector, ctx, verify, input, out, "key", verify_abuseipdb, error);
 }
 
-static const char *const abstract_keywords[] = {"abstract"};
 static const char *const abuseipdb_keywords[] = {"abuseipdb"};
-
-static br_detector abstract_detector = {
-    .type = 384, .version = 0, .name = "Abstract", .custom_name = "",
-    .description = "Abstract API provides various services including exchange rates. The API keys can be used to access these services and retrieve data.",
-    .keywords = abstract_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
-    .scan = scan_abstract,
-};
 
 static br_detector abuseipdb_detector = {
     .type = 521, .version = 0, .name = "AbuseIPDB", .custom_name = "",
@@ -136,7 +93,7 @@ static br_detector abuseipdb_detector = {
 
 /* Keep upstream default-list order, with its commented Abstract available directly. */
 static const br_detector *const implemented[] = {
-    &abstract_detector, &abuseipdb_detector,
+    &abuseipdb_detector,
 };
 
 int br_first_batch(const br_detector *const **out, size_t *count, char **error)
@@ -145,8 +102,7 @@ int br_first_batch(const br_detector *const **out, size_t *count, char **error)
     if (out) *out = NULL;
     if (count) *count = 0;
     if (!out || !count) return scan_error(error, "invalid first-batch outputs");
-    if (br_key_pattern_init(&abstract_detector, "\\b([0-9a-z]{32})\\b", error) != 0 ||
-        br_key_pattern_init(&abuseipdb_detector, "\\b([a-z0-9]{80})\\b", error) != 0)
+    if (br_key_pattern_init(&abuseipdb_detector, "\\b([a-z0-9]{80})\\b", error) != 0)
         return -1;
     *out = implemented;
     *count = sizeof(implemented) / sizeof(implemented[0]);

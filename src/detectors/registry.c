@@ -12,6 +12,7 @@
 typedef int (*detector_factory)(const br_detector **, char **);
 static const detector_factory named_factories[] = {
     br_abyssale_init,
+    br_abstract_init,
 };
 
 static int fail(char **error, const char *message)
@@ -45,7 +46,7 @@ int br_registry(const br_detector *const **out, size_t *count, char **error)
             br_third_batch(&third, &nthird, error) != 0 ||
             br_fourth_batch(&fourth, &nfourth, error) != 0 ||
             br_fifth_batch(&fifth, &nfifth, error) != 0) return -1;
-        if (nfirst != 2 || nsecond != 4 || nthird != 4 || nfourth != 4 || nfifth != 4)
+        if (nfirst != 1 || nsecond != 4 || nthird != 4 || nfourth != 4 || nfifth != 4)
             return fail(error, "unexpected compiled detector batch sizes");
         /* Retain pinned defaults-list order while legacy modules are migrated. */
         for (size_t i = 0; i < nfirst; ++i) implemented[at++] = first[i];
