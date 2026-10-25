@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare implemented CLI slices and PLAIN/BASE64/UTF16 with the pinned reference.
+"""Compare implemented CLI slices and the four wired decoders with the pinned reference.
 
 Both programs run in a network namespace with an empty HOME. This is a slice
 acceptance check, not a declaration of global TruffleHog parity. Fixtures are
@@ -197,6 +197,43 @@ def utf16_fixtures():
     return cases
 
 
+def escaped_bytes(payload):
+    return "".join(r"\u%04x" % c for c in payload).encode("ascii")
+
+
+def escaped_unicode_fixtures():
+    plain = b"abyssale " + synthetic("abyssale", 40)
+    formats = {
+        "long": r"\U{:08x}", "brace": r"\u{{{:x}}}", "perl": r"\x{{{:x}}}",
+        "html_hex": "&#x{:x};", "percent": "%u{:04x}", "escaped": r"\u{:04x}",
+        "code_point": "U+{:04x} ", "css": "\\{:x} ",
+    }
+    cases = [("escaped_syntax_" + name, "".join(fmt.format(c) for c in plain).encode("ascii"),
+              "239", "stdin", False) for name, fmt in formats.items()]
+    escaped = escaped_bytes(plain)
+    for name, payload in (
+        ("b64_to_escaped", base64.b64encode(escaped)),
+        ("escaped_to_b64", escaped_bytes(base64.b64encode(plain))),
+        ("utf16_to_escaped", utf16_bytes(escaped, "be")),
+        ("escaped_to_utf16", escaped_bytes(utf16_bytes(plain))),
+        ("escaped_b64_utf16", escaped_bytes(base64.b64encode(utf16_bytes(plain, "be")))),
+        ("invalid_priority", rb"\UFFFFFFFF !!" + escaped),
+    ):
+        cases.append(("escaped_" + name, payload, "239", "stdin", False))
+    nested = plain
+    for depth in range(1, 7):
+        nested = escaped_bytes(nested[:1]) + nested[1:]
+        if depth >= 5:
+            cases.append((f"escaped_depth_{depth}", nested, "239", "stdin", False))
+    cases.append(("escaped_filesystem_nested", utf16_bytes(escaped_bytes(b"heading\n" + plain), "be"),
+                  "239", "filesystem", False))
+    cases.append(("escaped_filesystem_ignore", escaped_bytes(plain + b" # trufflehog:ignore"),
+                  "239", "filesystem", False))
+    pair = b"heading\nadzuna " + alnum("escaped-pair", 32) + b"\nadzuna c7d8e9f0"
+    cases.append(("escaped_multipart_metadata", escaped_bytes(pair), "431", "filesystem", False))
+    return cases
+
+
 def fixtures():
     cases = []
     for name, length, number in (("abuseipdb", 80, 521), ("abyssale", 40, 239)):
@@ -340,6 +377,7 @@ def fixtures():
     cases.extend(multipart_fixtures())
     cases.extend(chunk_fixtures())
     cases.extend(utf16_fixtures())
+    cases.extend(escaped_unicode_fixtures())
     return cases
 
 

@@ -163,6 +163,51 @@ for depth in range(1, 7):
 _, rows = invoke(["stdin", *base], utf16_bytes(plain + b" # trufflehog:ignore"))
 check(len(rows) == 1, "UTF16 stdin does not acquire filesystem ignore semantics")
 
+def escaped_bytes(payload):
+    return "".join(r"\u%04x" % c for c in payload).encode("ascii")
+
+
+escaped = escaped_bytes(plain)
+for payload, label in (
+    (escaped, "ESCAPED_UNICODE"),
+    (base64.b64encode(escaped), "ESCAPED_UNICODE"),
+    (escaped_bytes(encoded), "BASE64"),
+    (utf16_bytes(escaped, "be"), "ESCAPED_UNICODE"),
+    (escaped_bytes(utf16_bytes(plain)), "UTF16"),
+    (escaped_bytes(base64.b64encode(utf16_bytes(plain, "be"))), "UTF16"),
+):
+    _, rows = invoke(["stdin", *base], payload)
+    check(len(rows) == 1 and rows[0]["Raw"] == key40 and rows[0]["DecoderName"] == label,
+          "escaped Unicode participates in original-byte and nested codec fan-out")
+    check(rows[0]["SourceMetadata"] == {"Data": {"Stdin": {}}} and
+          not rows[0]["VerificationFromCache"] and rows[0]["SecretParts"] == {"key": key40},
+          "escaped decoding preserves result and source metadata without a verification cache")
+_, rows = invoke(["stdin", *base], escaped + b"!!" + escaped_bytes(encoded_other))
+check([(row["Raw"], row["DecoderName"]) for row in rows] ==
+      [(key40, "ESCAPED_UNICODE"), (other_key40, "BASE64")],
+      "intermediate escaped findings survive another decoding pass")
+third_key, fourth_key = key40[1:] + key40[:1], other_key40[1:] + other_key40[:1]
+assert len({key40, other_key40, third_key, fourth_key}) == 4
+siblings = (b" " + plain + b"!!" + encoded_other + b"!!" +
+            utf16_bytes(f"abyssale {third_key}".encode()) + b"!!" +
+            escaped_bytes(f"abyssale {fourth_key}".encode()))
+_, rows = invoke(["stdin", *base], siblings)
+check([(row["Raw"], row["DecoderName"]) for row in rows] ==
+      [(key40, "PLAIN"), (other_key40, "BASE64"), (third_key, "UTF16"), (fourth_key, "ESCAPED_UNICODE")],
+      "all non-PLAIN decoders independently see original bytes in pinned order")
+nested = plain
+for depth in range(1, 7):
+    nested = escaped_bytes(nested[:1]) + nested[1:]
+    if depth >= 5:
+        _, rows = invoke(["stdin", *base], nested)
+        check(len(rows) == (1 if depth == 5 else 0), "escaped decoding shares the five-pass depth limit")
+_, rows = invoke(["stdin", *base], rb"\UFFFFFFFF !!" + escaped)
+check(not rows, "unchanged invalid high-priority output is scanned but not rescheduled")
+for payload in (b"\xff" + escaped, b"U+0020\xc3\xa9U+0061 byssale " + key40.encode()):
+    proc, _ = invoke(["stdin", *base], payload, code=1)
+    check(b"regex execution: UTF-8 error:" in proc.stderr,
+          "unsupported malformed decoded UTF-8 fails explicitly without partial output")
+
 part = "c7d8e9f0"
 second_part = "d8e9f0a1"
 secret = key32[::-1]
@@ -342,6 +387,25 @@ with tempfile.TemporaryDirectory(prefix="briar-core-") as directory:
           rows[0]["SecretParts"] == {"key": key32, "id": part} and
           rows[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 1,
           "UTF16 dispatch preserves multipart fields and decoded Raw-based location")
+    escaped_file = Path(directory) / "escaped.txt"
+    escaped_source = escaped_bytes(b"heading\n" + plain + b"\n")
+    escaped_file.write_bytes(utf16_bytes(escaped_source, "be"))
+    _, rows = invoke(["filesystem", str(escaped_file), *base])
+    check(len(rows) == 1 and rows[0]["DecoderName"] == "ESCAPED_UNICODE" and
+          rows[0]["SourceMetadata"]["Data"]["Filesystem"] == {"file": str(escaped_file), "line": 2},
+          "escaped newlines determine final decoded filesystem location")
+    check(escaped_file.read_bytes() == utf16_bytes(escaped_source, "be"),
+          "nested decoder views never modify original input bytes")
+    escaped_file.write_bytes(escaped_bytes(plain + b" # trufflehog:ignore"))
+    _, rows = invoke(["filesystem", str(escaped_file), *base])
+    check(not rows, "filesystem ignore handling reads the escaped decoded view")
+    pair = f"heading\nadzuna {key32}\nadzuna {part}".encode()
+    escaped_file.write_bytes(escaped_bytes(pair))
+    _, rows = invoke(["filesystem", str(escaped_file), "--json", "--no-verification", "--include-detectors=431"])
+    check(len(rows) == 1 and rows[0]["RawV2"] == key32 + part and
+          rows[0]["SecretParts"] == {"key": key32, "id": part} and
+          rows[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 2,
+          "escaped decoding retains multipart identity and Raw-based line metadata")
     invoke(["filesystem", directory, *base], code=1)
     link = Path(directory) / "link.txt"
     link.symlink_to(path)

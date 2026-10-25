@@ -262,7 +262,7 @@
       "status": "partial",
       "native_files": ["src/utf8.c", "src/base64.c", "src/utf16.c", "src/escaped_unicode.c", "include/briar_decoders.h", "src/main.c"],
       "evidence": ["tests/core/test_utf8.c", "tests/core/test_base64.c", "tests/core/test_utf16.c", "tests/core/test_escaped_unicode.c", "tests/cli_reference.py"],
-      "remaining": ["Escaped Unicode engine wiring; its native helper is library-only", "HTML decoder and feature gating; selected C HTML5 parser needs compatibility work", "Complete decoder/engine/metadata/concurrency parity beyond selected fixtures"]
+      "remaining": ["HTML decoder and feature gating; selected C HTML5 parser needs compatibility work", "Complete decoder/engine/metadata/concurrency parity beyond selected fixtures", "Malformed UTF-8 in decoded detector windows fails explicitly; arbitrary-byte regexp parity remains incomplete"]
     },
     "engine": {
       "status": "partial",
