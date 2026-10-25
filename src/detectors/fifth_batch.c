@@ -109,33 +109,6 @@ static int verify_redacted(const br_scan_ctx *ctx, const br_http_request *reques
     return rc;
 }
 
-static int verify_unredacted(const br_scan_ctx *ctx, const br_http_request *request,
-                              br_result *result)
-{
-    br_http_response response = {0};
-    char *error = NULL;
-    int rc = 0;
-    /* AirVisual and Aiven omit secrets in SetVerificationError upstream. */
-    if (br_http_send(ctx, request, &response, &error) != 0) {
-        rc = br_result_set_verification_error(result, error ? error : "HTTP transport failed", NULL, 0);
-    } else {
-        switch (response.status) {
-        case 200: result->verified = true; break;
-        case 401:
-        case 403: break;
-        default: {
-            char message[80];
-            snprintf(message, sizeof(message), "unexpected status code: %d", response.status);
-            rc = br_result_set_verification_error(result, message, NULL, 0);
-            break;
-        }
-        }
-    }
-    br_http_release(ctx, &response);
-    free(error);
-    return rc;
-}
-
 static int verify_airtable_pat(const br_scan_ctx *ctx, const char *token, br_result *result)
 {
     char auth[90];
@@ -147,19 +120,6 @@ static int verify_airtable_pat(const br_scan_ctx *ctx, const char *token, br_res
         .profile = BR_HTTP_SANE, .detector_type = 1015,
     };
     return verify_redacted(ctx, &request, result);
-}
-
-static int verify_aiven(const br_scan_ctx *ctx, const char *key, br_result *result)
-{
-    char auth[381];
-    snprintf(auth, sizeof(auth), "aivenv1 %s", key);
-    const br_header headers[] = {{"Authorization", auth}};
-    const br_http_request request = {
-        .method = "GET", .url = "https://api.aiven.io/v1/project",
-        .headers = headers, .nheaders = 1,
-        .profile = BR_HTTP_SANE, .detector_type = 917,
-    };
-    return verify_unredacted(ctx, &request, result);
 }
 
 static int emit_result(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
@@ -212,15 +172,8 @@ static int scan_airtable_pat(const br_detector *detector, const br_scan_ctx *ctx
     return scan_unique_keys(detector, ctx, verify, input, out, error, "token", verify_airtable_pat);
 }
 
-static int scan_aiven(const br_detector *detector, const br_scan_ctx *ctx,
-                       bool verify, br_slice input, br_results *out, char **error)
-{
-    return scan_unique_keys(detector, ctx, verify, input, out, error, "key", verify_aiven);
-}
-
-static detector_patterns airtable_pat_patterns, aiven_patterns;
+static detector_patterns airtable_pat_patterns;
 static const char *const airtable_keywords[] = {"airtable"};
-static const char *const aiven_keywords[] = {"aiven"};
 
 static const br_detector airtable_pat = {
     .type = 1015, .version = 0, .name = "AirtablePersonalAccessToken", .custom_name = "",
@@ -229,14 +182,7 @@ static const br_detector airtable_pat = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .state = &airtable_pat_patterns, .scan = scan_airtable_pat,
 };
-static const br_detector aiven = {
-    .type = 917, .version = 0, .name = "Aiven", .custom_name = "",
-    .description = "Aiven is a managed cloud service that provides various open-source data infrastructure services. Aiven API keys can be used to access and manage these services.",
-    .keywords = aiven_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
-    .state = &aiven_patterns, .scan = scan_aiven,
-};
-static const br_detector *implemented[] = {&airtable_pat, NULL, &aiven, NULL};
+static const br_detector *implemented[] = {&airtable_pat, NULL, NULL, NULL};
 
 static int compile_prefixed(const br_detector *detector, const char *capture,
                              br_regex **out, char **error)
@@ -266,8 +212,8 @@ int br_fifth_batch(const br_detector *const **out, size_t *count, char **error)
     if (!out || !count) return fail(error, "invalid fifth-batch outputs");
     if (br_alchemy_init(&implemented[3], error) != 0 ||
         br_airvisual_init(&implemented[1], error) != 0 ||
-        compile_prefixed(&airtable_pat, "\\b(pat[[:alnum:]]{14}\\.[a-f0-9]{64})\\b", &airtable_pat_patterns.key, error) != 0 ||
-        compile_prefixed(&aiven, "([a-zA-Z0-9/+=]{372})", &aiven_patterns.key, error) != 0)
+        br_aiven_init(&implemented[2], error) != 0 ||
+        compile_prefixed(&airtable_pat, "\\b(pat[[:alnum:]]{14}\\.[a-f0-9]{64})\\b", &airtable_pat_patterns.key, error) != 0)
         return -1;
     *out = implemented;
     *count = sizeof(implemented) / sizeof(implemented[0]);
