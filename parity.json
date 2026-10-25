@@ -193,6 +193,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_alconost.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Disabled upstream constructor has no positive CLI oracle execution; direct behavior uses pinned source-derived synthetic fixtures"]
+    },
+    "aletheiaapi/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/aletheiaapi/aletheiaapi.go",
+      "native_files": ["src/detectors/aletheiaapi.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_aletheiaapi.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "The source's client timeout mutation is expressed as a request-local ten-second timeout; broader client configuration and concurrency parity remains incomplete"]
     }
   },
   "components": {
