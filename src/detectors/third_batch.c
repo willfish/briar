@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 /* Derived from TruffleHog v3.97.2, pkg/detectors/{adzuna,aeroworkflow,agora,aha}. */
 #include "third_batch.h"
+#include "detectors.h"
 #include "captures.h"
 #include "findings.h"
 
@@ -34,31 +35,6 @@ static int unexpected_status(br_result *result, int status)
     char message[80];
     snprintf(message, sizeof(message), "unexpected HTTP response status %d", status);
     return key_error(result, message);
-}
-
-static int verify_adzuna(const br_scan_ctx *ctx, const char *key,
-                          const char *id, br_result *result)
-{
-    char url[160];
-    snprintf(url, sizeof(url), "https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=%s&app_key=%s", id, key);
-    const br_http_request request = {
-        .method = "GET", .url = url, .profile = BR_HTTP_SANE, .detector_type = 431,
-    };
-    br_http_response response = {0};
-    char *error = NULL;
-    int rc = 0;
-    if (br_http_send(ctx, &request, &response, &error) != 0) {
-        rc = key_error(result, error ? error : "HTTP transport failed");
-    } else {
-        switch (response.status) {
-        case 200: result->verified = true; break;
-        case 401: break;
-        default: rc = unexpected_status(result, response.status); break;
-        }
-    }
-    br_http_release(ctx, &response);
-    free(error);
-    return rc;
 }
 
 static int verify_aeroworkflow(const br_scan_ctx *ctx, const char *key,
@@ -230,12 +206,6 @@ static int scan_ordered_pairs(const br_detector *detector, const br_scan_ctx *ct
     return rc;
 }
 
-static int scan_adzuna(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
-                        br_slice input, br_results *out, char **error)
-{
-    return scan_ordered_pairs(detector, ctx, verify, input, out, error, "id", false, verify_adzuna);
-}
-
 static int scan_aeroworkflow(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
                              br_slice input, br_results *out, char **error)
 {
@@ -267,8 +237,7 @@ static int scan_aha(const br_detector *detector, const br_scan_ctx *ctx, bool ve
     return rc;
 }
 
-static detector_patterns adzuna_patterns, aeroworkflow_patterns, agora_patterns, aha_patterns;
-static const char *const adzuna_keywords[] = {"adzuna"};
+static detector_patterns aeroworkflow_patterns, agora_patterns, aha_patterns;
 static const char *const aeroworkflow_keywords[] = {"aeroworkflow"};
 static const char *const agora_keywords[] = {"agora"};
 static const char *const aha_keywords[] = {"aha.io"};
@@ -276,13 +245,6 @@ static const char *const agora_key_prefix[] = {"agora", "key", "token"};
 static const char *const agora_secret_prefix[] = {"agora", "secret"};
 static const char *const aha_key_prefix[] = {"aha"};
 
-static const br_detector adzuna = {
-    .type = 431, .version = 0, .name = "Adzuna", .custom_name = "",
-    .description = "Adzuna is a job search engine used to find job listings. Adzuna API keys can be used to access job listing data.",
-    .keywords = adzuna_keywords, .nkeywords = 1,
-    .max_secret_size = -1, .start_offset = -1, .max_credential_span = 1024,
-    .state = &adzuna_patterns, .scan = scan_adzuna,
-};
 static const br_detector aeroworkflow = {
     .type = 693, .version = 0, .name = "Aeroworkflow", .custom_name = "",
     .description = "Aeroworkflow is a service for managing workflows. Aeroworkflow API keys and Account IDs can be used to access and manage workflows.",
@@ -304,7 +266,7 @@ static const br_detector aha = {
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = 1024,
     .state = &aha_patterns, .scan = scan_aha,
 };
-static const br_detector *const implemented[] = {&adzuna, &aeroworkflow, &agora, &aha};
+static const br_detector *implemented[] = {NULL, &aeroworkflow, &agora, &aha};
 
 static int compile_prefixed(const char *const *keywords, size_t count, const char *capture,
                              br_regex **out, char **error)
@@ -319,8 +281,7 @@ int br_third_batch(const br_detector *const **out, size_t *count, char **error)
     if (out) *out = NULL;
     if (count) *count = 0;
     if (!out || !count) return fail(error, "invalid third-batch outputs");
-    if (compile_prefixed(adzuna_keywords, 1, "\\b([a-z0-9]{32})\\b", &adzuna_patterns.key, error) != 0 ||
-        compile_prefixed(adzuna_keywords, 1, "\\b([a-z0-9]{8})\\b", &adzuna_patterns.part, error) != 0 ||
+    if (br_adzuna_init(&implemented[0], error) != 0 ||
         compile_prefixed(aeroworkflow_keywords, 1, "\\b([a-zA-Z0-9^!?#:*;]{20})", &aeroworkflow_patterns.key, error) != 0 ||
         compile_prefixed(aeroworkflow_keywords, 1, "\\b([0-9]{1,})\\b", &aeroworkflow_patterns.part, error) != 0 ||
         compile_prefixed(agora_key_prefix, 3, "\\b([a-z0-9]{32})\\b", &agora_patterns.key, error) != 0 ||

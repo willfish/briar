@@ -93,9 +93,9 @@
     "adzuna/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/adzuna/adzuna.go",
-      "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/adzuna.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_adzuna.c", "tests/detectors/test_third_batch.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "aeroworkflow/Scanner": {
