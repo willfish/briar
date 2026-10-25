@@ -40,5 +40,9 @@ int br_anypointoauth2_init(const br_detector **out, char **error);
 int br_apacta_init(const br_detector **out, char **error);
 int br_api2cart_init(const br_detector **out, char **error);
 int br_apideck_init(const br_detector **out, char **error);
+int br_apiflash_init(const br_detector **out, char **error);
+int br_apifonica_init(const br_detector **out, char **error);
+int br_apify_init(const br_detector **out, char **error);
+int br_apilayer_init(const br_detector **out, char **error);
 
 #endif
