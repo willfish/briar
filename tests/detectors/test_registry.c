@@ -46,6 +46,7 @@ static const registration expected[] = {
     {458, 0, "Api2Cart", "api2cart", 32, true, -1},
     {212, 0, "ApiDeck", "apideck", 101, true, 1024},
     {401, 0, "Apiflash", "apiflash", 32, true, 1024},
+    {391, 0, "Apify", "apify", 46, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -55,6 +56,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     test_secret(key, entry->key_len, 0);
     if (entry->type == 303 && entry->version == 1) key[7] = '%';
     if (entry->type == 390) memcpy(key, "aio_", 4);
+    if (entry->type == 391) memcpy(key, "apify_api_", 10);
     const char *secondary = NULL, *secondary_name = NULL;
     switch (entry->type) {
     case 0: secondary = "LTAIB7c9D2e5F6g8H3j4K"; secondary_name = "id"; break;
