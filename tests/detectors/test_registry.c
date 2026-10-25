@@ -43,6 +43,7 @@ static const registration expected[] = {
     {179, 0, "Anypoint", "anypoint", 36, true, 1024},
     {1032, 0, "AnypointOAuth2", "anypoint", 32, true, 1024},
     {632, 0, "Apacta", "apacta", 36, true, -1},
+    {458, 0, "Api2Cart", "api2cart", 32, true, -1},
     {212, 0, "ApiDeck", "apideck", 101, true, 1024},
 };
 
@@ -89,7 +90,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary_name = "url";
         break;
     case 457:
-        for (size_t i = 0; i < 64; ++i) key[i] = "0123456789abcdef"[i % 16];
+    case 458:
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         break;
     case 212:
         memcpy(key, "sk_live_", 8);

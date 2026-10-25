@@ -298,6 +298,14 @@
       "evidence": ["tests/detectors/test_apacta.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
+    "api2cart/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/api2cart/api2cart.go",
+      "native_files": ["src/detectors/api2cart.c", "src/detectors/key_scan.c", "src/detectors/json.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_api2cart.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoding semantics and malformed-input diagnostics"]
+    },
     "apideck/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/apideck/apideck.go",
