@@ -287,7 +287,7 @@
       "upstream_source": "pkg/detectors/anypointoauth2/anypointoauth2.go",
       "native_files": ["src/detectors/anypointoauth2.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_anypointoauth2.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_anypointoauth2.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native SANE POST redirects remain explicitly unsupported"]
     },
     "apacta/Scanner": {
@@ -295,7 +295,7 @@
       "upstream_source": "pkg/detectors/apacta/apacta.go",
       "native_files": ["src/detectors/apacta.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_apacta.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_apacta.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "api2cart/Scanner": {
@@ -303,7 +303,7 @@
       "upstream_source": "pkg/detectors/api2cart/api2cart.go",
       "native_files": ["src/detectors/api2cart.c", "src/detectors/key_scan.c", "src/detectors/json.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_api2cart.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_api2cart.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoding semantics and malformed-input diagnostics"]
     },
     "apideck/Scanner": {
@@ -311,7 +311,7 @@
       "upstream_source": "pkg/detectors/apideck/apideck.go",
       "native_files": ["src/detectors/apideck.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_apideck.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_apideck.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },

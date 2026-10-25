@@ -381,6 +381,12 @@ def fixtures():
         ("anthropic_admin", 933, b"sk-ant-admin01-" + alnum("anthropic-admin-oracle", 93) + b"AA"),
         ("anypoint", 179, b"anypoint b7c9d2e5-f6g8-h3j4-k1m0-n2p4q6r8s1t3\n"
          b"org c7d8e9f0-g1h2-i3j4-k5l6-m7n8o9p0q1r2"),
+        ("anypointoauth2", 1032, b"anypoint id " + synthetic("anypoint-oauth-id", 32) +
+         b"\nsecret " + synthetic("anypoint-oauth-secret", 32).upper()),
+        ("apacta", 632, b"apacta " + synthetic("apacta-oracle", 36)),
+        ("api2cart", 458, b"api2cart " + synthetic("api2cart-oracle", 32)),
+        ("apideck", 212, b"apideck sk_live_" + alnum("apideck-key-oracle", 93) +
+         b"\napideck " + alnum("apideck-id-oracle", 40)),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
