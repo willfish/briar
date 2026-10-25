@@ -312,23 +312,23 @@ def fixtures():
         ("original_bytes_fanout", b"header\n" + encoded + b"\n" + b"." * 1024 + b"\xff"),
     ):
         cases.append(("base64_" + label, payload, "239", "filesystem", False))
-    fourth = (
+    alegra_token = synthetic("alegra-oracle", 20)
+    provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
         ("airship", 277, b"airship " + alnum("airship-oracle", 91)),
         ("airtable_oauth", 1014, b"airtable " + alnum("airtable-prefix", 16) + b".v1." + alnum("airtable-body", 40) + b"." + synthetic("airtable-suffix", 32)),
-    )
-    for label, number, payload in fourth:
-        cases.append((label + "_stdin", payload, str(number), "stdin", False))
-        cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
-    fifth = (
         ("airtable_pat", 1015, b"airtable pat" + alnum("airtable-pat", 14) + b"." + synthetic("airtable-pat-suffix", 64)),
         ("airvisual", 498, b"airvisual " + synthetic("airvisual-oracle", 36)),
         ("aiven", 917, b"aiven " + alnum("aiven-oracle", 372)),
         ("alchemy_legacy", 907, b"alchemy " + alnum("alchemy-legacy", 32)),
         ("alchemy_prefixed", 907, b"alchemy alcht_" + alnum("alchemy-prefixed", 30)),
+        ("alegra", 375, b"alegra " + alegra_token + b"\nalegra fixture@example.test"),
+        ("alegra_nul_id", 375, b"alegra " + alegra_token + b"\n" + b"." * 128 + b"\nalegra\x00fixture@example.test"),
+        ("aletheiaapi", 522, b"aletheiaapi " + synthetic("aletheia-oracle", 32).upper()),
+        ("algoliaadminkey", 170, b"algolia\nappId B7C9D2E5F6\napiKey " + alnum("algolia-admin-oracle", 32)),
     )
-    for label, number, payload in fifth:
+    for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
         cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
     cases.extend(multipart_fixtures())

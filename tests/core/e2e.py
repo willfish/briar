@@ -354,6 +354,7 @@ for args in (
     ["stdin", "--json", "--no-verification", "--include-detectors=999999"],
     ["stdin", "--json", "--no-verification", "--include-detectors=AWS"],
     ["stdin", "--json", "--no-verification", "--include-detectors=384"],
+    ["stdin", "--json", "--no-verification", "--include-detectors=301"],
     ["stdin", "--json", "--no-verification", "--include-detectors=239.v1"],
     ["stdin", "--json", "--no-verification", "--include-detectors=431.v1"],
     ["stdin", "--json", "--no-verification", "--include-detectors=693.v1"],

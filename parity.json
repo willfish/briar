@@ -191,7 +191,7 @@
       "upstream_source": "pkg/detectors/alconost/alconost.go",
       "native_files": ["src/detectors/alconost.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_alconost.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_alconost.c", "tests/detectors/test_registry.c", "tests/core/e2e.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Disabled upstream constructor has no positive CLI oracle execution; direct behavior uses pinned source-derived synthetic fixtures"]
     },
     "alegra/Scanner": {
@@ -199,7 +199,7 @@
       "upstream_source": "pkg/detectors/alegra/alegra.go",
       "native_files": ["src/detectors/alegra.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_alegra.c", "tests/detectors/test_captures.c", "tests/detectors/test_findings.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_alegra.c", "tests/detectors/test_captures.c", "tests/detectors/test_findings.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Preserve full email-pattern and context behavior beyond current source-derived byte fixtures"]
     },
     "aletheiaapi/Scanner": {
@@ -207,7 +207,7 @@
       "upstream_source": "pkg/detectors/aletheiaapi/aletheiaapi.go",
       "native_files": ["src/detectors/aletheiaapi.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_aletheiaapi.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_aletheiaapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "The source's client timeout mutation is expressed as a request-local ten-second timeout; broader client configuration and concurrency parity remains incomplete"]
     },
     "algoliaadminkey/Scanner": {
@@ -215,7 +215,7 @@
       "upstream_source": "pkg/detectors/algoliaadminkey/algoliaadminkey.go",
       "native_files": ["src/detectors/algoliaadminkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_algoliaadminkey.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_algoliaadminkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and malformed-input diagnostic wording", "Native curl DNS error classification does not yet establish the source's no-such-host cache path; injected errors and twelve-hour expiry are covered"]
     }
   },
@@ -223,7 +223,7 @@
     "detector_support": {
       "status": "partial",
       "native_files": ["include/briar.h", "src/result.c", "src/regex.c", "src/http.c", "src/falsepositives.c", "src/wordlists.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c"],
-      "evidence": ["tests/core/test_core.c", "tests/detectors/test_findings.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/core/test_core.c", "tests/detectors/test_captures.c", "tests/detectors/test_findings.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "Complete native HTTP profiles, redirects, DNS/proxy policy and timing; SANE/LOCAL GET and POST slices are implemented, PUBLIC and SANE POST redirects fail closed", "Remaining shared detector helpers and protocol adapters"]
     },
     "decoders": {
