@@ -24,7 +24,7 @@
       "state": "partial",
       "upstream_source": "pkg/detectors/abuseipdb/abuseipdb.go",
       "scope_notes": "No detector-local filter/cleaner or Version method exists upstream. Verified filtering/versioning records mean preserving those absences, not completion of global engine filtering.",
-      "native_files": ["src/detectors/first_batch.c"],
+      "native_files": ["src/detectors/abuseipdb.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {
         "extraction": "partial",
         "filtering": "verified",
@@ -34,7 +34,7 @@
         "registry_behavior": "verified",
         "acceptance_evidence": "partial"
       },
-      "evidence": ["tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "evidence": ["tests/detectors/test_abuseipdb.c", "tests/detectors/test_detectors.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Shared RE2/PCRE2 and invalid-byte semantics are not fully reproduced", "Full native HTTP-client behavior is not established", "Reference CLI comparisons cover the selected implemented ASCII path, not the complete engine"]
     },
     "abyssale/Scanner": {
