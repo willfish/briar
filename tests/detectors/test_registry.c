@@ -52,6 +52,7 @@ static const registration expected[] = {
     {637, 0, "APIMatic", "apimatic", 64, true, 1024},
     {1004, 0, "ApiMetrics", "apimetrics", 32, true, -1},
     {768, 0, "APITemplate", "apitemplate", 39, true, -1},
+    {293, 0, "Apollo", "apollo", 22, false, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */

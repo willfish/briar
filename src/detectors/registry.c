@@ -48,6 +48,7 @@ static const detector_factory named_factories[] = {
     br_apimatic_init,
     br_apimetrics_init,
     br_apitemplate_init,
+    br_apollo_init,
 };
 
 static int fail(char **error, const char *message)
@@ -112,6 +113,7 @@ const char *br_detector_type_name(int32_t type)
     case 212: return "ApiDeck";
     case 239: return "Abyssale";
     case 277: return "Airship";
+    case 293: return "Apollo";
     case 301: return "Alconost";
     case 303: return "Accuweather";
     case 375: return "Alegra";
