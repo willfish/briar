@@ -4,7 +4,7 @@
 
 Reproduce all behavior of TruffleHog 3.97.2, commit `cc1fe982afc515d2991365ce8d4d0dd07170fcad`, as pinned in `UPSTREAM.json`. `.reference/trufflehog` is read-only specification evidence, never runtime code. Port detector logic and supporting components directly to C. Do not build a general Go runtime/compatibility framework or call Go as the implementation.
 
-Use the declared PCRE2, libcurl and json-c dependencies for matching, HTTP and structured values. These cover the first batch, not every later cryptographic, archive, database or SSH requirement. Track additional native dependencies with their concrete ports. Preserve AGPL-3.0-only licensing and notices. Development and acceptance use synthetic inputs and injected responses, never real credentials or service verification.
+Use the declared PCRE2, libcurl, json-c and OpenSSL dependencies for matching, HTTP, structured values and native request signing. Track additional archive, database, SSH or other native dependencies with their concrete ports. Preserve AGPL-3.0-only licensing and notices. Development and acceptance use synthetic inputs and injected responses, never real credentials or service verification.
 
 Build in vertical slices: shared primitives and three complete detectors; remaining detector families and decoders; sources/file handlers; analysis and remaining CLI/runtime behavior. Each slice leaves the full inventory visible. Unsupported behavior is an explicit gap, not an empty successful scan.
 
