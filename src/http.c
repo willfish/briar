@@ -220,16 +220,25 @@ static int curl_send(void *user, const br_scan_ctx *ctx, const br_http_request *
                      br_http_response *response, char **error)
 {
     (void)user;
-    /* Injected transports implement the requested profile. Never route a profile
-     * requiring no redirects or DNS/IP policy through this incomplete adapter. */
-    if (req->profile != BR_HTTP_SANE)
+    /* PUBLIC requires an all-answer DNS/proxy policy, not just checking the
+     * selected peer address. Reject it before any request setup or network I/O. */
+    if (req->profile != BR_HTTP_SANE && req->profile != BR_HTTP_DETECTOR_LOCAL)
         return fail(error, "unsupported: native curl HTTP client profile");
-    if (strcmp(req->method, "GET") || req->body.len)
-        return fail(error, "unsupported: curl adapter currently supports bodyless GET only");
+    bool post = !strcmp(req->method, "POST");
+    if ((!post && strcmp(req->method, "GET")) || (!post && req->body.len))
+        return fail(error, "unsupported: curl adapter supports bodyless GET or POST");
+    if (req->body.len > (size_t)LLONG_MAX)
+        return fail(error, "unsupported: HTTP request body too large");
     struct curl_slist *headers = NULL;
     /* net/http does not add curl's default Accept header. */
     headers = curl_slist_append(headers, "Accept:");
     if (!headers) return fail(error, "out of memory constructing curl headers");
+    /* Go does not infer Content-Type for NewRequest with a body. */
+    if (post) {
+        struct curl_slist *next = curl_slist_append(headers, "Content-Type:");
+        if (!next) goto memory_error;
+        headers = next;
+    }
     for (size_t i = 0; i < req->nheaders; ++i) {
         size_t a = strlen(req->headers[i].name), b = strlen(req->headers[i].value);
         if (a > SIZE_MAX - b - 3) goto memory_error;
@@ -264,6 +273,10 @@ static int curl_send(void *user, const br_scan_ctx *ctx, const br_http_request *
         SET(CURLOPT_PROTOCOLS_STR, "http,https");
         SET(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         SET(CURLOPT_HTTPHEADER, headers);
+        if (post) {
+            SET(CURLOPT_POSTFIELDS, req->body.len ? (const char *)req->body.data : "");
+            SET(CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)req->body.len);
+        }
         SET(CURLOPT_ACCEPT_ENCODING, "gzip");
         SET(CURLOPT_NOSIGNAL, 1L);
         SET(CURLOPT_TIMEOUT_MS, (long)(total_end - hop_start));
@@ -311,11 +324,12 @@ static int curl_send(void *user, const br_scan_ctx *ctx, const br_http_request *
         if (!failure && outcome != CURLE_OK)
             failure = cr.failure ? cr.failure : curl_easy_strerror(outcome);
         char *next_url = NULL;
-        if (!failure && redirect_status(response->status)) {
+        if (!failure && req->profile == BR_HTTP_SANE && redirect_status(response->status)) {
             char *location = NULL;
             curl_easy_getinfo(easy, CURLINFO_REDIRECT_URL, &location);
             if (location) {
-                if (redirects >= 9) failure = "stopped after 10 redirects";
+                if (post) failure = "unsupported: redirects for native HTTP POST";
+                else if (redirects >= 9) failure = "stopped after 10 redirects";
                 else {
                     /* Go strips sensitive headers across hosts. That generic case is not ported yet. */
                     for (size_t i = 0; i < req->nheaders; ++i)
@@ -332,7 +346,8 @@ static int curl_send(void *user, const br_scan_ctx *ctx, const br_http_request *
         }
         if (failure) {
             /* Body errors remain separate so status-only detectors ignore them. */
-            if (cr.headers_complete && !redirect_status(response->status)) {
+            if (cr.headers_complete &&
+                (req->profile == BR_HTTP_DETECTOR_LOCAL || !redirect_status(response->status))) {
                 response->body_error = strdup(failure);
                 if (response->body_error) rc = 0;
                 else fail(error, "out of memory storing HTTP body error");

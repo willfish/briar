@@ -8,11 +8,11 @@ The target is **the entirety of TruffleHog 3.97.2**, not a smaller regex scanner
 
 The source-derived inventory contains **921 detector implementations**, **892 registry constructor candidates**, including two AWS factory registrations, and **34 supporting components**, including shared detector helpers. It includes disabled and versioned detectors. Registry membership is not evidence that a detector is enabled by default; upstream feature gates require separate behavior checks.
 
-The native library contains shared result/regex/HTTP primitives, PLAIN/UTF8 and Base64 decoding, and eleven detector implementations: Abstract, AbuseIPDB, Abyssale, Accuweather v1/v2, AdafruitIO, AdobeIO, Adzuna, Aeroworkflow, Agora and Aha. The limited CLI supports selected stdin/regular-file JSON scans, with verification disabled. It explicitly rejects multipart capabilities, default/all scans and unported options rather than presenting partial coverage as a complete scanner.
+The native library contains shared result/regex/HTTP primitives, PLAIN/UTF8 and Base64 decoding, and fifteen detector implementations: Abstract, AbuseIPDB, Abyssale, Accuweather v1/v2, AdafruitIO, AdobeIO, Adzuna, Aeroworkflow, Agora, Aha, Airbrake project/user keys, Airship and Airtable OAuth. The CLI supports selected stdin/regular-file JSON scans, including multipart credentials, with verification disabled. Raw source chunks use 10 KiB content plus 3 KiB forward peek before decoding. A source-derived UTF16 helper is library-only for now. Default/all scans and unported options fail explicitly rather than presenting partial coverage as a complete scanner.
 
-All eleven implementations remain **partial**, and no detector or component is counted as fully reproduced yet. [parity.json](parity.json) records the remaining behavior against [upstream-inventory.json](upstream-inventory.json); absent entries remain not started. [Acceptance evidence](docs/ACCEPTANCE.md) records the actual checks and limits. Inventory and ledger entries are not substitutes for behavioral evidence or the final full-scope audit.
+All fifteen implementations remain **partial**, and no detector or component is counted as fully reproduced yet. [parity.json](parity.json) records the remaining behavior against [upstream-inventory.json](upstream-inventory.json); absent entries remain not started. [Acceptance evidence](docs/ACCEPTANCE.md) records the actual checks and limits. Inventory and ledger entries are not substitutes for behavioral evidence or the final full-scope audit.
 
-Do not use this work-in-progress as a security boundary. Nothing is deployed into Pi. Verification tests use synthetic credentials and injected/offline responses, never real credentials against services. Native code must not wrap the Go scanner as its implementation.
+Do not use this work-in-progress as a security boundary. Nothing is deployed into Pi. Verification tests use synthetic credentials and injected/offline responses, never real credentials against services. Some upstream verifiers mutate services, including the Airbrake project-key deploy POST; CLI verification remains disabled. Native code must not wrap the Go scanner as its implementation.
 
 ## Development
 
@@ -26,7 +26,7 @@ direnv exec . python3 tools/test_inventory.py
 direnv exec . python3 tools/progress.py
 ```
 
-The executable is `build/briar`; run `--help` for the currently supported subset. Current CLI inputs are at most 64 KiB and require an explicit supported non-multipart detector selection. Unicode and malformed input bytes use the pinned PLAIN/UTF8 sanitization rules; Base64 uses the pinned candidate and ASCII-output rules. The entire upstream CLI and input pipeline remain the target, not these temporary limits.
+The executable is `build/briar`; run `--help` for the currently supported subset. Current CLI inputs are at most 64 KiB and require an explicit supported detector selection. Unicode and malformed input bytes use the pinned PLAIN/UTF8 sanitization rules; Base64 uses the pinned candidate and ASCII-output rules. The entire upstream CLI and input pipeline remain the target, not these temporary limits.
 
 The pinned upstream source is a read-only reference under ignored `.reference/trufflehog`. To restore that cache:
 

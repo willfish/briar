@@ -96,7 +96,7 @@
       "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c"],
-      "remaining": ["Complete shared regexp/HTTP behavior", "CLI intentionally rejects multipart capability until chunk/window/prefilter semantics are implemented"]
+      "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "aeroworkflow/Scanner": {
       "state": "partial",
@@ -104,7 +104,7 @@
       "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c"],
-      "remaining": ["Complete shared regexp/HTTP behavior", "CLI intentionally rejects multipart capability until chunk/window/prefilter semantics are implemented"]
+      "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "agora/Scanner": {
       "state": "partial",
@@ -112,7 +112,7 @@
       "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c"],
-      "remaining": ["Complete shared regexp/HTTP behavior", "CLI intentionally rejects multipart capability until chunk/window/prefilter semantics are implemented"]
+      "remaining": ["Complete shared regexp/HTTP behavior", "Complete source options, Unicode-prefilter and concurrency parity"]
     },
     "aha/Scanner": {
       "state": "partial",
@@ -120,7 +120,39 @@
       "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c", "tests/core/test_core.c"],
-      "remaining": ["Native PUBLIC HTTP profile fails closed; complete all-address DNS checks, proxy handling, timeout and no-redirect behavior", "CLI intentionally rejects multipart capability until chunk/window/prefilter semantics are implemented", "Complete shared regexp/engine behavior"]
+      "remaining": ["Native PUBLIC HTTP profile fails closed; complete all-address DNS checks, proxy handling, timeout and no-redirect behavior", "Complete source options, Unicode-prefilter and concurrency parity", "Complete shared regexp/engine behavior"]
+    },
+    "airbrakeprojectkey/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/airbrakeprojectkey/airbrakeprojectkey.go",
+      "native_files": ["src/detectors/fourth_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_detectors.c", "tests/core/http_profiles.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Verifier performs a state-changing POST; only synthetic offline requests have been tested"]
+    },
+    "airbrakeuserkey/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/airbrakeuserkey/airbrakeuserkey.go",
+      "native_files": ["src/detectors/fourth_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_detectors.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "airship/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/airship/airship.go",
+      "native_files": ["src/detectors/fourth_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_detectors.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "airtableoauth/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/airtableoauth/airtableoauth.go",
+      "native_files": ["src/detectors/fourth_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fourth_batch.c", "tests/detectors/test_detectors.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },
   "components": {
@@ -128,19 +160,19 @@
       "status": "partial",
       "native_files": ["include/briar.h", "src/result.c", "src/regex.c", "src/http.c", "src/falsepositives.c", "src/wordlists.c"],
       "evidence": ["tests/core/test_core.c", "tests/detectors/test_detectors.c", "docs/ACCEPTANCE.md"],
-      "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "Native HTTP profiles, redirects, DNS/proxy policy, timing and non-GET requests; injected LOCAL/PUBLIC profile dispatch is implemented but native curl rejects those profiles before I/O", "Remaining shared detector helpers and protocol adapters"]
+      "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "Complete native HTTP profiles, redirects, DNS/proxy policy and timing; SANE/LOCAL GET and POST slices are implemented, PUBLIC and SANE POST redirects fail closed", "Remaining shared detector helpers and protocol adapters"]
     },
     "decoders": {
       "status": "partial",
-      "native_files": ["src/utf8.c", "src/base64.c", "include/briar_decoders.h", "src/main.c"],
-      "evidence": ["tests/core/test_utf8.c", "tests/core/test_base64.c", "tests/cli_reference.py"],
-      "remaining": ["UTF16, escaped Unicode and HTML decoders", "Full decoder/engine interaction, chunking and metadata parity"]
+      "native_files": ["src/utf8.c", "src/base64.c", "src/utf16.c", "include/briar_decoders.h", "src/main.c"],
+      "evidence": ["tests/core/test_utf8.c", "tests/core/test_base64.c", "tests/core/test_utf16.c", "tests/cli_reference.py"],
+      "remaining": ["UTF16 engine wiring; its source-derived native heuristic is library-only", "Escaped Unicode and HTML decoders", "Full decoder/engine interaction, chunking and metadata parity"]
     },
     "engine": {
       "status": "partial",
       "native_files": ["src/main.c"],
       "evidence": ["tests/core/e2e.py", "tests/cli_reference.py"],
-      "remaining": ["Full registry selection and feature gates", "Decoding, chunking, overlap and concurrency", "Verification/cache/entropy and all remaining engine branches"]
+      "remaining": ["Full registry selection and feature gates", "Full decoder fan-out, source/chunk options, Unicode-prefilter and concurrency parity", "Verification/cache/entropy and all remaining engine branches"]
     },
     "cli": {
       "status": "partial",

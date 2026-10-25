@@ -19,6 +19,8 @@
 extern const br_transport *br_curl_transport_init(char **error);
 
 #define INPUT_LIMIT (64 * 1024)
+#define SOURCE_CONTENT_SIZE (10 * 1024)
+#define SOURCE_PEEK_SIZE (3 * 1024)
 #define BASE64_MAX_DEPTH 5 /* Pinned CLI default; other depth options remain unsupported. */
 
 typedef struct {
@@ -30,7 +32,7 @@ typedef struct {
 } cli_options;
 
 typedef struct {
-    int64_t source_id, job_id, secret_id;
+    int64_t source_id, job_id, secret_id, first_line;
     int32_t source_type;
     const char *source_name, *path, *decoder_name;
     br_slice original, data;
@@ -64,8 +66,9 @@ static void usage(void)
          "Native slice: explicit supported detector selection required; default/all scans fail.\n"
          "Only selected upstream-enabled implementations run; Abstract remains disabled.\n"
          "Inputs: explicit regular files or stdin, PLAIN/BASE64, at most 64 KiB each.\n"
-         "PLAIN runs first; Base64 uses original bytes, up to five decoding passes.\n"
-         "No directory traversal, archives, other decoders, depth options, chunking, CLI verification/cache,\n"
+         "Source chunks: 10 KiB content + 3 KiB forward peek, before decoding.\n"
+         "PLAIN runs first; Base64 uses original chunk bytes, up to five decoding passes.\n"
+         "No directory traversal, archives, other decoders, depth options, CLI verification/cache,\n"
          "entropy, custom configuration, non-JSON printers or other sources yet.\n"
          "Unported options and commands fail explicitly. JSON is newline-delimited.");
 }
@@ -233,10 +236,12 @@ static bool locate(result_frame *frame)
     br_slice key = effective_secret(r);
     size_t offset = r->chunk_offset_set && r->chunk_offset >= 0
         ? (size_t)r->chunk_offset : find_bytes(s->data, key, 0);
-    frame->line = 1;
+    frame->line = s->first_line;
     if (offset == SIZE_MAX || offset > s->data.len || key.len > s->data.len - offset) return false;
-    for (size_t i = 0; i < offset; ++i) if (s->data.data[i] == '\n') ++frame->line;
-    if (r->primary_secret.len) r->primary_line = frame->line - 1;
+    int64_t line_offset = 0;
+    for (size_t i = 0; i < offset; ++i) if (s->data.data[i] == '\n') ++line_offset;
+    frame->line += line_offset;
+    if (r->primary_secret.len) r->primary_line = line_offset;
     size_t start = offset + key.len, end = start;
     while (end < s->data.len && s->data.data[end] != '\n') ++end;
     br_slice tail = { s->data.data + start, end - start };
@@ -384,6 +389,22 @@ static bool keyword_at(br_slice input, size_t at, const char *word)
     return true;
 }
 
+static br_span keyword_span(const br_detector *detector, size_t at, size_t input_len)
+{
+    uint64_t before = 512, after = 512;
+    /* Independent overrides, in pinned order. Zero is present; -1 is absent. */
+    if (detector->max_credential_span >= 0)
+        before = after = (uint64_t)detector->max_credential_span;
+    if (detector->max_secret_size >= 0) after = (uint64_t)detector->max_secret_size;
+    if (detector->start_offset >= 0) before = (uint64_t)detector->start_offset;
+    br_span span = {
+        before > at ? 0 : at - (size_t)before,
+        after > input_len - at ? input_len : at + (size_t)after,
+    };
+    if (span.begin >= span.end) span.begin = 0;
+    return span;
+}
+
 static int scan_source(const cli_options *o, const source_frame *source,
                         const br_scan_ctx *ctx, const br_detector *const *registry,
                         size_t count, const bool *selected, br_json *output,
@@ -393,17 +414,17 @@ static int scan_source(const cli_options *o, const source_frame *source,
     for (size_t i = 0; i < count; ++i) {
         if (!selected[i]) continue;
         const br_detector *d = registry[i];
-        if (!d->scan || !d->nkeywords || d->max_secret_size != -1 ||
-            d->max_credential_span != -1 || d->start_offset != -1)
-            return fail(error, "unsupported detector capability in this engine slice");
-        /* OR prefilter; these implementations use the default 512-byte radius. */
+        if (!d->scan || !d->keywords || !d->nkeywords || d->max_secret_size < -1 ||
+            d->max_credential_span < -1 || d->start_offset < -1)
+            return fail(error, "invalid or unsupported detector prefilter capability");
+        /* OR only the descriptor keywords, not its extraction-pattern aliases. */
         br_span merged = { SIZE_MAX, SIZE_MAX };
         for (size_t at = 0; at < input.len; ++at) {
             if (stopped) return fail(error, "context canceled");
             bool hit = false;
             for (size_t k = 0; k < d->nkeywords; ++k) hit |= keyword_at(input, at, d->keywords[k]);
             if (!hit) continue;
-            br_span span = { at > 512 ? at - 512 : 0, input.len - at > 512 ? at + 512 : input.len };
+            br_span span = keyword_span(d, at, input.len);
             if (merged.begin == SIZE_MAX) merged = span;
             else if (span.begin <= merged.end) merged.end = span.end > merged.end ? span.end : merged.end;
             else {
@@ -467,6 +488,33 @@ static int scan_decoders(const cli_options *o, const source_frame *source,
     return rc;
 }
 
+static int scan_chunks(const cli_options *o, const source_frame *source,
+                        const br_scan_ctx *ctx, const br_detector *const *registry,
+                        size_t count, const bool *selected, br_json *output,
+                        br_json *keys, char **error)
+{
+    int64_t first_line = 1;
+    for (size_t start = 0; start < source->original.len;) {
+        if (stopped) return fail(error, "context canceled");
+        size_t remaining = source->original.len - start;
+        size_t content = remaining < SOURCE_CONTENT_SIZE ? remaining : SOURCE_CONTENT_SIZE;
+        size_t view_len = remaining < content + SOURCE_PEEK_SIZE ? remaining : content + SOURCE_PEEK_SIZE;
+        source_frame chunk = *source;
+        chunk.first_line = first_line;
+        /* OriginalData is this raw content+peek view, never the decoded window. */
+        chunk.original = (br_slice){ source->original.data + start, view_len };
+        int rc = scan_decoders(o, &chunk, ctx, registry, count, selected, output, keys, error);
+        if (rc) return rc;
+        /* Peek bytes are read again as content in the next chunk. Stdin has no
+         * line/ignore metadata, while filesystem advances only over raw content. */
+        if (source->source_type == 15)
+            for (size_t i = 0; i < content; ++i)
+                if (source->original.data[start + i] == '\n') ++first_line;
+        start += content;
+    }
+    return 0;
+}
+
 static int read_input(int fd, br_bytes *input, char **error)
 {
     unsigned char *data = malloc(INPUT_LIMIT + 1);
@@ -484,7 +532,7 @@ static int read_input(int fd, br_bytes *input, char **error)
         if (n < 0) { free(data); return fail(error, "input read failed"); }
         if (!n) break;
         len += (size_t)n;
-        if (len > INPUT_LIMIT) { free(data); return fail(error, "unsupported: input exceeds 64 KiB; chunking is not ported"); }
+        if (len > INPUT_LIMIT) { free(data); return fail(error, "unsupported: input exceeds the 64 KiB source cap"); }
     }
     input->data = data;
     input->len = len;
@@ -526,7 +574,7 @@ int main(int argc, char **argv)
     curl_initialized = true;
     output = json_object_new_array(); keys = json_object_new_array();
     if (!output || !keys) { fail(&error, "out of memory initializing output"); goto done; }
-    fprintf(stderr, "briar: limited native slice, %zu explicitly selected enabled detector(s); PLAIN/BASE64 only (five Base64 passes), no other decoders/chunking or CLI verification\n", nselected);
+    fprintf(stderr, "briar: limited native slice, %zu explicitly selected enabled detector(s); 10 KiB + 3 KiB source chunks, PLAIN/BASE64 only (five Base64 passes), no other decoders or CLI verification\n", nselected);
     size_t nsources = !strcmp(options.command, "stdin") ? 1 : options.npaths;
     for (size_t i = 0; i < nsources; ++i) {
         bool is_stdin = !strcmp(options.command, "stdin");
@@ -550,12 +598,12 @@ int main(int argc, char **argv)
         if (!is_stdin && close(fd) && !read_rc) read_rc = fail(&error, "cannot close filesystem input");
         if (read_rc) { free(input.data); goto done; }
         source_frame source = {
-            .source_id = 1, .job_id = 1, .secret_id = 0,
+            .source_id = 1, .job_id = 1, .secret_id = 0, .first_line = 1,
             .source_type = is_stdin ? 40 : 15,
             .source_name = is_stdin ? "trufflehog - stdin" : "trufflehog - filesystem",
             .path = is_stdin ? NULL : options.paths[i], .original = { input.data, input.len },
         };
-        int scan_rc = scan_decoders(&options, &source, &ctx, registry, count, selected, output, keys, &error);
+        int scan_rc = scan_chunks(&options, &source, &ctx, registry, count, selected, output, keys, &error);
         free(input.data);
         if (scan_rc) goto done;
     }

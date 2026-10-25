@@ -14,6 +14,10 @@ extern "C" {
  * Errors clear both outputs and return an owned, non-sensitive error string. */
 int br_base64_decode(br_slice input, br_bytes *decoded, bool *applied, char **error);
 
+/* Pinned UTF16 heuristic extracts printable ASCII, LE matches before BE matches;
+ * it is not a general Unicode conversion. Same output ownership as Base64. */
+int br_utf16_decode(br_slice input, br_bytes *decoded, bool *applied, char **error);
+
 #ifdef __cplusplus
 }
 #endif

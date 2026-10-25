@@ -296,16 +296,15 @@ static void unsupported_native_profiles(void)
     CHECK(transport != NULL && error == NULL);
     br_scan_ctx ctx = {.transport = transport};
     /* Invalid URL prevents DNS even if a future regression removes the guard. */
-    br_http_request request = {.method = "GET", .url = "://invalid"};
+    br_http_request request = {
+        .method = "GET", .url = "://invalid", .profile = BR_HTTP_DETECTOR_PUBLIC,
+    };
     br_http_response response = {0};
-    for (int profile = BR_HTTP_DETECTOR_LOCAL; profile <= BR_HTTP_DETECTOR_PUBLIC; ++profile) {
-        request.profile = (br_http_profile)profile;
-        CHECK(br_http_send(&ctx, &request, &response, &error) != 0);
-        CHECK(error && !strcmp(error, "unsupported: native curl HTTP client profile"));
-        CHECK(response.status == 0 && response.body.data == NULL);
-        free(error); error = NULL;
-        br_http_release(&ctx, &response);
-    }
+    CHECK(br_http_send(&ctx, &request, &response, &error) != 0);
+    CHECK(error && !strcmp(error, "unsupported: native curl HTTP client profile"));
+    CHECK(response.status == 0 && response.body.data == NULL);
+    free(error);
+    br_http_release(&ctx, &response);
 }
 
 int main(void)

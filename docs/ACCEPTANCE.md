@@ -4,9 +4,11 @@ Reference: TruffleHog 3.97.2, commit `cc1fe982afc515d2991365ce8d4d0dd07170fcad`.
 
 ## Native slice
 
-The C library contains eleven detector implementations: Abstract, AbuseIPDB, Abyssale, Accuweather v1/v2, AdafruitIO, AdobeIO, Adzuna, Aeroworkflow, Agora and Aha. The registry preserves source order, versions and disabled Abstract/AdobeIO membership. Detector verification fixtures use injected transport, not real credentials or service calls.
+The C library contains fifteen detector implementations: Abstract, AbuseIPDB, Abyssale, Accuweather v1/v2, AdafruitIO, AdobeIO, Adzuna, Aeroworkflow, Agora, Aha, Airbrake project/user keys, Airship and Airtable OAuth. The registry preserves source order, versions and disabled Abstract/AdobeIO membership. Verification fixtures use synthetic candidates and injected/loopback transport, never real credentials against services.
 
-The CLI runs PLAIN/UTF8 and Base64 independently from original bytes. Valid UTF8 passes through; malformed input follows the pinned sanitization branch. Base64 preserves intermediate findings through the default five passes. Other decoders and configurable depth remain unported.
+Raw input is split into 10 KiB content plus 3 KiB forward peek before decoding. Filesystem base lines advance over content only; stdin retains its distinct metadata behavior. Keyword spans merge when overlapping or adjacent, with pinned multipart/max-size/start-offset overrides. Pairing, RawV2-aware deduplication and decoded result locations are exercised against the reference.
+
+PLAIN/UTF8 and initial Base64 receive original bytes independently. Base64 retains intermediate findings through the default five passes. A native UTF16 helper reproduces the source's printable-ASCII extraction, with LE results before BE results; it is not yet wired into the CLI. Other decoders and configurable depth remain unported.
 
 ## Reproduce checks
 
@@ -26,27 +28,31 @@ Observed fresh results:
 | Check | Coverage | Result |
 | --- | --- | --- |
 | Strict C11 build | `-Wall -Wextra -Wpedantic -Werror` | Passed |
-| Shared core | 252 assertions | Zero failures |
+| Shared core | 249 assertions | Zero failures |
 | PLAIN/UTF8 | 29 cases, 188 assertions | Zero failures |
 | Base64 | 25 cases, 154 assertions | Zero failures |
-| Detectors | 541 cases, 14,640 assertions | Zero failures |
-| Native CLI | 158 assertions | Zero failures |
+| UTF16 library helper | 17 cases, 106 assertions | Zero failures |
+| Detectors | 744 cases, 19,885 assertions | Zero failures |
+| Native CLI | 254 assertions | Zero failures |
 | Proxy CONNECT/TLS regression | 32 assertions | Zero failures |
+| Native HTTP profiles/body handling | Nine loopback-only cases, 94 assertions | Zero failures |
 | Source-inventory regressions | Four tests | Zero failures |
-| Pinned-reference comparisons | 91 selected input/decoder cases | Zero failures |
+| Pinned-reference comparisons | 158 selected input/decoder/window cases | Zero failures |
 
-Detector checks cover capture boundaries, pairing, entropy/uniqueness where applicable, exact metadata, mock requests and verifier status/body/error branches. Reference comparisons cover complete JSON rows, version selection, cleaning, duplicates, malformed UTF8, nested Base64 and filesystem metadata. Abstract/AdobeIO are disabled in the reference CLI, so their direct implementations use source-derived fixtures instead.
+Detector checks cover extraction, pairing/uniqueness, exact metadata and verifier request/status/body/error branches. Reference checks cover complete JSON rows, multipart windows and source chunk boundaries, version selection, cleaning, duplicates, malformed UTF8, nested Base64 and filesystem metadata. The 2,048/2,049-byte keyword separation and 11,000/15,000-byte bridged-window cases distinguish source-faithful pairing from unsafe whole-file merging.
 
-The upstream notifier races when PLAIN and Base64 produce the same finding. Native ordering is PLAIN-first. Five identified duplicate fixtures permit only the observed `DecoderName` alternative at otherwise identical result identities and fields; other comparisons remain strict. Full concurrency parity is not established.
+The upstream notifier can race when PLAIN and Base64 produce the same finding. Native ordering is PLAIN-first. Five identified duplicate fixtures permit only the observed `DecoderName` alternative at otherwise identical identities and fields; other comparisons remain strict. Full concurrency parity is not established.
 
-The proxy regression prevents CONNECT `200 Connection established` from being mistaken for an origin response after TLS failure. Both status-only verifiers retain an error and `verified=false`. The native adapter suppresses CONNECT headers.
+The CONNECT regression prevents a proxy's successful tunnel response from being mistaken for an origin response after TLS failure. Abstract and Abyssale retain an error with `verified=false`.
 
-## Remaining boundaries
+## Remaining boundaries and verification risks
 
-All eleven detector records and all supporting components remain incomplete in `parity.json`. Another 910 detector implementations are not started. Inventory discovery and passing this slice do not establish full TruffleHog reproduction.
+All fifteen detector records and all supporting components remain incomplete in `parity.json`; another 906 detector implementations are not started. Passing this slice does not establish full TruffleHog reproduction.
 
-The CLI requires explicit supported non-multipart selection, JSON and disabled verification. Adzuna, Aeroworkflow, Agora and Aha remain library-only until multipart chunk/window/prefilter behavior is implemented. Inputs are stdin or explicit regular files up to 64 KiB, without traversal, archives or the complete chunking/source pipeline. Unsupported selections, options and capabilities fail explicitly.
+The CLI requires explicit supported selection, JSON and disabled verification. Inputs remain stdin or explicit regular files up to 64 KiB. Traversal, archives, full source/configuration/output behavior and all unported options remain unsupported and fail explicitly.
 
-Injected HTTP dispatch accepts SANE and the two detector profiles, with pinned timeout defaults and context clamping. The injected transport owns redirect/address policy. Native curl still supports only the SANE bodyless-GET slice and rejects LOCAL/PUBLIC before network I/O. PUBLIC needs complete all-answer DNS checks, proxy semantics, cancellation and redirect policy; successful Aha mock checks do not prove those native policies.
+Native HTTP supports GET/POST in the SANE/LOCAL slices. LOCAL returns redirects without following them; POST preserves opaque binary/empty bodies and does not invent Content-Type. SANE POST redirects still fail explicitly. PUBLIC rejects before network I/O until all-answer DNS checks, proxy semantics, cancellation and redirect policy are ported. Injected transports own the requested profile's policies; Aha mock success is not native PUBLIC support.
 
-Shared regexp behavior, additional helpers, other decoders and the remaining engine/configuration/output/source functionality are unfinished. Service acceptance is untested. AdobeIO preserves upstream's error-helper call without secret arguments, so injected transport errors must not contain credentials. This work is not an outbound-context redactor or a deployed Pi security boundary.
+Some upstream verifiers mutate services. Airbrake project-key verification posts a deploy record, so it must not be treated as a read-only credential check. Its fixture is synthetic/offline only. Several source verifiers omit secret arguments to their error helper; injected transports must not include credentials in their errors. Service acceptance is untested.
+
+Shared regexp behavior, other decoders, remaining helpers and complete engine/source behavior remain unfinished. Nothing here is deployed into Pi or a production security boundary.

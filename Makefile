@@ -14,8 +14,9 @@ OBJECTS := $(patsubst %.c,build/%.o,$(SOURCES))
 CORE_TESTS := $(patsubst tests/core/%.c,build/tests/core/%,$(wildcard tests/core/test_*.c))
 DETECTOR_TESTS := $(patsubst tests/detectors/%.c,build/tests/detectors/%,$(wildcard tests/detectors/test_*.c))
 PROXY_TEST := build/tests/core/proxy_connect
+PROFILE_TEST := build/tests/core/http_profiles
 
-.PHONY: all check check-core check-proxy check-detectors check-e2e clean
+.PHONY: all check check-core check-proxy check-http-profiles check-detectors check-e2e clean
 all: build/briar build/libbriar.a
 
 build/briar: build/src/main.o build/libbriar.a
@@ -45,12 +46,15 @@ check-proxy: $(PROXY_TEST)
 check-detectors: $(DETECTOR_TESTS)
 	@set -e; for test in $(DETECTOR_TESTS); do "$$test"; done
 
+check-http-profiles: $(PROFILE_TEST)
+	unshare --user --map-root-user --net bash -eu -c 'ip link set dev lo up; exec python3 tests/core/http_profiles.py "$$1"' _ $(PROFILE_TEST)
+
 check-e2e: build/briar
 	python3 tests/core/e2e.py build/briar
 
-check: check-core check-proxy check-detectors check-e2e
+check: check-core check-proxy check-http-profiles check-detectors check-e2e
 
 clean:
-	rm -f $(OBJECTS) $(OBJECTS:.o=.d) build/src/main.o build/src/main.d build/libbriar.a build/briar $(CORE_TESTS) $(DETECTOR_TESTS) $(PROXY_TEST)
+	rm -f $(OBJECTS) $(OBJECTS:.o=.d) build/src/main.o build/src/main.d build/libbriar.a build/briar $(CORE_TESTS) $(DETECTOR_TESTS) $(PROXY_TEST) $(PROFILE_TEST)
 
 -include $(OBJECTS:.o=.d) build/src/main.d

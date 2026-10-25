@@ -40,6 +40,104 @@ def alnum(label, length):
     return material[:length]
 
 
+def positioned(parts, size=None):
+    end = max(offset + len(value) for offset, value in parts)
+    size = end + 32 if size is None else size
+    assert end <= size <= 65536
+    source = bytearray(b"." * size)
+    for offset, value in parts:
+        source[offset:offset + len(value)] = value
+    return bytes(source)
+
+
+def multipart_fixtures():
+    key = b"b7c9d2e5f6g8h3j4k1m0n2p4q6r8s1t3u5v7w9x2"[:32]
+    secret = key[::-1]
+    part = b"c7d8e9f0"
+    cases = []
+    for name, number, key_line, part_line in (
+        ("adzuna", 431, b"adzuna " + key, b"adzuna " + part),
+        ("aeroworkflow", 693, b"aeroworkflow " + key[:20], b"aeroworkflow 734"),
+        ("agora", 197, b"key " + key, b"secret " + secret),
+    ):
+        prefix = b"agora\n" if name == "agora" else b""
+        normal = prefix + key_line + b"\n" + part_line
+        for label, source, kind, clean in (
+            ("normal", normal, "stdin", False),
+            ("reversed", prefix + part_line + b"\n" + key_line, "stdin", False),
+            ("missing_part", prefix + key_line, "stdin", False),
+            ("duplicates", normal + b"\n" + normal, "stdin", False),
+            ("cleaning", normal + b"\n" + normal, "stdin", True),
+            ("filesystem", b"header\n" + normal + b"\n" + normal, "filesystem", False),
+        ):
+            cases.append((f"multipart_{name}_" + label, source, str(number), kind, clean))
+        cases.append((f"multipart_{name}_version_zero", normal, f"{number}.v0", "stdin", False))
+    cases.append(("multipart_adzuna_raw_v2_distinct", b"header\nadzuna " + key + b"\nadzuna " + part + b"\nadzuna example1", "431", "filesystem", False))
+    cases.append(("multipart_agora_aliases_are_not_prefilter_keywords", b"key " + key + b"\nsecret " + secret, "197", "stdin", False))
+    cases.append(("multipart_agora_cartesian_skip_equal", b"agora " + key + b"\nagora " + secret, "197", "stdin", False))
+    cases.append(("multipart_agora_equal_parts", b"agora\nkey " + key + b"\nsecret " + key, "197", "stdin", False))
+
+    aha = b"b7c9d2e5f6b8c3d4" * 4
+    for label, source in (
+        ("normal", b"aha " + aha + b"\nsynthetic.aha.io"),
+        ("missing_dispatch_keyword", b"aha " + aha),
+        ("bare_host_fallback", b"aha " + aha + b"\naha.io"),
+        ("duplicate_hosts", b"aha " + aha + b"\nsynthetic.aha.io\nsynthetic.aha.io"),
+        ("two_hosts", b"aha " + aha + b"\nsynthetic.aha.io\nsecond.aha.io"),
+        ("keyword_case_url_fallback", b"AHA " + aha + b"\nsynthetic.AHA.IO"),
+    ):
+        cases.append(("multipart_aha_" + label, source, "802", "stdin", False))
+    cases.append(("multipart_aha_version_zero", b"aha " + aha + b"\nsynthetic.aha.io", "802.v0", "stdin", False))
+    cases.append(("multipart_aha_filesystem", b"header\naha " + aha + b"\nsynthetic.aha.io\nsecond.aha.io", "802", "filesystem", False))
+
+    for distance, bridged in ((1500, False), (2048, False), (2049, False), (11000, False), (11000, True), (15000, True)):
+        parts = [(0, b"adzuna " + key + b"\n"), (distance, b"adzuna " + part + b"\n")]
+        if bridged:
+            parts.extend((at, b"adzuna\n") for at in range(1800, distance, 1800))
+        source = positioned(parts)
+        name = f"multipart_distance_{distance}" + ("_bridged" if bridged else "")
+        cases.append((name, source, "431", "stdin", False))
+        if bridged:
+            cases.append((name + "_filesystem", source, "431", "filesystem", False))
+    # Only the single 'agora' keyword creates a window [976, 3024).
+    for label, key_at, secret_at in (("left_exact", 976, 2100), ("left_clipped", 975, 2100),
+                                     ("right_exact", 976, 2985), ("right_clipped", 976, 2986)):
+        source = positioned([(key_at, b"key " + key), (2000, b"agora"), (secret_at, b"secret " + secret)])
+        cases.append(("multipart_span_" + label, source, "197", "stdin", False))
+    return cases
+
+
+def chunk_fixtures():
+    key = b"b7c9d2e5f6g8h3j4k1m0n2p4q6r8s1t3u5v7w9x2"[:32]
+    second = key[::-1]
+    part, other_part = b"c7d8e9f0", b"d8e9f0a1"
+    cases = []
+    for id_at in (13297, 13298):
+        source = positioned([(10000, b"adzuna " + key + b"\n"), (11800, b"adzuna\n"),
+                             (id_at, b"adzuna " + part + b"\n")])
+        cases.append((f"chunk_multipart_peek_edge_{id_at}", source, "431", "stdin", False))
+    for label, first_at, next_key in (("content_only_lines", 11000, second),
+                                      ("raw_location_full_decoded_chunk", 11000, key),
+                                      ("raw_v2_across_chunks", 100, key)):
+        source = positioned([(first_at, b"adzuna " + key + b"\n"), (first_at + 100, b"adzuna " + part + b"\n"),
+                             (14000, b"adzuna " + next_key + b"\n"), (14100, b"adzuna " + other_part + b"\n")])
+        cases.append(("chunk_multipart_" + label, source, "431", "filesystem", False))
+    scalar = b"abyssale " + synthetic("abyssale", 40)
+    for at in (10210, 13300):
+        source = positioned([(0, b"header\n"), (at, scalar + b"\n")])
+        for kind in ("stdin", "filesystem"):
+            cases.append((f"chunk_scalar_{at}_" + kind, source, "239", kind, False))
+    for size in (10240, 13312, 65536):
+        source = positioned([(0, b"header\n"), (size - len(scalar), scalar)], size)
+        cases.append((f"chunk_eof_{size}", source, "239", "filesystem", False))
+    source = positioned([(0, b"header\n"), (100, scalar + b"\n"), (15000, b"\xff")])
+    cases.append(("chunk_plain_normalization_is_local", source, "239", "filesystem", False))
+    pair = b"adzuna " + key + b"\nadzuna " + part
+    source = positioned([(0, b"header\n"), (13280, base64.b64encode(pair))])
+    cases.append(("chunk_base64_multipart_at_peek_edge", source, "431", "filesystem", False))
+    return cases
+
+
 def fixtures():
     cases = []
     for name, length, number in (("abuseipdb", 80, 521), ("abyssale", 40, 239)):
@@ -155,6 +253,17 @@ def fixtures():
         ("original_bytes_fanout", b"header\n" + encoded + b"\n" + b"." * 1024 + b"\xff"),
     ):
         cases.append(("base64_" + label, payload, "239", "filesystem", False))
+    fourth = (
+        ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
+        ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
+        ("airship", 277, b"airship " + alnum("airship-oracle", 91)),
+        ("airtable_oauth", 1014, b"airtable " + alnum("airtable-prefix", 16) + b".v1." + alnum("airtable-body", 40) + b"." + synthetic("airtable-suffix", 32)),
+    )
+    for label, number, payload in fourth:
+        cases.append((label + "_stdin", payload, str(number), "stdin", False))
+        cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
+    cases.extend(multipart_fixtures())
+    cases.extend(chunk_fixtures())
     return cases
 
 
@@ -187,7 +296,7 @@ def invoke(binary, source, detector, kind, cleaning, directory, reference_run=Fa
     if result.returncode != 0:
         raise AssertionError(f"{binary.name} exited {result.returncode}; stderr bytes={len(result.stderr)}")
     rows = [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
-    return sorted(rows, key=lambda row: (row["DetectorType"], row["Raw"], json.dumps(row.get("SourceMetadata"), sort_keys=True)))
+    return sorted(rows, key=lambda row: (row["DetectorType"], row["Raw"], row["RawV2"], json.dumps(row.get("SourceMetadata"), sort_keys=True)))
 
 
 def reference_matches(case, actual, expected):

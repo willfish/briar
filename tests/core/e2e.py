@@ -29,6 +29,16 @@ def invoke(args, data=b"", code=0):
     return proc, [json.loads(line) for line in proc.stdout.splitlines()]
 
 
+def positioned(parts, size=None):
+    end = max(offset + len(value) for offset, value in parts)
+    size = end + 32 if size is None else size
+    check(end <= size <= 65536, "bounded synthetic fixture")
+    source = bytearray(b"." * size)
+    for offset, value in parts:
+        source[offset:offset + len(value)] = value
+    return bytes(source)
+
+
 alphabet = "b7c9d2e5f6g8h3j4k1m0n2p4q6r8s1t3u5v7w9x2y4z6"
 key40 = (alphabet * 2)[:40]
 key80 = (alphabet * 2)[:80]
@@ -98,6 +108,44 @@ check(not rows, "decoded results pass through the normal false-positive filter")
 _, rows = invoke(["stdin", *base, "--results=filtered_unverified"], fp_encoded)
 check(len(rows) == 1 and rows[0]["DecoderName"] == "BASE64", "decoded false positives can be retained")
 
+part = "c7d8e9f0"
+second_part = "d8e9f0a1"
+secret = key32[::-1]
+aha_key = "b7c9d2e5f6b8c3d4" * 4
+for selector, key, component, part_name, payload in (
+    ("431", key32, part, "id", f"adzuna {key32}\nadzuna {part}"),
+    ("693", key32[:20], "734", "id", f"aeroworkflow {key32[:20]}\naeroworkflow 734"),
+    ("197", key32, secret, "secret", f"agora\nkey {key32}\nsecret {secret}"),
+    ("802", aha_key, "synthetic.aha.io", "url", f"aha {aha_key}\nsynthetic.aha.io"),
+):
+    args = ["stdin", "--json", "--no-verification", "--include-detectors=" + selector]
+    _, rows = invoke(args, payload.encode())
+    check(len(rows) == 1, "multipart descriptor now uses the implemented span behavior")
+    row = rows[0]
+    check(set(row) == expected_fields and "Version" not in row, "multipart printer fields do not invent a result version")
+    check(row["DetectorType"] == int(selector) and row["Raw"] == key and row["RawV2"] == key + component,
+          "multipart Raw and concatenated RawV2 retain distinct meanings")
+    check(row["SecretParts"] == {"key": key, part_name: component}, "multipart secret parts")
+    check(row["Redacted"] == "" and row["ExtraData"] is None and row["StructuredData"] is None,
+          "multipart defaults preserve NULL maps and empty redaction")
+    check(not row["Verified"] and not row["VerificationFromCache"], "multipart CLI never verifies")
+    _, version_zero = invoke([*args[:-1], "--include-detectors=" + selector + ".v0"], payload.encode())
+    check(version_zero == rows, "version-zero selector is a wildcard, not a new result field")
+
+for distance, bridged, expected in ((1500, False, 1), (2048, False, 1), (2049, False, 0),
+                                     (11000, True, 1), (15000, True, 0)):
+    pieces = [(0, f"adzuna {key32}\n".encode()), (distance, f"adzuna {part}\n".encode())]
+    if bridged:
+        pieces.extend((at, b"adzuna\n") for at in range(1800, distance, 1800))
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=431"], positioned(pieces))
+    check(len(rows) == expected, "merge adjacent multipart windows, but never merge across raw source chunks")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=197"], f"key {key32}\nsecret {secret}".encode())
+check(not rows, "Agora extraction aliases do not substitute for its declared prefilter keyword")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=802"], f"aha {aha_key}".encode())
+check(not rows, "Aha extraction prefix is not its aha.io dispatch keyword")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=802"], f"aha {aha_key}\naha.io".encode())
+check(len(rows) == 1 and rows[0]["SecretParts"]["url"] == "aha.io", "Aha fallback applies only after keyword dispatch")
+
 with tempfile.TemporaryDirectory(prefix="briar-core-") as directory:
     path = Path(directory) / "synthetic.txt"
     fp_key = "EXAMPLE" + key40[:33]
@@ -166,6 +214,45 @@ with tempfile.TemporaryDirectory(prefix="briar-core-") as directory:
     check(len(rows) == 1 and rows[0]["DecoderName"] == "BASE64" and
           rows[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 2,
           "Base64 gets original bytes, not PLAIN's invalid-input control normalization")
+    chunked = Path(directory) / "chunks.txt"
+    multipart_args = ["filesystem", str(chunked), "--json", "--no-verification", "--include-detectors=431"]
+    chunked.write_bytes(f"header\nadzuna {key32}\nadzuna {part}\nadzuna example1".encode())
+    _, rows = invoke(multipart_args)
+    check(len(rows) == 2 and {r["RawV2"] for r in rows} == {key32 + part, key32 + "example1"},
+          "dedup and false-positive checks do not collapse RawV2 onto Raw")
+    check(all(r["SourceMetadata"]["Data"]["Filesystem"]["line"] == 2 for r in rows),
+          "line placement locates Raw, not its multipart RawV2 concatenation")
+    chunked.write_bytes(positioned([(11000, f"adzuna {key32}\n".encode()), (11100, f"adzuna {part}\n".encode()),
+                                   (14000, f"adzuna {secret}\n".encode()), (14100, f"adzuna {second_part}\n".encode())]))
+    _, rows = invoke(multipart_args)
+    check({(r["Raw"], r["RawV2"], r["SourceMetadata"]["Data"]["Filesystem"]["line"]) for r in rows} ==
+          {(key32, key32 + part, 1), (secret, secret + second_part, 3)},
+          "filesystem advances over content only; peek findings deduplicate at the same location")
+    chunked.write_bytes(positioned([(100, f"adzuna {key32}\n".encode()), (200, f"adzuna {part}\n".encode()),
+                                   (14000, f"adzuna {key32}\n".encode()), (14100, f"adzuna {second_part}\n".encode())]))
+    _, rows = invoke(multipart_args)
+    check({(r["RawV2"], r["SourceMetadata"]["Data"]["Filesystem"]["line"]) for r in rows} ==
+          {(key32 + part, 1), (key32 + second_part, 3)}, "same Raw at separate chunks retains RawV2 and location identity")
+    for id_at, expected in ((13297, 1), (13298, 0)):
+        chunked.write_bytes(positioned([(10000, f"adzuna {key32}\n".encode()), (11800, b"adzuna\n"),
+                                       (id_at, f"adzuna {part}\n".encode())]))
+        _, rows = invoke(multipart_args)
+        check(len(rows) == expected, "multipart capture must fit in the clipped 3 KiB forward peek")
+    for at in (10210, 13300):
+        chunked.write_bytes(positioned([(0, b"header\n"), (at, plain + b"\n")]))
+        _, rows = invoke(["filesystem", str(chunked), *base])
+        check(len(rows) == 1 and rows[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 2,
+              "content/peek boundary findings retain one correct filesystem location")
+    chunked.write_bytes(positioned([(0, b"header\n"), (100, plain + b"\n"), (15000, b"\xff")]))
+    _, rows = invoke(["filesystem", str(chunked), *base])
+    check(len(rows) == 1 and rows[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 2,
+          "invalid UTF-8 in a later chunk does not normalize an earlier chunk's controls")
+    pair = f"adzuna {key32}\nadzuna {part}".encode()
+    chunked.write_bytes(positioned([(0, b"header\n"), (13280, base64.b64encode(pair))]))
+    _, rows = invoke(multipart_args)
+    check(len(rows) == 1 and rows[0]["DecoderName"] == "BASE64" and rows[0]["RawV2"] == key32 + part and
+          rows[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 2,
+          "source chunks precede Base64 decoding and decoded multipart line placement")
     invoke(["filesystem", directory, *base], code=1)
     link = Path(directory) / "link.txt"
     link.symlink_to(path)
@@ -182,6 +269,10 @@ for args in (
     ["stdin", "--json", "--no-verification", "--include-detectors=AWS"],
     ["stdin", "--json", "--no-verification", "--include-detectors=384"],
     ["stdin", "--json", "--no-verification", "--include-detectors=239.v1"],
+    ["stdin", "--json", "--no-verification", "--include-detectors=431.v1"],
+    ["stdin", "--json", "--no-verification", "--include-detectors=693.v1"],
+    ["stdin", "--json", "--no-verification", "--include-detectors=197.v1"],
+    ["stdin", "--json", "--no-verification", "--include-detectors=802.v1"],
     ["stdin", "--json", "--no-verification", "--include-detectors=239-521"],
     ["stdin", "--json", "--include-detectors=239"],
     ["stdin", "--no-verification", "--include-detectors=239"],

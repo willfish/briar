@@ -4,6 +4,7 @@
 #include "../../src/detectors/first_batch.h"
 #include "../../src/detectors/second_batch.h"
 #include "../../src/detectors/third_batch.h"
+#include "../../src/detectors/fourth_batch.h"
 
 #include <ctype.h>
 #include <json-c/json.h>
@@ -447,13 +448,15 @@ static void verification_tests(const br_detector *detector, const specification 
 static void registry_handler_test(const br_detector *detector, const specification *spec)
 {
     current_case = "each registry identity executes its actual initialized handler";
-    char key[82], secondary_buffer[82], input[512];
+    char key[128], secondary_buffer[82], input[512];
     synthetic_key(key, spec->key_len, 0);
     if (detector->type == 303 && detector->version == 1) key[7] = '%';
     if (detector->type == 390) memcpy(key, "aio_", 4);
     const char *secondary = NULL, *secondary_name = NULL;
     switch (detector->type) {
+    case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
+    case 1014: strcpy(key, "Native7.v1.Synthetic_-Payload.1a2b3c"); break;
     case 431: secondary = "c7d8e9f0"; secondary_name = "id"; break;
     case 693: secondary = "00042"; secondary_name = "id"; break;
     case 197:
@@ -484,7 +487,7 @@ static void registry_handler_test(const br_detector *detector, const specificati
     CHECK(memcmp(result->raw.data, key, spec->key_len) == 0);
     CHECK(!result->verified && result->verification_error == NULL);
     br_json *part = NULL;
-    CHECK(json_object_object_get_ex(result->secret_parts, "key", &part));
+    CHECK(json_object_object_get_ex(result->secret_parts, detector->type == 1014 ? "token" : "key", &part));
     CHECK(strcmp(json_object_get_string(part), key) == 0);
     CHECK(json_object_object_length(result->secret_parts) == (secondary ? 2 : 1));
     if (secondary) {
@@ -520,6 +523,16 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
         {.type = 802, .name = "Aha", .keyword = "aha.io", .key_len = 64, .enabled = true,
          .description = "Aha is a product management software suite. Aha API keys can be used to access and modify product data and workflows."},
     };
+    static const specification fourth_specs[] = {
+        {.type = 125, .name = "AirbrakeProjectKey", .keyword = "airbrake", .key_len = 32, .enabled = true,
+         .description = "Airbrake is an error and performance monitoring service for web applications. Airbrake project keys can be used to report and track errors in applications."},
+        {.type = 126, .name = "AirbrakeUserKey", .keyword = "airbrake", .key_len = 40, .enabled = true,
+         .description = "Airbrake is an error and performance monitoring service. Airbrake User Keys can be used to access and manage error reports and performance data."},
+        {.type = 277, .name = "Airship", .keyword = "airship", .key_len = 91, .enabled = true,
+         .description = "Airship is a customer engagement platform that provides tools for mobile app messaging, in-app messaging, and web notifications. Airship API keys can be used to access and manage these messaging services."},
+        {.type = 1014, .name = "AirtableOAuth", .keyword = "airtable", .key_len = sizeof("Native7.v1.Synthetic_-Payload.1a2b3c") - 1, .enabled = true,
+         .description = "Airtable is a cloud collaboration service that offers database-like features. Airtable OAuth tokens can be used to access and modify data within Airtable bases."},
+    };
     const struct {
         const specification *spec;
         int32_t version;
@@ -530,17 +543,21 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
         {&second_specs[2], 0, -1}, {&second_specs[3], 0, 1024},
         {&third_specs[0], 0, 1024}, {&third_specs[1], 0, 1024},
         {&third_specs[2], 0, 1024}, {&third_specs[3], 0, 1024},
+        {&fourth_specs[0], 0, 1024}, {&fourth_specs[1], 0, -1},
+        {&fourth_specs[2], 0, -1}, {&fourth_specs[3], 0, -1},
     };
     current_case = "exact compiled registry identities/order/defaults";
     CHECK(BR_ABI_REVISION == 1);
-    CHECK(count == 11 && count == sizeof(expected) / sizeof(expected[0]));
-    const br_detector *const *first = NULL, *const *second = NULL, *const *third = NULL;
-    size_t nfirst = 0, nsecond = 0, nthird = 0;
+    CHECK(count == 15 && count == sizeof(expected) / sizeof(expected[0]));
+    const br_detector *const *first = NULL, *const *second = NULL;
+    const br_detector *const *third = NULL, *const *fourth = NULL;
+    size_t nfirst = 0, nsecond = 0, nthird = 0, nfourth = 0;
     char *batch_error = NULL;
     CHECK(br_first_batch(&first, &nfirst, &batch_error) == 0 && batch_error == NULL);
     CHECK(br_second_batch(&second, &nsecond, &batch_error) == 0 && batch_error == NULL);
     CHECK(br_third_batch(&third, &nthird, &batch_error) == 0 && batch_error == NULL);
-    CHECK(nfirst == 3 && nsecond == 4 && nthird == 4);
+    CHECK(br_fourth_batch(&fourth, &nfourth, &batch_error) == 0 && batch_error == NULL);
+    CHECK(nfirst == 3 && nsecond == 4 && nthird == 4 && nfourth == 4);
     CHECK(br_detector_type_name(-1) == NULL);
     CHECK(br_detector_type_name(0) == NULL);
     CHECK(br_detector_type_name(1) == NULL); /* Not a metadata-only AWS descriptor. */
@@ -555,7 +572,9 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
         const br_detector *detector = detectors[i];
         const specification *spec = expected[i].spec;
         CHECK(detector == (i < nfirst ? first[i] :
-              i < nfirst + nsecond ? second[i - nfirst] : third[i - nfirst - nsecond]));
+              i < nfirst + nsecond ? second[i - nfirst] :
+              i < nfirst + nsecond + nthird ? third[i - nfirst - nsecond] :
+              fourth[i - nfirst - nsecond - nthird]));
         CHECK(detector->type == spec->type);
         CHECK(strcmp(detector->name, spec->name) == 0);
         CHECK(strcmp(br_detector_type_name(detector->type), spec->name) == 0);
@@ -586,7 +605,7 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
         }
         registry_handler_test(detector, spec);
     }
-    CHECK(enabled == 9);
+    CHECK(enabled == 13);
     json_object_put(flags);
     const br_detector *const *again = NULL;
     size_t nagain = 0;
@@ -601,7 +620,7 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
     CHECK(error != NULL && again == NULL);
     free(error);
     ++cases;
-    printf("PASS registry: eleven actual handlers in upstream order; Abstract/AdobeIO disabled; Accuweather v1/v2 distinct\n");
+    printf("PASS registry: fifteen actual handlers in upstream order; Abstract/AdobeIO disabled; Accuweather v1/v2 distinct\n");
 }
 
 int main(void)
