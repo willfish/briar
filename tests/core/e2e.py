@@ -167,7 +167,10 @@ part = "c7d8e9f0"
 second_part = "d8e9f0a1"
 secret = key32[::-1]
 aha_key = "b7c9d2e5f6b8c3d4" * 4
+alibaba_id = "LTAI" + (part * 3)[:17]
 for selector, key, component, part_name, payload in (
+    ("0", key32[:30], alibaba_id, "id", f"{alibaba_id}\n{key32[:30]}"),
+    ("453", key32, secret[:16], "secret", f"amadeus {key32}\namadeus {secret[:16]}"),
     ("431", key32, part, "id", f"adzuna {key32}\nadzuna {part}"),
     ("693", key32[:20], "734", "id", f"aeroworkflow {key32[:20]}\naeroworkflow 734"),
     ("197", key32, secret, "secret", f"agora\nkey {key32}\nsecret {secret}"),

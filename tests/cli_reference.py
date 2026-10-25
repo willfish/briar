@@ -313,6 +313,7 @@ def fixtures():
     ):
         cases.append(("base64_" + label, payload, "239", "filesystem", False))
     alegra_token = synthetic("alegra-oracle", 20)
+    alibaba_payload = b"LTAI" + alnum("alibaba-id-oracle", 17) + b"\n" + alnum("alibaba-key-oracle", 30)
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -327,10 +328,15 @@ def fixtures():
         ("alegra_nul_id", 375, b"alegra " + alegra_token + b"\n" + b"." * 128 + b"\nalegra\x00fixture@example.test"),
         ("aletheiaapi", 522, b"aletheiaapi " + synthetic("aletheia-oracle", 32).upper()),
         ("algoliaadminkey", 170, b"algolia\nappId B7C9D2E5F6\napiKey " + alnum("algolia-admin-oracle", 32)),
+        ("alibaba", 0, alibaba_payload),
+        ("alienvault", 399, b"alienvault " + synthetic("alienvault-oracle", 64)),
+        ("allsports", 473, b"allsports " + synthetic("allsports-oracle", 64)),
+        ("amadeus", 453, b"amadeus " + alnum("amadeus-key-oracle", 32) + b"\namadeus " + alnum("amadeus-secret-oracle", 16)),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
         cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
+    cases.append(("alibaba_version_zero", alibaba_payload, "0.v0", "stdin", False))
     cases.extend(multipart_fixtures())
     cases.extend(chunk_fixtures())
     cases.extend(utf16_fixtures())

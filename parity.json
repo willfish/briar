@@ -223,7 +223,7 @@
       "upstream_source": "pkg/detectors/alibaba/alibaba.go",
       "native_files": ["src/detectors/alibaba.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_alibaba.c", "tests/detectors/test_registry.c", "tests/core/http_profiles.c"],
+      "evidence": ["tests/detectors/test_alibaba.c", "tests/detectors/test_registry.c", "tests/core/http_profiles.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and diagnostics", "ABI1's NUL-terminated verification-error storage cannot preserve embedded-NUL Message/Code error bytes", "RNG failure fails closed with a nonfatal construction error rather than Go's irrecoverable termination"]
     },
     "alienvault/Scanner": {
@@ -231,7 +231,7 @@
       "upstream_source": "pkg/detectors/alienvault/alienvault.go",
       "native_files": ["src/detectors/alienvault.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_alienvault.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_alienvault.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "allsports/Scanner": {
@@ -239,7 +239,7 @@
       "upstream_source": "pkg/detectors/allsports/allsports.go",
       "native_files": ["src/detectors/allsports.c", "src/detectors/key_scan.c", "src/bytes.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_allsports.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_allsports.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "amadeus/Scanner": {
@@ -247,7 +247,7 @@
       "upstream_source": "pkg/detectors/amadeus/amadeus.go",
       "native_files": ["src/detectors/amadeus.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/bytes.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_amadeus.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_amadeus.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native SANE POST redirects remain explicitly unsupported"]
     }
   },
@@ -256,7 +256,7 @@
       "status": "partial",
       "native_files": ["include/briar.h", "src/bytes.c", "src/result.c", "src/regex.c", "src/http.c", "src/falsepositives.c", "src/wordlists.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/detectors/json.c"],
       "evidence": ["tests/core/test_core.c", "tests/detectors/test_captures.c", "tests/detectors/test_findings.c", "tests/detectors/test_key_scan.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
-      "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "Complete native HTTP profiles, redirects, DNS/proxy policy and timing; SANE/LOCAL GET and POST slices are implemented, PUBLIC and SANE POST redirects fail closed", "Remaining shared detector helpers and protocol adapters"]
+      "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "Complete native HTTP profiles, redirects, DNS/proxy policy and timing; SANE/LOCAL GET and POST slices are implemented, PUBLIC and SANE POST redirects fail closed", "Complete response-document semantics and byte-preserving verification-error representation", "Remaining shared detector helpers and protocol adapters"]
     },
     "decoders": {
       "status": "partial",
