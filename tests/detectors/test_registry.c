@@ -37,6 +37,7 @@ static const registration expected[] = {
     {399, 0, "AlienVault", "alienvault", 64, true, -1},
     {473, 0, "Allsports", "allsports", 64, true, -1},
     {453, 0, "Amadeus", "amadeus", 32, true, 1024},
+    {457, 0, "Ambee", "ambee", 64, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -66,6 +67,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[64] = '\0';
         secondary = "synthetic.aha.io";
         secondary_name = "url";
+        break;
+    case 457:
+        for (size_t i = 0; i < 64; ++i) key[i] = "0123456789abcdef"[i % 16];
         break;
     case 522:
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789ABCDEF"[i % 16];
