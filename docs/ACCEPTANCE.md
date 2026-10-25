@@ -1,12 +1,14 @@
 # Acceptance evidence and remaining scope
 
-Reference: TruffleHog 3.97.2, commit `cc1fe982afc515d2991365ce8d4d0dd07170fcad`. These checks cover the first native slice, not completion of the project.
+Reference: TruffleHog 3.97.2, commit `cc1fe982afc515d2991365ce8d4d0dd07170fcad`. This is evidence for an implemented slice, not completion of the project.
 
-## First native slice
+## Native slice
 
-The current C library implements seven descriptors: Abstract, AbuseIPDB, Abyssale, Accuweather v1/v2, AdafruitIO and AdobeIO, with detector-local extraction, metadata and verification branches. Its registry preserves upstream order and distinct version identities. Abstract and AdobeIO are exposed directly for tests but remain disabled by default. Verification tests use injected responses or loopback-only fixtures and synthetic candidates, not service calls.
+The C library contains eleven detector implementations: Abstract, AbuseIPDB, Abyssale, Accuweather v1/v2, AdafruitIO, AdobeIO, Adzuna, Aeroworkflow, Agora and Aha. The registry preserves source order, versions and disabled Abstract/AdobeIO membership. Detector verification fixtures use injected transport, not real credentials or service calls.
 
-Fresh checks in this worktree:
+The CLI runs PLAIN/UTF8 and Base64 independently from original bytes. Valid UTF8 passes through; malformed input follows the pinned sanitization branch. Base64 preserves intermediate findings through the default five passes. Other decoders and configurable depth remain unported.
+
+## Reproduce checks
 
 ```sh
 direnv exec . make clean
@@ -17,30 +19,34 @@ direnv exec . python3 tools/progress.py
 direnv exec . python3 tests/cli_reference.py --reference "$BRIAR_REFERENCE_BINARY"
 ```
 
-`BRIAR_REFERENCE_BINARY` must identify the pinned 3.97.2 executable. The comparison script checks its version, runs both executables inside a Linux network namespace with an empty HOME and passes verification-disabled flags. Reference-only update/concurrency controls are not treated as implemented native CLI features.
+`BRIAR_REFERENCE_BINARY` must identify the pinned 3.97.2 executable. The comparison script checks its version and runs both executables in Linux network namespaces with empty HOME and verification disabled. Reference-only updater/concurrency controls do not imply native support for those flags.
 
-Observed results:
+Observed fresh results:
 
 | Check | Coverage | Result |
 | --- | --- | --- |
 | Strict C11 build | `-Wall -Wextra -Wpedantic -Werror` | Passed |
-| Core unit checks | 197 assertions | Zero failures |
-| Detector checks | 333 cases, 8,499 assertions | Zero failures |
-| Synthetic native CLI checks | 100 assertions | Zero failures |
+| Shared core | 252 assertions | Zero failures |
+| PLAIN/UTF8 | 29 cases, 188 assertions | Zero failures |
+| Base64 | 25 cases, 154 assertions | Zero failures |
+| Detectors | 541 cases, 14,640 assertions | Zero failures |
+| Native CLI | 158 assertions | Zero failures |
 | Proxy CONNECT/TLS regression | 32 assertions | Zero failures |
 | Source-inventory regressions | Four tests | Zero failures |
-| Pinned-reference comparisons | 38 implemented ASCII stdin/filesystem cases | Zero failures |
+| Pinned-reference comparisons | 91 selected input/decoder cases | Zero failures |
 
-Detector tests cover prefix distances and case/boundaries, multiple findings, exact fields, no verification calls when disabled, complete mock requests, accepted/rejected/unexpected statuses, transport failures, cancellation/deadlines, upstream-directed error redaction and provider-specific body-read behavior. They also cover Accuweather entropy, uniqueness and inheritance, and AdobeIO component pairing. The reference comparisons check complete JSON rows for selected inputs, including version selection/wildcards, cleaning, duplicates, false positives and regular-file metadata. Abstract and AdobeIO are disabled in the reference CLI, so their direct implementations have source-derived native fixtures rather than CLI oracle comparisons.
+Detector checks cover capture boundaries, pairing, entropy/uniqueness where applicable, exact metadata, mock requests and verifier status/body/error branches. Reference comparisons cover complete JSON rows, version selection, cleaning, duplicates, malformed UTF8, nested Base64 and filesystem metadata. Abstract/AdobeIO are disabled in the reference CLI, so their direct implementations use source-derived fixtures instead.
 
-The proxy regression reproduces a CONNECT `200 Connection established` followed by TLS failure without forwarding the tunnel. Proxy headers must not be mistaken for an origin response: both status-only verifiers retain an error and `verified=false`. The adapter sets `CURLOPT_SUPPRESS_CONNECT_HEADERS` to preserve that distinction.
+The upstream notifier races when PLAIN and Base64 produce the same finding. Native ordering is PLAIN-first. Five identified duplicate fixtures permit only the observed `DecoderName` alternative at otherwise identical result identities and fields; other comparisons remain strict. Full concurrency parity is not established.
 
-The inventory additionally checks two AWS factory registrations and assignment of every non-test Go source file under `pkg/` to a detector or supporting component. Discovery does not earn implementation credit.
+The proxy regression prevents CONNECT `200 Connection established` from being mistaken for an origin response after TLS failure. Both status-only verifiers retain an error and `verified=false`. The native adapter suppresses CONNECT headers.
 
-## Not established
+## Remaining boundaries
 
-All seven detector records remain partial in `parity.json`. The shared regexp layer is not complete RE2 parity, including arbitrary-byte behavior, and full native HTTP-client profiles are not established. The tests do not prove present-day acceptance by remote services. AdobeIO deliberately preserves upstream's call to the error helper without secret arguments; an injected transport must not put credentials in its error text. This native API is not yet an outbound-context redactor.
+All eleven detector records and all supporting components remain incomplete in `parity.json`. Another 910 detector implementations are not started. Inventory discovery and passing this slice do not establish full TruffleHog reproduction.
 
-The CLI currently requires explicit supported detector selection, JSON output and disabled verification. It accepts ASCII stdin or explicit regular files up to 64 KiB, with no decoding, traversal or full chunking pipeline. Default/all scans and unsupported detector IDs/options fail explicitly, rather than silently claiming a complete scan.
+The CLI requires explicit supported non-multipart selection, JSON and disabled verification. Adzuna, Aeroworkflow, Agora and Aha remain library-only until multipart chunk/window/prefilter behavior is implemented. Inputs are stdin or explicit regular files up to 64 KiB, without traversal, archives or the complete chunking/source pipeline. Unsupported selections, options and capabilities fail explicitly.
 
-The remaining 914 detector implementations and all unfinished supporting-component behavior remain in the full objective. No part of this slice is deployed into Pi or counted as complete TruffleHog reproduction.
+Injected HTTP dispatch accepts SANE and the two detector profiles, with pinned timeout defaults and context clamping. The injected transport owns redirect/address policy. Native curl still supports only the SANE bodyless-GET slice and rejects LOCAL/PUBLIC before network I/O. PUBLIC needs complete all-answer DNS checks, proxy semantics, cancellation and redirect policy; successful Aha mock checks do not prove those native policies.
+
+Shared regexp behavior, additional helpers, other decoders and the remaining engine/configuration/output/source functionality are unfinished. Service acceptance is untested. AdobeIO preserves upstream's error-helper call without secret arguments, so injected transport errors must not contain credentials. This work is not an outbound-context redactor or a deployed Pi security boundary.

@@ -185,7 +185,7 @@ static void fp_tests(void)
     CHECK(!strncmp(reason, "unsupported:", 12)); free(reason);
 }
 
-typedef struct { size_t calls, releases; bool transport_failure; uint32_t timeout; } fake;
+typedef struct { size_t calls, releases; bool transport_failure; uint32_t timeout; br_http_profile profile; } fake;
 static int fake_send(void *user, const br_scan_ctx *ctx, const br_http_request *req,
                       br_http_response *response, char **error)
 {
@@ -199,8 +199,9 @@ static int fake_send(void *user, const br_scan_ctx *ctx, const br_http_request *
     CHECK(!strcmp(req->headers[2].name, "User-Agent") && !strcmp(req->headers[2].value, "caller"));
     CHECK(!strcmp(req->headers[3].name, "User-Agent") && !strcmp(req->headers[3].value, "TruffleHog synthetic-tests"));
     CHECK(req->body.len == 3 && !memcmp(req->body.data, "a\0b", 3));
-    CHECK(req->profile == BR_HTTP_SANE && req->detector_type == 521);
+    CHECK(req->profile == f->profile && req->detector_type == 521);
     CHECK(req->timeout_ms > 0 && req->timeout_ms <= f->timeout);
+    if (f->profile != BR_HTTP_SANE) CHECK(req->timeout_ms == f->timeout);
     if (f->transport_failure) { *error = strdup("synthetic timeout"); return 9; }
     response->status = 200;
     response->body = SLICE("partial");
@@ -255,7 +256,18 @@ static void http_tests(void)
     CHECK(br_http_send(&ctx, &request, &response, &error) && !strcmp(error, "context canceled"));
     free(error); error = NULL; br_http_release(&ctx, &response);
     ctx.cancelled = NULL;
-    for (int profile = BR_HTTP_DETECTOR_LOCAL; profile <= BR_HTTP_RETRYABLE; ++profile) {
+    for (int profile = BR_HTTP_DETECTOR_LOCAL; profile <= BR_HTTP_DETECTOR_PUBLIC; ++profile) {
+        request.profile = f.profile = (br_http_profile)profile;
+        request.timeout_ms = 0; f.timeout = 10000;
+        CHECK(!br_http_send(&ctx, &request, &response, &error) && !error);
+        br_http_release(&ctx, &response);
+        request.timeout_ms = 123; f.timeout = 123;
+        CHECK(!br_http_send(&ctx, &request, &response, &error) && !error);
+        br_http_release(&ctx, &response);
+    }
+    request.timeout_ms = 0;
+    sent = f.calls;
+    for (int profile = BR_HTTP_PINNED_RETRYABLE; profile <= BR_HTTP_RETRYABLE; ++profile) {
         request.profile = (br_http_profile)profile;
         CHECK(br_http_send(&ctx, &request, &response, &error) && strstr(error, "unsupported"));
         free(error); error = NULL; br_http_release(&ctx, &response);
@@ -274,10 +286,32 @@ static void http_tests(void)
     br_http_release(&ctx, &response);
 }
 
+/* Private adapter hook, also exercised by the isolated proxy regression. */
+extern const br_transport *br_curl_transport_init(char **error);
+
+static void unsupported_native_profiles(void)
+{
+    char *error = NULL;
+    const br_transport *transport = br_curl_transport_init(&error);
+    CHECK(transport != NULL && error == NULL);
+    br_scan_ctx ctx = {.transport = transport};
+    /* Invalid URL prevents DNS even if a future regression removes the guard. */
+    br_http_request request = {.method = "GET", .url = "://invalid"};
+    br_http_response response = {0};
+    for (int profile = BR_HTTP_DETECTOR_LOCAL; profile <= BR_HTTP_DETECTOR_PUBLIC; ++profile) {
+        request.profile = (br_http_profile)profile;
+        CHECK(br_http_send(&ctx, &request, &response, &error) != 0);
+        CHECK(error && !strcmp(error, "unsupported: native curl HTTP client profile"));
+        CHECK(response.status == 0 && response.body.data == NULL);
+        free(error); error = NULL;
+        br_http_release(&ctx, &response);
+    }
+}
+
 int main(void)
 {
     CHECK(BR_ABI_REVISION == 1);
-    result_tests(); regex_tests(); fp_tests(); http_tests();
+    result_tests(); regex_tests(); fp_tests(); http_tests(); unsupported_native_profiles();
     printf("core: %zu assertions, 0 failures\n", checks);
     return 0;
 }

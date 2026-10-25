@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "briar.h"
+#include "briar_decoders.h"
 
 #include <curl/curl.h>
 #include <errno.h>
@@ -18,6 +19,7 @@
 extern const br_transport *br_curl_transport_init(char **error);
 
 #define INPUT_LIMIT (64 * 1024)
+#define BASE64_MAX_DEPTH 5 /* Pinned CLI default; other depth options remain unsupported. */
 
 typedef struct {
     bool json, no_verification, clean, fail;
@@ -30,8 +32,8 @@ typedef struct {
 typedef struct {
     int64_t source_id, job_id, secret_id;
     int32_t source_type;
-    const char *source_name, *path;
-    br_slice original;
+    const char *source_name, *path, *decoder_name;
+    br_slice original, data;
 } source_frame;
 
 typedef struct {
@@ -61,8 +63,9 @@ static void usage(void)
          "         --filter-unverified  --results CSV  --fail\n"
          "Native slice: explicit supported detector selection required; default/all scans fail.\n"
          "Only selected upstream-enabled implementations run; Abstract remains disabled.\n"
-         "Inputs: explicit regular files or stdin, plain ASCII, at most 64 KiB each.\n"
-         "No directory traversal, archives, decoding, chunking, CLI verification/cache,\n"
+         "Inputs: explicit regular files or stdin, PLAIN/BASE64, at most 64 KiB each.\n"
+         "PLAIN runs first; Base64 uses original bytes, up to five decoding passes.\n"
+         "No directory traversal, archives, other decoders, depth options, chunking, CLI verification/cache,\n"
          "entropy, custom configuration, non-JSON printers or other sources yet.\n"
          "Unported options and commands fail explicitly. JSON is newline-delimited.");
 }
@@ -229,14 +232,14 @@ static bool locate(result_frame *frame)
     br_result *r = frame->result;
     br_slice key = effective_secret(r);
     size_t offset = r->chunk_offset_set && r->chunk_offset >= 0
-        ? (size_t)r->chunk_offset : find_bytes(s->original, key, 0);
+        ? (size_t)r->chunk_offset : find_bytes(s->data, key, 0);
     frame->line = 1;
-    if (offset == SIZE_MAX || offset > s->original.len || key.len > s->original.len - offset) return false;
-    for (size_t i = 0; i < offset; ++i) if (s->original.data[i] == '\n') ++frame->line;
+    if (offset == SIZE_MAX || offset > s->data.len || key.len > s->data.len - offset) return false;
+    for (size_t i = 0; i < offset; ++i) if (s->data.data[i] == '\n') ++frame->line;
     if (r->primary_secret.len) r->primary_line = frame->line - 1;
     size_t start = offset + key.len, end = start;
-    while (end < s->original.len && s->original.data[end] != '\n') ++end;
-    br_slice tail = { s->original.data + start, end - start };
+    while (end < s->data.len && s->data.data[end] != '\n') ++end;
+    br_slice tail = { s->data.data + start, end - start };
     static const unsigned char tag[] = "trufflehog:ignore";
     return find_bytes(tail, (br_slice){ tag, sizeof(tag) - 1 }, 0) != SIZE_MAX;
 }
@@ -287,7 +290,7 @@ static br_json *json_result(const result_frame *f)
     if (!type_name) goto failed;
     ADD("DetectorName", json_object_new_string(type_name));
     ADD("DetectorDescription", json_object_new_string(f->detector->description));
-    ADD("DecoderName", json_object_new_string("PLAIN"));
+    ADD("DecoderName", json_object_new_string(f->source->decoder_name));
     ADD("Verified", json_object_new_boolean(r->verified));
     if (r->verification_error && *r->verification_error)
         ADD("VerificationError", json_object_new_string(r->verification_error));
@@ -343,7 +346,7 @@ static int process_results(const cli_options *o, const source_frame *source,
         if (d->clean) d->clean(d, results, false);
         else br_clean_results(results, false);
     }
-    duplicate_offsets(source->original, results);
+    duplicate_offsets(source->data, results);
     for (size_t i = 0; i < results->len; ++i) {
         if (stopped) return fail(error, "context canceled");
         br_result *r = &results->items[i];
@@ -386,14 +389,14 @@ static int scan_source(const cli_options *o, const source_frame *source,
                         size_t count, const bool *selected, br_json *output,
                         br_json *keys, char **error)
 {
-    br_slice input = source->original;
+    br_slice input = source->data;
     for (size_t i = 0; i < count; ++i) {
         if (!selected[i]) continue;
         const br_detector *d = registry[i];
         if (!d->scan || !d->nkeywords || d->max_secret_size != -1 ||
             d->max_credential_span != -1 || d->start_offset != -1)
             return fail(error, "unsupported detector capability in this engine slice");
-        /* OR prefilter; the first three descriptors use the default 512-byte radius. */
+        /* OR prefilter; these implementations use the default 512-byte radius. */
         br_span merged = { SIZE_MAX, SIZE_MAX };
         for (size_t at = 0; at < input.len; ++at) {
             if (stopped) return fail(error, "context canceled");
@@ -423,6 +426,47 @@ static int scan_source(const cli_options *o, const source_frame *source,
     return 0;
 }
 
+static int scan_decoders(const cli_options *o, const source_frame *source,
+                          const br_scan_ctx *ctx, const br_detector *const *registry,
+                          size_t count, const bool *selected, br_json *output,
+                          br_json *keys, char **error)
+{
+    source_frame plain = *source;
+    plain.decoder_name = "PLAIN";
+    br_bytes plain_storage = {0};
+    int rc = br_utf8_decode(source->original, &plain.data, &plain_storage, error);
+    if (!rc && plain.data.len) rc = scan_source(o, &plain, ctx, registry, count, selected, output, keys, error);
+    free(plain_storage.data);
+    if (rc) return rc;
+
+    /* Each depth-zero decoder gets its own copy of the original chunk. With
+     * only Base64 ported beyond PLAIN, iterativeDecode has one next input per
+     * depth. Do not feed PLAIN's sanitized bytes to Base64 or rerun PLAIN later. */
+    br_slice input = source->original;
+    br_bytes decoded[BASE64_MAX_DEPTH] = {0};
+    for (size_t depth = 0; depth < BASE64_MAX_DEPTH; ++depth) {
+        if (stopped) { rc = fail(error, "context canceled"); break; }
+        bool applied = false;
+        rc = br_base64_decode(input, &decoded[depth], &applied, error);
+        if (rc || !applied) break;
+        source_frame chunk = *source;
+        chunk.decoder_name = "BASE64";
+        chunk.data = (br_slice){ decoded[depth].data, decoded[depth].len };
+        /* Keep intermediate findings; metadata uses this decoded view, while
+         * chunk_data still points to the immutable original bytes. DecoderName
+         * is intentionally absent from the existing location-aware dedup key. */
+        rc = scan_source(o, &chunk, ctx, registry, count, selected, output, keys, error);
+        if (rc) break;
+        bool seen = false;
+        for (size_t i = 0; i < depth; ++i)
+            if (same_bytes(chunk.data, (br_slice){ decoded[i].data, decoded[i].len })) seen = true;
+        if (same_bytes(chunk.data, input) || seen) break;
+        input = chunk.data;
+    }
+    for (size_t i = 0; i < BASE64_MAX_DEPTH; ++i) free(decoded[i].data);
+    return rc;
+}
+
 static int read_input(int fd, br_bytes *input, char **error)
 {
     unsigned char *data = malloc(INPUT_LIMIT + 1);
@@ -441,12 +485,6 @@ static int read_input(int fd, br_bytes *input, char **error)
         if (!n) break;
         len += (size_t)n;
         if (len > INPUT_LIMIT) { free(data); return fail(error, "unsupported: input exceeds 64 KiB; chunking is not ported"); }
-    }
-    for (size_t i = 0; i < len; ++i) {
-        if (data[i] >= 0x80 || data[i] == 0 || (data[i] < 0x20 && !strchr("\n\r\t\f", data[i]))) {
-            free(data);
-            return fail(error, "unsupported: input is not plain ASCII text; binary handlers and decoders are not ported");
-        }
     }
     input->data = data;
     input->len = len;
@@ -488,7 +526,7 @@ int main(int argc, char **argv)
     curl_initialized = true;
     output = json_object_new_array(); keys = json_object_new_array();
     if (!output || !keys) { fail(&error, "out of memory initializing output"); goto done; }
-    fprintf(stderr, "briar: limited native slice, %zu explicitly selected enabled detector(s); plain ASCII only, no decoding/chunking or CLI verification\n", nselected);
+    fprintf(stderr, "briar: limited native slice, %zu explicitly selected enabled detector(s); PLAIN/BASE64 only (five Base64 passes), no other decoders/chunking or CLI verification\n", nselected);
     size_t nsources = !strcmp(options.command, "stdin") ? 1 : options.npaths;
     for (size_t i = 0; i < nsources; ++i) {
         bool is_stdin = !strcmp(options.command, "stdin");
@@ -517,7 +555,7 @@ int main(int argc, char **argv)
             .source_name = is_stdin ? "trufflehog - stdin" : "trufflehog - filesystem",
             .path = is_stdin ? NULL : options.paths[i], .original = { input.data, input.len },
         };
-        int scan_rc = scan_source(&options, &source, &ctx, registry, count, selected, output, keys, &error);
+        int scan_rc = scan_decoders(&options, &source, &ctx, registry, count, selected, output, keys, &error);
         free(input.data);
         if (scan_rc) goto done;
     }

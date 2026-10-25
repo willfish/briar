@@ -3,6 +3,7 @@
 #include "briar.h"
 #include "../../src/detectors/first_batch.h"
 #include "../../src/detectors/second_batch.h"
+#include "../../src/detectors/third_batch.h"
 
 #include <ctype.h>
 #include <json-c/json.h>
@@ -446,13 +447,33 @@ static void verification_tests(const br_detector *detector, const specification 
 static void registry_handler_test(const br_detector *detector, const specification *spec)
 {
     current_case = "each registry identity executes its actual initialized handler";
-    char key[82], input[256];
+    char key[82], secondary_buffer[82], input[512];
     synthetic_key(key, spec->key_len, 0);
     if (detector->type == 303 && detector->version == 1) key[7] = '%';
     if (detector->type == 390) memcpy(key, "aio_", 4);
-    const char *id = "C7d8E9f0.G1H";
-    if (detector->type == 136)
-        snprintf(input, sizeof(input), "adobe %s\nadobe %s", key, id);
+    const char *secondary = NULL, *secondary_name = NULL;
+    switch (detector->type) {
+    case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
+    case 431: secondary = "c7d8e9f0"; secondary_name = "id"; break;
+    case 693: secondary = "00042"; secondary_name = "id"; break;
+    case 197:
+        synthetic_key(secondary_buffer, 32, 11);
+        secondary = secondary_buffer;
+        secondary_name = "secret";
+        break;
+    case 802:
+        for (size_t i = 0; i < 64; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[64] = '\0';
+        secondary = "synthetic.aha.io";
+        secondary_name = "url";
+        break;
+    }
+    if (detector->type == 197)
+        snprintf(input, sizeof(input), "token %s\nsecret %s", key, secondary);
+    else if (detector->type == 802)
+        snprintf(input, sizeof(input), "aha %s\n%s", key, secondary);
+    else if (secondary)
+        snprintf(input, sizeof(input), "%s %s\n%s %s", spec->keyword, key, spec->keyword, secondary);
     else if (detector->type == 390) snprintf(input, sizeof(input), "%s", key);
     else snprintf(input, sizeof(input), "%s %s", spec->keyword, key);
     br_results results = scan(detector, NULL, false, input, strlen(input));
@@ -465,13 +486,13 @@ static void registry_handler_test(const br_detector *detector, const specificati
     br_json *part = NULL;
     CHECK(json_object_object_get_ex(result->secret_parts, "key", &part));
     CHECK(strcmp(json_object_get_string(part), key) == 0);
-    CHECK(json_object_object_length(result->secret_parts) == (detector->type == 136 ? 2 : 1));
-    if (detector->type == 136) {
-        CHECK(json_object_object_get_ex(result->secret_parts, "id", &part));
-        CHECK(strcmp(json_object_get_string(part), id) == 0);
-        CHECK(result->raw_v2.len == spec->key_len + strlen(id) && result->raw_v2.data != NULL);
+    CHECK(json_object_object_length(result->secret_parts) == (secondary ? 2 : 1));
+    if (secondary) {
+        CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
+        CHECK(strcmp(json_object_get_string(part), secondary) == 0);
+        CHECK(result->raw_v2.len == spec->key_len + strlen(secondary) && result->raw_v2.data != NULL);
         CHECK(memcmp(result->raw_v2.data, key, spec->key_len) == 0);
-        CHECK(memcmp(result->raw_v2.data + spec->key_len, id, strlen(id)) == 0);
+        CHECK(memcmp(result->raw_v2.data + spec->key_len, secondary, strlen(secondary)) == 0);
     } else CHECK(result->raw_v2.len == 0 && result->raw_v2.data == NULL);
     br_results_clear(&results);
     ++cases;
@@ -489,6 +510,16 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
         {.type = 136, .name = "AdobeIO", .keyword = "adobe", .key_len = 32, .enabled = false,
          .description = "AdobeIO provides APIs for integrating with Adobe services. These credentials can be used to access Adobe services and data."},
     };
+    static const specification third_specs[] = {
+        {.type = 431, .name = "Adzuna", .keyword = "adzuna", .key_len = 32, .enabled = true,
+         .description = "Adzuna is a job search engine used to find job listings. Adzuna API keys can be used to access job listing data."},
+        {.type = 693, .name = "Aeroworkflow", .keyword = "aeroworkflow", .key_len = 20, .enabled = true,
+         .description = "Aeroworkflow is a service for managing workflows. Aeroworkflow API keys and Account IDs can be used to access and manage workflows."},
+        {.type = 197, .name = "Agora", .keyword = "agora", .key_len = 32, .enabled = true,
+         .description = "Agora is a real-time engagement platform providing APIs for voice, video, and messaging. Agora API keys can be used to access and manage these services."},
+        {.type = 802, .name = "Aha", .keyword = "aha.io", .key_len = 64, .enabled = true,
+         .description = "Aha is a product management software suite. Aha API keys can be used to access and modify product data and workflows."},
+    };
     const struct {
         const specification *spec;
         int32_t version;
@@ -497,16 +528,19 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
         {&specs[2], 0, -1}, {&specs[0], 0, -1}, {&specs[1], 0, -1},
         {&second_specs[0], 1, -1}, {&second_specs[1], 2, -1},
         {&second_specs[2], 0, -1}, {&second_specs[3], 0, 1024},
+        {&third_specs[0], 0, 1024}, {&third_specs[1], 0, 1024},
+        {&third_specs[2], 0, 1024}, {&third_specs[3], 0, 1024},
     };
     current_case = "exact compiled registry identities/order/defaults";
     CHECK(BR_ABI_REVISION == 1);
-    CHECK(count == 7 && count == sizeof(expected) / sizeof(expected[0]));
-    const br_detector *const *first = NULL, *const *second = NULL;
-    size_t nfirst = 0, nsecond = 0;
+    CHECK(count == 11 && count == sizeof(expected) / sizeof(expected[0]));
+    const br_detector *const *first = NULL, *const *second = NULL, *const *third = NULL;
+    size_t nfirst = 0, nsecond = 0, nthird = 0;
     char *batch_error = NULL;
     CHECK(br_first_batch(&first, &nfirst, &batch_error) == 0 && batch_error == NULL);
     CHECK(br_second_batch(&second, &nsecond, &batch_error) == 0 && batch_error == NULL);
-    CHECK(nfirst == 3 && nsecond == 4);
+    CHECK(br_third_batch(&third, &nthird, &batch_error) == 0 && batch_error == NULL);
+    CHECK(nfirst == 3 && nsecond == 4 && nthird == 4);
     CHECK(br_detector_type_name(-1) == NULL);
     CHECK(br_detector_type_name(0) == NULL);
     CHECK(br_detector_type_name(1) == NULL); /* Not a metadata-only AWS descriptor. */
@@ -520,7 +554,8 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
     for (size_t i = 0; i < count; ++i) {
         const br_detector *detector = detectors[i];
         const specification *spec = expected[i].spec;
-        CHECK(detector == (i < nfirst ? first[i] : second[i - nfirst]));
+        CHECK(detector == (i < nfirst ? first[i] :
+              i < nfirst + nsecond ? second[i - nfirst] : third[i - nfirst - nsecond]));
         CHECK(detector->type == spec->type);
         CHECK(strcmp(detector->name, spec->name) == 0);
         CHECK(strcmp(br_detector_type_name(detector->type), spec->name) == 0);
@@ -551,7 +586,7 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
         }
         registry_handler_test(detector, spec);
     }
-    CHECK(enabled == 5);
+    CHECK(enabled == 9);
     json_object_put(flags);
     const br_detector *const *again = NULL;
     size_t nagain = 0;
@@ -566,7 +601,7 @@ static void registry_tests(const br_detector *const *detectors, size_t count)
     CHECK(error != NULL && again == NULL);
     free(error);
     ++cases;
-    printf("PASS registry: seven actual handlers in upstream order; Abstract/AdobeIO disabled; Accuweather v1/v2 distinct\n");
+    printf("PASS registry: eleven actual handlers in upstream order; Abstract/AdobeIO disabled; Accuweather v1/v2 distinct\n");
 }
 
 int main(void)

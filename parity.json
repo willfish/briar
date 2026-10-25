@@ -89,6 +89,38 @@
       "scope_notes": "Preserves unique component sets, Cartesian pairing, metadata, verifier branches and disabled default membership; no Version method exists upstream.",
       "evidence": ["tests/detectors/test_second_batch.c", "tests/detectors/test_detectors.c", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte behavior", "Complete native HTTP-client and engine parity", "Disabled constructor has source-derived fixtures, not a direct CLI oracle"]
+    },
+    "adzuna/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/adzuna/adzuna.go",
+      "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c"],
+      "remaining": ["Complete shared regexp/HTTP behavior", "CLI intentionally rejects multipart capability until chunk/window/prefilter semantics are implemented"]
+    },
+    "aeroworkflow/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/aeroworkflow/aeroworkflow.go",
+      "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c"],
+      "remaining": ["Complete shared regexp/HTTP behavior", "CLI intentionally rejects multipart capability until chunk/window/prefilter semantics are implemented"]
+    },
+    "agora/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/agora/agora.go",
+      "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c"],
+      "remaining": ["Complete shared regexp/HTTP behavior", "CLI intentionally rejects multipart capability until chunk/window/prefilter semantics are implemented"]
+    },
+    "aha/Scanner": {
+      "state": "partial",
+      "upstream_source": "pkg/detectors/aha/aha.go",
+      "native_files": ["src/detectors/third_batch.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_third_batch.c", "tests/detectors/test_detectors.c", "tests/core/test_core.c"],
+      "remaining": ["Native PUBLIC HTTP profile fails closed; complete all-address DNS checks, proxy handling, timeout and no-redirect behavior", "CLI intentionally rejects multipart capability until chunk/window/prefilter semantics are implemented", "Complete shared regexp/engine behavior"]
     }
   },
   "components": {
@@ -96,7 +128,13 @@
       "status": "partial",
       "native_files": ["include/briar.h", "src/result.c", "src/regex.c", "src/http.c", "src/falsepositives.c", "src/wordlists.c"],
       "evidence": ["tests/core/test_core.c", "tests/detectors/test_detectors.c", "docs/ACCEPTANCE.md"],
-      "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "HTTP profiles, redirects, timing and non-GET requests", "Remaining shared detector helpers and protocol adapters"]
+      "remaining": ["Complete regexp semantics and arbitrary-byte behavior", "Unicode false-positive handling", "Native HTTP profiles, redirects, DNS/proxy policy, timing and non-GET requests; injected LOCAL/PUBLIC profile dispatch is implemented but native curl rejects those profiles before I/O", "Remaining shared detector helpers and protocol adapters"]
+    },
+    "decoders": {
+      "status": "partial",
+      "native_files": ["src/utf8.c", "src/base64.c", "include/briar_decoders.h", "src/main.c"],
+      "evidence": ["tests/core/test_utf8.c", "tests/core/test_base64.c", "tests/cli_reference.py"],
+      "remaining": ["UTF16, escaped Unicode and HTML decoders", "Full decoder/engine interaction, chunking and metadata parity"]
     },
     "engine": {
       "status": "partial",
@@ -114,7 +152,7 @@
       "status": "partial",
       "native_files": ["src/main.c"],
       "evidence": ["tests/core/e2e.py", "tests/cli_reference.py"],
-      "remaining": ["Current CLI accepts only ASCII stdin or explicit regular files up to 64 KiB", "Traversal, archives, source enumeration, source metadata and all other source integrations"]
+      "remaining": ["Current CLI accepts stdin or explicit regular files up to 64 KiB; full source/chunk behavior remains unported", "Traversal, archives, source enumeration, source metadata and all other source integrations"]
     },
     "output": {
       "status": "partial",

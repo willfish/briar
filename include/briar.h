@@ -103,7 +103,9 @@ int br_result_set_verification_error(br_result *, const char *innermost_error,
 void br_clean_results(br_results *, bool verification_enabled);
 bool br_known_false_positive(br_slice, const char *const *terms, size_t nterms,
                              bool word_check, char **reason);
-/* Missing transports fail closed. Release once after every send, even failure. */
+/* Missing transports fail closed. Release once after every send, even failure.
+ * Injected transports own the requested profile's redirect and address policy;
+ * the native adapter rejects profiles whose policies are not implemented. */
 int br_http_send(const br_scan_ctx *, const br_http_request *,
                  br_http_response *, char **error);
 void br_http_release(const br_scan_ctx *, br_http_response *);
@@ -112,6 +114,11 @@ void br_http_release(const br_scan_ctx *, br_http_response *);
 int br_registry(const br_detector *const **out, size_t *count, char **error);
 bool br_detector_is_default(const br_detector *, const br_json *feature_flags);
 const char *br_detector_type_name(int32_t type);
+
+/* PLAIN decoding borrows valid input unchanged; otherwise decoded aliases storage.
+ * Zero-initialize storage and free(storage.data) after using decoded. Original input
+ * is never modified. Empty input stays empty; errors clear both outputs. */
+int br_utf8_decode(br_slice input, br_slice *decoded, br_bytes *storage, char **error);
 
 typedef struct br_regex br_regex;
 typedef struct { size_t begin, end; } br_span;

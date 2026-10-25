@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "first_batch.h"
 #include "second_batch.h"
+#include "third_batch.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -18,22 +19,24 @@ static int fail(char **error, const char *message)
 int br_registry(const br_detector *const **out, size_t *count, char **error)
 {
     /* Initialization is deliberately pre-worker, as required by ABI revision 1. */
-    static const br_detector *implemented[7];
+    static const br_detector *implemented[11];
     static bool initialized;
     if (error) *error = NULL;
     if (out) *out = NULL;
     if (count) *count = 0;
     if (!out || !count) return fail(error, "invalid detector registry outputs");
     if (!initialized) {
-        const br_detector *const *first = NULL, *const *second = NULL;
-        size_t nfirst = 0, nsecond = 0;
+        const br_detector *const *first = NULL, *const *second = NULL, *const *third = NULL;
+        size_t nfirst = 0, nsecond = 0, nthird = 0;
         if (br_first_batch(&first, &nfirst, error) != 0 ||
-            br_second_batch(&second, &nsecond, error) != 0) return -1;
-        if (nfirst != 3 || nsecond != 4)
+            br_second_batch(&second, &nsecond, error) != 0 ||
+            br_third_batch(&third, &nthird, error) != 0) return -1;
+        if (nfirst != 3 || nsecond != 4 || nthird != 4)
             return fail(error, "unexpected compiled detector batch sizes");
         /* Batches retain pinned defaults-list order, including disabled entries. */
         for (size_t i = 0; i < nfirst; ++i) implemented[i] = first[i];
         for (size_t i = 0; i < nsecond; ++i) implemented[nfirst + i] = second[i];
+        for (size_t i = 0; i < nthird; ++i) implemented[nfirst + nsecond + i] = third[i];
         initialized = true;
     }
     *out = implemented;
@@ -43,19 +46,24 @@ int br_registry(const br_detector *const **out, size_t *count, char **error)
 
 bool br_detector_is_default(const br_detector *detector, const br_json *feature_flags)
 {
-    (void)feature_flags; /* None of these seven implementations has a feature gate. */
-    return br_first_batch_is_default(detector) || br_second_batch_is_default(detector);
+    (void)feature_flags; /* None of these eleven implementations has a feature gate. */
+    return br_first_batch_is_default(detector) || br_second_batch_is_default(detector) ||
+           br_third_batch_is_default(detector);
 }
 
 const char *br_detector_type_name(int32_t type)
 {
     switch (type) {
     case 136: return "AdobeIO";
+    case 197: return "Agora";
     case 239: return "Abyssale";
     case 303: return "Accuweather";
     case 384: return "Abstract";
     case 390: return "AdafruitIO";
+    case 431: return "Adzuna";
     case 521: return "AbuseIPDB";
+    case 693: return "Aeroworkflow";
+    case 802: return "Aha";
     default: return NULL;
     }
 }

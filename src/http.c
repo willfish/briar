@@ -54,7 +54,8 @@ int br_http_send(const br_scan_ctx *ctx, const br_http_request *request,
     if (!ctx || !request || !response) return fail(error, "invalid HTTP arguments");
     if (!ctx->transport || !ctx->transport->send || !ctx->transport->release)
         return fail(error, "HTTP transport not installed");
-    if (request->profile != BR_HTTP_SANE)
+    if (request->profile != BR_HTTP_SANE && request->profile != BR_HTTP_DETECTOR_LOCAL &&
+        request->profile != BR_HTTP_DETECTOR_PUBLIC)
         return fail(error, "unsupported HTTP client profile");
     if (request->dedup_key.len) return fail(error, "unsupported HTTP request coalescing");
     if (!request->method || !*request->method || !request->url ||
@@ -94,7 +95,8 @@ int br_http_send(const br_scan_ctx *ctx, const br_http_request *request,
     br_http_request effective = *request;
     effective.headers = headers;
     ++effective.nheaders;
-    if (!effective.timeout_ms) effective.timeout_ms = 5000;
+    if (!effective.timeout_ms)
+        effective.timeout_ms = request->profile == BR_HTTP_SANE ? 5000 : 10000;
     if (ctx->deadline_monotonic_ms) {
         int64_t now = now_ms();
         int64_t remaining = now < 0 ? 0 : ctx->deadline_monotonic_ms - now;
@@ -218,6 +220,10 @@ static int curl_send(void *user, const br_scan_ctx *ctx, const br_http_request *
                      br_http_response *response, char **error)
 {
     (void)user;
+    /* Injected transports implement the requested profile. Never route a profile
+     * requiring no redirects or DNS/IP policy through this incomplete adapter. */
+    if (req->profile != BR_HTTP_SANE)
+        return fail(error, "unsupported: native curl HTTP client profile");
     if (strcmp(req->method, "GET") || req->body.len)
         return fail(error, "unsupported: curl adapter currently supports bodyless GET only");
     struct curl_slist *headers = NULL;
