@@ -46,6 +46,7 @@ static const registration expected[] = {
     {458, 0, "Api2Cart", "api2cart", 32, true, -1},
     {212, 0, "ApiDeck", "apideck", 101, true, 1024},
     {401, 0, "Apiflash", "apiflash", 32, true, 1024},
+    {484, 0, "ApiFonica", "apifonica", 39, true, -1},
     {391, 0, "Apify", "apify", 46, true, -1},
 };
 
@@ -57,6 +58,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 303 && entry->version == 1) key[7] = '%';
     if (entry->type == 390) memcpy(key, "aio_", 4);
     if (entry->type == 391) memcpy(key, "apify_api_", 10);
+    if (entry->type == 484) strcpy(key, "b7c9d2e5f6g-h3j4-k1m0-n2p4-q6r8s1t3u5v7");
     const char *secondary = NULL, *secondary_name = NULL;
     switch (entry->type) {
     case 0: secondary = "LTAIB7c9D2e5F6g8H3j4K"; secondary_name = "id"; break;
