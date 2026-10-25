@@ -42,6 +42,7 @@ static const registration expected[] = {
     {933, 0, "Anthropic", "sk-ant-api03", 108, true, -1},
     {179, 0, "Anypoint", "anypoint", 36, true, 1024},
     {1032, 0, "AnypointOAuth2", "anypoint", 32, true, 1024},
+    {632, 0, "Apacta", "apacta", 36, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */

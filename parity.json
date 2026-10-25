@@ -289,6 +289,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_anypointoauth2.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native SANE POST redirects remain explicitly unsupported"]
+    },
+    "apacta/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/apacta/apacta.go",
+      "native_files": ["src/detectors/apacta.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_apacta.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },
   "components": {
