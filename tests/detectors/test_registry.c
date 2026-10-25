@@ -40,6 +40,7 @@ static const registration expected[] = {
     {457, 0, "Ambee", "ambee", 64, true, -1},
     {42, 0, "AmplitudeApiKey", "amplitude", 32, true, 1024},
     {933, 0, "Anthropic", "sk-ant-api03", 108, true, -1},
+    {179, 0, "Anypoint", "anypoint", 36, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -64,6 +65,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
     case 170: secondary = "B7C9D2E5F6"; secondary_name = "id"; break;
+    case 179:
+        strcpy(key, "b7c9d2e5-f6g8-h3j4-k1m0-n2p4q6r8s1t3");
+        secondary = "c7d8e9f0-g1h2-i3j4-k5l6-m7n8o9p0q1r2";
+        secondary_name = "organization";
+        break;
     case 375: secondary = "fixture@example.test"; secondary_name = "id"; break;
     case 431: secondary = "c7d8e9f0"; secondary_name = "id"; break;
     case 453: secondary = "B7c9D2e5F6g8H3j4"; secondary_name = "secret"; break;
@@ -100,6 +106,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "token %s\nsecret %s", key, secondary);
     else if (entry->type == 802)
         snprintf(input, sizeof(input), "aha %s\n%s", key, secondary);
+    else if (entry->type == 179)
+        snprintf(input, sizeof(input), "anypoint %s\norg %s", key, secondary);
     else if (secondary)
         snprintf(input, sizeof(input), "%s %s\n%s %s", entry->keyword, key, entry->keyword, secondary);
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);

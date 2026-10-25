@@ -273,6 +273,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_anthropic.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoding semantics", "ABI1's NUL-terminated verification-error storage cannot preserve embedded-NUL server error bytes", "Streaming read-error boundaries at the 4096-byte cap need native parity evidence"]
+    },
+    "anypoint/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/anypoint/anypoint.go",
+      "native_files": ["src/detectors/anypoint.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_anypoint.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     }
   },
   "components": {
