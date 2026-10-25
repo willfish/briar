@@ -28,5 +28,9 @@ int br_alconost_init(const br_detector **out, char **error);
 int br_alegra_init(const br_detector **out, char **error);
 int br_aletheiaapi_init(const br_detector **out, char **error);
 int br_algoliaadminkey_init(const br_detector **out, char **error);
+int br_alibaba_init(const br_detector **out, char **error);
+int br_alienvault_init(const br_detector **out, char **error);
+int br_allsports_init(const br_detector **out, char **error);
+int br_amadeus_init(const br_detector **out, char **error);
 
 #endif
