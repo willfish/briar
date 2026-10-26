@@ -5,7 +5,7 @@ PKG_CONFIG ?= pkg-config
 LIB_PACKAGES := libpcre2-8 libcurl json-c libcrypto libxml-2.0
 CPPFLAGS += -Iinclude -D_POSIX_C_SOURCE=200809L $(shell $(PKG_CONFIG) --cflags $(LIB_PACKAGES))
 CFLAGS ?= -O2 -g
-CFLAGS += -std=c11 -Wall -Wextra -Wpedantic -Werror
+CFLAGS += -std=c11 -Wall -Wextra -Wpedantic -Werror -pthread
 LDLIBS += $(shell $(PKG_CONFIG) --libs $(LIB_PACKAGES)) -lm
 
 CORE_SOURCES := $(filter-out src/main.c,$(wildcard src/*.c))
