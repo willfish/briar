@@ -20,9 +20,10 @@ Copyright 2014-2015 Stripe, Inc.
 smithy-go
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
-Azure shared-key Base64 decoding, API Management repository URL serialization
-and DevOps line scanning reimplement Go 1.26.7 encoding/base64, net/url and bufio
-behavior in C. Original copyright and BSD license:
+Azure shared-key Base64 decoding, API Management repository URL serialization,
+DevOps line scanning and SAS/Function request guards reimplement selected Go
+1.26.7 encoding/base64, net/url, bufio and net/http behavior in C.
+Original copyright and BSD license:
 Copyright 2009 The Go Authors.
 Copyright 2013 The Go Authors. All rights reserved.
 See LICENSES/BSD-3-Clause-Go.txt.
