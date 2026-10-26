@@ -9,6 +9,7 @@
 
 struct br_host_cache_entry {
     int64_t expires_ns;
+    bool value;
     struct br_host_cache_entry *next;
     char host[];
 };
@@ -36,11 +37,12 @@ static void unlock_cache(br_host_cache *cache)
     atomic_flag_clear_explicit(&cache->lock, memory_order_release);
 }
 
-int br_host_cache_contains(br_host_cache *cache, const char *host, bool *found)
+int br_host_cache_get_bool(br_host_cache *cache, const char *host, bool *value, bool *found)
 {
     if (found) *found = false;
+    if (value) *value = false;
     int64_t now;
-    if (!cache || !host || !found || wall_clock_ns(&now) != 0) return -1;
+    if (!cache || !host || !value || !found || wall_clock_ns(&now) != 0) return -1;
     lock_cache(cache);
     br_host_cache_entry **link = &cache->entries;
     while (*link) {
@@ -49,7 +51,7 @@ int br_host_cache_contains(br_host_cache *cache, const char *host, bool *found)
             *link = entry->next;
             free(entry);
         } else {
-            if (!strcmp(entry->host, host)) *found = true;
+            if (!strcmp(entry->host, host)) { *found = true; *value = entry->value; }
             link = &entry->next;
         }
     }
@@ -57,7 +59,13 @@ int br_host_cache_contains(br_host_cache *cache, const char *host, bool *found)
     return 0;
 }
 
-int br_host_cache_add(br_host_cache *cache, const char *host)
+int br_host_cache_contains(br_host_cache *cache, const char *host, bool *found)
+{
+    bool value;
+    return br_host_cache_get_bool(cache, host, &value, found);
+}
+
+int br_host_cache_set_bool(br_host_cache *cache, const char *host, bool value)
 {
     int64_t now;
     if (!cache || !host || wall_clock_ns(&now) != 0) return -1;
@@ -67,6 +75,7 @@ int br_host_cache_add(br_host_cache *cache, const char *host)
     for (br_host_cache_entry *entry = cache->entries; entry; entry = entry->next) {
         if (!strcmp(entry->host, host)) {
             entry->expires_ns = now + host_ttl_ns;
+            entry->value = value;
             unlock_cache(cache);
             return 0;
         }
@@ -75,8 +84,14 @@ int br_host_cache_add(br_host_cache *cache, const char *host)
     if (!entry) { unlock_cache(cache); return -1; }
     memcpy(entry->host, host, len + 1);
     entry->expires_ns = now + host_ttl_ns;
+    entry->value = value;
     entry->next = cache->entries;
     cache->entries = entry;
     unlock_cache(cache);
     return 0;
+}
+
+int br_host_cache_add(br_host_cache *cache, const char *host)
+{
+    return br_host_cache_set_bool(cache, host, true);
 }

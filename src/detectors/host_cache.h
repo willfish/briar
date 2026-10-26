@@ -18,4 +18,9 @@ typedef struct { atomic_flag lock; br_host_cache_entry *entries; } br_host_cache
 int br_host_cache_contains(br_host_cache *, const char *host, bool *found);
 int br_host_cache_add(br_host_cache *, const char *host);
 
+/* Boolean values use the same ownership, lock and expiry rules. A cached false
+ * is present: contains ignores its value, while add stores true. */
+int br_host_cache_get_bool(br_host_cache *, const char *host, bool *value, bool *found);
+int br_host_cache_set_bool(br_host_cache *, const char *host, bool value);
+
 #endif

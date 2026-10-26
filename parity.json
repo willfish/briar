@@ -625,7 +625,7 @@
       "status": "partial",
       "native_files": ["src/detectors/host_cache.c", "src/detectors/host_cache.h"],
       "evidence": ["tests/detectors/test_host_cache.c", "tests/detectors/test_algoliaadminkey.c", "tests/detectors/test_artifactory.c", "tests/detectors/test_artifactoryreferencetoken.c"],
-      "remaining": ["Only default twelve-hour string-key presence semantics are implemented", "Configurable intervals, background purge, value storage, remaining cache APIs, LRU wrappers and metrics"]
+      "remaining": ["Only default twelve-hour string-key presence and boolean-value semantics are implemented", "Configurable intervals, background purge, nonboolean value storage, remaining cache APIs, LRU wrappers and metrics"]
     },
     "detector_support": {
       "status": "partial",
