@@ -138,6 +138,7 @@ static const registration expected[] = {
     {142, 2, "Buildkite", "bkua_", 45, true, -1},
     {317, 0, "Bulbul", "bulbul", 32, true, -1},
     {150, 0, "ButterCMS", "buttercms", 40, true, -1},
+    {130, 0, "Calendarific", "calendarific", 32, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
