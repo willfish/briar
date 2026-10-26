@@ -106,6 +106,7 @@ static const registration expected[] = {
     {867, 0, "Besnappy", "besnappy", 64, false, -1},
     {506, 0, "Besttime", "besttime", 36, true, -1},
     {947, 0, "BetterStack", "betterstack", 24, true, -1},
+    {385, 0, "Billomat", "billomat", 32, true, 1024},
     {387, 0, "Bitbar", "bitbar", 32, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {432, 0, "BitcoinAverage", "bitcoinaverage", 43, true, -1},
@@ -285,6 +286,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = secondary_buffer;
         secondary_name = "username";
         break;
+    case 385:
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        secondary = "briar7";
+        secondary_name = "id";
+        break;
     case 375: secondary = "fixture@example.test"; secondary_name = "id"; break;
     case 431:
     case 485: secondary = "c7d8e9f0"; secondary_name = "id"; break;
@@ -373,6 +379,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "%s", key);
     else if (session)
         snprintf(input, sizeof(input), "%s\n%s\n%s", key, secondary, session);
+    else if (entry->type == 385)
+        /* A provider word after the key can itself be captured as an ID. */
+        snprintf(input, sizeof(input), "billomat %s\nbillomat %s", secondary, key);
     else if (entry->type == 322)
         snprintf(input, sizeof(input), "appcues %s\nappcues %s\nappcues 00427", key, secondary);
     else if (entry->type == 197)
