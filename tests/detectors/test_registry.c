@@ -53,6 +53,7 @@ static const registration expected[] = {
     {1004, 0, "ApiMetrics", "apimetrics", 32, true, -1},
     {768, 0, "APITemplate", "apitemplate", 39, true, -1},
     {293, 0, "Apollo", "apollo", 22, false, -1},
+    {322, 0, "Appcues", "appcues", 36, true, 1024},
     {588, 0, "Appfollow", "appfollow", 155, true, -1},
 };
 
@@ -89,6 +90,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "b7c9d2e5-f6g8-h3j4-k1m0-n2p4q6r8s1t3");
         secondary = "c7d8e9f0-g1h2-i3j4-k5l6-m7n8o9p0q1r2";
         secondary_name = "organization";
+        break;
+    case 322:
+        test_secret(secondary_buffer, 39, 17);
+        secondary = secondary_buffer;
+        secondary_name = "username";
         break;
     case 375: secondary = "fixture@example.test"; secondary_name = "id"; break;
     case 431: secondary = "c7d8e9f0"; secondary_name = "id"; break;
@@ -134,7 +140,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[82] = '\0';
         break;
     }
-    if (entry->type == 197)
+    if (entry->type == 322)
+        snprintf(input, sizeof(input), "appcues %s\nappcues %s\nappcues 00427", key, secondary);
+    else if (entry->type == 197)
         snprintf(input, sizeof(input), "token %s\nsecret %s", key, secondary);
     else if (entry->type == 802)
         snprintf(input, sizeof(input), "aha %s\n%s", key, secondary);
