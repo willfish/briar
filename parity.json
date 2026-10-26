@@ -727,6 +727,51 @@
       "evidence": ["tests/detectors/test_azuresearchadminkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete native request/HTTP diagnostics and deferred-close timing", "Shared source-engine/regexp/Unicode behavior"]
     },
+    "azuresearchquerykey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azuresearchquerykey/azuresearchquerykey.go",
+      "scope_notes": "Preserves occurrence-based key-major/URL-minor products. URL values come from the last literal-space field of the full regex match, not the host/index captures; NUL and other bytes remain owned in no-verification metadata and RawV2. Canonical ASCII endpoints use the source PUBLIC GET and exact api-key header; all 2xx verify, 401/403 reject and bodies/read errors are ignored. Known pre-fragment control-byte creation errors skip candidates; unsupported URL forms retain candidate errors and do not stop later pairs. Key-only transport-error redaction and positive core allocation failures have focused evidence.",
+      "native_files": ["src/detectors/azuresearchquerykey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azuresearchquerykey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native PUBLIC policy rejects before I/O; injected success does not establish native support", "Verification explicitly guards noncanonical, fragment, percent and non-ASCII endpoint forms rather than reproducing full Go URL parsing and diagnostics", "Shared regexp/Unicode/source-engine and deferred-close timing parity"]
+    },
+    "bannerbear/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bannerbear/v1/bannerbear.go",
+      "scope_notes": "One provider module exposes separate version 1 and 2 factories and policies. V1 retains occurrences, requires its provider prefix and exact lowercase tt suffix, and keeps version metadata on every path. Its SANE Bearer GET verifies only 200, rejects 401, ignores body/read errors and retains key-redacted creation/transport/status errors. No RawV2, key-type enrichment, uniqueness or success break is introduced.",
+      "native_files": ["src/detectors/bannerbear.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bannerbear.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native HTTP diagnostics and response drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
+    "bannerbear/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bannerbear/v2/bannerbear.go",
+      "scope_notes": "Direct lowercase bb_pr_/bb_ma_ captures are unique. No-verification metadata contains version 2; verification replaces the entire map, leaving it NULL on creation/transport failure and restoring version metadata only after successful Do. HTTP 200 yields Project API Key regardless of prefix. For 400, body-read errors precede binary marker search, including markers after NUL; matching responses yield Master API Key. Key types are response-driven. Non-marker 400s retain an explicit unsupported candidate error and version metadata without aborting later keys. Positive setter failures roll back only the current invocation, preserving caller findings.",
+      "native_files": ["src/detectors/bannerbear.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bannerbear.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Every non-marker HTTP 400 diagnostic, including ordinary ASCII bodies, remains explicitly unsupported: ABI1 has no arbitrary response status text or NUL-preserving error length", "Complete native HTTP diagnostics and response drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
+    "baremetrics/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/baremetrics/baremetrics.go",
+      "scope_notes": "Preserves prefixed sk_/lk_ captures with 18..25 mixed-alphanumeric payload bytes and all occurrences. Its SANE Bearer GET verifies only 200, rejects 401 and ignores body/read errors. All Client.Do failures, including DNS/cancellation/deadlines, are suppressed without dropping findings or populating a cache; creation errors remain key-redacted candidate errors. No entropy, Base64 decoding, RawV2, Redacted field or extra metadata is introduced.",
+      "native_files": ["src/detectors/baremetrics.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_baremetrics.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native HTTP diagnostics and response drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
+    "beamer/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/beamer/beamer.go",
+      "scope_notes": "Preserves occurrences and the 45-character alphabet plus literal equals, including underscore/plus/slash without Base64 validation. The leading word boundary permits a nonword first key byte only after a word byte; no ending boundary is added. Its exact SANE Beamer-Api-Key GET verifies only 200, rejects 401 and ignores body/read errors. Unlike Baremetrics, transport errors are retained with key-only redaction. Creation errors retain candidates. Raw and key parts are the only secret metadata.",
+      "native_files": ["src/detectors/beamer.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_beamer.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native HTTP diagnostics and response drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

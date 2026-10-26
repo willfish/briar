@@ -501,12 +501,23 @@ def fixtures():
         ("azure_search_admin", 976, b"azure " + alnum("azure-search-admin-key", 52) + b"\nazure OriginalSvc7"),
         ("azure_search_admin_services", 976, b"azure " + alnum("azure-search-multiple-key", 52) +
          b"\nazure OriginalSvc7\nazure SecondSvc8"),
+        ("azure_search_query", 977, b"azure " + alnum("azure-query-key", 52) +
+         b"\nazure https://briarsearch.search.windows.net/indexes/briarindex"),
+        ("azure_search_query_full_match", 977, b"azure " + alnum("azure-query-full-match", 52) +
+         b"\nazure\vhttps://briarsearch.search.windows.net/indexes/briarindex"),
         ("azure_storage_connection", 931, b"DefaultEndpointsProtocol=https;AccountName=briarstorage;AccountKey=" +
          alnum("azure-storage-connection", 86) + b"==;EndpointSuffix=core.windows.net"),
         ("azure_storage_blob", 931, b"https://briarstorage.blob.core.windows.net\nStorage_Key=" +
          alnum("azure-storage-blob", 86) + b"=="),
         ("azure_apim_repository", 1018, b"azure url briar-apim.scm.azure-api.net\nazure password git&172635480927&" +
          alnum("azure-apim-password", 83) + b"+/A=="),
+        ("bannerbear_v1", "430.v1", b"bannerbear " + alnum("bannerbear-legacy", 22) + b"tt"),
+        ("bannerbear_v2", "430.v2", b"bb_pr_" + synthetic("bannerbear-project", 30) +
+         b"\nbb_ma_" + synthetic("bannerbear-master", 30) + b"\nbb_pr_" + synthetic("bannerbear-project", 30)),
+        ("baremetrics", 377, b"baremetrics sk_" + alnum("baremetrics-sandbox", 18) +
+         b"\nbaremetrics lk_" + alnum("baremetrics-production", 25)),
+        ("beamer", 166, b"beamer " + alnum("beamer-symbol-key", 42) + b"_+/="),
+        ("beamer_leading_nonword", 166, b"beamer W+" + alnum("beamer-leading-symbol", 44) + b"="),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
