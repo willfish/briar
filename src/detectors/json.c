@@ -186,6 +186,13 @@ int br_json_first_document(br_slice body, const char *read_error, br_json **out,
         json_object_put(value);
         return -1;
     }
+    /* Go's stream decoder needs one more byte (or EOF) after a scalar string.
+     * json-c closes it immediately; a terminal non-EOF read error still wins. */
+    if (read_error && code == json_tokener_success && offset == body.len && body.len &&
+        body.data[body.len - 1] == '"' && json_object_is_type(value, json_type_string)) {
+        code = json_tokener_continue;
+        incomplete = true;
+    }
     if (code != json_tokener_success) {
         int rc;
         if (incomplete) {
@@ -301,6 +308,25 @@ br_slice br_json_text(br_json *value)
     return value ? (br_slice){(const unsigned char *)json_object_get_string(value),
                               (size_t)json_object_get_string_len(value)} :
                    (br_slice){(const unsigned char *)"", 0};
+}
+
+int br_json_each_element(br_slice array, br_json_element_fn callback, void *user)
+{
+    if (array.len > INT_MAX) return -1;
+    size_t at = 0, index = 0;
+    while (at < array.len && json_space(array.data[at])) ++at;
+    if (at == array.len || array.data[at++] != '[') return -1;
+    while (at < array.len) {
+        while (at < array.len && (json_space(array.data[at]) || array.data[at] == ',')) ++at;
+        if (at == array.len || array.data[at] == ']') break;
+        size_t begin = at;
+        br_json *value = NULL;
+        if (member_value(array, &at, &value) != 0) { json_object_put(value); return -1; }
+        int rc = callback(user, index++, value, (br_slice){array.data + begin, at - begin});
+        json_object_put(value);
+        if (rc) return rc;
+    }
+    return 0;
 }
 
 int br_json_each_member(br_slice object, br_json_member_fn callback, void *user)

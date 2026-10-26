@@ -19,6 +19,10 @@ int br_json_document(br_slice body, br_json **out, char **cause);
  * Return the callback's nonzero result, or -1 on allocation/internal failure. */
 typedef int (*br_json_member_fn)(void *, br_slice name, br_json *value, br_slice encoded_value);
 int br_json_each_member(br_slice object, br_json_member_fn, void *user);
+/* Visit a validated array in source order, including null elements. Borrowing
+ * and callback-return semantics match member visits; indices start at zero. */
+typedef int (*br_json_element_fn)(void *, size_t index, br_json *value, br_slice encoded_value);
+int br_json_each_element(br_slice array, br_json_element_fn, void *user);
 
 /* Borrow string bytes; JSON null is the empty string. Caller checks other types. */
 br_slice br_json_text(br_json *);
