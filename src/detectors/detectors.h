@@ -108,5 +108,9 @@ int br_billomat_init(const br_detector **out, char **error);
 int br_bitbar_init(const br_detector **out, char **error);
 int br_bitbucketapppassword_init(const br_detector **out, char **error);
 int br_bitcoinaverage_init(const br_detector **out, char **error);
+int br_bitfinex_init(const br_detector **out, char **error);
+int br_bitlyaccesstoken_init(const br_detector **out, char **error);
+int br_bitmex_init(const br_detector **out, char **error);
+int br_blazemeter_init(const br_detector **out, char **error);
 
 #endif
