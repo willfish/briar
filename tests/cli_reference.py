@@ -370,6 +370,8 @@ def fixtures():
     # default 512-byte keyword radius without changing the detector's bounds.
     calendly_max_first = alnum("calendly-max-first", 300)
     calendly_max_first = calendly_max_first[:238] + b"calendly" + calendly_max_first[246:]
+    captaindata_payload = (b"CAPTAINDATA " + synthetic("captaindata-key", 64) +
+                           b"\nCAPTAINDATA b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3")
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -591,6 +593,13 @@ def fixtures():
         ("calorieninja", 474, b"CALORIENINJA " + alnum("calorieninja-key", 40)),
         ("campayn", 254, b"CAMPAYN " + alnum("campayn-key", 64).lower()),
         ("cannyio", 158, b"CANNY z7c9d2e5-f6g8-h3j4-k1m0-n2p4q6r8s1t3"),
+        ("capsulecrm", 270, b"CAPSULECRM " + alnum("capsulecrm-key", 58) + b"-._+=Z"),
+        ("capsulecrm_leading_punct", 270, b"capsulecrm-" + alnum("capsulecrm-leading-punct", 63)),
+        ("captaindata_v1", "708.v1", captaindata_payload),
+        ("captaindata_v2", "708.v2", captaindata_payload),
+        ("carboninterface", 578, b"CARBONINTERFACE " + alnum("carboninterface-key", 21)),
+        ("cashboard", 685, b"CASHBOARD briar7\nCASHBOARD B7C-D9E-F2G-H5J"),
+        ("cashboard_numeric_user", 685, b"CASHBOARD briar7\nCASHBOARD B7C-274-F2G-H5J"),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),

@@ -1150,6 +1150,51 @@
       "evidence": ["tests/detectors/test_cannyio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Shared br_http_send combines adapter allocation/setup and Do failures; these cannot be classified separately and are suppressed together", "Source scan-deferred close-only lifecycle differs from ABI1 eager buffering and per-request release", "Native SANE POST redirects remain fail-closed and their diagnostic is suppressed", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
     },
+    "capsulecrm/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/capsulecrm/capsulecrm.go",
+      "scope_notes": "CapsuleCRM-prefixed 64-byte occurrence captures preserve mixed alphanumeric and literal -._+= bytes with source word-boundary quirks, not Base64/JWT validation or endpoint-character normalization. Duplicates and Raw/keypart only are retained. SANE GET https://api.capsulecrm.com/api/v2/users uses complete Bearer authorization/default UA with no body/Type/Accept. A bounded stack header suffices for the fixed capture. Verification nil context skips candidates; NoV nil context finds them. All successful 2xx verify, other statuses reject, the complete shared adapter/Do error domain is suppressed and body/read errors are ignored. No verification-error setter, entropy, uniqueness or cache is introduced. Provider-owned capture/finding/push failures cause caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/capsulecrm.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_capsulecrm.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter allocation/setup and Do failures; these cannot be classified separately and are suppressed together", "Source scan-deferred close-only lifecycle differs from ABI1 eager buffering and per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "captaindata/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/captaindata/v1/captaindata.go",
+      "scope_notes": "One cohesive CaptainData provider shares identical prefixed lowercase-hex 64-byte key and lowercase-hex UUID-shaped project regexes, finding construction and project-major/key-minor traversal, not version-specific verifier policy. V1 retains occurrence duplicates and the default multipart span 1024. All products remain; no entropy, consumption or success break is added. Raw is key, RawV2 is project+key, parts key/project_id; ExtraData remains nil with no invented version metadata. SANE GET https://api.captaindata.co/v2/PROJECT uses x-api-key and no body/Type/Accept. Verification nil context skips the pair, all successful 2xx verify and all shared adapter/Do errors are suppressed; body/read errors are ignored. Provider resources are fatal with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/captaindata.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_captaindata.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter allocation/setup and Do failures; these cannot be classified separately and are suppressed together", "Source scan-deferred close-only lifecycle differs from ABI1 eager buffering and per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "captaindata/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/captaindata/v2/captaindata.go",
+      "scope_notes": "The cohesive provider retains explicit V2 policy: independent unique key/project sets, no multipart-span interface and project-major/key-minor products without consumption or success breaks. Captures and Raw=key/RawV2=project+key/parts match V1; no version metadata is added. SANE GET https://api.captaindata.co/v3/workspace uses literal Authorization x-api-key KEY and x-project-id, no body/Type/Accept. Only 200 verifies; 401 rejects, every other status retains unexpected HTTP response status N. Nil-context creation and Do errors are retained, redacting key only and leaving project IDs untouched; body/drain/close errors are ignored. Existing ctx.transport represents the optional client seam, not full client configuration parity. Nonzero provider resources, including positive error-setter failures, normalize to fatal invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/captaindata.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_captaindata.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native client/override configuration, HTTP diagnostics and streaming drain/close timing", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "carboninterface/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/carboninterface/carboninterface.go",
+      "scope_notes": "CarbonInterface-prefixed mixed-alphanumeric 21-byte word-bounded occurrence captures retain duplicates and Raw/keypart only. SANE POST https://www.carboninterface.com/api/v1/estimates preserves the literal flight/passengers2/two ordered sfo-to-yyz-and-back JSON body, Bearer authorization, JSON Content-Type/default UA, without Accept or invented logical Content-Length. Verification nil context skips candidates; NoV nil context finds them. All successful 2xx verify, other statuses reject, all shared adapter/Do errors are suppressed and body/read errors are ignored. No verification-error setter, entropy, uniqueness or cache is introduced. Provider-owned resources cause fatal caller-preserving invocation rollback. Verification evidence never creates real estimates or consumes service credits.",
+      "native_files": ["src/detectors/carboninterface.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_carboninterface.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter allocation/setup and Do failures; these cannot be classified separately and are suppressed together", "Source scan-deferred close-only lifecycle differs from ABI1 eager buffering and per-request release", "Native SANE POST redirects remain fail-closed and their diagnostic is suppressed", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "cashboard/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/cashboard/cashboard.go",
+      "scope_notes": "Independent prefixed uppercase-alphanumeric 3-3-3-3 keys and unbounded lowercase-alphanumeric usernames retain occurrence key-major/user-minor products, including duplicates, context words and numeric key fragments captured as usernames. No uniqueness, entropy, consumption or success break is added. Raw is key, RawV2 key+username, parts key/username with no other metadata. Complete usernames reach dynamic byte-aware Basic(username,key) in SANE GET https://api.cashboardapp.com/account.xml, nil body/no Type or Accept/default UA. Multipart span remains 1024. Verification nil context skips pairs; NoV nil context finds them. All successful 2xx verify, other statuses reject, all shared adapter/Do errors are suppressed and body/read errors are ignored. Provider-owned Basic/finding/capture/push resource failures normalize to fatal invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/cashboard.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_cashboard.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter allocation/setup and Do failures; these cannot be classified separately and are suppressed together", "Source scan-deferred close-only lifecycle differs from ABI1 eager buffering and per-request release", "Complete native client configuration/redirect behavior, shared regexp/Unicode/source-engine and global output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
