@@ -447,7 +447,7 @@
       "upstream_source": "pkg/detectors/asanaoauth/asanaoauth.go",
       "native_files": ["src/detectors/asana.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_asana.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_asana.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "asanapersonalaccesstoken/Scanner": {
@@ -455,7 +455,7 @@
       "upstream_source": "pkg/detectors/asanapersonalaccesstoken/asanapersonalaccesstoken.go",
       "native_files": ["src/detectors/asana.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_asana.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_asana.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "assemblyai/Scanner": {
@@ -463,7 +463,7 @@
       "upstream_source": "pkg/detectors/assemblyai/assemblyai.go",
       "native_files": ["src/detectors/assemblyai.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_assemblyai.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_assemblyai.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "atera/Scanner": {
@@ -471,7 +471,7 @@
       "upstream_source": "pkg/detectors/atera/atera.go",
       "native_files": ["src/detectors/atera.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_atera.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_atera.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "atlassian/v1/Scanner": {
@@ -479,7 +479,7 @@
       "upstream_source": "pkg/detectors/atlassian/v1/atlassian.go",
       "native_files": ["src/detectors/atlassian.c", "src/detectors/json.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_atlassian.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_atlassian.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and malformed-input diagnostics", "Successful empty organization data explicitly fails closed instead of reproducing the upstream Data[0] panic; invocation rollback differs from engine-level panic recovery granularity"]
     },
     "atlassian/v2/Scanner": {
@@ -487,7 +487,7 @@
       "upstream_source": "pkg/detectors/atlassian/v2/atlassian.go",
       "native_files": ["src/detectors/atlassian.c", "src/detectors/json.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_atlassian.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_atlassian.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and malformed-input diagnostics"]
     }
   },
@@ -512,9 +512,9 @@
     },
     "engine": {
       "status": "partial",
-      "native_files": ["src/main.c"],
-      "evidence": ["tests/core/e2e.py", "tests/cli_reference.py"],
-      "remaining": ["Full registry selection and feature gates", "Full decoder fan-out, source/chunk options, Unicode-prefilter and concurrency parity", "Verification/cache/entropy and all remaining engine branches"]
+      "native_files": ["src/main.c", "src/overlap.c", "src/overlap.h"],
+      "evidence": ["tests/core/e2e.py", "tests/core/test_overlap.c", "tests/cli_reference.py"],
+      "remaining": ["Full registry selection and feature gates", "Full decoder fan-out, source/chunk options, Unicode-prefilter and concurrency parity", "Concurrent overlap scheduling and Go-map winner order; native no-verification overlap uses one valid deterministic registry order", "Verification, overlap overrides/targeted scans/stage timeouts, cache, entropy and all remaining engine branches"]
     },
     "cli": {
       "status": "partial",

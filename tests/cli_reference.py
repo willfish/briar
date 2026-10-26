@@ -409,6 +409,15 @@ def fixtures():
         ("artifactoryreferencetoken", 1042, b"cmVmdGtu" + alnum("artifactory-reference", 56) +
          b"\nsynthetic-fixture.jfrog.io"),
         ("artsy", 278, b"artsy " + alnum("artsy-key", 32) + b"\nartsy " + alnum("artsy-id", 20)),
+        ("asanaoauth", 98, b"asana " + alnum("asana-oauth-key", 51).lower()),
+        ("asanapat_old", 41, b"asana 0/1234567890123456:" + alnum("asana-old-pat", 32)),
+        ("asanapat_new", 41, b"asana 1/1234567890123456/0987654321098765:" + alnum("asana-new-pat", 40)),
+        ("assemblyai", 389, b"assemblyai " + alnum("assemblyai-key", 32).lower()),
+        ("atera", 800, b"atera " + alnum("atera-key", 32).lower()),
+        ("atlassian_v1", "190.v1", b"atlassian " + alnum("atlassian-v1-key", 24)),
+        ("atlassian_v2", "190.v2", b"ATCTT3xFfG" + alnum("atlassian-v2-key", 45) + b"=F1c2A3b4"),
+        ("atlassian_v2_org", "190.v2", b"ATCTT3xFfG" + alnum("atlassian-v2-key", 45) +
+         b"=F1c2A3b4\norg zzzzzzzz-qrst-uvwx-yz12-zzzzzzzzzzzz"),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))

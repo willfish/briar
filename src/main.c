@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "briar.h"
 #include "briar_decoders.h"
+#include "overlap.h"
 
 #include <curl/curl.h>
 #include <errno.h>
@@ -339,37 +340,47 @@ failed:
     return fail(error, "cannot construct JSON result");
 }
 
-static int process_results(const cli_options *o, const source_frame *source,
-                            const br_detector *d, br_results *results,
-                            br_json *output, br_json *keys, char **error)
+static void filter_results(const cli_options *o, const br_detector *d, br_results *results)
 {
-    static const char *const terms[] = { "example", "xxxxxx", "aaaaaa", "abcde", "00000", "sample", "*****" };
     if (o->clean || d->clean_always) {
         if (d->clean) d->clean(d, results, false);
         else br_clean_results(results, false);
     }
-    duplicate_offsets(source->data, results);
-    for (size_t i = 0; i < results->len; ++i) {
-        if (stopped) return fail(error, "context canceled");
-        br_result *r = &results->items[i];
-        result_frame f = { .source = source, .detector = d, .result = r, .chunk_data = source->original };
-        if (locate(&f)) continue;
-        if (!r->verified && r->raw.data) {
-            char *reason = NULL;
-            f.wordlist_fp = d->false_positive ? d->false_positive(d, r, &reason)
-                : br_known_false_positive((br_slice){ r->raw.data, r->raw.len }, terms, 7, true, &reason);
-            if (f.wordlist_fp && (!reason || !strncmp(reason, "unsupported:", 12))) {
-                free(reason);
-                return fail(error, "unsupported or failed false-positive check");
-            }
+}
+
+static int dispatch_result(const cli_options *o, const source_frame *source,
+                            const br_detector *d, br_result *r,
+                            br_json *output, br_json *keys, char **error)
+{
+    static const char *const terms[] = { "example", "xxxxxx", "aaaaaa", "abcde", "00000", "sample", "*****" };
+    if (stopped) return fail(error, "context canceled");
+    result_frame f = { .source = source, .detector = d, .result = r, .chunk_data = source->original };
+    if (locate(&f)) return 0;
+    if (!r->verified && r->raw.data) {
+        char *reason = NULL;
+        f.wordlist_fp = d->false_positive ? d->false_positive(d, r, &reason)
+            : br_known_false_positive((br_slice){ r->raw.data, r->raw.len }, terms, 7, true, &reason);
+        if (f.wordlist_fp && (!reason || !strncmp(reason, "unsupported:", 12))) {
             free(reason);
+            return fail(error, "unsupported or failed false-positive check");
         }
-        if ((!r->verified && f.wordlist_fp && !o->retain_fp) ||
-            (r->verified && !o->verified) ||
-            (!r->verified && r->verification_error && !o->unknown) ||
-            (!r->verified && !r->verification_error && !o->unverified)) continue;
-        if (append_output(output, keys, &f, error)) return 1;
+        free(reason);
     }
+    if ((!r->verified && f.wordlist_fp && !o->retain_fp) ||
+        (r->verified && !o->verified) ||
+        (!r->verified && r->verification_error && !o->unknown) ||
+        (!r->verified && !r->verification_error && !o->unverified)) return 0;
+    return append_output(output, keys, &f, error);
+}
+
+static int process_results(const cli_options *o, const source_frame *source,
+                            const br_detector *d, br_results *results,
+                            br_json *output, br_json *keys, char **error)
+{
+    filter_results(o, d, results);
+    duplicate_offsets(source->data, results);
+    for (size_t i = 0; i < results->len; ++i)
+        if (dispatch_result(o, source, d, &results->items[i], output, keys, error)) return 1;
     return 0;
 }
 
@@ -402,46 +413,147 @@ static br_span keyword_span(const br_detector *detector, size_t at, size_t input
     return span;
 }
 
+typedef struct {
+    const br_detector *detector;
+    br_span *windows;
+    size_t len;
+    bool pending;
+} detector_windows;
+typedef struct { const br_detector *detector; br_bytes value; } overlap_seen;
+
+static int add_window(detector_windows *match, br_span span, char **error)
+{
+    if (match->len >= SIZE_MAX / sizeof(*match->windows)) return fail(error, "too many detector windows");
+    br_span *windows = realloc(match->windows, (match->len + 1) * sizeof(*windows));
+    if (!windows) return fail(error, "out of memory collecting detector windows");
+    match->windows = windows;
+    windows[match->len++] = span;
+    return 0;
+}
+
+static br_slice overlap_value(const br_result *result)
+{
+    br_bytes value = result->raw_v2.data ? result->raw_v2 : result->raw;
+    return (br_slice){value.data, value.len};
+}
+
+static bool same_detector(const br_detector *a, const br_detector *b)
+{
+    return a->type == b->type && a->version == b->version &&
+        !strcmp(a->custom_name ? a->custom_name : "", b->custom_name ? b->custom_name : "");
+}
+
+static int probe_overlaps(const cli_options *o, const source_frame *source,
+                          const br_scan_ctx *ctx, detector_windows *matches, size_t count,
+                          br_json *output, br_json *keys, char **error)
+{
+    static const char cause[] = "more than one detector has found this result; for your safety, verification has been disabled. "
+                                "You can override this behavior by using the --allow-verification-overlap flag";
+    overlap_seen *seen = NULL;
+    size_t nseen = 0;
+    int rc = 0;
+    /* Registry order is one valid deterministic order. Upstream iterates a Go
+     * map here, so which different-type detector wins is not deterministic. */
+    for (size_t m = 0; !rc && m < count; ++m) {
+        detector_windows *match = &matches[m];
+        const br_detector *d = match->detector;
+        for (size_t w = 0; !rc && w < match->len; ++w) {
+            br_span span = match->windows[w];
+            br_results results = {0};
+            rc = d->scan(d, ctx, false, (br_slice){source->data.data + span.begin, span.end - span.begin}, &results, error);
+            if (!rc && results.len) match->pending = true; /* A later window can re-add a removed detector. */
+            if (!rc) filter_results(o, d, &results);
+            for (size_t r = 0; !rc && r < results.len; ++r) {
+                br_result *result = &results.items[r];
+                br_slice value = overlap_value(result);
+                bool duplicate = false, similar = false;
+                for (size_t s = 0; s < nseen; ++s) {
+                    br_slice prior = {seen[s].value.data, seen[s].value.len};
+                    if (same_detector(d, seen[s].detector) && same_bytes(value, prior)) { duplicate = true; break; }
+                }
+                if (duplicate) continue;
+                for (size_t s = 0; !rc && !similar && s < nseen; ++s) {
+                    if (d->type != seen[s].detector->type)
+                        rc = br_overlap_similar(value, (br_slice){seen[s].value.data, seen[s].value.len}, &similar, error);
+                }
+                if (!rc && similar) {
+                    rc = br_result_set_verification_error(result, cause, NULL, 0);
+                    if (rc) rc = fail(error, "out of memory annotating overlap result");
+                    if (!rc) rc = dispatch_result(o, source, d, result, output, keys, error);
+                    match->pending = false;
+                }
+                if (!rc) {
+                    if (nseen >= SIZE_MAX / sizeof(*seen) || value.len == SIZE_MAX) {
+                        rc = fail(error, "too many overlap candidates");
+                        break;
+                    }
+                    overlap_seen *next = realloc(seen, (nseen + 1) * sizeof(*next));
+                    if (!next) { rc = fail(error, "out of memory tracking overlap candidates"); break; }
+                    seen = next;
+                    unsigned char *copy = malloc(value.len ? value.len : 1);
+                    if (!copy) { rc = fail(error, "out of memory copying overlap candidate"); break; }
+                    if (value.len) memcpy(copy, value.data, value.len);
+                    seen[nseen++] = (overlap_seen){d, {copy, value.len}};
+                }
+            }
+            br_results_clear(&results);
+        }
+    }
+    for (size_t i = 0; i < nseen; ++i) free(seen[i].value.data);
+    free(seen);
+    return rc;
+}
+
 static int scan_source(const cli_options *o, const source_frame *source,
                         const br_scan_ctx *ctx, const br_detector *const *registry,
                         size_t count, const bool *selected, br_json *output,
                         br_json *keys, char **error)
 {
     br_slice input = source->data;
-    for (size_t i = 0; i < count; ++i) {
+    detector_windows *matches = calloc(count, sizeof(*matches));
+    if (!matches) return fail(error, "out of memory collecting matching detectors");
+    size_t nmatch = 0;
+    int rc = 0;
+    for (size_t i = 0; !rc && i < count; ++i) {
         if (!selected[i]) continue;
         const br_detector *d = registry[i];
         if (!d->scan || !d->keywords || !d->nkeywords || d->max_secret_size < -1 ||
-            d->max_credential_span < -1 || d->start_offset < -1)
-            return fail(error, "invalid or unsupported detector prefilter capability");
-        /* OR only the descriptor keywords, not its extraction-pattern aliases. */
+            d->max_credential_span < -1 || d->start_offset < -1) {
+            rc = fail(error, "invalid or unsupported detector prefilter capability");
+            break;
+        }
+        detector_windows *match = &matches[nmatch];
+        match->detector = d;
         br_span merged = { SIZE_MAX, SIZE_MAX };
-        for (size_t at = 0; at < input.len; ++at) {
-            if (stopped) return fail(error, "context canceled");
+        for (size_t at = 0; !rc && at < input.len; ++at) {
+            if (stopped) { rc = fail(error, "context canceled"); break; }
             bool hit = false;
             for (size_t k = 0; k < d->nkeywords; ++k) hit |= keyword_at(input, at, d->keywords[k]);
             if (!hit) continue;
             br_span span = keyword_span(d, at, input.len);
             if (merged.begin == SIZE_MAX) merged = span;
             else if (span.begin <= merged.end) merged.end = span.end > merged.end ? span.end : merged.end;
-            else {
-                br_results results = {0};
-                int rc = d->scan(d, ctx, false, (br_slice){ input.data + merged.begin, merged.end - merged.begin }, &results, error);
-                if (!rc) rc = process_results(o, source, d, &results, output, keys, error);
-                br_results_clear(&results);
-                if (rc) return rc;
-                merged = span;
-            }
+            else { rc = add_window(match, merged, error); merged = span; }
         }
-        if (merged.begin != SIZE_MAX) {
+        if (!rc && merged.begin != SIZE_MAX) rc = add_window(match, merged, error);
+        if (match->len) ++nmatch;
+    }
+    if (!rc && nmatch > 1) rc = probe_overlaps(o, source, ctx, matches, nmatch, output, keys, error);
+    for (size_t m = 0; !rc && m < nmatch; ++m) {
+        detector_windows *match = &matches[m];
+        if (nmatch > 1 && !match->pending) continue;
+        for (size_t w = 0; !rc && w < match->len; ++w) {
+            br_span span = match->windows[w];
             br_results results = {0};
-            int rc = d->scan(d, ctx, false, (br_slice){ input.data + merged.begin, merged.end - merged.begin }, &results, error);
-            if (!rc) rc = process_results(o, source, d, &results, output, keys, error);
+            rc = match->detector->scan(match->detector, ctx, false,
+                (br_slice){input.data + span.begin, span.end - span.begin}, &results, error);
+            if (!rc) rc = process_results(o, source, match->detector, &results, output, keys, error);
             br_results_clear(&results);
-            if (rc) return rc;
         }
     }
-    return 0;
+    for (size_t m = 0; m < count; ++m) free(matches[m].windows);
+    free(matches);
+    return rc;
 }
 
 static int scan_decoders(const cli_options *o, const source_frame *source,

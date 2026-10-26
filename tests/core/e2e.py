@@ -416,6 +416,44 @@ with tempfile.TemporaryDirectory(prefix="briar-core-") as directory:
     missing = Path(directory) / "missing.txt"
     invoke(["filesystem", str(path), str(missing), *base], code=1)
 
+# Default overlap probing still applies with verification disabled. Native
+# registry order is deterministic; the reference's Go-map winner can vary.
+overlap_cause = ("more than one detector has found this result; for your safety, verification has been disabled. "
+                 "You can override this behavior by using the --allow-verification-overlap flag")
+shared_pat = "0/1234567890123456:" + key32
+overlap_args = ["stdin", "--json", "--no-verification", "--include-detectors=98,41"]
+_, rows = invoke(overlap_args, ("asana " + shared_pat).encode())
+by_type = {row["DetectorType"]: row for row in rows}
+check(len(rows) == 2 and set(by_type) == {98, 41}, "overlap retains both Asana identities")
+check(by_type[41].get("VerificationError") == overlap_cause and
+      "VerificationError" not in by_type[98], "only later different-type match gets overlap error")
+for category, wanted in (("unknown", 41), ("unverified", 98)):
+    _, rows = invoke([*overlap_args, "--results=" + category], ("asana " + shared_pat).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == wanted, "overlap participates in result filtering")
+
+for changes, expected_error in ((3, True), (4, False)):
+    near = "z" * changes + key32[changes:]
+    data = f"assemblyai {key32}\natera {near}".encode()
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=389,800"], data)
+    by_type = {row["DetectorType"]: row for row in rows}
+    check(len(rows) == 2 and set(by_type) == {389, 800}, "similar credentials retain both identities")
+    check((by_type[800].get("VerificationError") == overlap_cause) == expected_error and
+          "VerificationError" not in by_type[389], "rune similarity uses strict source threshold")
+
+# A flagged detector is not normally dispatched again unless a later window
+# re-adds it. Its other, nonoverlapping candidate in this window is not emitted.
+data = f"assemblyai {key32}\natera {key32}\natera {key32[::-1]}".encode()
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=389,800"], data)
+check(len(rows) == 2 and all(row["Raw"] == key32 for row in rows), "overlap removes pending detector dispatch")
+hex_key = "b7c9d2e5f6a8b3c4d1e0f2a4b6c8d0e2"
+other_hex = "c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2"
+data = f"amplitude {hex_key}\namplitude {other_hex}\nassemblyai {hex_key}".encode()
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=42,389"], data)
+check(len(rows) == 3 and all("VerificationError" not in row for row in rows), "overlap compares RawV2 before Raw")
+data = f"accuweather {key32}x7z\naccuweather {key32}".encode()
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=303"], data)
+check(len(rows) == 2 and all("VerificationError" not in row for row in rows), "same type versions never overlap")
+
 # Missing implementations are errors, never empty successful default/all scans.
 for args in (
     ["stdin", "--json", "--no-verification"],
@@ -438,6 +476,7 @@ for args in (
     ["stdin", *base, "--filter-entropy=3"],
     ["stdin", *base, "--max-decode-depth=2"],
     ["stdin", *base, "--exclude-detectors=all"],
+    ["stdin", *base, "--allow-verification-overlap"],
 ):
     invoke(args, text, code=1)
 for payload in (
