@@ -498,6 +498,14 @@
       "evidence": ["tests/detectors/test_bitbucketdatacenter.c", "tests/detectors/test_datacenter.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go URL parsing/rendering; escaped, relative, opaque, repeated-fragment and authority-normalizing endpoint forms currently fail closed", "Go-map iteration and endpoint order remain unspecified rather than canonicalized"]
     },
+    "atlassiandatacenter/confluencedatacenter/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/atlassiandatacenter/confluencedatacenter/confluencedatacenter.go",
+      "native_files": ["src/detectors/confluencedatacenter.c", "src/detectors/datacenter.c", "src/detectors/host_cache.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_confluencedatacenter.c", "tests/detectors/test_datacenter.c", "tests/detectors/test_host_cache.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native curl DNS errors do not establish Go's case-sensitive no such host marker compatibility", "Full cache API, concurrency and Go-map ordering behavior remain unestablished"]
+    },
     "audd/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/audd/audd.go",
