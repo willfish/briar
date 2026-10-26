@@ -488,8 +488,19 @@ def fixtures():
          alnum("azure-registry-wrong-case", 42) + b"+acr" + alnum("azure-registry-wrong-tail", 6)),
         ("azure_devops_pat", 972, b"AZURE token " + alnum("azure-devops-key", 52).lower() + b"\nAZURE org Briar-Org7"),
         ("azure_devops_pat_uppercase_key", 972, b"AZURE token " + alnum("azure-devops-upper-key", 52).upper() + b"\nAZURE org Briar-Org8"),
+        ("azure_direct_management", 1024, b"https://briar-direct.management.azure-api.net\nazure " +
+         alnum("azure-direct-key", 86) + b"=="),
+        ("azure_direct_management_ascii_key", 1024, b"https://example.management.azure-api.net\nazure " +
+         alnum("azure-direct-ascii-key", 84) + b"=="),
         ("azure_openai", 1007, b"briar-openai.openai.azure.com\napi_key " + synthetic("azure-openai-key", 32)),
         ("azure_openai_no_hostname", 1007, b".openai.azure.com\nopenai.key " + synthetic("azure-openai-standalone", 32)),
+        ("azure_sas_token", 975, b"https://briar-store.blob.core.windows.net/container/blob.txt\n" +
+         b"sp=r&sv=2025-01-01&sr=b&se=2027-01-02T03:04:05Z&sig=" + alnum("azure-sas-signature", 32) + b"%3D"),
+        ("azure_sas_raw_order_bytes", 975, b"https://A_b.blob.core.windows.net/ab/leaf\nsas=sig=" +
+         alnum("azure-sas-raw-signature", 32) + b"%3D&sr=c&se=2027-01-02T03%3a04%3A05Z&sv=9999-99-99&sp=x&sp=rr&zz=a\vvalue"),
+        ("azure_search_admin", 976, b"azure " + alnum("azure-search-admin-key", 52) + b"\nazure OriginalSvc7"),
+        ("azure_search_admin_services", 976, b"azure " + alnum("azure-search-multiple-key", 52) +
+         b"\nazure OriginalSvc7\nazure SecondSvc8"),
         ("azure_storage_connection", 931, b"DefaultEndpointsProtocol=https;AccountName=briarstorage;AccountKey=" +
          alnum("azure-storage-connection", 86) + b"==;EndpointSuffix=core.windows.net"),
         ("azure_storage_blob", 931, b"https://briarstorage.blob.core.windows.net\nStorage_Key=" +

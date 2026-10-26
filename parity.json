@@ -691,6 +691,42 @@
       "evidence": ["tests/detectors/test_azuredevopspersonalaccesstoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Exactly 65536-byte unterminated final-line Reader shape remains explicitly unsupported for affected 2xx candidates", "Native buffered transport/per-request release does not reproduce streaming/deferred-close timing", "Complete request-construction/HTTP diagnostics and shared source-engine/regexp behavior"]
     },
+    "azuredirectmanagementkey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azuredirectmanagementkey/azuredirectmanagementkey.go",
+      "scope_notes": "Unique full URLs retain their service captures and form every URL-major/key-minor pair. The encoded ASCII key itself signs integration plus a five-second UTC expiry using HMAC-SHA512; it is never Base64-decoded. Expiry retains seven fixed zero fractional digits. All Client.Do errors are suppressed, so the source DNS-sentinel cache-population branch remains unreachable. Resource errors are separate. Raw is URL, RawV2 is URL:key, false-positive checks always return false, and error redaction receives only the full URL.",
+      "native_files": ["src/detectors/azuredirectmanagementkey.c", "src/detectors/host_cache.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azuredirectmanagementkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native request/HTTP diagnostics and platform/time-range behavior", "Shared source-engine/regexp semantics and streaming/deferred-close timing"]
+    },
+    "azurefunctionkey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azurefunctionkey/azurefunctionkey.go",
+      "scope_notes": "The upstream-disabled descriptor remains disabled even with explicit CLI selectors. Key extraction uses the last literal-space field of the full regex match, preserving padding, prefixes and embedded NUL when applicable. Occurrence-based products use literal query construction. Request-creation failures skip candidates; controls are checked only before the first fragment delimiter. Fragments, percent forms and non-ASCII queries instead produce explicit unsupported candidate errors without hiding later pairs. PUBLIC remains fail-closed natively, never a SANE alias.",
+      "native_files": ["src/detectors/azurefunctionkey.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azurefunctionkey.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native PUBLIC policy and broader URL/query/Unicode forms remain unsupported", "Complete request/transport diagnostics and source deferred-close timing", "Disabled upstream constructor has no positive CLI oracle execution; shared source-engine/regexp behavior remains partial"]
+    },
+    "azuresastoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azuresastoken/azuresastoken.go",
+      "scope_notes": "Order-independent raw parameter runs use last-duplicate values without URL decoding or calendar/IP-range corrections. Complete key bytes, including NUL/VT, remain unique and owned; Raw is URL and RawV2 is URL+key without a separator. Verify-only DNS caching uses the exact-case storage account, never body-read error text. ReadAll errors precede every status; signature mismatch retries once by literal suffix append while the outer response remains held. Error redaction always uses the original captured key, not the retry key. Pre-I/O guards preserve nil-context/control error precedence and fail closed on fragments, non-ASCII or unsupported punctuation as candidate errors.",
+      "native_files": ["src/detectors/azuresastoken.c", "src/detectors/host_cache.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azuresastoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Verification supports ASCII alphanumerics and the literal characters &=:%+/-._~ only; other query forms remain explicitly unsupported", "Complete native request/HTTP/DNS diagnostics and cache lifecycle", "Shared source-engine/regexp/Unicode and streaming response behavior"]
+    },
+    "azuresearchadminkey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azuresearchadminkey/azuresearchadminkey.go",
+      "scope_notes": "Mixed-case 52-character key and 7..40-character service captures retain every occurrence in key-major/service-minor products, including after success. Service spelling is preserved. The SANE status-only GET accepts all 2xx, rejects 401/403 and ignores bodies/read errors; creation failures skip candidates and transport errors redact only the key. No entropy gate, host cache, consumption or detector-local false-positive callback is introduced.",
+      "native_files": ["src/detectors/azuresearchadminkey.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azuresearchadminkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native request/HTTP diagnostics and deferred-close timing", "Shared source-engine/regexp/Unicode behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
