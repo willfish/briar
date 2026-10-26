@@ -82,6 +82,7 @@ static const registration expected[] = {
     {485, 0, "Aylien", "aylien", 32, true, 1024},
     {163, 0, "Ayrshare", "ayrshare", 35, true, -1},
     {957, 0, "AzureBatch", ".batch.azure.com", sizeof("https://briar.region.batch.azure.com") - 1, true, 1024},
+    {971, 0, "AzureCosmosDBKeyIdentifiable", ".documents.azure.com", 88, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -132,6 +133,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "AKIAQWERTYUIOPASDFGH");
         secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
         secondary_name = "secret_access_key";
+        break;
+    case 971:
+        key[86] = key[87] = '=';
+        secondary = "briar-cosmos.documents.azure.com";
+        secondary_name = "account_url";
         break;
     case 957:
         strcpy(key, "https://briar.region.batch.azure.com");
@@ -297,6 +303,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[sizeof(key) + sizeof(secondary_buffer) + sizeof(session_buffer) + 2];
         if (session) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", key, secondary, session);
+        else if (entry->type == 971) snprintf(raw_v2, sizeof(raw_v2), "key: %s account_url: %s", key, secondary);
         else if (entry->type == 55) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
         else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 2 || entry->type == 375 || entry->type == 1045 ||
@@ -331,8 +338,9 @@ int main(void)
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
-              entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 ? 2u : 1u));
+              entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
+        if (entry->type == 971) CHECK(!strcmp(detector->keywords[1], ".table.cosmos.azure.com"));
         if (entry->type == 907) CHECK(!strcmp(detector->keywords[1], "alcht_"));
         if (entry->type == 170) CHECK(!strcmp(detector->keywords[1], "docsearch"));
         if (entry->type == 933) CHECK(!strcmp(detector->keywords[1], "sk-ant-admin01"));
