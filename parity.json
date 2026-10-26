@@ -506,6 +506,14 @@
       "evidence": ["tests/detectors/test_confluencedatacenter.c", "tests/detectors/test_datacenter.c", "tests/detectors/test_host_cache.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native curl DNS errors do not establish Go's case-sensitive no such host marker compatibility", "Full cache API, concurrency and Go-map ordering behavior remain unestablished"]
     },
+    "atlassiandatacenter/jiradatacenterpat/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/atlassiandatacenter/jiradatacenterpat/jiradatacenterpat.go",
+      "native_files": ["src/detectors/jiradatacenterpat.c", "src/detectors/datacenter.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_jiradatacenterpat.c", "tests/detectors/test_datacenter.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior; injected PUBLIC success is not evidence of native address/DNS policy", "Complete Go URL parsing/rendering beyond the guarded absolute HTTP(S) subset", "Complete Go generic JSON map decoding and partial-error enrichment semantics", "Go-map endpoint traversal order remains unspecified"]
+    },
     "audd/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/audd/audd.go",
