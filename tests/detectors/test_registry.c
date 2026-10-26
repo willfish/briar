@@ -155,6 +155,7 @@ static const registration expected[] = {
     {318, 0, "CentralStationCRM", "centralstationcrm", 30, true, -1},
     {739, 0, "CexIO", "cexio", 24, true, 1024},
     {208, 0, "Chatbot", "chatbot", 32, true, -1},
+    {643, 0, "ChecIO", "checio", 48, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -385,6 +386,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 739:
         secondary = "ab172635480";
         secondary_name = "user_id";
+        break;
+    case 643:
+        memcpy(key, "pk_", 3);
         break;
     case 648:
         secondary = key; /* Identical occurrence patterns include the self-pair. */
