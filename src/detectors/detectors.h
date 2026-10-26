@@ -120,5 +120,10 @@ int br_boostnote_init(const br_detector **out, char **error);
 int br_borgbase_init(const br_detector **out, char **error);
 int br_box_init(const br_detector **out, char **error);
 int br_boxoauth_init(const br_detector **out, char **error);
+int br_braintreepayments_init(const br_detector **out, char **error);
+int br_braintrust_init(const br_detector **out, char **error);
+int br_brandfetch_v1_init(const br_detector **out, char **error);
+int br_brandfetch_v2_init(const br_detector **out, char **error);
+int br_browserstack_init(const br_detector **out, char **error);
 
 #endif
