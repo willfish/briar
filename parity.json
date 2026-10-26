@@ -490,6 +490,14 @@
       "evidence": ["tests/detectors/test_atlassian.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and malformed-input diagnostics"]
     },
+    "atlassiandatacenter/bitbucketdatacenter/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/atlassiandatacenter/bitbucketdatacenter/bitbucketdatacenter.go",
+      "native_files": ["src/detectors/bitbucketdatacenter.c", "src/detectors/datacenter.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bitbucketdatacenter.c", "tests/detectors/test_datacenter.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go URL parsing/rendering; escaped, relative, opaque, repeated-fragment and authority-normalizing endpoint forms currently fail closed", "Go-map iteration and endpoint order remain unspecified rather than canonicalized"]
+    },
     "audd/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/audd/audd.go",

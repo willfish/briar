@@ -68,6 +68,7 @@ static const registration expected[] = {
     {190, 1, "Atlassian", "atlassian", 24, true, -1},
     {190, 2, "Atlassian", "ATCTT3xFfG", 43, true, -1},
     {376, 0, "Audd", "audd", 32, true, -1},
+    {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -88,6 +89,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 391) memcpy(key, "apify_api_", 10);
     if (entry->type == 181) memcpy(key, "AKCp", 4);
     if (entry->type == 1042) memcpy(key, "cmVmdGtu", 8);
+    if (entry->type == 1045) memcpy(key, "BBDC-", 5);
     if (entry->type == 484) strcpy(key, "b7c9d2e5f6g-h3j4-k1m0-n2p4-q6r8s1t3u5v7");
     if (entry->type == 588) {
         static const char header[] = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.";
@@ -171,6 +173,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "synthetic-fixture.jfrog.io";
         secondary_name = "domain";
         break;
+    case 1045:
+        secondary = "https://bitbucket.invalid";
+        secondary_name = "url";
+        break;
     case 1014: strcpy(key, "Native7.v1.Synthetic_-Payload.1a2b3c"); break;
     case 1015:
         memcpy(key, "patN7c4P9d2R5s8T1.", 18);
@@ -186,6 +192,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "aha %s\n%s", key, secondary);
     else if (entry->type == 179)
         snprintf(input, sizeof(input), "anypoint %s\norg %s", key, secondary);
+    else if (entry->type == 1045)
+        snprintf(input, sizeof(input), "%s\nbitbucket %s", key, secondary);
     else if (secondary)
         snprintf(input, sizeof(input), "%s %s\n%s %s", entry->keyword, key, entry->keyword, secondary);
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);
@@ -198,7 +206,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
-    const char *key_name = entry->type == 1032 ? "client_secret" :
+    const char *key_name = entry->type == 1045 ? "secret" : entry->type == 1032 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
@@ -209,7 +217,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[1024];
         if (entry->type == 170 || entry->type == 1032) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
-        else snprintf(raw_v2, sizeof(raw_v2), entry->type == 375 ? "%s:%s" : "%s%s", key, secondary);
+        else snprintf(raw_v2, sizeof(raw_v2), entry->type == 375 || entry->type == 1045 ? "%s:%s" : "%s%s", key, secondary);
         CHECK(result->raw_v2.len == strlen(raw_v2));
         CHECK(!memcmp(result->raw_v2.data, raw_v2, strlen(raw_v2)));
     } else CHECK(!result->raw_v2.data && !result->raw_v2.len);
@@ -256,6 +264,8 @@ int main(void)
         if (entry->type == 181 || entry->type == 1042) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);
             CHECK(!detector->cloud_endpoint[0]);
+        } else if (entry->type == 1045) {
+            CHECK(detector->validate_endpoints && !detector->cloud_endpoint);
         } else CHECK(!detector->validate_endpoints && !detector->cloud_endpoint);
         CHECK(br_detector_is_default(detector, NULL) == entry->enabled);
         CHECK(br_detector_is_default(detector, flags) == entry->enabled);
