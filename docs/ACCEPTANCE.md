@@ -41,6 +41,8 @@ PLAIN/UTF8, Base64, UTF16 and escaped Unicode receive original bytes independent
 
 Native HTTP supports GET/POST in SANE/LOCAL slices. LOCAL does not follow redirects. POST preserves opaque/empty bodies without inventing Content-Type. SANE POST redirects remain unsupported. PUBLIC rejects before I/O until all-answer DNS checks, proxy semantics, cancellation and redirect policy are ported. Injected transports own the requested policy; mock success does not prove native PUBLIC support.
 
-Some verifiers mutate services: Airbrake project-key verification posts a deploy record and must not be treated as read-only. Some upstream verifiers omit secrets from error-redaction helpers; injected transports must not include credentials in those errors. Verification here is synthetic/offline, not evidence of live service acceptance.
+AWS verification implements the fixed STS and SNS Query/XML operations and SigV4 signing through injected HTTP only. Its dedicated native profile rejects before I/O. SDK configuration, retry policy, streaming XML and diagnostics remain partial. XML parsing accepts UTF-8 only, rejects DTDs and uses strict whole documents, which is narrower than the SDK's selected-result streaming behavior. Upstream panic shapes return explicit unsupported errors rather than undefined behavior.
+
+Some verifiers mutate services: Airbrake project-key verification posts a deploy record, and AWS SNS Publish can trigger canary tracking. Neither is a read-only credential check. Some upstream verifiers omit secrets from error-redaction helpers; injected transports must not include credentials in those errors. Verification here is synthetic/offline, not evidence of live service acceptance.
 
 Shared regexp/arbitrary-byte semantics, remaining detectors and helpers, complete engine/source/concurrency behavior and global parity remain unfinished. Nothing is deployed into Pi or used as a production security boundary.

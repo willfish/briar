@@ -8,3 +8,14 @@ TruffleHog is distributed under the GNU Affero General Public License version 3.
 See LICENSE. This repository preserves that license for the derivative work.
 
 Briar is not affiliated with or endorsed by Truffle Security.
+
+AWS Query/XML and SigV4 behavior is reimplemented in C from AWS SDK for Go v2
+1.43.7, STS 1.45.7, SNS 1.42.7 and smithy-go 1.27.9, licensed under the Apache
+License, Version 2.0. See LICENSES/Apache-2.0.txt. Original notices:
+
+AWS SDK for Go
+Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Copyright 2014-2015 Stripe, Inc.
+
+smithy-go
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.

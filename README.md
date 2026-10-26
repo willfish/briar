@@ -16,7 +16,7 @@ Do not use this work-in-progress as a security boundary. Nothing is deployed int
 
 ## Development
 
-The Nix/direnv environment declares the C toolchain, PCRE2, libcurl, json-c, OpenSSL's libcrypto for native signing, and Python for build/test tooling. No Go runtime is part of Briar's implementation.
+The Nix/direnv environment declares the C toolchain, PCRE2, libcurl, json-c, OpenSSL's libcrypto for native signing, libxml2 for AWS response parsing, and Python for build/test tooling. No Go runtime is part of Briar's implementation.
 
 ```sh
 direnv allow .
