@@ -123,6 +123,7 @@ static const registration expected[] = {
     {723, 0, "Borgbase", "borgbase", 150, true, -1},
     {1002, 0, "Box", "box", 32, true, -1},
     {1003, 0, "BoxOauth", "box", 32, true, -1},
+    {828, 0, "BraintreePayments", "braintree", 32, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -331,6 +332,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         test_secret(secondary_buffer, 43, 13);
         secondary = secondary_buffer;
         break;
+    case 828:
+        snprintf(key, sizeof(key), "f7c9d2e5b6a8f3c4d1e0b2a4c6d8e1f3");
+        secondary = "z9y8x7w6v5u4t3s2";
+        break;
     case 1003:
         test_secret(secondary_buffer, 32, 11);
         secondary = secondary_buffer;
@@ -460,6 +465,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
             test_key_result(&results.items[i], 56, i ? secondary : key, "key");
             CHECK(!results.items[i].verified && !results.items[i].verification_error);
         }
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 828) {
+        test_key_result(result, 828, key, "key"); /* Public ID is required but never exposed. */
         br_results_clear(&results);
         return;
     }
