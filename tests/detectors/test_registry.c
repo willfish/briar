@@ -56,6 +56,7 @@ static const registration expected[] = {
     {322, 0, "Appcues", "appcues", 36, true, 1024},
     {588, 0, "Appfollow", "appfollow", 155, true, -1},
     {816, 0, "Appointedd", "appointedd", 88, true, -1},
+    {1052, 0, "AWSAppSync", "da2-", 30, true, 1024},
     {646, 0, "AppSynergy", "appsynergy", 64, true, -1},
     {269, 0, "Apptivo", "apptivo", 36, true, 1024},
     {181, 0, "ArtifactoryAccessToken", "artifactory", 73, true, 1024},
@@ -101,6 +102,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 181) memcpy(key, "AKCp", 4);
     if (entry->type == 1042) memcpy(key, "cmVmdGtu", 8);
     if (entry->type == 1045) memcpy(key, "BBDC-", 5);
+    if (entry->type == 1052) memcpy(key, "da2-", 4);
     if (entry->type == 1047 || entry->type == 1046) strcpy(key, "MTIzNDU2Nzg5MDEyOmFiY2RlZmdoaWprbG1ub3BxcnN0");
     if (entry->type == 484) strcpy(key, "b7c9d2e5f6g-h3j4-k1m0-n2p4-q6r8s1t3u5v7");
     if (entry->type == 588) {
@@ -114,6 +116,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "AKIAQWERTYUIOPASDFGH");
         secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
         secondary_name = "secret_access_key";
+        break;
+    case 1052:
+        secondary = "https://abcdefghijklmnopqrstuvwx12.appsync-api.us-east-1.amazonaws.com/graphql";
+        secondary_name = "endpoint";
         break;
     case 0: secondary = "LTAIB7c9D2e5F6g8H3j4K"; secondary_name = "id"; break;
     case 42:
@@ -262,7 +268,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[sizeof(key) + sizeof(secondary_buffer) + 1];
         if (entry->type == 55) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
-        else if (entry->type == 170 || entry->type == 1032) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
+        else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 2 || entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
         CHECK(result->raw_v2.len == strlen(raw_v2));

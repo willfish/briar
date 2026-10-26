@@ -52,6 +52,7 @@ static const detector_factory named_factories[] = {
     br_appcues_init,
     br_appfollow_init,
     br_appointedd_init,
+    br_aws_appsync_init,
     br_appsynergy_init,
     br_apptivo_init,
     br_artifactory_init,
@@ -120,7 +121,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 401: case 391: case 484: case 788: case 637: case 1004: case 768: case 588:
         case 322: case 816: case 646: case 269: case 278: case 1042: case 181: case 389: case 800:
         case 98: case 41: case 376: case 1045: case 1047: case 1046:
-        case 604: case 110: case 55: case 323: case 564: case 511: case 733: case 2:
+        case 604: case 110: case 55: case 323: case 564: case 511: case 733: case 2: case 1052:
             return detector->version == 0;
         default: break;
         }
@@ -198,6 +199,7 @@ const char *br_detector_type_name(int32_t type)
     case 1045: return "BitbucketDataCenter";
     case 1046: return "JiraDataCenterPAT";
     case 1047: return "ConfluenceDataCenter";
+    case 1052: return "AWSAppSync";
     default: return NULL;
     }
 }
