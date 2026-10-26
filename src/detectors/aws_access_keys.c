@@ -6,6 +6,7 @@
 #include "detectors.h"
 #include "captures.h"
 #include "findings.h"
+#include "aws_common.h"
 
 #include <json-c/json.h>
 #include <libxml/parser.h>
@@ -15,7 +16,6 @@
 #include <openssl/rand.h>
 #include <curl/curl.h>
 #include <errno.h>
-#include <inttypes.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -39,91 +39,11 @@ static const char *const knockoff_accounts[] = {
 };
 
 typedef struct { br_regex *id, *secret; } aws_patterns;
-typedef struct { br_json *skip_ids, *allowed_accounts, *denied_accounts; } aws_options;
 
 static int fail(char **error, const char *message)
 {
     if (error) *error = strdup(message);
     return -1;
-}
-
-static int option_list(const br_json *options, const char *name, br_json **out, char **error)
-{
-    *out = NULL;
-    if (!options || !json_object_object_get_ex(options, name, out) || !*out) return 0;
-    bool valid = json_object_is_type(*out, json_type_array);
-    for (size_t i = 0; valid && i < json_object_array_length(*out); ++i)
-        valid = json_object_is_type(json_object_array_get_idx(*out, i), json_type_string);
-    if (valid) return 0;
-    char message[128];
-    snprintf(message, sizeof(message), "invalid AWS access key options: %s must be an array of strings", name);
-    return fail(error, message);
-}
-
-static int read_options(const br_scan_ctx *ctx, aws_options *options, char **error)
-{
-    const br_json *value = ctx ? ctx->options : NULL;
-    if (value && !json_object_is_type(value, json_type_object))
-        return fail(error, "invalid AWS access key options: expected an object");
-    if (option_list(value, "skip_ids", &options->skip_ids, error) != 0 ||
-        option_list(value, "allowed_accounts", &options->allowed_accounts, error) != 0 ||
-        option_list(value, "denied_accounts", &options->denied_accounts, error) != 0) return -1;
-    return 0;
-}
-
-static bool list_contains(br_json *list, const char *text)
-{
-    size_t len = strlen(text), count = list ? json_object_array_length(list) : 0;
-    for (size_t i = 0; i < count; ++i) {
-        br_json *item = json_object_array_get_idx(list, i);
-        if ((size_t)json_object_get_string_len(item) == len && !memcmp(json_object_get_string(item), text, len))
-            return true;
-    }
-    return false;
-}
-
-/* Only the six pinned replacements, left to right without recursive decoding. */
-static int replace_url_bytes(br_slice input, br_bytes *out, char **error)
-{
-    out->data = malloc(input.len ? input.len : 1);
-    if (!out->data) return fail(error, "out of memory replacing AWS URL bytes");
-    for (size_t i = 0; i < input.len; ++i) {
-        unsigned char replacement = 0;
-        if (input.data[i] == '%' && input.len - i >= 3) {
-            unsigned char a = input.data[i + 1], b = input.data[i + 2];
-            if (a == '2' && (b == 'B' || b == 'b')) replacement = '+';
-            else if (a == '2' && (b == 'F' || b == 'f')) replacement = '/';
-            else if (a == '3' && (b == 'D' || b == 'd')) replacement = '=';
-        }
-        if (replacement) { out->data[out->len++] = replacement; i += 2; }
-        else out->data[out->len++] = input.data[i];
-    }
-    return 0;
-}
-
-static bool account_from_id(const char *id, char account[14])
-{
-    if (id[4] == 'I' || id[4] == 'J') return false;
-    unsigned char decoded[10];
-    unsigned buffer = 0, bits = 0;
-    size_t count = 0;
-    for (size_t i = 4; i < 20; ++i) {
-        unsigned char c = (unsigned char)id[i];
-        unsigned value;
-        if (c >= 'A' && c <= 'Z') value = c - 'A';
-        else if (c >= '2' && c <= '7') value = c - '2' + 26;
-        else return false;
-        buffer = (buffer << 5) | value;
-        bits += 5;
-        if (bits >= 8) { bits -= 8; decoded[count++] = (unsigned char)(buffer >> bits); }
-        buffer &= (1u << bits) - 1;
-    }
-    if (count < 6) return false;
-    uint64_t z = 0;
-    for (size_t i = 0; i < 6; ++i) z = (z << 8) | decoded[i];
-    uint64_t number = (z & UINT64_C(0x7fffffffff80)) >> 7;
-    snprintf(account, 14, "%012" PRIu64, number); /* Minimum width, not truncation. */
-    return true;
 }
 
 static bool known_account(const char *account, const char *const *list, size_t count)
@@ -597,29 +517,20 @@ static int verify_pair(const br_scan_ctx *ctx, bool sns, const char *id, const c
     return -1;
 }
 
-static bool hash_like(const char *secret)
-{
-    /* Captures are exactly 40 bytes, so the unanchored [a-f0-9]{40} match is
-     * equivalent to checking the entire capture. Keep this after verification. */
-    for (size_t i = 0; i < 40; ++i)
-        if (!((secret[i] >= 'a' && secret[i] <= 'f') || (secret[i] >= '0' && secret[i] <= '9'))) return false;
-    return true;
-}
-
 static int scan_aws(const br_detector *detector, const br_scan_ctx *ctx, bool verify,
                      br_slice input, br_results *out, char **error)
 {
     if (error) *error = NULL;
     if (!detector || !detector->state || !out || (!input.data && input.len))
         return fail(error, "invalid AWS access key scan arguments");
-    aws_options options = {0};
-    if (read_options(ctx, &options, error) != 0) return -1;
+    br_aws_options options = {0};
+    if (br_aws_read_options(ctx, "invalid AWS access key options", &options, error) != 0) return -1;
     const aws_patterns *compiled = detector->state;
     if (!compiled->id || !compiled->secret) return fail(error, "uninitialized AWS access key patterns");
     size_t original_len = out->len;
     br_bytes replaced = {0};
     br_captures ids = {0}, secrets = {0};
-    int rc = replace_url_bytes(input, &replaced, error);
+    int rc = br_aws_replace_url_bytes(input, &replaced, error);
     br_slice normalized = {replaced.data, replaced.len};
     if (!rc) rc = br_captures_find(compiled->id, normalized, &ids, true, error);
     if (!rc) rc = br_captures_find(compiled->secret, normalized, &secrets, true, error);
@@ -628,9 +539,9 @@ static int scan_aws(const br_detector *detector, const br_scan_ctx *ctx, bool ve
     size_t remaining = secrets.len; /* Includes low-entropy matches until a verified secret is consumed. */
     for (size_t i = 0; !rc && i < ids.len; ++i) {
         const char *id = ids.items[i];
-        if (br_ascii_shannon_entropy(br_captures_at(&ids, i)) < 3.0 || list_contains(options.skip_ids, id)) continue;
+        if (br_ascii_shannon_entropy(br_captures_at(&ids, i)) < 3.0 || br_aws_list_contains(options.skip_ids, id)) continue;
         char account[14];
-        bool has_account = account_from_id(id, account);
+        bool has_account = br_aws_account_from_id(id, account);
         for (size_t s = 0; !rc && s < secrets.len; ++s) {
             br_slice secret = br_captures_at(&secrets, s);
             if (consumed[s] || br_ascii_shannon_entropy(secret) < 4.25) continue;
@@ -642,9 +553,9 @@ static int scan_aws(const br_detector *detector, const br_scan_ctx *ctx, bool ve
             }
             const char *skip_reason = NULL;
             if (verify && has_account) {
-                if (list_contains(options.denied_accounts, account)) skip_reason = deny_reason;
+                if (br_aws_list_contains(options.denied_accounts, account)) skip_reason = deny_reason;
                 else if (options.allowed_accounts && json_object_array_length(options.allowed_accounts) &&
-                         !list_contains(options.allowed_accounts, account)) skip_reason = allow_reason;
+                         !br_aws_list_contains(options.allowed_accounts, account)) skip_reason = allow_reason;
             }
             if (verify) {
                 char *panic_cause = NULL;
@@ -661,7 +572,7 @@ static int scan_aws(const br_detector *detector, const br_scan_ctx *ctx, bool ve
                 }
             }
             /* Account-filtered candidates bypass hash rejection, as upstream. */
-            if (!skip_reason && !result.verified && hash_like(secrets.items[s])) {
+            if (!skip_reason && !result.verified && br_aws_hash_like(secrets.items[s])) {
                 br_result_clear(&result);
                 continue;
             }
@@ -684,34 +595,6 @@ static int scan_aws(const br_detector *detector, const br_scan_ctx *ctx, bool ve
     return rc;
 }
 
-static bool same_id(const br_result *a, const br_result *b)
-{
-    return !strcmp(a->redacted ? a->redacted : "", b->redacted ? b->redacted : "");
-}
-
-static void clean_aws(const br_detector *detector, br_results *results, bool verification_enabled)
-{
-    (void)detector;
-    if (!results || !verification_enabled) return;
-    size_t kept = 0;
-    for (size_t i = 0; i < results->len; ++i) {
-        bool keep = true;
-        for (size_t j = 0; keep && j < kept; ++j)
-            if (same_id(&results->items[i], &results->items[j])) keep = false;
-        for (size_t j = i + 1; keep && j < results->len; ++j)
-            if (results->items[j].verified && same_id(&results->items[i], &results->items[j])) keep = false;
-        if (!keep) br_result_clear(&results->items[i]);
-        else {
-            if (kept != i) {
-                results->items[kept] = results->items[i];
-                memset(&results->items[i], 0, sizeof(results->items[i]));
-            }
-            ++kept;
-        }
-    }
-    results->len = kept;
-}
-
 static aws_patterns patterns;
 static const char *const keywords[] = {"AKIA", "ABIA", "ACCA"};
 static const br_detector aws = {
@@ -720,7 +603,7 @@ static const br_detector aws = {
                    "API keys for AWS can have varying amount of access to these services depending on the IAM policy attached.",
     .keywords = keywords, .nkeywords = 3,
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = 1024,
-    .state = &patterns, .scan = scan_aws, .clean = clean_aws, .clean_always = true,
+    .state = &patterns, .scan = scan_aws, .clean = br_aws_clean, .clean_always = true,
 };
 
 int br_aws_access_keys_init(const br_detector **out, char **error)
@@ -729,7 +612,7 @@ int br_aws_access_keys_init(const br_detector **out, char **error)
     if (!out) return fail(error, "invalid AWS access key detector output");
     *out = NULL;
     if (!patterns.id && br_regex_compile("\\b((?:AKIA|ABIA|ACCA)[A-Z0-9]{16})\\b", &patterns.id, error) != 0) return -1;
-    if (!patterns.secret && br_regex_compile("(?:[^A-Za-z0-9+/]|\\A)([A-Za-z0-9+/]{40})(?:[^A-Za-z0-9+/]|\\z)", &patterns.secret, error) != 0)
+    if (!patterns.secret && br_regex_compile(br_aws_secret_pattern, &patterns.secret, error) != 0)
         return -1;
     *out = &aws;
     return 0;
