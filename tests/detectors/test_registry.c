@@ -137,6 +137,7 @@ static const registration expected[] = {
     {142, 1, "Buildkite", "buildkite", 40, true, -1},
     {142, 2, "Buildkite", "bkua_", 45, true, -1},
     {317, 0, "Bulbul", "bulbul", 32, true, -1},
+    {150, 0, "ButterCMS", "buttercms", 40, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -392,6 +393,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         key[32] = '-';
         break;
+    case 150:
     case 317:
     case 598:
     case 602:
