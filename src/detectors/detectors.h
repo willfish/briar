@@ -70,5 +70,9 @@ int br_auth0managementapitoken_init(const br_detector **out, char **error);
 int br_auth0oauth_init(const br_detector **out, char **error);
 int br_autodesk_init(const br_detector **out, char **error);
 int br_autoklose_init(const br_detector **out, char **error);
+int br_autopilot_init(const br_detector **out, char **error);
+int br_avazapersonalaccesstoken_init(const br_detector **out, char **error);
+int br_aviationstack_init(const br_detector **out, char **error);
+int br_aws_access_keys_init(const br_detector **out, char **error);
 
 #endif
