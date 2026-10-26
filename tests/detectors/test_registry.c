@@ -128,6 +128,7 @@ static const registration expected[] = {
     {333, 1, "Brandfetch", "brandfetch", 40, true, -1},
     {333, 2, "Brandfetch", "brandfetch", 44, true, -1},
     {756, 0, "BrowserStack", "browserstack", 20, true, 1024},
+    {448, 0, "Browshot", "browshot", 28, true, -1},
     {598, 0, "BuddyNS", "buddyns", 40, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
