@@ -68,6 +68,7 @@ static const registration expected[] = {
     {190, 1, "Atlassian", "atlassian", 24, true, -1},
     {190, 2, "Atlassian", "ATCTT3xFfG", 43, true, -1},
     {376, 0, "Audd", "audd", 32, true, -1},
+    {110, 0, "Auth0ManagementApiToken", "auth0", 2000, true, 1024},
     {604, 0, "Autodesk", "autodesk", 32, true, 1024},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -77,7 +78,7 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
-    char key[512], secondary_buffer[82], input[2048];
+    char key[5001], secondary_buffer[82], input[8192];
     test_secret(key, entry->key_len, 0);
     if (entry->type == 41) {
         static const char prefix[] = "0/1234567890123456:";
@@ -88,6 +89,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[34] = '=';
     }
     if (entry->type == 303 && entry->version == 1) key[7] = '%';
+    if (entry->type == 110) memcpy(key, "ey", 2);
     if (entry->type == 390) memcpy(key, "aio_", 4);
     if (entry->type == 391) memcpy(key, "apify_api_", 10);
     if (entry->type == 181) memcpy(key, "AKCp", 4);
@@ -112,6 +114,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = secondary_buffer;
         secondary_name = "secret";
         break;
+    case 110: secondary = "fixture-tenant.us.auth0.com"; secondary_name = "domain"; break;
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
     case 170: secondary = "B7C9D2E5F6"; secondary_name = "id"; break;
@@ -225,7 +228,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     br_json *part = NULL;
     const char *key_name = entry->type == 1045 ? "secret" : entry->type == 1032 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
-                           entry->type == 181 || entry->type == 1042 ||
+                           entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
                            entry->type == 1047 || entry->type == 1046 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
@@ -233,7 +236,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (secondary) {
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
-        char raw_v2[1024];
+        char raw_v2[sizeof(key) + sizeof(secondary_buffer) + 1];
         if (entry->type == 170 || entry->type == 1032) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
@@ -281,7 +284,7 @@ int main(void)
             CHECK(!strcmp(detector->keywords[1], "jfrog.io"));
             CHECK(!strcmp(detector->keywords[2], "AKCp"));
         }
-        CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 &&
+        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : -1) && detector->start_offset == -1 &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
         CHECK(!detector->clean && !detector->clean_always && !detector->false_positive);

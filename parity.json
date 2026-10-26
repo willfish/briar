@@ -522,6 +522,14 @@
       "evidence": ["tests/detectors/test_audd.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Nil C context retains an unverified candidate instead of the upstream request-creation skip; responses are always released rather than reproducing deferred or incomplete closes", "Callback configuration mutation remains mocked; no live verification evidence"]
     },
+    "auth0managementapitoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/auth0managementapitoken/auth0managementapitoken.go",
+      "native_files": ["src/detectors/auth0managementapitoken.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_auth0managementapitoken.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Go regexp/Unicode/resource behavior and native transport diagnostics remain partial"]
+    },
     "autodesk/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/autodesk/autodesk.go",
