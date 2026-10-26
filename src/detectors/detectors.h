@@ -142,5 +142,10 @@ int br_calendlyapikey_init(const br_detector **out, char **error);
 int br_calorieninja_init(const br_detector **out, char **error);
 int br_campayn_init(const br_detector **out, char **error);
 int br_cannyio_init(const br_detector **out, char **error);
+int br_capsulecrm_init(const br_detector **out, char **error);
+int br_captaindata_v1_init(const br_detector **out, char **error);
+int br_captaindata_v2_init(const br_detector **out, char **error);
+int br_carboninterface_init(const br_detector **out, char **error);
+int br_cashboard_init(const br_detector **out, char **error);
 
 #endif
