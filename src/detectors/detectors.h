@@ -104,5 +104,9 @@ int br_beebole_init(const br_detector **out, char **error);
 int br_besnappy_init(const br_detector **out, char **error);
 int br_besttime_init(const br_detector **out, char **error);
 int br_betterstack_init(const br_detector **out, char **error);
+int br_billomat_init(const br_detector **out, char **error);
+int br_bitbar_init(const br_detector **out, char **error);
+int br_bitbucketapppassword_init(const br_detector **out, char **error);
+int br_bitcoinaverage_init(const br_detector **out, char **error);
 
 #endif
