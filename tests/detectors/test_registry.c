@@ -112,6 +112,7 @@ static const registration expected[] = {
     {1029, 0, "BitbucketAppPassword", "bitbucket", 43, true, -1},
     {432, 0, "BitcoinAverage", "bitcoinaverage", 43, true, -1},
     {43, 0, "BitLyAccessToken", "bitly", 40, true, -1},
+    {512, 0, "Bitmex", "bitmex", 48, true, 1024},
     {603, 0, "Blazemeter", "blazemeter", 36, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -317,6 +318,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "synthetic.aha.io";
         secondary_name = "url";
         break;
+    case 512:
+        test_secret(secondary_buffer, 24, 11);
+        secondary = secondary_buffer;
+        secondary_name = "key";
+        break;
     case 506:
         memcpy(key, "pri_", 4);
         for (size_t i = 4; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
@@ -384,6 +390,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "%s", key);
     else if (session)
         snprintf(input, sizeof(input), "%s\n%s\n%s", key, secondary, session);
+    else if (entry->type == 512)
+        snprintf(input, sizeof(input), "bitmex %s\nbitmex %s\n", secondary, key);
     else if (entry->type == 385)
         /* A provider word after the key can itself be captured as an ID. */
         snprintf(input, sizeof(input), "billomat %s\nbillomat %s", secondary, key);
@@ -431,7 +439,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->extra_data, "version", &part));
         CHECK(!strcmp(json_object_get_string(part), entry->version == 1 ? "1" : "2"));
     }
-    const char *key_name = entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
@@ -456,7 +464,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         else if (session) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", key, secondary, session);
         else if (entry->type == 931) snprintf(raw_v2, sizeof(raw_v2), "{\"accountName\":\"%s\",\"accountKey\":\"%s\"}", secondary, key);
         else if (entry->type == 971) snprintf(raw_v2, sizeof(raw_v2), "key: %s account_url: %s", key, secondary);
-        else if (entry->type == 55 || entry->type == 1018) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
+        else if (entry->type == 55 || entry->type == 1018 || entry->type == 512) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
         else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 1019 || entry->type == 1024 || entry->type == 2 || entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
