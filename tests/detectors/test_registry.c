@@ -53,6 +53,7 @@ static const registration expected[] = {
     {1004, 0, "ApiMetrics", "apimetrics", 32, true, -1},
     {768, 0, "APITemplate", "apitemplate", 39, true, -1},
     {293, 0, "Apollo", "apollo", 22, false, -1},
+    {588, 0, "Appfollow", "appfollow", 155, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -64,6 +65,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 390) memcpy(key, "aio_", 4);
     if (entry->type == 391) memcpy(key, "apify_api_", 10);
     if (entry->type == 484) strcpy(key, "b7c9d2e5f6g-h3j4-k1m0-n2p4-q6r8s1t3u5v7");
+    if (entry->type == 588) {
+        static const char header[] = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.";
+        memcpy(key, header, sizeof(header) - 1);
+        key[sizeof(header) - 1 + 74] = '.';
+    }
     const char *secondary = NULL, *secondary_name = NULL;
     switch (entry->type) {
     case 0: secondary = "LTAIB7c9D2e5F6g8H3j4K"; secondary_name = "id"; break;
