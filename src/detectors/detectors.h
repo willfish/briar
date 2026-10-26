@@ -151,5 +151,9 @@ int br_caspio_init(const br_detector **out, char **error);
 int br_censys_init(const br_detector **out, char **error);
 int br_centralstationcrm_init(const br_detector **out, char **error);
 int br_cexio_init(const br_detector **out, char **error);
+int br_chartmogul_init(const br_detector **out, char **error);
+int br_chatbot_init(const br_detector **out, char **error);
+int br_chatfule_init(const br_detector **out, char **error);
+int br_checio_init(const br_detector **out, char **error);
 
 #endif
