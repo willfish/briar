@@ -115,6 +115,7 @@ static const registration expected[] = {
     {43, 0, "BitLyAccessToken", "bitly", 40, true, -1},
     {512, 0, "Bitmex", "bitmex", 48, true, 1024},
     {603, 0, "Blazemeter", "blazemeter", 36, true, -1},
+    {523, 0, "BlitApp", "blitapp", 39, true, -1},
     {908, 0, "BlockNative", "blocknative", 36, false, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
