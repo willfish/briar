@@ -4,6 +4,7 @@
 #include "detectors.h"
 #include "captures.h"
 #include "findings.h"
+#include "email_pattern.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -133,15 +134,6 @@ static const br_detector alegra = {
     .state = &patterns, .scan = scan_alegra,
 };
 
-/* Pinned common.EmailPattern, including nested captures and its case mode. */
-static const char email_pattern[] =
-    "\\b((?i)(?:[a-z0-9!#$%&'*+/=?^_\\x60{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_\\x60{|}~-]+)*"
-    "|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")"
-    "@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
-    "|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\.){3}"
-    "(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:"
-    "(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\]))\\b";
-
 int br_alegra_init(const br_detector **out, char **error)
 {
     if (error) *error = NULL;
@@ -151,7 +143,7 @@ int br_alegra_init(const br_detector **out, char **error)
         br_regex_compile_prefixed(keywords, 1, "\\b([a-z0-9-]{20})\\b", &patterns.key, error) != 0)
         return -1;
     if (!patterns.id &&
-        br_regex_compile_prefixed(keywords, 1, email_pattern, &patterns.id, error) != 0)
+        br_regex_compile_prefixed(keywords, 1, br_email_pattern, &patterns.id, error) != 0)
         return -1;
     *out = &alegra;
     return 0;
