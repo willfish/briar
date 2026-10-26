@@ -102,6 +102,7 @@ static const registration expected[] = {
     {430, 2, "Bannerbear", "bb_pr_", 36, true, -1},
     {377, 0, "Baremetrics", "baremetrics", 21, true, -1},
     {166, 0, "Beamer", "beamer", 46, true, -1},
+    {947, 0, "BetterStack", "betterstack", 24, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
