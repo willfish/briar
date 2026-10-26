@@ -106,6 +106,7 @@ static const registration expected[] = {
     {867, 0, "Besnappy", "besnappy", 64, false, -1},
     {506, 0, "Besttime", "besttime", 36, true, -1},
     {947, 0, "BetterStack", "betterstack", 24, true, -1},
+    {387, 0, "Bitbar", "bitbar", 32, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
