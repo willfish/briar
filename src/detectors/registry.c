@@ -94,6 +94,8 @@ static const detector_factory named_factories[] = {
     br_azuresearchquerykey_init,
     br_azure_storage_init,
     br_azureapimanagement_repositorykey_init,
+    br_bannerbear_v1_init,
+    br_bannerbear_v2_init,
     br_baremetrics_init,
     br_beamer_init,
     br_bitbucketdatacenter_init,
@@ -136,7 +138,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
     (void)feature_flags; /* The currently compiled providers have no feature gates. */
     if (detector && (!detector->custom_name || !detector->custom_name[0])) {
         switch (detector->type) {
-        case 3: case 190: case 303: return detector->version == 1 || detector->version == 2;
+        case 3: case 190: case 303: case 430: return detector->version == 1 || detector->version == 2;
         case 0: case 239: case 521: case 390: case 431: case 693: case 197: case 802:
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 917: case 907:
         case 375: case 522: case 170: case 163: case 399: case 473: case 453:
@@ -193,6 +195,7 @@ const char *br_detector_type_name(int32_t type)
     case 391: return "Apify";
     case 399: return "AlienVault";
     case 401: return "Apiflash";
+    case 430: return "Bannerbear";
     case 431: return "Adzuna";
     case 453: return "Amadeus";
     case 457: return "Ambee";
