@@ -78,6 +78,7 @@ static const registration expected[] = {
     {564, 0, "AviationStack", "aviationstack", 32, true, -1},
     {2, 0, "AWS", "AKIA", 20, true, 1024},
     {320, 0, "Axonaut", "axonaut", 32, true, -1},
+    {485, 0, "Aylien", "aylien", 32, true, 1024},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -162,7 +163,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary_name = "username";
         break;
     case 375: secondary = "fixture@example.test"; secondary_name = "id"; break;
-    case 431: secondary = "c7d8e9f0"; secondary_name = "id"; break;
+    case 431:
+    case 485: secondary = "c7d8e9f0"; secondary_name = "id"; break;
     case 453: secondary = "B7c9D2e5F6g8H3j4"; secondary_name = "secret"; break;
     case 693: secondary = "00042"; secondary_name = "id"; break;
     case 604:

@@ -74,6 +74,7 @@ static const detector_factory named_factories[] = {
     br_aviationstack_init,
     br_aws_access_keys_init,
     br_axonaut_init,
+    br_aylien_init,
     br_bitbucketdatacenter_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
@@ -119,7 +120,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 917: case 907:
         case 375: case 522: case 170: case 399: case 473: case 453:
         case 457: case 42: case 933: case 179: case 1032: case 632: case 212: case 458:
-        case 401: case 391: case 484: case 788: case 637: case 1004: case 768: case 588:
+        case 401: case 391: case 484: case 485: case 788: case 637: case 1004: case 768: case 588:
         case 320: case 322: case 816: case 646: case 269: case 278: case 1042: case 181: case 389: case 800:
         case 98: case 41: case 376: case 1045: case 1047: case 1046:
         case 604: case 110: case 55: case 323: case 564: case 511: case 733: case 2: case 1052:
@@ -173,6 +174,7 @@ const char *br_detector_type_name(int32_t type)
     case 458: return "Api2Cart";
     case 473: return "Allsports";
     case 484: return "ApiFonica";
+    case 485: return "Aylien";
     case 498: return "AirVisual";
     case 511: return "AutoPilot";
     case 521: return "AbuseIPDB";
