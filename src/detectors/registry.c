@@ -82,6 +82,7 @@ static const detector_factory named_factories[] = {
     br_azure_entra_serviceprincipal_v1_init,
     br_azure_entra_serviceprincipal_v2_init,
     br_azure_batch_init,
+    br_azureappconfigconnectionstring_init,
     br_azure_cosmosdb_init,
     br_azure_openai_init,
     br_azure_storage_init,
@@ -134,7 +135,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 401: case 391: case 484: case 485: case 788: case 637: case 1004: case 768: case 588:
         case 320: case 322: case 816: case 646: case 269: case 278: case 1042: case 181: case 389: case 800:
         case 98: case 41: case 376: case 1045: case 1047: case 1046:
-        case 604: case 110: case 55: case 323: case 564: case 511: case 733: case 2: case 1052: case 959: case 957: case 971: case 1013: case 1007: case 931: case 1018: case 1019:
+        case 604: case 110: case 55: case 323: case 564: case 511: case 733: case 2: case 1052: case 959: case 957: case 971: case 1013: case 1007: case 931: case 1018: case 1019: case 1025:
             return detector->version == 0;
         default: break;
         }
@@ -219,6 +220,7 @@ const char *br_detector_type_name(int32_t type)
     case 1015: return "AirtablePersonalAccessToken";
     case 1018: return "AzureApiManagementRepositoryKey";
     case 1019: return "AzureAPIManagementSubscriptionKey";
+    case 1025: return "AzureAppConfigConnectionString";
     case 1032: return "AnypointOAuth2";
     case 1042: return "ArtifactoryReferenceToken";
     case 1045: return "BitbucketDataCenter";

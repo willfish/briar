@@ -86,6 +86,7 @@ static const registration expected[] = {
     {3, 1, "Azure", "azure", 32, true, 1024},
     {3, 2, "Azure", "q~", 37, true, 1024},
     {957, 0, "AzureBatch", ".batch.azure.com", sizeof("https://briar.region.batch.azure.com") - 1, true, 1024},
+    {1025, 0, "AzureAppConfigConnectionString", ".azconfig.io", 32, true, 1024},
     {971, 0, "AzureCosmosDBKeyIdentifiable", ".documents.azure.com", 88, true, -1},
     {1007, 0, "AzureOpenAI", ".openai.azure.com", 32, true, -1},
     {931, 0, "AzureStorage", "DefaultEndpointsProtocol=http", 88, true, 1024},
@@ -151,6 +152,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "AKIAQWERTYUIOPASDFGH");
         secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
         secondary_name = "secret_access_key";
+        break;
+    case 1025:
+        secondary = "https://briar-config.azconfig.io";
+        secondary_name = "endpoint";
         break;
     case 1019:
         strcpy(key, "https://briar-api.azure-api.net");
@@ -294,7 +299,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[82] = '\0';
         break;
     }
-    if (entry->type == 3 && entry->version == 1)
+    if (entry->type == 1025)
+        snprintf(input, sizeof(input), "Endpoint=%s;Id=%s;Secret=AQIDBA==", secondary, key);
+    else if (entry->type == 3 && entry->version == 1)
         snprintf(input, sizeof(input), "azure\nclient_id a6b39f20-17c4-4d85-9e62-0f3a7b1c5d98\nsecret '%s'\n", key);
     else if (entry->type == 3)
         snprintf(input, sizeof(input), "%s", key);
@@ -328,14 +335,18 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
-    const char *key_name = entry->type == 1018 ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 1025 ? "id" : entry->type == 1018 ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
                            entry->type == 1047 || entry->type == 1046 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
-    CHECK(json_object_object_length(result->secret_parts) == (session ? 3 : secondary ? 2 : 1));
+    CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 ? 3 : secondary ? 2 : 1));
+    if (entry->type == 1025) {
+        CHECK(json_object_object_get_ex(result->secret_parts, "secret", &part));
+        CHECK(!strcmp(json_object_get_string(part), "AQIDBA=="));
+    }
     if (session) {
         CHECK(json_object_object_get_ex(result->secret_parts, "session_token", &part));
         CHECK(!strcmp(json_object_get_string(part), session));
@@ -344,7 +355,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[sizeof(key) + sizeof(secondary_buffer) + sizeof(session_buffer) + 2];
-        if (session) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", key, secondary, session);
+        if (entry->type == 1025) snprintf(raw_v2, sizeof(raw_v2), "Endpoint=%s;Id=%s;Secret=AQIDBA==", secondary, key);
+        else if (session) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", key, secondary, session);
         else if (entry->type == 931) snprintf(raw_v2, sizeof(raw_v2), "{\"accountName\":\"%s\",\"accountKey\":\"%s\"}", secondary, key);
         else if (entry->type == 971) snprintf(raw_v2, sizeof(raw_v2), "key: %s account_url: %s", key, secondary);
         else if (entry->type == 55 || entry->type == 1018) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
