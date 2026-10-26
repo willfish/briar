@@ -111,6 +111,7 @@ static const registration expected[] = {
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1029, 0, "BitbucketAppPassword", "bitbucket", 43, true, -1},
     {432, 0, "BitcoinAverage", "bitcoinaverage", 43, true, -1},
+    {56, 0, "Bitfinex", "bitfinex", 43, true, 1024},
     {43, 0, "BitLyAccessToken", "bitly", 40, true, -1},
     {512, 0, "Bitmex", "bitmex", 48, true, 1024},
     {603, 0, "Blazemeter", "blazemeter", 36, true, -1},
@@ -318,6 +319,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "synthetic.aha.io";
         secondary_name = "url";
         break;
+    case 56:
+        test_secret(secondary_buffer, 43, 13);
+        secondary = secondary_buffer;
+        break;
     case 512:
         test_secret(secondary_buffer, 24, 11);
         secondary = secondary_buffer;
@@ -417,12 +422,20 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
-    CHECK(results.len == (entry->type == 42 ? 2u : 1u));
+    CHECK(results.len == (entry->type == 42 || entry->type == 56 ? 2u : 1u));
     const br_result *result = &results.items[0];
     CHECK(result->detector_type == entry->type);
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
+    if (entry->type == 56) {
+        for (size_t i = 0; i < 2; ++i) {
+            test_key_result(&results.items[i], 56, i ? secondary : key, "key");
+            CHECK(!results.items[i].verified && !results.items[i].verification_error);
+        }
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 1029) {
         CHECK(json_object_object_length(result->secret_parts) == 2);
         CHECK(json_object_object_get_ex(result->secret_parts, "username", &part));
