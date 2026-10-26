@@ -401,6 +401,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_appointedd.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "appsynergy/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/appsynergy/appsynergy.go",
+      "native_files": ["src/detectors/appsynergy.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_appsynergy.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native SANE POST redirects remain explicitly unsupported"]
     }
   },
   "components": {
