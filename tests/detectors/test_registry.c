@@ -138,6 +138,7 @@ static const registration expected[] = {
     {142, 2, "Buildkite", "bkua_", 45, true, -1},
     {317, 0, "Bulbul", "bulbul", 32, true, -1},
     {150, 0, "ButterCMS", "buttercms", 40, true, -1},
+    {647, 0, "Caflou", "caflou", 155, true, -1},
     {130, 0, "Calendarific", "calendarific", 32, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -170,6 +171,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     }
     if (entry->type == 303 && entry->version == 1) key[7] = '%';
     if (entry->type == 110) memcpy(key, "ey", 2);
+    if (entry->type == 647) memcpy(key, "eyJhbGciOiJIUzI1NiJ9", 20);
     if (entry->type == 430 && entry->version == 1) key[22] = key[23] = 't';
     if (entry->type == 430 && entry->version == 2) {
         memcpy(key, "bb_pr_", 6);
