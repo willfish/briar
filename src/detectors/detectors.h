@@ -100,5 +100,9 @@ int br_bannerbear_v1_init(const br_detector **out, char **error);
 int br_bannerbear_v2_init(const br_detector **out, char **error);
 int br_baremetrics_init(const br_detector **out, char **error);
 int br_beamer_init(const br_detector **out, char **error);
+int br_beebole_init(const br_detector **out, char **error);
+int br_besnappy_init(const br_detector **out, char **error);
+int br_besttime_init(const br_detector **out, char **error);
+int br_betterstack_init(const br_detector **out, char **error);
 
 #endif
