@@ -442,6 +442,22 @@
       "evidence": ["tests/detectors/test_artsy.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native SANE POST redirects remain explicitly unsupported"]
     },
+    "asanaoauth/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/asanaoauth/asanaoauth.go",
+      "native_files": ["src/detectors/asana.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_asana.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "asanapersonalaccesstoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/asanapersonalaccesstoken/asanapersonalaccesstoken.go",
+      "native_files": ["src/detectors/asana.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_asana.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
     "assemblyai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/assemblyai/assemblyai.go",

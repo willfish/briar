@@ -61,6 +61,8 @@ static const registration expected[] = {
     {181, 0, "ArtifactoryAccessToken", "artifactory", 73, true, 1024},
     {1042, 0, "ArtifactoryReferenceToken", "cmVmdGtu", 64, true, 1024},
     {278, 0, "Artsy", "artsy", 32, true, 1024},
+    {98, 0, "AsanaOauth", "asana", 51, true, -1},
+    {41, 0, "AsanaPersonalAccessToken", "asana", 51, true, -1},
     {389, 0, "AssemblyAI", "assemblyai", 32, true, -1},
     {800, 0, "Atera", "atera", 32, true, -1},
 };
@@ -70,6 +72,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
 {
     char key[512], secondary_buffer[82], input[2048];
     test_secret(key, entry->key_len, 0);
+    if (entry->type == 41) {
+        static const char prefix[] = "0/1234567890123456:";
+        memcpy(key, prefix, sizeof(prefix) - 1);
+    }
     if (entry->type == 303 && entry->version == 1) key[7] = '%';
     if (entry->type == 390) memcpy(key, "aio_", 4);
     if (entry->type == 391) memcpy(key, "apify_api_", 10);
