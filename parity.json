@@ -213,7 +213,7 @@
     "algoliaadminkey/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/algoliaadminkey/algoliaadminkey.go",
-      "native_files": ["src/detectors/algoliaadminkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/host_cache.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/algoliaadminkey.c", "src/falsepositives.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/host_cache.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_algoliaadminkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and malformed-input diagnostic wording", "Native curl DNS error classification does not yet establish the source's no-such-host cache path; injected errors and twelve-hour expiry are covered"]
@@ -559,7 +559,7 @@
       "upstream_source": "pkg/detectors/autopilot/autopilot.go",
       "native_files": ["src/detectors/autopilot.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_autopilot.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_autopilot.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Nil C context retains a candidate instead of the upstream request-creation skip; response releases are immediate rather than deferred"]
     },
     "avazapersonalaccesstoken/Scanner": {
@@ -567,7 +567,7 @@
       "upstream_source": "pkg/detectors/avazapersonalaccesstoken/avazapersonalaccesstoken.go",
       "native_files": ["src/detectors/avazapersonalaccesstoken.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_avazapersonalaccesstoken.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_avazapersonalaccesstoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior and transport diagnostics"]
     },
     "aviationstack/Scanner": {
@@ -575,7 +575,7 @@
       "upstream_source": "pkg/detectors/aviationstack/aviationstack.go",
       "native_files": ["src/detectors/aviationstack.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_aviationstack.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_aviationstack.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Ten-second timeout is request-local with deadline clamping, not upstream shared-client mutation/concurrency parity"]
     },
     "aws/access_keys/scanner": {
@@ -583,7 +583,7 @@
       "upstream_source": "pkg/detectors/aws/access_keys/accesskey.go",
       "native_files": ["src/detectors/aws_access_keys.c", "src/falsepositives.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "not_started", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "partial", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_aws_access_keys.c", "tests/core/test_core.c", "tests/core/e2e.py", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_aws_access_keys.c", "tests/core/test_core.c", "tests/core/e2e.py", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["STS/SNS SDK verification is explicitly unsupported and sends zero requests; signing, configuration, retries, response decoding and successful-result enrichment remain unimplemented", "Implement verified-secret consumption and source panic-safe guards after pinned SDK wire-contract evidence", "Complete source constructor/account-option and map-order/resource behavior; local string-array settings currently use existing ctx.options", "Complete shared HTTP/regexp/source-engine and Unicode entropy behavior; no live AWS or canary evidence"]
     }
   },

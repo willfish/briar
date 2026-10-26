@@ -356,6 +356,10 @@ def fixtures():
         cases.append(("base64_" + label, payload, "239", "filesystem", False))
     alegra_token = synthetic("alegra-oracle", 20)
     alibaba_payload = b"LTAI" + alnum("alibaba-id-oracle", 17) + b"\n" + alnum("alibaba-key-oracle", 30)
+    aws_id = b"AKIAQWERTYUIOPASDFGH"
+    aws_secret = alnum("aws-access-secret", 38) + b"+/"
+    canary_bits = ((1 << 47) | (52310077262 << 7) | 7).to_bytes(6, "big") + b"\xab\xcd\xef\x01"
+    aws_canary_id = b"AKIA" + base64.b32encode(canary_bits)
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -442,10 +446,20 @@ def fixtures():
         ("autodesk", 604, b"autodesk " + alnum("autodesk-key", 32) +
          b"\nautodesk " + alnum("autodesk-secret", 16)),
         ("autoklose", 323, b"autoklose " + alnum("autoklose-key", 32)),
+        ("autopilot", 511, b"autopilot " + synthetic("autopilot-key", 32)),
+        ("avazapersonalaccesstoken", 733, b"avaza 0007-" + synthetic("avaza-key", 40)),
+        ("aviationstack", 564, b"aviationstack " + alnum("aviationstack-key", 32).lower()),
+        ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
+        ("aws_bearer_id", 2, b"ABIA" + aws_id[4:] + b"\n" + aws_secret),
+        ("aws_context_id", 2, b"ACCA" + aws_id[4:] + b"\n" + aws_secret),
+        ("aws_url_encoded", 2, aws_id + b"\n" + aws_secret.replace(b"+", b"%2B").replace(b"/", b"%2f")),
+        ("aws_canary_metadata", 2, aws_canary_id + b"\n" + aws_secret),
+        ("aws_old_account_format", 2, b"AKIAI2BCDEFGHLMNPQR5\n" + aws_secret),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
         cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
+    cases.append(("aws_custom_cleaner", aws_id + b"\n\n" + aws_secret + b"\n\n" + alnum("aws-second-secret", 40), "2", "stdin", True))
     cases.append(("datacenter_nonstructural", b"atlassian M" + b"A" * 43, "1046,1047", "stdin", False))
     cases.append(("bitbucketdatacenter_no_endpoint", b"BBDC-" + alnum("bitbucket-dc-key", 45), "1045", "stdin", False))
     cases.append(("alibaba_version_zero", alibaba_payload, "0.v0", "stdin", False))
