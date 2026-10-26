@@ -150,6 +150,7 @@ static const registration expected[] = {
     {708, 2, "CaptainData", "captaindata", 64, true, -1},
     {578, 0, "CarbonInterface", "carboninterface", 21, true, -1},
     {685, 0, "Cashboard", "cashboard", 15, true, 1024},
+    {648, 0, "Caspio", "caspio", 50, true, 1024},
     {524, 0, "Censys", "censys", 32, true, 1024},
     {318, 0, "CentralStationCRM", "centralstationcrm", 30, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -379,6 +380,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 1053:
         memcpy(key, "sk-", 3);
         break;
+    case 648:
+        secondary = key; /* Identical occurrence patterns include the self-pair. */
+        secondary_name = "id";
+        break;
     case 524:
         test_secret(secondary_buffer, 36, 11);
         secondary = secondary_buffer;
@@ -504,6 +509,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "%s", key);
     else if (session)
         snprintf(input, sizeof(input), "%s\n%s\n%s", key, secondary, session);
+    else if (entry->type == 648)
+        snprintf(input, sizeof(input), "caspio %s\ncaspio region7q", key);
     else if (entry->type == 756)
         snprintf(input, sizeof(input), "browserstackKey %s\nbrowserstackUser %s", key, secondary);
     else if (entry->type == 1003)
@@ -585,10 +592,14 @@ static void check_dispatch(const br_detector *detector, const registration *entr
                            entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
-    CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 ? 3 : secondary ? 2 : 1));
+    CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 || entry->type == 648 ? 3 : secondary ? 2 : 1));
     if (entry->type == 1025) {
         CHECK(json_object_object_get_ex(result->secret_parts, "secret", &part));
         CHECK(!strcmp(json_object_get_string(part), "AQIDBA=="));
+    }
+    if (entry->type == 648) {
+        CHECK(json_object_object_get_ex(result->secret_parts, "domain", &part));
+        CHECK(!strcmp(json_object_get_string(part), "region7q"));
     }
     if (session) {
         CHECK(json_object_object_get_ex(result->secret_parts, "session_token", &part));
@@ -598,7 +609,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[sizeof(key) + sizeof(secondary_buffer) + sizeof(session_buffer) + 2];
-        if (entry->type == 1025) snprintf(raw_v2, sizeof(raw_v2), "Endpoint=%s;Id=%s;Secret=AQIDBA==", secondary, key);
+        if (entry->type == 648) snprintf(raw_v2, sizeof(raw_v2), "%s%sregion7q", key, secondary);
+        else if (entry->type == 1025) snprintf(raw_v2, sizeof(raw_v2), "Endpoint=%s;Id=%s;Secret=AQIDBA==", secondary, key);
         else if (entry->type == 958) snprintf(raw_v2, sizeof(raw_v2), "{\"username\":\"%s\",\"password\":\"%s\"}", secondary, key);
         else if (session) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", key, secondary, session);
         else if (entry->type == 931) snprintf(raw_v2, sizeof(raw_v2), "{\"accountName\":\"%s\",\"accountKey\":\"%s\"}", secondary, key);

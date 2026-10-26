@@ -147,6 +147,7 @@ static const detector_factory named_factories[] = {
     br_captaindata_v2_init,
     br_carboninterface_init,
     br_cashboard_init,
+    br_caspio_init,
     br_censys_init,
     br_centralstationcrm_init,
     br_confluencedatacenter_init,
@@ -202,7 +203,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 125: case 126: case 130: case 277: case 1014: case 1015: case 498: case 506: case 910: case 917: case 907:
         case 302: case 565: case 707: case 723: case 756: case 828: case 833: case 375: case 522: case 523: case 524: case 170: case 163: case 399: case 473: case 474: case 453:
         case 448: case 457: case 42: case 43: case 44: case 933: case 179: case 1032: case 632: case 212: case 458:
-        case 1002: case 1003: case 401: case 391: case 484: case 485: case 788: case 637: case 647: case 1004: case 768: case 588: case 598:
+        case 1002: case 1003: case 401: case 391: case 484: case 485: case 788: case 637: case 647: case 648: case 1004: case 768: case 588: case 598:
         case 317: case 318: case 320: case 322: case 816: case 646: case 269: case 270: case 278: case 1042: case 181: case 385: case 387: case 388: case 389: case 800:
         case 98: case 41: case 376: case 377: case 166: case 1045: case 1047: case 1046:
         case 578: case 602: case 603: case 604: case 110: case 55: case 56: case 323: case 564: case 511: case 512: case 733: case 2: case 1052: case 959: case 947: case 953: case 957: case 971: case 1013: case 1007: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975:
@@ -301,6 +302,7 @@ const char *br_detector_type_name(int32_t type)
     case 637: return "APIMatic";
     case 646: return "AppSynergy";
     case 647: return "Caflou";
+    case 648: return "Caspio";
     case 684: return "Beebole";
     case 685: return "Cashboard";
     case 693: return "Aeroworkflow";
