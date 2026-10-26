@@ -358,6 +358,8 @@ def fixtures():
     alibaba_payload = b"LTAI" + alnum("alibaba-id-oracle", 17) + b"\n" + alnum("alibaba-key-oracle", 30)
     aws_id = b"AKIAQWERTYUIOPASDFGH"
     aws_secret = alnum("aws-access-secret", 38) + b"+/"
+    aws_session_token = b"YXdz" + alnum("aws-session-token", 128) + b"+/==="
+    aws_session_payload = b"ASIA" + aws_id[4:] + b"\n" + aws_secret + b"\n" + aws_session_token
     canary_bits = ((1 << 47) | (52310077262 << 7) | 7).to_bytes(6, "big") + b"\xab\xcd\xef\x01"
     aws_canary_id = b"AKIA" + base64.b32encode(canary_bits)
     provider_cases = (
@@ -449,6 +451,13 @@ def fixtures():
         ("autopilot", 511, b"autopilot " + synthetic("autopilot-key", 32)),
         ("avazapersonalaccesstoken", 733, b"avaza 0007-" + synthetic("avaza-key", 40)),
         ("aviationstack", 564, b"aviationstack " + alnum("aviationstack-key", 32).lower()),
+        ("aws_appsync", 1052, b"da2-" + alnum("appsync-key", 26).lower() + b"\nhttps://" +
+         alnum("appsync-endpoint", 26).lower() + b".appsync-api.us-east-1.amazonaws.com/graphql"),
+        ("axonaut", 320, b"axonaut " + alnum("axonaut-key", 32).lower()),
+        ("aylien", 485, b"aylien " + alnum("aylien-key", 32).lower() +
+         b"\naylien " + alnum("aylien-id", 8).lower()),
+        ("aws_session_keys", 959, aws_session_payload),
+        ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
         ("aws_bearer_id", 2, b"ABIA" + aws_id[4:] + b"\n" + aws_secret),
         ("aws_context_id", 2, b"ACCA" + aws_id[4:] + b"\n" + aws_secret),
@@ -460,6 +469,7 @@ def fixtures():
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
         cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
     cases.append(("aws_custom_cleaner", aws_id + b"\n\n" + aws_secret + b"\n\n" + alnum("aws-second-secret", 40), "2", "stdin", True))
+    cases.append(("aws_session_custom_cleaner", aws_session_payload + b"\n\nJb3JpZ2luX2Vj" + alnum("aws-second-session", 120), "959", "stdin", True))
     cases.append(("datacenter_nonstructural", b"atlassian M" + b"A" * 43, "1046,1047", "stdin", False))
     cases.append(("bitbucketdatacenter_no_endpoint", b"BBDC-" + alnum("bitbucket-dc-key", 45), "1045", "stdin", False))
     cases.append(("alibaba_version_zero", alibaba_payload, "0.v0", "stdin", False))

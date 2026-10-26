@@ -41,7 +41,9 @@ PLAIN/UTF8, Base64, UTF16 and escaped Unicode receive original bytes independent
 
 Native HTTP supports GET/POST in SANE/LOCAL slices. LOCAL does not follow redirects. POST preserves opaque/empty bodies without inventing Content-Type. SANE POST redirects remain unsupported. PUBLIC rejects before I/O until all-answer DNS checks, proxy semantics, cancellation and redirect policy are ported. Injected transports own the requested policy; mock success does not prove native PUBLIC support.
 
-AWS verification implements the fixed STS and SNS Query/XML operations and SigV4 signing through injected HTTP only. Its dedicated native profile rejects before I/O. SDK configuration, retry policy, streaming XML and diagnostics remain partial. XML parsing accepts UTF-8 only, rejects DTDs and uses strict whole documents, which is narrower than the SDK's selected-result streaming behavior. Upstream panic shapes return explicit unsupported errors rather than undefined behavior.
+AWS access-key verification implements the fixed STS and SNS Query/XML operations and SigV4 signing through injected HTTP only. Its dedicated native SDK profile rejects before I/O. SDK configuration, retry policy, streaming XML and diagnostics remain partial. XML parsing accepts UTF-8 only, rejects DTDs and uses strict whole documents, which is narrower than the SDK's selected-result streaming behavior. Upstream panic shapes return explicit unsupported errors rather than undefined behavior.
+
+Session-key verification instead uses the source's manually signed SANE GET/JSON path; native eager-body buffering cannot reproduce its unread-first-403 retry workaround.
 
 Some verifiers mutate services: Airbrake project-key verification posts a deploy record, and AWS SNS Publish can trigger canary tracking. Neither is a read-only credential check. Some upstream verifiers omit secrets from error-redaction helpers; injected transports must not include credentials in those errors. Verification here is synthetic/offline, not evidence of live service acceptance.
 

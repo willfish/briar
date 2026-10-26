@@ -585,6 +585,39 @@
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "partial", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_aws_access_keys.c", "tests/core/test_core.c", "tests/core/e2e.py", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Native AWS SDK HTTP profile rejects before I/O; injected Query/XML and SigV4 evidence does not establish native policy or live service acceptance", "Complete SDK configuration, retry modes, connection-error classification, quotas and timing beyond the default three-attempt slice; only ordinary RFC1123 response dates and bounded clock-skew behavior are implemented, with skew-adjusted deadline/TTL paths guarded", "Complete XML streaming, generic/typed-error decoding and diagnostics; strict whole-document parsing rejects DTDs and SDK-accepted selected-result prefixes with invalid tails", "Source panic shapes use explicit unsupported errors and invocation-only rollback; upstream engine recovery granularity remains incomplete", "Complete source constructor/account-option and map-order/resource behavior; local string-array settings currently use existing ctx.options", "Complete shared HTTP/regexp/source-engine and Unicode entropy behavior; no live AWS or canary evidence"]
+    },
+    "aws/appsync/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/aws/appsync/appsync.go",
+      "native_files": ["src/detectors/aws_appsync.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/bytes.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_aws_appsync.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native SANE POST redirects and Go request/URL diagnostics remain incomplete; injected success is not native policy evidence", "Complete map-order and resource behavior beyond the deterministic unique key/normalized-endpoint products"]
+    },
+    "axonaut/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/axonaut/axonaut.go",
+      "native_files": ["src/detectors/axonaut.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_axonaut.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior and transport diagnostics"]
+    },
+    "aylien/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/aylien/aylien.go",
+      "native_files": ["src/detectors/aylien.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_aylien.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior and transport diagnostics"]
+    },
+    "aws/session_keys/scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/aws/session_keys/sessionkey.go",
+      "scope_notes": "This source manually signs a SANE GET and decodes JSON, not the SDK POST/XML access-key protocol. Verified matches consume only the session token globally and break only the innermost loop; account metadata does not include access-key resource or canary fields.",
+      "native_files": ["src/detectors/aws_session_keys.c", "src/detectors/aws_common.c", "src/detectors/aws_common.h", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "partial", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_aws_session_keys.c", "tests/detectors/test_aws_access_keys.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Native eager-body buffering cannot reproduce the first-403-unread workaround; injected response ownership does not establish native drain/timing parity", "ABI1 has no final response URL, so redirected-status diagnostics use the original STS URL", "Complete typed first-document JSON, diagnostics and Unicode behavior beyond the implemented cases", "Complete source constructor/account-option, map-order and resource behavior; local string-array settings use existing ctx.options", "Complete shared HTTP/regexp/source-engine behavior; no live AWS evidence"]
     }
   },
   "components": {
