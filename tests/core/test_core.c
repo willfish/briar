@@ -178,6 +178,16 @@ static void regex_tests(void)
 
 static void fp_tests(void)
 {
+    CHECK(br_ascii_shannon_entropy(SLICE("")) == 0);
+    CHECK(br_ascii_shannon_entropy(SLICE("aaaa")) == 0);
+    CHECK(br_ascii_shannon_entropy(SLICE("abab")) == 1);
+    CHECK(br_ascii_shannon_entropy(SLICE("abcd")) == 2);
+    CHECK(br_ascii_shannon_entropy(SLICE("abcdefgh")) == 3);
+    CHECK(br_ascii_shannon_entropy(SLICE("0123456789abcdef")) == 4);
+    CHECK(br_ascii_shannon_entropy(SLICE("0123456789abcdefghijklmnopqrstuv")) == 5);
+    CHECK(br_ascii_shannon_entropy(SLICE("\0x")) == 1);
+    CHECK(br_ascii_shannon_entropy(SLICE("\xff")) == 0);
+    CHECK(br_ascii_shannon_entropy((br_slice){NULL, 1}) == 0);
     static const char *const terms[] = { "example", "xxxxxx", "aaaaaa", "abcde", "00000", "sample", "*****" };
     char *reason = NULL;
     CHECK(br_known_false_positive(SLICE("EXAMPLE"), terms, 7, false, &reason));

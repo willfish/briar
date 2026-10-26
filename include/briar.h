@@ -104,6 +104,9 @@ int br_results_push(br_results *, br_result *owned);
 int br_result_set_verification_error(br_result *, const char *innermost_error,
                                      const br_slice *secrets, size_t nsecrets);
 void br_clean_results(br_results *, bool verification_enabled);
+/* ASCII-only Shannon entropy for credential filtering. Empty, invalid or
+ * non-ASCII input returns zero; this is not Go's Unicode-rune calculation. */
+double br_ascii_shannon_entropy(br_slice);
 bool br_known_false_positive(br_slice, const char *const *terms, size_t nterms,
                              bool word_check, char **reason);
 /* Missing transports fail closed. Release once after every send, even failure.

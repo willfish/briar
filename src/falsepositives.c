@@ -1,8 +1,27 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "briar.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
+double br_ascii_shannon_entropy(br_slice input)
+{
+    if (!input.len || !input.data) return 0;
+    size_t counts[128] = {0};
+    for (size_t i = 0; i < input.len; ++i) {
+        unsigned char c = input.data[i];
+        if (c >= 128) return 0;
+        ++counts[c];
+    }
+    double value = 0;
+    for (size_t i = 0; i < 128; ++i) {
+        if (!counts[i]) continue;
+        double probability = (double)counts[i] / (double)input.len;
+        value -= probability * log2(probability);
+    }
+    return value;
+}
 
 /* Immutable data copied from the four pinned upstream embedded lists. */
 extern const char *const br_fp_words[];

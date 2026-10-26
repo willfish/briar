@@ -8,7 +8,6 @@
 
 #include <json-c/json.h>
 #include <limits.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,19 +25,6 @@ static int key_error(br_result *result, const char *cause)
 {
     br_slice secret = {result->raw.data, result->raw.len};
     return br_result_set_verification_error(result, cause, &secret, 1);
-}
-
-static double entropy(const char *text)
-{
-    size_t counts[128] = {0}, len = strlen(text);
-    for (size_t i = 0; i < len; ++i) ++counts[(unsigned char)text[i]];
-    double value = 0;
-    for (size_t i = 0; i < 128; ++i) {
-        if (!counts[i]) continue;
-        double probability = (double)counts[i] / (double)len;
-        value -= probability * log2(probability);
-    }
-    return value;
 }
 
 /* Positive means a candidate's decode error; negative means an allocation failure. */
@@ -257,9 +243,9 @@ static int scan_algolia(const br_detector *detector, const br_scan_ctx *ctx, boo
     bool *removed = !rc && keys.len && ids.len ? calloc(ids.len, sizeof(*removed)) : NULL;
     if (!rc && keys.len && ids.len && !removed) rc = fail(error, "out of memory tracking Algolia IDs");
     for (size_t k = 0; !rc && k < keys.len; ++k) {
-        if (entropy(keys.items[k]) <= 3) continue;
+        if (br_ascii_shannon_entropy(br_captures_at(&keys, k)) <= 3) continue;
         for (size_t i = 0; !rc && i < ids.len; ++i) {
-            if (removed[i] || entropy(ids.items[i]) <= 2) continue;
+            if (removed[i] || br_ascii_shannon_entropy(br_captures_at(&ids, i)) <= 2) continue;
             bool cached = false;
             if (br_host_cache_contains(&invalid_hosts, ids.items[i], &cached) != 0) { rc = fail(error, "wall clock unavailable"); break; }
             if (cached) { removed[i] = true; continue; } /* Source deletes this ID from its local map. */
