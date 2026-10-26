@@ -564,6 +564,12 @@ def fixtures():
          b"\nbrowserstackKey " + alnum("browserstack-access-key", 20)),
         ("browserstack_hub_wildcards", 756, b"hub-cloudXbrowserstackYcom " + alnum("browserstack-hub-key", 20) +
          b"\n" + b"." * 64 + b"\nhub-cloudXbrowserstackYcom briaruser17"),
+        ("browshot", 448, b"BROWSHOT " + alnum("browshot-key", 28)),
+        ("browshot_leading_hyphen", 448, b"browshot-" + alnum("browshot-leading-hyphen", 27)),
+        ("bscscan", 910, b"BSCSCAN " + alnum("bscscan-key", 34).upper()),
+        ("buddyns", 598, b"BUDDYNS " + alnum("buddyns-key", 40).lower()),
+        ("budibase_min", 953, b"BUDIBASE " + synthetic("budibase-min-first", 32) + b"-" + synthetic("budibase-min-tail", 78)),
+        ("budibase_max", 953, b"budibase " + synthetic("budibase-max-first", 32) + b"-" + synthetic("budibase-max-tail", 80)),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),

@@ -997,6 +997,42 @@
       "evidence": ["tests/detectors/test_browserstack.c", "tests/core/test_core.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ARCHITECTURE.md", "docs/ACCEPTANCE.md"],
       "remaining": ["Fresh public-suffix cookie jars, cookie/redirect/session policy and override-client Jar mutation/concurrency remain unimplemented; injected first-request/status success does not establish native support", "No-timeout requests with deadlines beyond UINT32_MAX milliseconds are explicitly unsupported by ABI1 rather than wrapped or silently shortened", "Source closes without draining; eager ABI1 body/release and native Go diagnostic/timing parity are incomplete", "Shared regexp/Unicode/source-engine and global output parity"]
     },
+    "browshot/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/browshot/browshot.go",
+      "scope_notes": "Provider-prefixed 28-byte captures retain the source literal-hyphen alphanumeric class, word-boundary quirks and occurrence duplicates. A leading hyphen can follow a word-ending provider prefix, while an isolated leading hyphen cannot satisfy the left boundary; no entropy or uniqueness filter is introduced. Raw/keypart only, with no RawV2/Redacted/ExtraData. SANE GET instance/list appends the query-safe key literally, with nil body and no extra provider headers. Exactly 200 verifies; 400/401 reject; other statuses produce colon numeric errors. All body/read/drain errors are ignored. Source supplies zero redaction arguments, retaining echoed query keys in creation/transport errors. All nonzero resource failures normalize and roll back only this invocation.",
+      "native_files": ["src/detectors/browshot.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_browshot.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native client configuration/HTTP diagnostics and streaming drain/deferred-close timing", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "bscscan/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bscscan/bscscan.go",
+      "scope_notes": "Unique-looking credentials are nevertheless occurrence captures: exact uppercase/digit 34-byte tokens under a case-insensitive provider prefix retain duplicates without entropy, uniqueness or cache policies. Raw/keypart only. SANE GET preserves the literal account-balance query/address and apikey, nil body and default UA only. HTTP 200 read errors take precedence; otherwise absence of binary case-sensitive NOTOK verifies, including empty/non-JSON/invalid-UTF-8 bodies. The full body is searched past NUL, never through strstr or JSON parsing. HTTP 401 rejects and every other status is unexpected, ignoring body/read errors outside 200. Creation/transport/read errors remain source-unredacted, even with echoed query keys. Setter positive-1 failures normalize to fatal invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/bscscan.c", "src/detectors/key_scan.c", "src/bytes.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bscscan.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native client configuration/HTTP diagnostics and streaming read/drain/deferred-close timing", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "buddyns/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/buddyns/buddyns.go",
+      "scope_notes": "Case-insensitive provider prefix does not widen the exact lowercase-alphanumeric 40-byte word-bounded capture. Non-hex letters and low entropy remain valid; occurrences and duplicates are retained. Raw/keypart only, without RawV2/Redacted/ExtraData/cache/consumption. SANE GET https://www.buddyns.com/api/v2/zone/ sends JSON Content-Type and literal Token KEY Authorization, not Bearer or Basic, with nil body/no Accept/default UA. Exactly 200 verifies; 401 rejects; other statuses are numeric colon errors. Every body/read/drain error is ignored. Source zero redaction arguments retain echoed authorization tokens; nil context, transport errors and nonzero resource returns preserve their distinct outcomes. Invocation rollback leaves caller findings intact.",
+      "native_files": ["src/detectors/buddyns.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_buddyns.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native client configuration/HTTP diagnostics and streaming drain/deferred-close timing", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "budibase/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/budibase/budibase.go",
+      "scope_notes": "Provider-prefixed exact lowercase-hex 32-byte prefix, literal hyphen and 78..80-byte suffix retain 111..113-byte occurrence captures, both word boundaries and duplicates. Raw/keypart only; no entropy, uniqueness, cache or consumption. Source optional client override uses the existing injected transport seam, with SANE default policy. POST https://budibase.app/api/public/v1/applications/search preserves literal name-qwerty JSON, JSON Content-Type and x-budibase-api-key; no Accept or invented logical Content-Length. Exactly 200 verifies; 401 rejects; other statuses are numeric colon errors, ignoring all body/read/drain errors. Source zero secret arguments retain key-bearing causes unredacted. Every nonzero setter/helper resource failure normalizes and rolls back only this invocation.",
+      "native_files": ["src/detectors/budibase.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_budibase.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native SANE POST redirects remain fail-closed; full native client configuration/HTTP diagnostics and streaming drain/deferred-close timing are incomplete", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
