@@ -56,5 +56,11 @@ int br_apptivo_init(const br_detector **out, char **error);
 int br_artifactory_init(const br_detector **out, char **error);
 int br_artifactoryreferencetoken_init(const br_detector **out, char **error);
 int br_artsy_init(const br_detector **out, char **error);
+int br_asanaoauth_init(const br_detector **out, char **error);
+int br_asanapersonalaccesstoken_init(const br_detector **out, char **error);
+int br_assemblyai_init(const br_detector **out, char **error);
+int br_atera_init(const br_detector **out, char **error);
+int br_atlassian_v1_init(const br_detector **out, char **error);
+int br_atlassian_v2_init(const br_detector **out, char **error);
 
 #endif
