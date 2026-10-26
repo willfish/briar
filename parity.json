@@ -1231,6 +1231,42 @@
       "evidence": ["tests/detectors/test_cexio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Unrepresentable clock multiplication uses an explicit invocation error rather than Go signed wraparound; unavailable native clock behavior remains bounded", "Type-only 0xff substitution is not general Go Unicode/JSON compatibility; shared parser limits remain partial", "Shared br_http_send combines adapter allocation/setup and Do failures, suppressing them together without stage classification", "Source ReadAll/scan-deferred close-only timing differs from eager buffering/per-request release", "Native SANE POST redirects remain fail-closed and their diagnostic is suppressed", "Complete native client configuration, shared regexp/source-engine and global output parity"]
     },
+    "chartmogul/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/chartmogul/chartmogul.go",
+      "scope_notes": "Prefixed lowercase-alphanumeric 32-byte occurrence keys retain duplicates, Raw/key part only, no entropy/unique/cache/extra metadata. PB identity remains Chartmogul while description spells the brand ChartMogul. SANE GET https://api.chartmogul.com/v1/ping uses byte-aware Basic(key, empty password), default UA and no body/Type/Accept/logical Content-Length. Source Base64(key+colon) preparation precedes nil-context construction skips; the private KEEP/SKIP/ABORT outcomes preserve that order and normalize positive Basic failures to fatal invocation rollback. NoV performs no Basic/HTTP work. Every 2xx verifies, other statuses reject, the entire shared adapter/Do error domain is suppressed without an error setter, and body/read errors are ignored. Provider-owned resource failures roll back only this invocation, preserving caller findings. All hints remain absent.",
+      "native_files": ["src/detectors/chartmogul.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_chartmogul.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter setup/allocation with Do failures, suppressing them together without stage classification", "Source scan-deferred close-only lifecycle differs from eager buffering/per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "chatbot/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/chatbot/chatbot.go",
+      "scope_notes": "Prefixed mixed-alphanumeric-plus-underscore 32-byte occurrence keys retain endpoint underscores, duplicates, Raw/key part only and absent hints, without entropy/unique/cache/extra metadata. SANE GET https://api.chatbot.com/stories uses a complete fixed-size stack Bearer header and default UA, without body/Type/Accept/logical Content-Length or unnecessary provider allocation. Verification nil context skips candidates; NoV nil context finds them. Every 2xx verifies, all other statuses reject, the entire shared adapter/Do error domain is suppressed without an error setter, and body/read errors are ignored. Provider-owned resource failures normalize every nonzero return to fatal caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/chatbot.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_chatbot.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter setup/allocation with Do failures, suppressing them together without stage classification", "Source scan-deferred close-only lifecycle differs from eager buffering/per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "chatfule/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/chatfule/chatfule.go",
+      "scope_notes": "Preserve PB/package identity Chatfule but actual dispatch/extraction keyword chatfuel and the original Chatfuel description. The package spelling is not an added keyword. Prefixed mixed-alphanumeric 128-byte occurrence keys retain duplicates, Raw/key part only and absent hints, without entropy/unique/cache/extra metadata or Base64 validation. SANE GET https://dashboard.chatfuel.com/api/bots uses a complete fixed-size stack Bearer header and default UA, without body/Type/Accept/logical Content-Length or unnecessary provider allocation. Verification nil context skips candidates; NoV nil context finds them. Every 2xx verifies, all other statuses reject, the entire shared adapter/Do error domain is suppressed without an error setter, and body/read errors are ignored. Provider-owned resource failures normalize every nonzero return to fatal caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/chatfule.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_chatfule.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter setup/allocation with Do failures, suppressing them together without stage classification", "Source scan-deferred close-only lifecycle differs from eager buffering/per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "checio/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/checio/checio.go",
+      "scope_notes": "PrefixRegex checio scopes case-insensitivity to that keyword, not the literal lowercase pk_ or its 45 lowercase-alphanumeric tail bytes. Preserve the complete 48-byte occurrence key, duplicates, Raw/key part only and absent hints, without hex validation/entropy/unique/cache/extra metadata. Bare keys and an invented chec.io prefix do not match. SANE GET https://api.chec.io/v1/products?limit=25 uses literal X-Authorization:key and default UA, not Bearer/Basic, without body/Type/Accept/logical Content-Length. Verification nil context skips candidates; NoV nil context finds them. Every 2xx verifies, all other statuses reject, the entire shared adapter/Do error domain is suppressed without an error setter, and body/read errors are ignored. Provider-owned resource failures normalize every nonzero return to fatal caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/checio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_checio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter setup/allocation with Do failures, suppressing them together without stage classification", "Source scan-deferred close-only lifecycle differs from eager buffering/per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
