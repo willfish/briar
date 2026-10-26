@@ -454,13 +454,23 @@ data = f"accuweather {key32}x7z\naccuweather {key32}".encode()
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=303"], data)
 check(len(rows) == 2 and all("VerificationError" not in row for row in rows), "same type versions never overlap")
 
+# AWS's custom cleaner is always selected, but is a no-op without verification.
+aws_id = "AKIAQWERTYUIOPASDFGH"
+aws_secrets = ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcd")
+data = (aws_id + "\n\n" + "\n\n".join(aws_secrets)).encode()
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=AWS"], data)
+check(len(rows) == 2 and all(row["DetectorType"] == 1 for row in rows), "named AWS selection preserves unverified pairs")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=1", "--filter-unverified"], data)
+check({row["RawV2"] for row in rows} == {aws_id + ":" + secret for secret in aws_secrets},
+      "AWS custom cleaner overrides generic unverified collapsing")
+
 # Missing implementations are errors, never empty successful default/all scans.
 for args in (
     ["stdin", "--json", "--no-verification"],
     ["stdin", "--json", "--no-verification", "--include-detectors=all"],
     ["stdin", "--json", "--no-verification", "--include-detectors=239,all"],
     ["stdin", "--json", "--no-verification", "--include-detectors=999999"],
-    ["stdin", "--json", "--no-verification", "--include-detectors=AWS"],
+    ["stdin", "--json", "--no-verification", "--include-detectors=2"],
     ["stdin", "--json", "--no-verification", "--include-detectors=384"],
     ["stdin", "--json", "--no-verification", "--include-detectors=301"],
     ["stdin", "--json", "--no-verification", "--include-detectors=293"],

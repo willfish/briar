@@ -75,6 +75,7 @@ static const registration expected[] = {
     {511, 0, "AutoPilot", "autopilot", 32, true, -1},
     {733, 0, "AvazaPersonalAccessToken", "avaza", 45, true, -1},
     {564, 0, "AviationStack", "aviationstack", 32, true, -1},
+    {1, 0, "AWS", "AKIA", 20, true, 1024},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -109,6 +110,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     }
     const char *secondary = NULL, *secondary_name = NULL;
     switch (entry->type) {
+    case 1:
+        strcpy(key, "AKIAQWERTYUIOPASDFGH");
+        secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
+        secondary_name = "secret_access_key";
+        break;
     case 0: secondary = "LTAIB7c9D2e5F6g8H3j4K"; secondary_name = "id"; break;
     case 42:
         for (size_t i = 0; i < 32; ++i) {
@@ -243,7 +249,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
-    const char *key_name = entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 1 ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
@@ -257,7 +263,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         char raw_v2[sizeof(key) + sizeof(secondary_buffer) + 1];
         if (entry->type == 55) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
         else if (entry->type == 170 || entry->type == 1032) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
-        else snprintf(raw_v2, sizeof(raw_v2), entry->type == 375 || entry->type == 1045 ||
+        else snprintf(raw_v2, sizeof(raw_v2), entry->type == 1 || entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
         CHECK(result->raw_v2.len == strlen(raw_v2));
         CHECK(!memcmp(result->raw_v2.data, raw_v2, strlen(raw_v2)));
@@ -274,9 +280,9 @@ int main(void)
     CHECK(br_registry(&detectors, &count, &error) == 0 && error == NULL);
     CHECK(count == sizeof(expected) / sizeof(expected[0]));
     CHECK(!br_detector_type_name(-1));
-    CHECK(!br_detector_type_name(1)); /* AWS has no implementation yet. */
+    CHECK(!br_detector_type_name(2)); /* GitLab has no implementation yet. */
     CHECK(!br_detector_is_default(NULL, NULL));
-    br_detector missing = {.type = 1};
+    br_detector missing = {.type = 2};
     CHECK(!br_detector_is_default(&missing, NULL));
     br_json *flags = json_object_new_object();
     CHECK(flags && json_object_object_add(flags, "all", json_object_new_boolean(true)) == 0);
@@ -288,12 +294,16 @@ int main(void)
         CHECK(!strcmp(br_detector_type_name(detector->type), entry->name));
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
-        CHECK(detector->nkeywords == (entry->type == 181 || entry->type == 1047 ? 3u :
+        CHECK(detector->nkeywords == (entry->type == 1 || entry->type == 181 || entry->type == 1047 ? 3u :
               entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 907) CHECK(!strcmp(detector->keywords[1], "alcht_"));
         if (entry->type == 170) CHECK(!strcmp(detector->keywords[1], "docsearch"));
         if (entry->type == 933) CHECK(!strcmp(detector->keywords[1], "sk-ant-admin01"));
+        if (entry->type == 1) {
+            CHECK(!strcmp(detector->keywords[1], "ABIA"));
+            CHECK(!strcmp(detector->keywords[2], "ACCA"));
+        }
         if (entry->type == 1046) CHECK(!strcmp(detector->keywords[1], "atlassian"));
         if (entry->type == 1047) {
             CHECK(!strcmp(detector->keywords[1], "atlassian"));
@@ -306,7 +316,9 @@ int main(void)
         CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : -1) && detector->start_offset == -1 &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
-        CHECK(!detector->clean && !detector->clean_always && !detector->false_positive);
+        CHECK(!detector->false_positive);
+        if (entry->type == 1) CHECK(detector->clean && detector->clean_always);
+        else CHECK(!detector->clean && !detector->clean_always);
         if (entry->type == 181 || entry->type == 1042 || entry->type == 1047) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);
             CHECK(!detector->cloud_endpoint[0]);
