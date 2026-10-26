@@ -81,6 +81,7 @@ static const registration expected[] = {
     {320, 0, "Axonaut", "axonaut", 32, true, -1},
     {485, 0, "Aylien", "aylien", 32, true, 1024},
     {163, 0, "Ayrshare", "ayrshare", 35, true, -1},
+    {1013, 0, "AzureRefreshToken", "0.A", 366, true, 1024},
     {957, 0, "AzureBatch", ".batch.azure.com", sizeof("https://briar.region.batch.azure.com") - 1, true, 1024},
     {971, 0, "AzureCosmosDBKeyIdentifiable", ".documents.azure.com", 88, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
@@ -94,6 +95,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     char key[5001], secondary_buffer[89], session_buffer[133], input[8192];
     test_secret(key, entry->key_len, 0);
     if (entry->type == 163) strcpy(key, "B7C9D2E5-F6G8H3J4-K1M0N2P4-Q6R8S1T3");
+    if (entry->type == 1013) {
+        memcpy(key, "0.A", 3);
+        test_secret(key + 3, 60, 11);
+        memcpy(key + 63, ".Ag", 3);
+        test_secret(key + 66, 300, 23);
+    }
     if (entry->type == 41) {
         static const char prefix[] = "0/1234567890123456:";
         memcpy(key, prefix, sizeof(prefix) - 1);
@@ -338,8 +345,9 @@ int main(void)
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
-              entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 ? 2u : 1u));
+              entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
+        if (entry->type == 1013) CHECK(!strcmp(detector->keywords[1], "1.A"));
         if (entry->type == 971) CHECK(!strcmp(detector->keywords[1], ".table.cosmos.azure.com"));
         if (entry->type == 907) CHECK(!strcmp(detector->keywords[1], "alcht_"));
         if (entry->type == 170) CHECK(!strcmp(detector->keywords[1], "docsearch"));
@@ -357,7 +365,8 @@ int main(void)
             CHECK(!strcmp(detector->keywords[1], "jfrog.io"));
             CHECK(!strcmp(detector->keywords[2], "AKCp"));
         }
-        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : -1) && detector->start_offset == -1 &&
+        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 1013 ? 2048 : -1) &&
+              detector->start_offset == (entry->type == 1013 ? 4096 : -1) &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
         if (entry->type == 957) {
