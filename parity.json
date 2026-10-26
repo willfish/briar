@@ -880,6 +880,42 @@
       "evidence": ["tests/detectors/test_blazemeter.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Source errors intentionally remain unredacted and are not a credential-safe output boundary", "Complete native request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
     },
+    "blitapp/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/blitapp/blitapp.go",
+      "scope_notes": "Preserves occurrences of 39-byte ASCII alphanumeric/underscore/hyphen captures and exact word-boundary quirks under the scoped case-insensitive provider prefix. Raw/keypart only, with no local entropy, uniqueness, cache or enrichment. The SANE API-Key GET verifies only 200 and rejects 401; bodies/read errors are ignored. BOTH request-creation and all Client.Do errors are suppressed, including nil context, DNS, cancellation, deadlines and unsupported transport. Other statuses retain the source numeric colon error with zero redaction arguments. Setter resource failures are not suppressed as transport outcomes.",
+      "native_files": ["src/detectors/blitapp.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_blitapp.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native HTTP/client normalization and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "blocknative/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/blocknative/blocknative.go",
+      "scope_notes": "Remains disabled because upstream API status 200 also accepts invalid keys; explicit selectors cannot enable it. Direct native fixtures preserve status-only behavior rather than fixing that defect. Occurrence UUID-shaped captures admit uppercase A only in the first block, lowercase hex thereafter; keyword case-insensitivity does not widen capture case. The SANE literal-Authorization GET verifies 200, rejects 401/429 and ignores every body/read error. Creation/transport errors remain source-unredacted. No local entropy, cache, uniqueness or enrichment is introduced.",
+      "native_files": ["src/detectors/blocknative.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_blocknative.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["No positive CLI oracle is claimed for this disabled implementation; direct native verification is synthetic only", "Source errors intentionally remain unredacted and are not a credential-safe output boundary", "Complete native request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
+    "blogger/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/blogger/blogger.go",
+      "scope_notes": "Preserves occurrences of exact-case AIzaSy plus 33 ASCII alphanumeric/underscore/hyphen bytes. There is no ending word boundary: terminal hyphens and 39-byte prefixes of longer strings are intentional. The SANE GET appends the literal captured key to the fixed Blogger query URL with no authentication/header substitutions. Only 200 verifies; 400/403 reject and 401 remains an unexpected numeric colon error. All body/read errors are ignored; creation and transport errors remain entirely unredacted. Raw/keypart only with no cache, entropy, uniqueness or enrichment.",
+      "native_files": ["src/detectors/blogger.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_blogger.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source errors intentionally remain unredacted and may expose the query key", "Complete native HTTP/client normalization, diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
+    "bombbomb/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bombbomb/bombbomb.go",
+      "scope_notes": "Preserves the exact BuildRegexJWT expansion: ey prefixes, two unescaped wildcard separators, zero segment minima and source word boundaries, not JWT validation. Byte-aware occurrence captures retain duplicates. Only the possible final Unicode White_Space rune is trimmed by shortening the original slice; internal whitespace and NUL remain in Raw/keypart. The SANE Bearer GET verifies only 200, rejects 401 and ignores every body/read error. Nil-context construction precedes the embedded-NUL verification guard. Unsupported NUL candidates retain findings and continue; HTAB/non-ASCII header bytes remain unchanged while shared control rejection is safe but has a Go diagnostic gap. All errors remain unredacted. Resource failures roll back only the invocation, preserving caller findings.",
+      "native_files": ["src/detectors/bombbomb.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bombbomb.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Embedded NUL Authorization values cannot be represented by ABI1 headers; verification uses an explicit unsupported candidate error without truncation or I/O", "Shared non-NUL control/DEL rejection precedes transport safely, but its error wording and stage are not complete Go Client.Do parity", "Source errors intentionally remain unredacted and are not a credential-safe output boundary", "Complete native HTTP/client diagnostics, streaming drain/deferred-close timing and shared regexp/Unicode/source-engine behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

@@ -538,6 +538,17 @@ def fixtures():
         ("bitmex", 512, b"BITMEX " + alnum("bitmex-key", 22) + b"_-\nBITMEX " +
          alnum("bitmex-secret", 46) + b"_-\n"),
         ("blazemeter", 603, b"RUNSCOPE z7c9d2e5-f6g8-h3j4-k1m0-n2p4q6r8s1t3"),
+        ("blitapp", 523, b"BLITAPP " + alnum("blitapp-key", 19) + b"_-" + alnum("blitapp-tail", 18)),
+        ("blitapp_leading_hyphen", 523, b"blitapp-" + alnum("blitapp-leading-hyphen", 38)),
+        ("blogger", 302, b"BLOGGER AIzaSy" + alnum("blogger-hyphen-key", 32) + b"-"),
+        ("blogger_long_suffix", 302, b"blogger AIzaSy" + alnum("blogger-long-key", 33) + b"EXTRA"),
+        ("bombbomb", 565, b"BOMBBOMB ey" + alnum("bombbomb-first", 32) + b"!ey" +
+         alnum("bombbomb-second", 48) + b"?" + alnum("bombbomb-third", 35)),
+        ("bombbomb_empty_segments", 565, b"bombbomb ey!ey?" + b"A" * 172),
+        ("bombbomb_trim_ascii", 565, b"bombbomb ey.ey " + b"A" * 172),
+        ("bombbomb_trim_unicode", 565, b"bombbomb ey.ey\xe3\x80\x80" + b"A" * 172),
+        ("bombbomb_embedded_nul", 565, b"bombbomb ey" + alnum("bombbomb-nul-first", 16) + b"\0ey" +
+         alnum("bombbomb-nul-second", 19) + b"~" + alnum("bombbomb-nul-third", 23)),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
