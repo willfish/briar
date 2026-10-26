@@ -87,6 +87,7 @@ static const detector_factory named_factories[] = {
     br_azurecontainerregistry_init,
     br_azuredevopspersonalaccesstoken_init,
     br_azure_openai_init,
+    br_azuresearchadminkey_init,
     br_azure_storage_init,
     br_azureapimanagement_repositorykey_init,
     br_bitbucketdatacenter_init,
@@ -137,7 +138,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 401: case 391: case 484: case 485: case 788: case 637: case 1004: case 768: case 588:
         case 320: case 322: case 816: case 646: case 269: case 278: case 1042: case 181: case 389: case 800:
         case 98: case 41: case 376: case 1045: case 1047: case 1046:
-        case 604: case 110: case 55: case 323: case 564: case 511: case 733: case 2: case 1052: case 959: case 957: case 971: case 1013: case 1007: case 931: case 1018: case 1019: case 1025: case 958: case 972:
+        case 604: case 110: case 55: case 323: case 564: case 511: case 733: case 2: case 1052: case 959: case 957: case 971: case 1013: case 1007: case 931: case 1018: case 1019: case 1025: case 958: case 972: case 976:
             return detector->version == 0;
         default: break;
         }
@@ -217,6 +218,7 @@ const char *br_detector_type_name(int32_t type)
     case 959: return "AWSSessionKey";
     case 971: return "AzureCosmosDBKeyIdentifiable";
     case 972: return "AzureDevopsPersonalAccessToken";
+    case 976: return "AzureSearchAdminKey";
     case 1004: return "ApiMetrics";
     case 1007: return "AzureOpenAI";
     case 1013: return "AzureRefreshToken";

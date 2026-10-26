@@ -91,6 +91,7 @@ static const registration expected[] = {
     {958, 0, "AzureContainerRegistry", ".azurecr.io", 52, true, 1024},
     {972, 0, "AzureDevopsPersonalAccessToken", "azure", 52, true, 1024},
     {1007, 0, "AzureOpenAI", ".openai.azure.com", 32, true, -1},
+    {976, 0, "AzureSearchAdminKey", "azure", 52, true, 1024},
     {931, 0, "AzureStorage", "DefaultEndpointsProtocol=http", 88, true, 1024},
     {1018, 0, "AzureApiManagementRepositoryKey", "azure", 105, true, 1024},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
@@ -154,6 +155,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "AKIAQWERTYUIOPASDFGH");
         secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
         secondary_name = "secret_access_key";
+        break;
+    case 976:
+        secondary = "BriarSearch7";
+        secondary_name = "service";
         break;
     case 972:
         for (size_t i = 0; i < entry->key_len; ++i)
