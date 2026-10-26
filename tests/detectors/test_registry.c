@@ -115,6 +115,7 @@ static const registration expected[] = {
     {43, 0, "BitLyAccessToken", "bitly", 40, true, -1},
     {512, 0, "Bitmex", "bitmex", 48, true, 1024},
     {603, 0, "Blazemeter", "blazemeter", 36, true, -1},
+    {908, 0, "BlockNative", "blocknative", 36, false, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -327,6 +328,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         test_secret(secondary_buffer, 24, 11);
         secondary = secondary_buffer;
         secondary_name = "key";
+        break;
+    case 908:
+        snprintf(key, sizeof(key), "A123a0f9-1a2b-3c4d-5e6f-0123456789ab");
         break;
     case 506:
         memcpy(key, "pri_", 4);

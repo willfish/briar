@@ -478,6 +478,8 @@ for args in (
     ["stdin", "--json", "--no-verification", "--include-detectors=973.v0"],
     ["stdin", "--json", "--no-verification", "--include-detectors=867"],
     ["stdin", "--json", "--no-verification", "--include-detectors=867.v0"],
+    ["stdin", "--json", "--no-verification", "--include-detectors=908"],
+    ["stdin", "--json", "--no-verification", "--include-detectors=908.v0"],
     ["stdin", "--json", "--no-verification", "--include-detectors=239.v1"],
     ["stdin", "--json", "--no-verification", "--include-detectors=431.v1"],
     ["stdin", "--json", "--no-verification", "--include-detectors=693.v1"],

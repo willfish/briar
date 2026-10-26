@@ -111,6 +111,7 @@ static const detector_factory named_factories[] = {
     br_bitlyaccesstoken_init,
     br_bitmex_init,
     br_blazemeter_init,
+    br_blocknative_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
 };
@@ -243,6 +244,7 @@ const char *br_detector_type_name(int32_t type)
     case 816: return "Appointedd";
     case 867: return "Besnappy";
     case 907: return "Alchemy";
+    case 908: return "BlockNative";
     case 917: return "Aiven";
     case 931: return "AzureStorage";
     case 933: return "Anthropic";
