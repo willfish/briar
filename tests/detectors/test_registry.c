@@ -91,6 +91,7 @@ static const registration expected[] = {
     {958, 0, "AzureContainerRegistry", ".azurecr.io", 52, true, 1024},
     {972, 0, "AzureDevopsPersonalAccessToken", "azure", 52, true, 1024},
     {1024, 0, "AzureDirectManagementKey", ".management.azure-api.net", sizeof("https://briar-direct.management.azure-api.net") - 1, true, 1024},
+    {973, 0, "AzureFunctionKey", "azure", 32, false, 1024},
     {1007, 0, "AzureOpenAI", ".openai.azure.com", 32, true, -1},
     {976, 0, "AzureSearchAdminKey", "azure", 52, true, 1024},
     {931, 0, "AzureStorage", "DefaultEndpointsProtocol=http", 88, true, 1024},
@@ -156,6 +157,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "AKIAQWERTYUIOPASDFGH");
         secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
         secondary_name = "secret_access_key";
+        break;
+    case 973:
+        secondary = "https://briar-functions.azurewebsites.net/api/Run-Task";
+        secondary_name = "url";
         break;
     case 1024:
         strcpy(key, "https://briar-direct.management.azure-api.net");

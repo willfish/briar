@@ -87,6 +87,7 @@ static const detector_factory named_factories[] = {
     br_azurecontainerregistry_init,
     br_azuredevopspersonalaccesstoken_init,
     br_azuredirectmanagementkey_init,
+    br_azurefunctionkey_init,
     br_azure_openai_init,
     br_azuresearchadminkey_init,
     br_azure_storage_init,
@@ -219,6 +220,7 @@ const char *br_detector_type_name(int32_t type)
     case 959: return "AWSSessionKey";
     case 971: return "AzureCosmosDBKeyIdentifiable";
     case 972: return "AzureDevopsPersonalAccessToken";
+    case 973: return "AzureFunctionKey";
     case 976: return "AzureSearchAdminKey";
     case 1004: return "ApiMetrics";
     case 1007: return "AzureOpenAI";
