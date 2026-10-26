@@ -150,6 +150,7 @@ static const registration expected[] = {
     {708, 2, "CaptainData", "captaindata", 64, true, -1},
     {578, 0, "CarbonInterface", "carboninterface", 21, true, -1},
     {685, 0, "Cashboard", "cashboard", 15, true, 1024},
+    {524, 0, "Censys", "censys", 32, true, 1024},
     {318, 0, "CentralStationCRM", "centralstationcrm", 30, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -378,6 +379,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 1053:
         memcpy(key, "sk-", 3);
         break;
+    case 524:
+        test_secret(secondary_buffer, 36, 11);
+        secondary = secondary_buffer;
+        secondary_name = "username";
+        break;
     case 708:
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         secondary = "b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3";
@@ -576,7 +582,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
-                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 ? "token" : "key";
+                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
     CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 ? 3 : secondary ? 2 : 1));
