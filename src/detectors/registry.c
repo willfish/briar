@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "detectors.h"
 
+#include <json-c/json.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -155,9 +156,18 @@ int br_registry(const br_detector *const **out, size_t *count, char **error)
 
 bool br_detector_is_default(const br_detector *detector, const br_json *feature_flags)
 {
-    (void)feature_flags; /* The currently compiled providers have no feature gates. */
     if (detector && (!detector->custom_name || !detector->custom_name[0])) {
         switch (detector->type) {
+        case 1053: {
+            if (detector->version != 0) return false;
+            /* OSS main enables this flag; explicit false models package-zero
+             * defaults. Accept only the exact source name and a JSON boolean. */
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "BraintrustDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
         case 3: case 190: case 303: case 430: return detector->version == 1 || detector->version == 2;
         case 0: case 239: case 521: case 390: case 431: case 432: case 684: case 693: case 197: case 802:
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 506: case 917: case 907:

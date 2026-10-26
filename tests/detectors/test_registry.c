@@ -514,12 +514,45 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     br_results_clear(&results);
 }
 
+static void feature_gate_tests(void)
+{
+    br_detector braintrust = {.type = 1053, .version = 0, .custom_name = ""};
+    br_detector disabled = {.type = 384, .version = 0, .custom_name = ""};
+    br_detector enabled = {.type = 239, .version = 0, .custom_name = ""};
+    br_json *flags = json_object_new_object();
+    CHECK(flags && br_detector_is_default(&braintrust, NULL));
+    CHECK(br_detector_is_default(&braintrust, flags));
+    CHECK(!json_object_object_add(flags, "all", json_object_new_boolean(true)));
+    CHECK(br_detector_is_default(&braintrust, flags)); /* Unrelated keys inherit OSS defaults. */
+    CHECK(!json_object_object_add(flags, "BraintrustDetectorEnabled", json_object_new_boolean(false)));
+    CHECK(!br_detector_is_default(&braintrust, flags)); /* Explicit package atomic-zero state. */
+    CHECK(br_detector_is_default(&enabled, flags) && !br_detector_is_default(&disabled, flags));
+    CHECK(!json_object_object_add(flags, "BraintrustDetectorEnabled", json_object_new_string("true")));
+    CHECK(!br_detector_is_default(&braintrust, flags));
+    CHECK(!json_object_object_add(flags, "BraintrustDetectorEnabled", json_object_new_int(1)));
+    CHECK(!br_detector_is_default(&braintrust, flags));
+    CHECK(!json_object_object_add(flags, "BraintrustDetectorEnabled", NULL));
+    CHECK(!br_detector_is_default(&braintrust, flags));
+    CHECK(!json_object_object_add(flags, "BraintrustDetectorEnabled", json_object_new_boolean(true)));
+    CHECK(br_detector_is_default(&braintrust, flags) && !br_detector_is_default(&disabled, flags));
+    braintrust.version = 1;
+    CHECK(!br_detector_is_default(&braintrust, flags));
+    braintrust.version = 0; braintrust.custom_name = "custom";
+    CHECK(!br_detector_is_default(&braintrust, flags));
+    braintrust.custom_name = "";
+    br_json *invalid = json_object_new_boolean(true);
+    CHECK(invalid && !br_detector_is_default(&braintrust, invalid));
+    CHECK(br_detector_is_default(&enabled, invalid));
+    json_object_put(invalid); json_object_put(flags);
+}
+
 int main(void)
 {
     const br_detector *const *detectors = NULL;
     size_t count = 0;
     char *error = NULL;
     CHECK(BR_ABI_REVISION == 1);
+    feature_gate_tests();
     CHECK(br_registry(&detectors, &count, &error) == 0 && error == NULL);
     CHECK(count == sizeof(expected) / sizeof(expected[0]));
     CHECK(!br_detector_type_name(-1));

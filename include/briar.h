@@ -123,6 +123,8 @@ int br_http_basic_auth(br_slice username, br_slice password, char **out, char **
 
 /* Registry implementations are owned by src/detectors. Initialize pre-workers. */
 int br_registry(const br_detector *const **out, size_t *count, char **error);
+/* NULL/missing flags inherit pinned OSS CLI defaults. Overrides use exact source
+ * flag names and JSON booleans; invalid values disable the gated identity. */
 bool br_detector_is_default(const br_detector *, const br_json *feature_flags);
 const char *br_detector_type_name(int32_t type);
 
