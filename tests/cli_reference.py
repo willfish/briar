@@ -418,10 +418,25 @@ def fixtures():
         ("atlassian_v2", "190.v2", b"ATCTT3xFfG" + alnum("atlassian-v2-key", 45) + b"=F1c2A3b4"),
         ("atlassian_v2_org", "190.v2", b"ATCTT3xFfG" + alnum("atlassian-v2-key", 45) +
          b"=F1c2A3b4\norg zzzzzzzz-qrst-uvwx-yz12-zzzzzzzzzzzz"),
+        ("bitbucketdatacenter", 1045, b"BBDC-" + alnum("bitbucket-dc-key", 45) +
+         b"\nbitbucket https://bitbucket.synthetic.invalid:8443/discard?old=1"),
+        ("confluencedatacenter", 1047, b"confluence " +
+         base64.b64encode(b"123456789012:" + alnum("confluence-dc", 20)) +
+         b"\nconfluence https://confluence.synthetic.invalid:8443/discard"),
+        ("confluencedatacenter_no_endpoint", 1047, b"confluence " +
+         base64.b64encode(b"123456789012:" + alnum("confluence-dc", 20))),
+        ("jiradatacenterpat", 1046, b"jira " +
+         base64.b64encode(b"123456789012:" + alnum("jira-dc", 20)) +
+         b"\njira https://jira.synthetic.invalid:8443/discard"),
+        ("jiradatacenterpat_no_endpoint", 1046, b"jira " +
+         base64.b64encode(b"123456789012:" + alnum("jira-dc", 20))),
+        ("audd", 376, b"audd " + alnum("audd-key", 32).lower()),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
         cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
+    cases.append(("datacenter_nonstructural", b"atlassian M" + b"A" * 43, "1046,1047", "stdin", False))
+    cases.append(("bitbucketdatacenter_no_endpoint", b"BBDC-" + alnum("bitbucket-dc-key", 45), "1045", "stdin", False))
     cases.append(("alibaba_version_zero", alibaba_payload, "0.v0", "stdin", False))
     cases.extend(multipart_fixtures())
     cases.extend(chunk_fixtures())
