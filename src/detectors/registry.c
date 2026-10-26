@@ -131,6 +131,8 @@ static const detector_factory named_factories[] = {
     br_budibase_init,
     br_bugherd_init,
     br_bugsnag_init,
+    br_buildkite_v1_init,
+    br_buildkite_v2_init,
     br_bulbul_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
@@ -180,7 +182,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_object_get_ex(feature_flags, "BraintrustDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
-        case 3: case 190: case 303: case 333: case 430: return detector->version == 1 || detector->version == 2;
+        case 3: case 142: case 190: case 303: case 333: case 430: return detector->version == 1 || detector->version == 2;
         case 0: case 239: case 521: case 390: case 431: case 432: case 684: case 693: case 197: case 802:
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 506: case 910: case 917: case 907:
         case 302: case 565: case 707: case 723: case 756: case 828: case 375: case 522: case 523: case 170: case 163: case 399: case 473: case 453:
@@ -212,6 +214,7 @@ const char *br_detector_type_name(int32_t type)
     case 125: return "AirbrakeProjectKey";
     case 126: return "AirbrakeUserKey";
     case 136: return "AdobeIO";
+    case 142: return "Buildkite";
     case 163: return "Ayrshare";
     case 166: return "Beamer";
     case 170: return "AlgoliaAdminKey";

@@ -134,6 +134,8 @@ static const registration expected[] = {
     {953, 0, "Budibase", "budibase", 113, true, -1},
     {602, 0, "Bugherd", "bugherd", 22, true, -1},
     {388, 0, "Bugsnag", "bugsnag", 36, true, -1},
+    {142, 1, "Buildkite", "buildkite", 40, true, -1},
+    {142, 2, "Buildkite", "bkua_", 45, true, -1},
     {317, 0, "Bulbul", "bulbul", 32, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -347,6 +349,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "briaruser17";
         secondary_name = "username";
         break;
+    case 142:
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        if (entry->version == 2) memcpy(key, "bkua_", 5);
+        break;
     case 333:
         if (entry->version == 2) key[43] = '=';
         break;
@@ -517,6 +523,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(!result->primary_secret.data && !result->primary_secret.len);
         br_results_clear(&results);
         return;
+    }
+    if (entry->type == 142) {
+        if (entry->version == 1) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
+        else CHECK(!result->extra_data);
     }
     if (entry->type == 430 || entry->type == 333) {
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
