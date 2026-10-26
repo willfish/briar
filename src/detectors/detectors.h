@@ -87,5 +87,9 @@ int br_azure_entra_serviceprincipal_v2_init(const br_detector **out, char **erro
 int br_azure_openai_init(const br_detector **out, char **error);
 int br_azure_storage_init(const br_detector **out, char **error);
 int br_azureapimanagement_repositorykey_init(const br_detector **out, char **error);
+int br_azureapimanagementsubscriptionkey_init(const br_detector **out, char **error);
+int br_azureappconfigconnectionstring_init(const br_detector **out, char **error);
+int br_azurecontainerregistry_init(const br_detector **out, char **error);
+int br_azuredevopspersonalaccesstoken_init(const br_detector **out, char **error);
 
 #endif
