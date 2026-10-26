@@ -11,6 +11,10 @@ int br_json_first_document(br_slice body, const char *read_error, br_json **out,
 /* Decode a whole body: reject trailing non-whitespace instead of ignoring it.
  * Ownership and return codes match br_json_first_document. */
 int br_json_document(br_slice body, br_json **out, char **cause);
+/* Check original number tokens in a syntax-validated document for Go's
+ * float64 map conversion, including overwritten and nested entries. Finite
+ * underflow is allowed. Returns 0, 1 with owned cause, or -1 on resource failure. */
+int br_json_check_float64_numbers(br_slice document, char **cause);
 
 /* Visit a validated object in source order, including duplicate members.
  * Name, value and its original JSON bytes are borrowed for the callback. Retain

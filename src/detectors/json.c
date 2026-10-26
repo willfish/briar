@@ -3,11 +3,64 @@
 #include "json.h"
 
 #include <json-c/json.h>
+#include <json-c/json_util.h>
 #include <errno.h>
 #include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* Syntax is already validated. Check ORIGINAL number tokens, not json-c's
+ * possibly saturated values, including nested and overwritten map entries. */
+int br_json_check_float64_numbers(br_slice document, char **cause)
+{
+    *cause = NULL;
+    bool quoted = false, escaped = false;
+    for (size_t i = 0; i < document.len; ++i) {
+        unsigned char c = document.data[i];
+        if (quoted) {
+            if (escaped) escaped = false;
+            else if (c == '\\') escaped = true;
+            else if (c == '"') quoted = false;
+            continue;
+        }
+        if (c == '"') { quoted = true; continue; }
+        if (c != '-' && (c < '0' || c > '9')) continue;
+        size_t begin = i;
+        while (i < document.len) {
+            c = document.data[i];
+            if (!((c >= '0' && c <= '9') || c == '-' || c == '+' || c == '.' || c == 'e' || c == 'E')) break;
+            ++i;
+        }
+        size_t len = i - begin;
+        if (len == SIZE_MAX) return -1;
+        char *token = malloc(len + 1);
+        if (!token) return -1;
+        memcpy(token, document.data + begin, len);
+        token[len] = '\0';
+        double number = 0;
+        /* ERANGE alone is not rejection: Go accepts finite underflow to zero. */
+        bool invalid = json_parse_double(token, &number) != 0 || !isfinite(number);
+        if (invalid) {
+            static const char prefix[] = "json: cannot unmarshal number ";
+            static const char suffix[] = " into Go value of type float64";
+            size_t overhead = sizeof(prefix) - 1 + sizeof(suffix);
+            if (len > SIZE_MAX - overhead) { free(token); return -1; }
+            *cause = malloc(overhead + len);
+            if (*cause) {
+                memcpy(*cause, prefix, sizeof(prefix) - 1);
+                memcpy(*cause + sizeof(prefix) - 1, token, len);
+                memcpy(*cause + sizeof(prefix) - 1 + len, suffix, sizeof(suffix));
+            }
+            free(token);
+            return *cause ? 1 : -1;
+        }
+        free(token);
+        --i; /* The outer loop still visits the token's following delimiter. */
+    }
+    return 0;
+}
 
 static bool json_space(unsigned char c)
 {
