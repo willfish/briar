@@ -58,6 +58,7 @@ static const registration expected[] = {
     {816, 0, "Appointedd", "appointedd", 88, true, -1},
     {646, 0, "AppSynergy", "appsynergy", 64, true, -1},
     {269, 0, "Apptivo", "apptivo", 36, true, 1024},
+    {181, 0, "ArtifactoryAccessToken", "artifactory", 73, true, 1024},
     {1042, 0, "ArtifactoryReferenceToken", "cmVmdGtu", 64, true, 1024},
     {278, 0, "Artsy", "artsy", 32, true, 1024},
 };
@@ -70,6 +71,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 303 && entry->version == 1) key[7] = '%';
     if (entry->type == 390) memcpy(key, "aio_", 4);
     if (entry->type == 391) memcpy(key, "apify_api_", 10);
+    if (entry->type == 181) memcpy(key, "AKCp", 4);
     if (entry->type == 1042) memcpy(key, "cmVmdGtu", 8);
     if (entry->type == 484) strcpy(key, "b7c9d2e5f6g-h3j4-k1m0-n2p4-q6r8s1t3u5v7");
     if (entry->type == 588) {
@@ -149,6 +151,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "b7c9d2e5f6a8b3c4d1e0f2a4b6c8d0e2";
         secondary_name = "client_id";
         break;
+    case 181:
     case 1042:
         secondary = "synthetic-fixture.jfrog.io";
         secondary_name = "domain";
@@ -182,7 +185,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     br_json *part = NULL;
     const char *key_name = entry->type == 1032 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
-                           entry->type == 1042 ? "token" : "key";
+                           entry->type == 181 || entry->type == 1042 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
     CHECK(json_object_object_length(result->secret_parts) == (secondary ? 2 : 1));
@@ -221,16 +224,21 @@ int main(void)
         CHECK(!strcmp(br_detector_type_name(detector->type), entry->name));
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
-        CHECK(detector->nkeywords == (entry->type == 907 || entry->type == 170 || entry->type == 933 ? 2u : 1u));
+        CHECK(detector->nkeywords == (entry->type == 181 ? 3u :
+              entry->type == 907 || entry->type == 170 || entry->type == 933 ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 907) CHECK(!strcmp(detector->keywords[1], "alcht_"));
         if (entry->type == 170) CHECK(!strcmp(detector->keywords[1], "docsearch"));
         if (entry->type == 933) CHECK(!strcmp(detector->keywords[1], "sk-ant-admin01"));
+        if (entry->type == 181) {
+            CHECK(!strcmp(detector->keywords[1], "jfrog.io"));
+            CHECK(!strcmp(detector->keywords[2], "AKCp"));
+        }
         CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
         CHECK(!detector->clean && !detector->clean_always && !detector->false_positive);
-        if (entry->type == 1042) {
+        if (entry->type == 181 || entry->type == 1042) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);
             CHECK(!detector->cloud_endpoint[0]);
         } else CHECK(!detector->validate_endpoints && !detector->cloud_endpoint);
