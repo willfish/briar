@@ -77,11 +77,12 @@ static void request_urls(void)
         CHECK(!strcmp(url, cases[i].expected));
         free(url);
     }
-    const char *unsupported[] = {"relative/path", "ftp://host.invalid", "https://host.invalid:080/path", "http://127.1/path", "https://host.invalid/old%2Fpath"};
+    const char *unsupported[] = {"relative/path", "ftp://host.invalid", "https://host.invalid:080/path", "http://127.1/path", "https://host.invalid/old%2Fpath", "https://host.invalid/old#section#part"};
     for (size_t i = 0; i < sizeof(unsupported) / sizeof(unsupported[0]); ++i) {
         char *url = NULL, *cause = NULL;
         CHECK(br_dc_request_url(unsupported[i], "/new", "", &url, &cause) == 1 && !url && cause);
-        CHECK(!strncmp(cause, "unsupported:", 12));
+        CHECK(cause && !strncmp(cause, "unsupported:", 12));
+        free(url);
         free(cause);
     }
 }

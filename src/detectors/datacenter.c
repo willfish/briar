@@ -80,6 +80,9 @@ int br_dc_request_url(const char *base, const char *path, const char *raw_query,
     size_t scheme = base && !strncmp(base, "https://", 8) ? 8 :
                     base && !strncmp(base, "http://", 7) ? 7 : 0;
     if (!scheme || !path || path[0] != '/' || strchr(base, '%')) goto unsupported;
+    const char *fragment = strchr(base, '#');
+    /* Go escapes further fragment delimiters; CURLU would leave them raw. */
+    if (fragment && strchr(fragment + 1, '#')) goto unsupported;
     const char *authority = base + scheme;
     size_t authority_len = strcspn(authority, "/?#");
     if (!authority_len) goto unsupported;
@@ -101,7 +104,7 @@ int br_dc_request_url(const char *base, const char *path, const char *raw_query,
     round_authority += 3;
     if (strcspn(round_authority, "/?#") != authority_len ||
         memcmp(round_authority, authority, authority_len)) { code = CURLUE_BAD_HOSTNAME; goto failed; }
-    const char *fragment = strchr(base, '#'), *query = strchr(base, '?');
+    const char *query = strchr(base, '?');
     bool empty_query = query && (!fragment || query < fragment) &&
         (query[1] == '\0' || query[1] == '#');
     code = curl_url_set(parsed, CURLUPART_PATH, path, 0);

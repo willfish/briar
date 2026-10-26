@@ -14,7 +14,8 @@ int br_dc_find_endpoints(br_slice input, const br_regex *url_pattern,
 /* Replace path/query on the supported absolute HTTP(S) subset. Preserve supported
  * userinfo/fragment and an original empty-query delimiter. No metadata rewriting.
  * Return 0 success, 1 unsupported/invalid with owned cause, -1 resource failure.
- * Escapes, opaque/relative URLs and authority-normalizing forms fail closed. */
+ * Escapes, opaque/relative URLs, repeated fragment delimiters and
+ * authority-normalizing forms fail closed. */
 int br_dc_request_url(const char *base, const char *path, const char *raw_query,
                       char **url, char **cause);
 /* GET/Bearer/Accept JSON. 200 verifies even if first-document map decoding fails;
