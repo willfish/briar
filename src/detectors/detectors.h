@@ -138,5 +138,9 @@ int br_bulksms_init(const br_detector **out, char **error);
 int br_buttercms_init(const br_detector **out, char **error);
 int br_caflou_init(const br_detector **out, char **error);
 int br_calendarific_init(const br_detector **out, char **error);
+int br_calendlyapikey_init(const br_detector **out, char **error);
+int br_calorieninja_init(const br_detector **out, char **error);
+int br_campayn_init(const br_detector **out, char **error);
+int br_cannyio_init(const br_detector **out, char **error);
 
 #endif
