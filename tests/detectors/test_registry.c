@@ -81,6 +81,7 @@ static const registration expected[] = {
     {320, 0, "Axonaut", "axonaut", 32, true, -1},
     {485, 0, "Aylien", "aylien", 32, true, 1024},
     {163, 0, "Ayrshare", "ayrshare", 35, true, -1},
+    {1019, 0, "AzureAPIManagementSubscriptionKey", ".azure-api.net", sizeof("https://briar-api.azure-api.net") - 1, true, 1024},
     {1013, 0, "AzureRefreshToken", "0.A", 366, true, 1024},
     {3, 1, "Azure", "azure", 32, true, 1024},
     {3, 2, "Azure", "q~", 37, true, 1024},
@@ -150,6 +151,13 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "AKIAQWERTYUIOPASDFGH");
         secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
         secondary_name = "secret_access_key";
+        break;
+    case 1019:
+        strcpy(key, "https://briar-api.azure-api.net");
+        test_secret(secondary_buffer, 32, 7);
+        secondary_buffer[7] = '-';
+        secondary = secondary_buffer;
+        secondary_name = "key";
         break;
     case 1018:
         secondary = "briar-apim.scm.azure-api.net";
@@ -320,7 +328,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
-    const char *key_name = entry->type == 1018 ? "password" : entry->type == 931 ? "account_key" : entry->type == 957 ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 1018 ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
@@ -341,7 +349,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         else if (entry->type == 971) snprintf(raw_v2, sizeof(raw_v2), "key: %s account_url: %s", key, secondary);
         else if (entry->type == 55 || entry->type == 1018) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
         else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
-        else snprintf(raw_v2, sizeof(raw_v2), entry->type == 2 || entry->type == 375 || entry->type == 1045 ||
+        else snprintf(raw_v2, sizeof(raw_v2), entry->type == 1019 || entry->type == 2 || entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
         CHECK(result->raw_v2.len == strlen(raw_v2));
         CHECK(!memcmp(result->raw_v2.data, raw_v2, strlen(raw_v2)));
@@ -403,7 +411,7 @@ int main(void)
               detector->start_offset == (entry->type == 1013 ? 4096 : -1) &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
-        if (entry->type == 957) {
+        if (entry->type == 957 || entry->type == 1019) {
             char *reason = NULL;
             CHECK(detector->false_positive && !detector->false_positive(detector, NULL, &reason));
             CHECK(reason && !strcmp(reason, ""));
