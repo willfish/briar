@@ -82,6 +82,8 @@ static const registration expected[] = {
     {485, 0, "Aylien", "aylien", 32, true, 1024},
     {163, 0, "Ayrshare", "ayrshare", 35, true, -1},
     {1013, 0, "AzureRefreshToken", "0.A", 366, true, 1024},
+    {3, 1, "Azure", "azure", 32, true, 1024},
+    {3, 2, "Azure", "q~", 37, true, 1024},
     {957, 0, "AzureBatch", ".batch.azure.com", sizeof("https://briar.region.batch.azure.com") - 1, true, 1024},
     {971, 0, "AzureCosmosDBKeyIdentifiable", ".documents.azure.com", 88, true, -1},
     {1007, 0, "AzureOpenAI", ".openai.azure.com", 32, true, -1},
@@ -96,6 +98,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     char key[5001], secondary_buffer[89], session_buffer[133], input[8192];
     test_secret(key, entry->key_len, 0);
     if (entry->type == 163) strcpy(key, "B7C9D2E5-F6G8H3J4-K1M0N2P4-Q6R8S1T3");
+    if (entry->type == 3 && entry->version == 2) memcpy(key, "b7c1Q~", 6);
     if (entry->type == 1013) {
         memcpy(key, "0.A", 3);
         test_secret(key + 3, 60, 11);
@@ -269,7 +272,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[82] = '\0';
         break;
     }
-    if (session)
+    if (entry->type == 3 && entry->version == 1)
+        snprintf(input, sizeof(input), "azure\nclient_id a6b39f20-17c4-4d85-9e62-0f3a7b1c5d98\nsecret '%s'\n", key);
+    else if (entry->type == 3)
+        snprintf(input, sizeof(input), "%s", key);
+    else if (session)
         snprintf(input, sizeof(input), "%s\n%s\n%s", key, secondary, session);
     else if (entry->type == 322)
         snprintf(input, sizeof(input), "appcues %s\nappcues %s\nappcues 00427", key, secondary);
@@ -348,9 +355,14 @@ int main(void)
         CHECK(!strcmp(br_detector_type_name(detector->type), entry->name));
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
-        CHECK(detector->nkeywords == (entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
+        CHECK(detector->nkeywords == (entry->type == 3 && entry->version == 1 ? 6u :
+              entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
               entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
+        if (entry->type == 3 && entry->version == 1) {
+            const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
+            for (size_t j = 0; j < 5; ++j) CHECK(!strcmp(detector->keywords[j + 1], aliases[j]));
+        }
         if (entry->type == 1013) CHECK(!strcmp(detector->keywords[1], "1.A"));
         if (entry->type == 971) CHECK(!strcmp(detector->keywords[1], ".table.cosmos.azure.com"));
         if (entry->type == 907) CHECK(!strcmp(detector->keywords[1], "alcht_"));

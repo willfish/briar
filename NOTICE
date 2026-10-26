@@ -25,7 +25,7 @@ Go 1.26.7 encoding/base64 in C. Original copyright and BSD license:
 Copyright 2009 The Go Authors.
 See LICENSES/BSD-3-Clause-Go.txt.
 
-Azure refresh-token claims projection follows github.com/golang-jwt/jwt/v5
+Azure Entra unverified claims parsing follows github.com/golang-jwt/jwt/v5
 v5.2.3 parser behavior, reimplemented in C. Original MIT copyright and license:
 Copyright (c) 2012 Dave Grijalva
 Copyright (c) 2021 golang-jwt maintainers
