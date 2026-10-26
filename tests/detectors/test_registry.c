@@ -117,6 +117,7 @@ static const registration expected[] = {
     {603, 0, "Blazemeter", "blazemeter", 36, true, -1},
     {523, 0, "BlitApp", "blitapp", 39, true, -1},
     {908, 0, "BlockNative", "blocknative", 36, false, -1},
+    {302, 0, "Blogger", "blogger", 39, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -329,6 +330,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         test_secret(secondary_buffer, 24, 11);
         secondary = secondary_buffer;
         secondary_name = "key";
+        break;
+    case 302:
+        memcpy(key, "AIzaSy", 6);
         break;
     case 908:
         snprintf(key, sizeof(key), "A123a0f9-1a2b-3c4d-5e6f-0123456789ab");
