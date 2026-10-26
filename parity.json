@@ -418,6 +418,14 @@
       "evidence": ["tests/detectors/test_apptivo.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
+    "artifactoryreferencetoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/artifactoryreferencetoken/artifactoryreferencetoken.go",
+      "native_files": ["src/detectors/artifactoryreferencetoken.c", "src/detectors/endpoints.c", "src/detectors/host_cache.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_artifactoryreferencetoken.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native PUBLIC HTTP policy and Go URL diagnostics remain unsupported; mock verification is not native policy evidence", "Complete endpoint configuration application in the wider engine/CLI"]
+    },
     "artsy/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/artsy/artsy.go",
@@ -431,7 +439,7 @@
     "cache": {
       "status": "partial",
       "native_files": ["src/detectors/host_cache.c", "src/detectors/host_cache.h"],
-      "evidence": ["tests/detectors/test_host_cache.c", "tests/detectors/test_algoliaadminkey.c"],
+      "evidence": ["tests/detectors/test_host_cache.c", "tests/detectors/test_algoliaadminkey.c", "tests/detectors/test_artifactoryreferencetoken.c"],
       "remaining": ["Only default twelve-hour string-key presence semantics are implemented", "Configurable intervals, background purge, value storage, remaining cache APIs, LRU wrappers and metrics"]
     },
     "detector_support": {
