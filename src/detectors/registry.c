@@ -126,6 +126,7 @@ static const detector_factory named_factories[] = {
     br_brandfetch_v2_init,
     br_browserstack_init,
     br_browshot_init,
+    br_bscscan_init,
     br_buddyns_init,
     br_budibase_init,
     br_confluencedatacenter_init,
@@ -178,7 +179,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         }
         case 3: case 190: case 303: case 333: case 430: return detector->version == 1 || detector->version == 2;
         case 0: case 239: case 521: case 390: case 431: case 432: case 684: case 693: case 197: case 802:
-        case 125: case 126: case 277: case 1014: case 1015: case 498: case 506: case 917: case 907:
+        case 125: case 126: case 277: case 1014: case 1015: case 498: case 506: case 910: case 917: case 907:
         case 302: case 565: case 707: case 723: case 756: case 828: case 375: case 522: case 523: case 170: case 163: case 399: case 473: case 453:
         case 448: case 457: case 42: case 43: case 933: case 179: case 1032: case 632: case 212: case 458:
         case 1002: case 1003: case 401: case 391: case 484: case 485: case 788: case 637: case 1004: case 768: case 588: case 598:
@@ -280,6 +281,7 @@ const char *br_detector_type_name(int32_t type)
     case 867: return "Besnappy";
     case 907: return "Alchemy";
     case 908: return "BlockNative";
+    case 910: return "BscScan";
     case 917: return "Aiven";
     case 931: return "AzureStorage";
     case 933: return "Anthropic";

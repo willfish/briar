@@ -129,6 +129,7 @@ static const registration expected[] = {
     {333, 2, "Brandfetch", "brandfetch", 44, true, -1},
     {756, 0, "BrowserStack", "browserstack", 20, true, 1024},
     {448, 0, "Browshot", "browshot", 28, true, -1},
+    {910, 0, "BscScan", "bscscan", 34, true, -1},
     {598, 0, "BuddyNS", "buddyns", 40, true, -1},
     {953, 0, "Budibase", "budibase", 113, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -400,6 +401,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 733:
         memcpy(key, "0007-", 5);
         for (size_t i = 5; i < 45; ++i) key[i] = "0123456789abcdef"[i % 16];
+        break;
+    case 910:
+        for (size_t i = 0; i < entry->key_len; ++i)
+            if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
         break;
     case 522:
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789ABCDEF"[i % 16];
