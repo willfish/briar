@@ -111,6 +111,7 @@ static const registration expected[] = {
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1029, 0, "BitbucketAppPassword", "bitbucket", 43, true, -1},
     {432, 0, "BitcoinAverage", "bitcoinaverage", 43, true, -1},
+    {43, 0, "BitLyAccessToken", "bitly", 40, true, -1},
     {603, 0, "Blazemeter", "blazemeter", 36, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
