@@ -52,5 +52,9 @@ int br_appcues_init(const br_detector **out, char **error);
 int br_appfollow_init(const br_detector **out, char **error);
 int br_appointedd_init(const br_detector **out, char **error);
 int br_appsynergy_init(const br_detector **out, char **error);
+int br_apptivo_init(const br_detector **out, char **error);
+int br_artifactory_init(const br_detector **out, char **error);
+int br_artifactoryreferencetoken_init(const br_detector **out, char **error);
+int br_artsy_init(const br_detector **out, char **error);
 
 #endif
