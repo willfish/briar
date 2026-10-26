@@ -555,6 +555,15 @@ def fixtures():
         ("box_oauth", 1003, b"box id " + alnum("box-client-id", 32) + b"\nsecret " + alnum("box-client-secret", 32)),
         ("box_oauth_subject_context", 1003, b"BOX client_id " + alnum("box-subject-client-id", 32) +
          b"\nclient_secret " + alnum("box-subject-client-secret", 32) + b"\nenterprise_id 172635480927\nuser_id 0000087"),
+        ("braintreepayments", 828, b"BRAINTREE " + synthetic("braintree-private-key", 32) +
+         b"\nbraintree " + alnum("braintree-public-id", 16).lower()),
+        ("braintrust", 1053, b"braintrust sk-" + alnum("braintrust-token", 48)),
+        ("brandfetch_v1", "333.v1", b"brandfetch " + alnum("brandfetch-legacy", 40)),
+        ("brandfetch_v2", "333.v2", b"BRANDFETCH (" + alnum("brandfetch-punctuation", 39) + b"!@#="),
+        ("browserstack", 756, b"browserstackUser briaruser17\n" + b"." * 64 +
+         b"\nbrowserstackKey " + alnum("browserstack-access-key", 20)),
+        ("browserstack_hub_wildcards", 756, b"hub-cloudXbrowserstackYcom " + alnum("browserstack-hub-key", 20) +
+         b"\n" + b"." * 64 + b"\nhub-cloudXbrowserstackYcom briaruser17"),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),

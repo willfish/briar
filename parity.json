@@ -952,6 +952,51 @@
       "evidence": ["tests/detectors/test_boxoauth.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Subject probes can issue access tokens; verification evidence is synthetic only, not live acceptance", "Source error redaction omits the client secret and is not a credential-safe output boundary", "Native SANE POST redirects remain fail-closed; complete client configuration, HTTP diagnostics and streaming drain/deferred-close timing are incomplete", "Shared regexp/Unicode/source-engine, map-order and global output parity"]
     },
+    "braintreepayments/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/braintreepayments/braintreepayments.go",
+      "scope_notes": "Independent prefixed 32-byte lowercase-hex keys and 16-byte lowercase-alphanumeric public IDs retain occurrence key-major products, including duplicates and successful pairs. Required public IDs are hidden: findings expose only Raw/keypart, with no RawV2 or ID metadata. The default production SANE GraphQL POST preserves literal ping JSON, Braintree-Version and Basic(publicID,privateKey). Read errors precede EVERY status, including 401. Only 200 with a binary case-sensitive data-object marker verifies; no JSON parsing is substituted. Every non-200 without a read error is unexpected. Errors redact only the private key; resource failures roll back only this invocation.",
+      "native_files": ["src/detectors/braintreepayments.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/bytes.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_braintreepayments.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source private useTestURL sandbox selector has no public ABI1 configuration seam; only the default production endpoint is modeled", "C releases owned responses on read errors instead of reproducing the source's deferred-close installation after ReadAll and resulting leak", "Native SANE POST redirects remain fail-closed; complete native client/HTTP diagnostics and streaming drain/deferred-close timing are incomplete", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "braintrust/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/braintrust/braintrust.go",
+      "scope_notes": "Direct unique sk- plus 48 alphanumeric tokens are independent of the braintrust dispatch keyword. Raw/tokenpart and an owned first-eight-byte-plus-ellipsis Redacted string are present on every outcome, including NoV. The SANE Bearer GET verifies 200 AND 403, rejects 401 and ignores body/read errors; errors redact only the complete token. Registration models the exact BraintrustDetectorEnabled boolean gate. NULL/missing overrides inherit the pinned OSS CLI's true setting; explicit false reproduces Go package atomic-zero behavior, invalid values fail closed and unrelated flags cannot enable disabled/custom/unsupported-version identities. Resource failures roll back only this invocation.",
+      "native_files": ["src/detectors/braintrust.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_braintrust.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ARCHITECTURE.md", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native client configuration/HTTP diagnostics and streaming drain/deferred-close timing", "Broader feature configuration/loading, shared regexp/Unicode/source-engine, map-order and global output parity"]
+    },
+    "brandfetch/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/brandfetch/v1/brandfetch.go",
+      "scope_notes": "Cohesive Brandfetch module preserves separate version factories/regexes and shares genuinely identical scan/projection mechanics and the verifier that v1 delegates to v2 upstream. V1 unique provider-prefixed 40-byte alphanumeric word-bounded tokens retain a version-string ExtraData map on every outcome. SANE JSON/Bearer GET verifies 200, rejects 401/403 and ignores body/read errors; other statuses retain colon numeric errors and errors redact only the token. No RawV2/Redacted, metadata replacement, cache, entropy or success consumption is introduced. Resource failures preserve caller findings and roll back this invocation.",
+      "native_files": ["src/detectors/brandfetch.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_brandfetch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source closes without draining; eager ABI1 body/release does not establish native Go close-only or streaming timing", "Complete native client/HTTP diagnostics and shared regexp/Unicode/source-engine, map-order and global output parity"]
+    },
+    "brandfetch/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/brandfetch/v2/brandfetch.go",
+      "scope_notes": "Separate v2 factory in the cohesive Brandfetch module preserves unique provider-prefixed captures of 43 bytes from the source's broad punctuation/alphanumeric class plus literal equals, with NO word boundaries, Base64/JWT/padding or entropy validation. TrimSpace is a no-op for this alphabet. Version-string metadata survives NoV, nil context, transport errors and all statuses, unlike replacement-map policies of other providers. V1 delegates to this shared SANE JSON/Bearer verifier: 200 verifies, 401/403 reject, body/read errors are ignored and errors redact only the token. Scan/projection mechanics are shared only because their behavior is genuinely identical; extraction and version descriptors remain explicit.",
+      "native_files": ["src/detectors/brandfetch.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_brandfetch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source closes without draining; eager ABI1 body/release does not establish native Go close-only or streaming timing", "Complete native client/HTTP diagnostics and shared regexp/Unicode/source-engine, map-order and global output parity"]
+    },
+    "browserstack/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/browserstack/browserstack.go",
+      "scope_notes": "Dispatch browserstack stays distinct from each actual eight-prefix key/username set; unescaped hub-host dots remain regex wildcards. Occurrence 20-byte keys form complete products with usernames whose middle separator run is unbounded. Byte-owned RawV2/parts and dynamically encoded Basic(username,key) preserve full values. Distinct BR_HTTP_BROWSERSTACK=6 tags the source custom cookie-enabled, no-client-timeout policy; the adapter supplies User-Agent once, applies representable deadlines and rejects over-range unbounded deadlines before I/O. Native curl rejects this profile before I/O without SANE fallback. Injected 200 verifies and 401 rejects despite body errors; 403 read errors precede binary blocked markers, otherwise false/nil; other statuses are unexpected. Errors redact only the key; resources roll back only this invocation.",
+      "native_files": ["src/detectors/browserstack.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/bytes.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_browserstack.c", "tests/core/test_core.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ARCHITECTURE.md", "docs/ACCEPTANCE.md"],
+      "remaining": ["Fresh public-suffix cookie jars, cookie/redirect/session policy and override-client Jar mutation/concurrency remain unimplemented; injected first-request/status success does not establish native support", "No-timeout requests with deadlines beyond UINT32_MAX milliseconds are explicitly unsupported by ABI1 rather than wrapped or silently shortened", "Source closes without draining; eager ABI1 body/release and native Go diagnostic/timing parity are incomplete", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
