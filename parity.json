@@ -1078,6 +1078,42 @@
       "evidence": ["tests/detectors/test_bulbul.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete native client configuration/HTTP diagnostics and streaming read/drain/deferred-close timing", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
     },
+    "bulksms/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bulksms/bulksms.go",
+      "scope_notes": "Independent unique provider-prefixed sets preserve uppercase-hex/hyphen 37-byte IDs of arbitrary shape and mixed-alphanumeric/symbol 29-byte keys, with exact word-boundary quirks. ID-major/key-minor Cartesian products retain every pair without success breaks, consumption, entropy or equality exclusions. Key captures from ID fragments remain valid independent matches. Raw/keypart expose the key, RawV2 is key+ID and parts include id; no Redacted/ExtraData. SANE GET https://api.bulksms.com/v1/messages uses Basic(ID,key), nil body/no Type or Accept/default UA. Exactly 200 verifies, 401 rejects and other statuses produce numeric colon errors, ignoring every body/read/drain error. Source zero secret arguments retain ID/key/Basic echoes unredacted. Provider helper/setter resources normalize to invocation-only rollback; multipart span remains 1024.",
+      "native_files": ["src/detectors/bulksms.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bulksms.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native client configuration/HTTP diagnostics and streaming drain/deferred-close timing", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine, map-order and global output parity"]
+    },
+    "buttercms/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/buttercms/buttercms.go",
+      "scope_notes": "Provider-prefixed exact lowercase-alphanumeric 40-byte word-bounded occurrences retain duplicates and non-hex/low-entropy keys; keyword case-insensitivity does not widen captures. Raw/keypart only, with no uniqueness/cache/enrichment. SANE GET https://api.buttercms.com/v2/posts/?auth_token=KEY appends query-safe bytes literally, with nil body/default UA/no extra headers. Exactly 200 verifies and 401 rejects; all other statuses use numeric colon errors and every body/read/drain error is ignored. Source zero redaction arguments preserve echoed query keys in creation/transport errors. Nonzero provider resource/helper/setter failures normalize and roll back only this invocation, preserving caller findings.",
+      "native_files": ["src/detectors/buttercms.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_buttercms.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native client configuration/HTTP diagnostics and streaming drain/deferred-close timing", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "caflou/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/caflou/caflou.go",
+      "scope_notes": "Direct word-bounded literal 20-byte eyJhbGciOiJIUzI1NiJ9 header plus 135 ASCII alphanumeric/dot/underscore/hyphen bytes yields 155-byte occurrence captures. This is neither PrefixRegex nor JWT/Base64/segment validation; caflou is dispatch-only and a distant keyword or bare direct scanner input cannot impose a 40-character extraction gap. Raw/keypart only, duplicates retained. SANE GET https://app.caflou.com/api/v1/accounts preserves empty NoBody bytes and Bearer authorization/default UA/no Type or Accept, with request-local 10000ms and representable deadline clamp, not shared timeout mutation. Exactly 200 verifies and 401 rejects; other statuses are numeric colon errors, ignoring all body/read/drain errors. Retained creation/transport errors redact only the complete token. Nonzero provider resources normalize and roll back only this invocation.",
+      "native_files": ["src/detectors/caflou.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_caflou.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source SaneHttpClientTimeOut(10s) uses Go DefaultTransport rather than saneTransport: exact dial/TLS/pool and override-client configuration remain unimplemented", "ABI1 empty bytes do not establish Go NoBody identity or complete native streaming/drain/deferred-close timing", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "calendarific/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/calendarific/calendarific.go",
+      "scope_notes": "Provider-prefixed mixed-alphanumeric 32-byte word-bounded occurrence captures retain duplicates/Raw/keypart without entropy, uniqueness or cache. Verification nil-context construction failure SKIPS the candidate; NoV nil context still finds it. All representable Do failures, including cancellation/deadline/missing transport/unsupported profile and nonzero injected return codes, retain unverified findings WITHOUT verification errors. Every HTTP 200..299 verifies, all other statuses reject without diagnostics and every body/read error is ignored. Exact SANE GET preserves holidays?&api_key=KEY&country=US&year=2019, nil body/default UA/no extra headers. No error-setter/redaction helper is introduced. Provider capture/finding/push allocation failures are fatal with invocation-only rollback, unlike suppressed shared adapter errors.",
+      "native_files": ["src/detectors/calendarific.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_calendarific.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send nonzero domain combines adapter allocation/setup failures and transport Do errors; allocation/setup-versus-Do classification is not reproduced and those adapter failures are also suppressed", "Source holds responses for scan-deferred Close without draining; ABI1 eager buffering and per-request release do not reproduce lifecycle/timing", "Complete native client configuration/HTTP diagnostics and shared regexp/Unicode/source-engine/global output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

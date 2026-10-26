@@ -99,6 +99,10 @@ Buildkite versions share verification but not their unverified metadata: v1 star
 
 Bulbul requires the literal comma after its binary success marker, so a valid JSON object with that message as its last field need not verify. Bugherd, Bugsnag and Bulbul retain source-unredacted errors; Buildkite redacts only its token. Bugsnag's literal lowercase token authorization remains distinct from BuddyNS's capitalized Token scheme.
 
+BulkSMS keeps independent unique ID/key sets, including keys captured from ID fragments, rather than enforcing UUID structure or consuming successful pairs. Its symbol-bearing keys and key-first RawV2 remain unchanged. BulkSMS and ButterCMS preserve source-unredacted errors. Caflou instead redacts its complete token; its direct fixed-length pattern does not validate JWTs or require a nearby extraction prefix. Its local ten-second request timeout does not establish Go DefaultTransport configuration parity.
+
+Calendarific skips known request-construction failures but retains unverified findings without errors after Do failures. Every successful HTTP 2xx verifies regardless of body content. The shared HTTP adapter also groups allocation/setup failures into that nonzero error domain, so their distinction from Do errors remains incomplete. Source scan-deferred close-only cleanup is not reproduced by eager buffering and per-request release.
+
 Some verifiers mutate services: Azure Function verification can execute user code, Airbrake project-key verification posts a deploy record, AWS SNS Publish can trigger canary tracking, and Entra refresh-token exchanges can issue new tokens. These are not uniformly read-only credential checks. Some upstream verifiers omit secrets from error-redaction helpers; injected transports must not include credentials in those errors. Verification here is synthetic/offline, not evidence of live service acceptance.
 
 Shared regexp/arbitrary-byte semantics, remaining detectors and helpers, complete engine/source/concurrency behavior and global parity remain unfinished. Nothing is deployed into Pi or used as a production security boundary.

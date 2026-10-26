@@ -575,6 +575,12 @@ def fixtures():
         ("buildkite_v1", "142.v1", b"BUILDKITE " + alnum("buildkite-legacy", 40).lower()),
         ("buildkite_v2", "142.v2", b"bkua_" + alnum("buildkite-modern", 40).lower()),
         ("bulbul", 317, b"BULBUL " + alnum("bulbul-key", 32).lower()),
+        ("bulksms", 833, b"BULKSMS A7C9D2E5-F6A8-B3C4-D1E0-B2A4C6D8E1F3A\nbulksms " + alnum("bulksms-key", 29)),
+        ("bulksms_symbols", 833, b"bulksms A7C9D2E5-F6A8-B3C4-D1E0-B2A4C6D8E1F3A\nbulksms " +
+         alnum("bulksms-symbol-head", 5) + b"!@#$%^&*()" + alnum("bulksms-symbol-tail", 14)),
+        ("buttercms", 150, b"BUTTERCMS " + alnum("buttercms-key", 40).lower()),
+        ("caflou", 647, b"caflou " + b"." * 64 + b"eyJhbGciOiJIUzI1NiJ9." + alnum("caflou-payload", 131) + b"_-Q"),
+        ("calendarific", 130, b"CALENDARIFIC " + alnum("calendarific-key", 32)),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
