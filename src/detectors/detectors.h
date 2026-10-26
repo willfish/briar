@@ -116,5 +116,9 @@ int br_blitapp_init(const br_detector **out, char **error);
 int br_blocknative_init(const br_detector **out, char **error);
 int br_blogger_init(const br_detector **out, char **error);
 int br_bombbomb_init(const br_detector **out, char **error);
+int br_boostnote_init(const br_detector **out, char **error);
+int br_borgbase_init(const br_detector **out, char **error);
+int br_box_init(const br_detector **out, char **error);
+int br_boxoauth_init(const br_detector **out, char **error);
 
 #endif
