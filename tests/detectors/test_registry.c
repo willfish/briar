@@ -109,6 +109,7 @@ static const registration expected[] = {
     {385, 0, "Billomat", "billomat", 32, true, 1024},
     {387, 0, "Bitbar", "bitbar", 32, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
+    {1029, 0, "BitbucketAppPassword", "bitbucket", 43, true, -1},
     {432, 0, "BitcoinAverage", "bitcoinaverage", 43, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -146,6 +147,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(key, "bb_pr_", 6);
         for (size_t i = 6; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
     }
+    if (entry->type == 1029) memcpy(key, "briar7:ATBB", 11);
     if (entry->type == 166) key[45] = '=';
     if (entry->type == 377) memcpy(key, "sk_", 3);
     if (entry->type == 390) memcpy(key, "aio_", 4);
@@ -410,6 +412,17 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
+    if (entry->type == 1029) {
+        CHECK(json_object_object_length(result->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(result->secret_parts, "username", &part));
+        CHECK(!strcmp(json_object_get_string(part), "briar7"));
+        CHECK(json_object_object_get_ex(result->secret_parts, "password", &part));
+        CHECK(!strcmp(json_object_get_string(part), key + 7));
+        CHECK(!result->raw_v2.data && !result->raw_v2.len);
+        CHECK(!result->primary_secret.data && !result->primary_secret.len);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 430) {
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
         CHECK(json_object_object_get_ex(result->extra_data, "version", &part));
@@ -475,13 +488,14 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
-              entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 975 || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 975 || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
             for (size_t j = 0; j < 5; ++j) CHECK(!strcmp(detector->keywords[j + 1], aliases[j]));
         }
         if (entry->type == 430 && entry->version == 2) CHECK(!strcmp(detector->keywords[1], "bb_ma_"));
+        if (entry->type == 1029) CHECK(!strcmp(detector->keywords[1], "ATBB"));
         if (entry->type == 1018) CHECK(!strcmp(detector->keywords[1], ".scm.azure-api.net"));
         if (entry->type == 975) CHECK(!strcmp(detector->keywords[1], ".blob.core.windows.net"));
         if (entry->type == 1013) CHECK(!strcmp(detector->keywords[1], "1.A"));
