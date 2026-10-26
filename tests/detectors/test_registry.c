@@ -97,6 +97,7 @@ static const registration expected[] = {
     {976, 0, "AzureSearchAdminKey", "azure", 52, true, 1024},
     {931, 0, "AzureStorage", "DefaultEndpointsProtocol=http", 88, true, 1024},
     {1018, 0, "AzureApiManagementRepositoryKey", "azure", 105, true, 1024},
+    {377, 0, "Baremetrics", "baremetrics", 21, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -129,6 +130,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     }
     if (entry->type == 303 && entry->version == 1) key[7] = '%';
     if (entry->type == 110) memcpy(key, "ey", 2);
+    if (entry->type == 377) memcpy(key, "sk_", 3);
     if (entry->type == 390) memcpy(key, "aio_", 4);
     if (entry->type == 391) memcpy(key, "apify_api_", 10);
     if (entry->type == 181) memcpy(key, "AKCp", 4);
