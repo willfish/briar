@@ -125,6 +125,8 @@ static const registration expected[] = {
     {1003, 0, "BoxOauth", "box", 32, true, -1},
     {828, 0, "BraintreePayments", "braintree", 32, true, 1024},
     {1053, 0, "BrainTrustApiKey", "braintrust", 51, true, -1},
+    {333, 1, "Brandfetch", "brandfetch", 40, true, -1},
+    {333, 2, "Brandfetch", "brandfetch", 44, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -333,6 +335,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         test_secret(secondary_buffer, 43, 13);
         secondary = secondary_buffer;
         break;
+    case 333:
+        if (entry->version == 2) key[43] = '=';
+        break;
     case 1053:
         memcpy(key, "sk-", 3);
         break;
@@ -488,7 +493,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 430) {
+    if (entry->type == 430 || entry->type == 333) {
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
         CHECK(json_object_object_get_ex(result->extra_data, "version", &part));
         CHECK(!strcmp(json_object_get_string(part), entry->version == 1 ? "1" : "2"));
