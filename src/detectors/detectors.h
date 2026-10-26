@@ -91,5 +91,9 @@ int br_azureapimanagementsubscriptionkey_init(const br_detector **out, char **er
 int br_azureappconfigconnectionstring_init(const br_detector **out, char **error);
 int br_azurecontainerregistry_init(const br_detector **out, char **error);
 int br_azuredevopspersonalaccesstoken_init(const br_detector **out, char **error);
+int br_azuredirectmanagementkey_init(const br_detector **out, char **error);
+int br_azurefunctionkey_init(const br_detector **out, char **error);
+int br_azuresastoken_init(const br_detector **out, char **error);
+int br_azuresearchadminkey_init(const br_detector **out, char **error);
 
 #endif
