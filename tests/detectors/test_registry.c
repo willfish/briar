@@ -68,6 +68,7 @@ static const registration expected[] = {
     {190, 1, "Atlassian", "atlassian", 24, true, -1},
     {190, 2, "Atlassian", "ATCTT3xFfG", 43, true, -1},
     {376, 0, "Audd", "audd", 32, true, -1},
+    {604, 0, "Autodesk", "autodesk", 32, true, 1024},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -138,6 +139,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 431: secondary = "c7d8e9f0"; secondary_name = "id"; break;
     case 453: secondary = "B7c9D2e5F6g8H3j4"; secondary_name = "secret"; break;
     case 693: secondary = "00042"; secondary_name = "id"; break;
+    case 604:
+        test_secret(secondary_buffer, 16, 11);
+        secondary = secondary_buffer;
+        secondary_name = "secret";
+        break;
     case 197:
         test_secret(secondary_buffer, 32, 11);
         secondary = secondary_buffer;
