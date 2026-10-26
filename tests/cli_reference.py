@@ -372,6 +372,9 @@ def fixtures():
     calendly_max_first = calendly_max_first[:238] + b"calendly" + calendly_max_first[246:]
     captaindata_payload = (b"CAPTAINDATA " + synthetic("captaindata-key", 64) +
                            b"\nCAPTAINDATA b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3")
+    caspio_credential = alnum("caspio-credential", 50).lower()
+    caspio_payload = b"CASPIO " + caspio_credential + b"\nCASPIO briar7c9"
+    cexio_value = alnum("cexio-value", 24)
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -600,6 +603,16 @@ def fixtures():
         ("carboninterface", 578, b"CARBONINTERFACE " + alnum("carboninterface-key", 21)),
         ("cashboard", 685, b"CASHBOARD briar7\nCASHBOARD B7C-D9E-F2G-H5J"),
         ("cashboard_numeric_user", 685, b"CASHBOARD briar7\nCASHBOARD B7C-274-F2G-H5J"),
+        ("caspio", 648, caspio_payload),
+        ("caspio_products", 648, caspio_payload + b"\nCASPIO " + alnum("caspio-second", 50).lower()),
+        ("censys", 524, b"CENSYS " + alnum("censys-token", 32) + b"\nCENSYS " + alnum("censys-user", 36).lower()),
+        ("censys_leading_hyphen", 524, b"CENSYS " + alnum("censys-token", 32) + b"\nCENSYS-" + alnum("censys-leading-user", 35).lower()),
+        ("centralstationcrm", 318, b"CENTRALSTATIONCRM " + alnum("centralstation-key", 30).lower()),
+        ("centralstationcrm_gap_edge", 318, b"CENTRALSTATIONCRM" + b"." * 37 + alnum("centralstation-key", 30).lower()),
+        ("centralstationcrm_short_no_dispatch", 318, b"centralstation " + alnum("centralstation-key", 30).lower()),
+        ("cexio", 739, b"cexio " + cexio_value + b"\ncexio ab172635480"),
+        ("cexio_products", 739, b"cexio " + cexio_value + b" cex.io " + alnum("cexio-second", 27) + b" cexio ab172635480"),
+        ("cexio_wildcard_prefix", 739, b"cexXio " + cexio_value + b"\ncexio ab172635480"),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
@@ -707,6 +720,8 @@ def compare(native, reference, case):
     if name in ("azure_apim_repository_stdin", "azure_apim_repository_filesystem",
                 "calendly_max_segments_stdin", "calendly_max_segments_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
+    if name in ("cexio_products_stdin", "cexio_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
+        raise AssertionError(name + ": both keys and both secrets must retain all four products")
     if not reference_matches(case, actual, expected):
         details = [f"result counts native={len(actual)}, reference={len(expected)}"]
         for index, (got, want) in enumerate(zip(actual, expected)):
