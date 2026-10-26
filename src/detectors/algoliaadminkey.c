@@ -4,25 +4,17 @@
 #include "captures.h"
 #include "findings.h"
 #include "json.h"
+#include "host_cache.h"
 
 #include <json-c/json.h>
 #include <limits.h>
 #include <math.h>
-#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 typedef struct { br_regex *id, *key; } algolia_patterns;
-typedef struct invalid_host {
-    char id[11];
-    int64_t expires_ns;
-    struct invalid_host *next;
-} invalid_host;
-static invalid_host *invalid_hosts;
-static atomic_flag hosts_lock = ATOMIC_FLAG_INIT;
-static const int64_t host_ttl_ns = 12LL * 60 * 60 * 1000000000;
+static br_host_cache invalid_hosts = BR_HOST_CACHE_INIT;
 
 static int fail(char **error, const char *message)
 {
@@ -34,66 +26,6 @@ static int key_error(br_result *result, const char *cause)
 {
     br_slice secret = {result->raw.data, result->raw.len};
     return br_result_set_verification_error(result, cause, &secret, 1);
-}
-
-static int wall_clock_ns(int64_t *out)
-{
-    struct timespec now;
-    if (timespec_get(&now, TIME_UTC) != TIME_UTC || now.tv_sec < 0 ||
-        (uint64_t)now.tv_sec > (uint64_t)(INT64_MAX - host_ttl_ns) / 1000000000)
-        return -1;
-    *out = (int64_t)now.tv_sec * 1000000000 + now.tv_nsec;
-    return 0;
-}
-
-static void lock_hosts(void)
-{
-    while (atomic_flag_test_and_set_explicit(&hosts_lock, memory_order_acquire)) { }
-}
-static void unlock_hosts(void) { atomic_flag_clear_explicit(&hosts_lock, memory_order_release); }
-
-static int host_cached(const char *id, bool *found)
-{
-    int64_t now;
-    *found = false;
-    if (wall_clock_ns(&now) != 0) return -1;
-    lock_hosts();
-    invalid_host **link = &invalid_hosts;
-    while (*link) {
-        invalid_host *entry = *link;
-        /* go-cache considers an item expired only after its expiration instant. */
-        if (now > entry->expires_ns) {
-            *link = entry->next;
-            free(entry);
-        } else {
-            if (!strcmp(entry->id, id)) *found = true;
-            link = &entry->next;
-        }
-    }
-    unlock_hosts();
-    return 0;
-}
-
-static int cache_host(const char *id)
-{
-    int64_t now;
-    if (wall_clock_ns(&now) != 0) return -1;
-    lock_hosts();
-    for (invalid_host *entry = invalid_hosts; entry; entry = entry->next) {
-        if (!strcmp(entry->id, id)) {
-            entry->expires_ns = now + host_ttl_ns;
-            unlock_hosts();
-            return 0;
-        }
-    }
-    invalid_host *entry = malloc(sizeof(*entry));
-    if (!entry) { unlock_hosts(); return -1; }
-    memcpy(entry->id, id, sizeof(entry->id));
-    entry->expires_ns = now + host_ttl_ns;
-    entry->next = invalid_hosts;
-    invalid_hosts = entry;
-    unlock_hosts();
-    return 0;
 }
 
 static double entropy(const char *text)
@@ -329,7 +261,7 @@ static int scan_algolia(const br_detector *detector, const br_scan_ctx *ctx, boo
         for (size_t i = 0; !rc && i < ids.len; ++i) {
             if (removed[i] || entropy(ids.items[i]) <= 2) continue;
             bool cached = false;
-            if (host_cached(ids.items[i], &cached) != 0) { rc = fail(error, "wall clock unavailable"); break; }
+            if (br_host_cache_contains(&invalid_hosts, ids.items[i], &cached) != 0) { rc = fail(error, "wall clock unavailable"); break; }
             if (cached) { removed[i] = true; continue; } /* Source deletes this ID from its local map. */
             br_result result = {0};
             bool no_host = false;
@@ -341,7 +273,7 @@ static int scan_algolia(const br_detector *detector, const br_scan_ctx *ctx, boo
             }
             if (no_host) {
                 br_result_clear(&result);
-                if (cache_host(ids.items[i]) != 0) rc = fail(error, "cannot store invalid Algolia host");
+                if (br_host_cache_add(&invalid_hosts, ids.items[i]) != 0) rc = fail(error, "cannot store invalid Algolia host");
                 continue;
             }
             bool verified = result.verified;
