@@ -150,6 +150,7 @@ static const registration expected[] = {
     {708, 2, "CaptainData", "captaindata", 64, true, -1},
     {578, 0, "CarbonInterface", "carboninterface", 21, true, -1},
     {685, 0, "Cashboard", "cashboard", 15, true, 1024},
+    {318, 0, "CentralStationCRM", "centralstationcrm", 30, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
