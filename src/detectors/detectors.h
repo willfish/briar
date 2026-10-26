@@ -82,5 +82,10 @@ int br_ayrshare_init(const br_detector **out, char **error);
 int br_azure_batch_init(const br_detector **out, char **error);
 int br_azure_cosmosdb_init(const br_detector **out, char **error);
 int br_azure_entra_refreshtoken_init(const br_detector **out, char **error);
+int br_azure_entra_serviceprincipal_v1_init(const br_detector **out, char **error);
+int br_azure_entra_serviceprincipal_v2_init(const br_detector **out, char **error);
+int br_azure_openai_init(const br_detector **out, char **error);
+int br_azure_storage_init(const br_detector **out, char **error);
+int br_azureapimanagement_repositorykey_init(const br_detector **out, char **error);
 
 #endif
