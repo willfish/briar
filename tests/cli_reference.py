@@ -531,6 +531,13 @@ def fixtures():
          b'=.-"\nhttps://briara:ATBB' + alnum("bitbucket-app-url-loses", 36) + b"=@bitbucket.org\nbriara:ATBB" +
          alnum("bitbucket-app-last-input-loses", 36)),
         ("bitcoinaverage", 432, b"BITCOINAVERAGE " + alnum("bitcoinaverage-key", 43)),
+        ("bitfinex", 56, b"bitfinex " + alnum("bitfinex-first", 40) + b"_-Q\nbitfinex " +
+         alnum("bitfinex-second", 40) + b"_-R"),
+        ("bitly_access_token", 43, b"bitly " + alnum("bitly-hyphen-token", 37) + b"-g9"),
+        ("bitly_leading_hyphen", 43, b"bitly-" + alnum("bitly-leading-hyphen", 39)),
+        ("bitmex", 512, b"BITMEX " + alnum("bitmex-key", 22) + b"_-\nBITMEX " +
+         alnum("bitmex-secret", 46) + b"_-\n"),
+        ("blazemeter", 603, b"RUNSCOPE z7c9d2e5-f6g8-h3j4-k1m0-n2p4q6r8s1t3"),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),

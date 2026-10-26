@@ -844,6 +844,42 @@
       "evidence": ["tests/detectors/test_bitcoinaverage.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete Go JSON/Unicode and diagnostic behavior beyond the typed first-document slice", "Complete native HTTP/streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity; no live ticket execution"]
     },
+    "bitfinex/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bitfinex/bitfinex.go",
+      "scope_notes": "Identical 43-byte capture patterns supply independent unique key/secret sets; every unequal directed pair is emitted without success breaks or consumption. Findings expose only the API key, with no secret part or RawV2. Each verified pair obtains a fresh realtime microsecond nonce and signs /api/v2/auth/r/wallets+nonce+{} using the unchanged ASCII secret and HMAC-SHA384 lowercase hex. The exact SANE JSON POST verifies 200 despite body errors. HTTP 500 read errors precede binary invalid-key markers; other supported bodies retain full original UTF-8 diagnostics. All errors remain source-unredacted. Unsupported byte-invalid diagnostics are candidate errors; clock/signing/resource failures roll back only the current invocation.",
+      "native_files": ["src/detectors/bitfinex.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/utf8.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bitfinex.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native signing accepts only checked nonnegative int64 UnixNano values; negative/out-of-range clocks return explicit scan errors", "Unknown HTTP 500 bodies containing NUL or invalid UTF-8 use explicit unsupported diagnostics; markers and read errors retain source precedence", "Native SANE POST redirects remain fail-closed; full HTTP diagnostics and streaming drain/deferred-close timing are incomplete", "Shared regexp/Unicode/source-engine and map-order behavior"]
+    },
+    "bitlyaccesstoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bitlyaccesstoken/bitlyaccesstoken.go",
+      "scope_notes": "Preserves unique 40-byte tokens with the source's literal-hyphen character class and word-boundary quirks, rather than strict alphanumeric or hex validation. The SANE Bearer GET verifies only 200, rejects 401/403 and ignores body/read errors. Creation and transport failures retain candidates without error redaction, including echoed tokens. No entropy, cache, RawV2, Redacted field or extra metadata is introduced.",
+      "native_files": ["src/detectors/bitlyaccesstoken.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bitlyaccesstoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source errors intentionally remain unredacted and are not a credential-safe output boundary", "Complete native request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
+    "bitmex/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bitmex/bitmex.go",
+      "scope_notes": "Independent occurrence captures include mandatory leading/trailing SPACE, CR or LF, with no TAB/VT/FF or EOF substitution; trimming removes exactly those delimiter bytes. Key-major products retain duplicates. Raw is the 48-byte secret, parts are key/secret and RawV2 is key+secret. The SANE empty-body GET signs GET/api/v1/user+Unix-seconds-plus-five using the unchanged ASCII secret and HMAC-SHA256 lowercase hex. Only 200 verifies, 401 rejects and body/read errors are ignored. Creation and transport errors remain entirely unredacted. No entropy, deduplication, consumption or success break is introduced.",
+      "native_files": ["src/detectors/bitmex.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bitmex.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native clock-unavailable/-1 and expiry-overflow guards return invocation-only scan errors rather than complete Go time semantics", "Source errors intentionally remain unredacted and are not a credential-safe output boundary", "Complete native HTTP diagnostics, bodyless-GET normalization and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine behavior"]
+    },
+    "blazemeter/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/blazemeter/blazemeter.go",
+      "scope_notes": "Preserves occurrences of lowercase alphanumeric UUID-shaped captures, not strict hexadecimal/UUID validation, under both blazemeter and runscope prefixes. The exact SANE Runscope GET sends JSON Content-Type and Bearer authentication. Only 200 verifies, 401/403 reject and body/read errors are ignored. Creation and transport errors retain candidates without redaction, including echoed keys. No entropy, uniqueness, host cache, RawV2, Redacted field or extra metadata is introduced.",
+      "native_files": ["src/detectors/blazemeter.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_blazemeter.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source errors intentionally remain unredacted and are not a credential-safe output boundary", "Complete native request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
