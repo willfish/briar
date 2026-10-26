@@ -45,6 +45,10 @@ AWS access-key verification implements the fixed STS and SNS Query/XML operation
 
 Session-key verification instead uses the source's manually signed SANE GET/JSON path; native eager-body buffering cannot reproduce its unread-first-403 retry workaround.
 
-Some verifiers mutate services: Airbrake project-key verification posts a deploy record, and AWS SNS Publish can trigger canary tracking. Neither is a read-only credential check. Some upstream verifiers omit secrets from error-redaction helpers; injected transports must not include credentials in those errors. Verification here is synthetic/offline, not evidence of live service acceptance.
+Azure Batch and Cosmos DB share only Base64, HMAC and UTC-date mechanics, not signing protocols or response policy. Batch preserves signing with the decoded prefix after corrupt Base64 and remains subject to the native PUBLIC guard. Cosmos Table preserves the upstream full-host account-name bug. Both Cosmos verifiers deliberately ignore scan cancellation and deadlines because the source requests omit their context.
+
+Azure Entra tenant discovery caches positive and negative results; only discovery GETs are coalesced, never credential POSTs. After typed response decoding, HTTP 200 rather than JWT signature or expiry validation establishes refresh verification. The source ignores JWT parsing errors, although parser stages affect available metadata. Nil-Claims panic shapes become explicit scan errors with invocation-only rollback. Numeric/aggregate claim formatting and runtime concurrency parity remain unsupported or unverified.
+
+Some verifiers mutate services: Airbrake project-key verification posts a deploy record, AWS SNS Publish can trigger canary tracking, and Entra refresh-token exchanges can issue new tokens. These are not uniformly read-only credential checks. Some upstream verifiers omit secrets from error-redaction helpers; injected transports must not include credentials in those errors. Verification here is synthetic/offline, not evidence of live service acceptance.
 
 Shared regexp/arbitrary-byte semantics, remaining detectors and helpers, complete engine/source/concurrency behavior and global parity remain unfinished. Nothing is deployed into Pi or used as a production security boundary.

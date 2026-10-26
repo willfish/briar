@@ -618,6 +618,42 @@
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "partial", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_aws_session_keys.c", "tests/detectors/test_aws_access_keys.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Native eager-body buffering cannot reproduce the first-403-unread workaround; injected response ownership does not establish native drain/timing parity", "ABI1 has no final response URL, so redirected-status diagnostics use the original STS URL", "Complete typed first-document JSON, diagnostics and Unicode behavior beyond the implemented cases", "Complete source constructor/account-option, map-order and resource behavior; local string-array settings use existing ctx.options", "Complete shared HTTP/regexp/source-engine behavior; no live AWS evidence"]
+    },
+    "ayrshare/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/ayrshare/ayrshare.go",
+      "scope_notes": "Status 200 verifies after a successful body read even when whole-document map decoding fails. JSON errors, root types and float64 conversion failures suppress only email enrichment, unlike Autoklose's verification policy.",
+      "native_files": ["src/detectors/ayrshare.c", "src/detectors/key_scan.c", "src/detectors/json.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_ayrshare.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go whole-document JSON and map/string semantics beyond the original-number checks and ordered exact-email assignment"]
+    },
+    "azure_batch/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azure_batch/azurebatch.go",
+      "scope_notes": "Preserves greedy occurrence URL captures, URL-major pairing, inner-only success break, always-false custom false-positive callback and source omission of error redaction. Corrupt standard Base64 still signs its decoded prefix, including empty, partial and 66-byte keys.",
+      "native_files": ["src/detectors/azure_batch.c", "src/detectors/azure_shared_key.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azure_batch.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Native PUBLIC HTTP policy remains fail-closed; no fallback to SANE", "Verification outside the bounded ASCII DNS subset, including Go URL/account Unicode normalization", "ABI1 Redacted C-string cannot expose an embedded-NUL length although Raw, RawV2 and JSON parts preserve bytes", "Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "azure_cosmosdb/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azure_cosmosdb/azure_cosmosdb.go",
+      "scope_notes": "Document and Table signing/status policies remain explicit. Table deliberately keeps the source TrimPrefix bug and signs with the full host. Both source requests ignore scan cancellation/deadline, bodies and drain errors, and omit error-redaction arguments. Invalid-host presence caching applies even without verification; exact no-such-host errors suppress the current result.",
+      "native_files": ["src/detectors/azure_cosmosdb.c", "src/detectors/azure_shared_key.c", "src/detectors/host_cache.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azure_cosmosdb.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Complete native HTTP/URL/DNS diagnostic parity and shared source-engine behavior", "Complete upstream host-cache lifecycle/configuration beyond the tested twelve-hour presence slice", "Complete shared regexp behavior"]
+    },
+    "azure_entra/refreshtoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azure_entra/refreshtoken/refreshtoken.go",
+      "scope_notes": "Client/tenant matching and GET-only existence discovery are shared with Azure Entra mechanics; credential POST and cross-token state remain local. Preserves last-assigned pair confidence, local tenant deletion, persistent invalid pairs and one result per token after all tenants disappear. HTTP 200 verifies independently of ignored JWT validation errors; parser stages still control claims availability.",
+      "native_files": ["src/detectors/azure_entra_refreshtoken.c", "src/detectors/azure_entra_common.c", "src/detectors/host_cache.c", "src/detectors/json.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azure_entra_refreshtoken.c", "tests/detectors/test_azure_entra_common.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Finite numeric and aggregate Go fmt.Sprint claim formatting is explicitly unsupported", "Upstream nil-Claims panic becomes an explicit unsupported scan error with invocation-only rollback; engine recovery granularity differs", "Complete native HTTP policy, Go JSON/Unicode/error text and ABI1 embedded-NUL verification-error behavior", "Runtime concurrency evidence for tenant singleflight and wider source/engine behavior"]
     }
   },
   "components": {

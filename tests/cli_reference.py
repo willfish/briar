@@ -360,6 +360,10 @@ def fixtures():
     aws_secret = alnum("aws-access-secret", 38) + b"+/"
     aws_session_token = b"YXdz" + alnum("aws-session-token", 128) + b"+/==="
     aws_session_payload = b"ASIA" + aws_id[4:] + b"\n" + aws_secret + b"\n" + aws_session_token
+    entra_v0 = b"0.A" + alnum("entra-refresh-v0-head", 60) + b".Ag" + alnum("entra-refresh-v0-body", 260)
+    entra_v1 = (b"1.A" + alnum("entra-refresh-v1-head", 60) + b".4.Ag" + alnum("entra-refresh-v1-body", 260) +
+                b".A" + alnum("entra-refresh-v1-tail", 220))
+    entra_context = b"client_id A6B39F20-17C4-4D85-9E62-0F3A7B1C5D98\ntenant Reader.onmicrosoft.com\n"
     canary_bits = ((1 << 47) | (52310077262 << 7) | 7).to_bytes(6, "big") + b"\xab\xcd\xef\x01"
     aws_canary_id = b"AKIA" + base64.b32encode(canary_bits)
     provider_cases = (
@@ -456,6 +460,14 @@ def fixtures():
         ("axonaut", 320, b"axonaut " + alnum("axonaut-key", 32).lower()),
         ("aylien", 485, b"aylien " + alnum("aylien-key", 32).lower() +
          b"\naylien " + alnum("aylien-id", 8).lower()),
+        ("ayrshare", 163, b"ayrshare " + b"-".join(alnum(f"ayrshare-key-{part}", 8).upper() for part in range(4))),
+        ("azure_entra_refresh_v0_default", 1013, entra_v0),
+        ("azure_entra_refresh_v1_context", 1013, entra_context + entra_v1),
+        ("azure_entra_refresh_far_context", 1013, entra_context + b"." * 3000 + b"\n" + entra_v0),
+        ("azure_batch", 957, b"https://brbatch.eastus.batch.azure.com\n" + alnum("azure-batch-key", 88)),
+        ("azure_batch_false_positive_override", 957, b"https://example.eastus.batch.azure.com\n" + b"=" * 88),
+        ("azure_cosmosdb_document", 971, b"briar-cosmos.documents.azure.com\n" + alnum("cosmos-document-key", 86) + b"=="),
+        ("azure_cosmosdb_table", 971, b"briar-cosmos.table.cosmos.azure.com\n" + alnum("cosmos-table-key", 86) + b"=="),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
