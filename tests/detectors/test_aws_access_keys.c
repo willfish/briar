@@ -23,7 +23,7 @@ static const br_detector *detector_init(void)
     error = NULL;
     CHECK(br_aws_access_keys_init(&detector, &error) == 0 && !error && detector);
     CHECK(br_aws_access_keys_init(&again, &error) == 0 && !error && again == detector);
-    CHECK(detector->type == 1 && detector->version == 0);
+    CHECK(detector->type == 2 && detector->version == 0);
     CHECK(!strcmp(detector->name, "AWS") && !strcmp(detector->custom_name, ""));
     CHECK(!strcmp(detector->description,
         "AWS (Amazon Web Services) is a comprehensive cloud computing platform offering a wide range of on-demand services like computing power, storage, databases. "
@@ -71,7 +71,7 @@ static void check_text(br_json *object, const char *name, const char *expected)
 
 static void check_pair(const br_result *result, expected_pair pair)
 {
-    CHECK(result->detector_type == 1 && !result->detector_name);
+    CHECK(result->detector_type == 2 && !result->detector_name);
     CHECK(result->raw.len == 20 && !memcmp(result->raw.data, pair.id, 20));
     CHECK(result->raw_v2.len == 61 && !memcmp(result->raw_v2.data, pair.id, 20));
     CHECK(result->raw_v2.data[20] == ':' && !memcmp(result->raw_v2.data + 21, pair.secret, 40));
@@ -328,7 +328,7 @@ static void cleaner(const br_detector *detector)
     br_results results = {0};
     for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
         br_result result = {0};
-        CHECK(br_finding_key(&result, 1, values[i].raw, "access_key_id") == 0);
+        CHECK(br_finding_key(&result, 2, values[i].raw, "access_key_id") == 0);
         result.redacted = strdup(values[i].redacted);
         result.verified = values[i].verified;
         result.verification_error = strdup(values[i].raw);

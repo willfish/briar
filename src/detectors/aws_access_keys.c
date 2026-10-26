@@ -252,7 +252,7 @@ static void clean_aws(const br_detector *detector, br_results *results, bool ver
 static aws_patterns patterns;
 static const char *const keywords[] = {"AKIA", "ABIA", "ACCA"};
 static const br_detector aws = {
-    .type = 1, .version = 0, .name = "AWS", .custom_name = "",
+    .type = 2, .version = 0, .name = "AWS", .custom_name = "",
     .description = "AWS (Amazon Web Services) is a comprehensive cloud computing platform offering a wide range of on-demand services like computing power, storage, databases. "
                    "API keys for AWS can have varying amount of access to these services depending on the IAM policy attached.",
     .keywords = keywords, .nkeywords = 3,
