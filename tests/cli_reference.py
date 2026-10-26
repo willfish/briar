@@ -464,10 +464,21 @@ def fixtures():
         ("azure_entra_refresh_v0_default", 1013, entra_v0),
         ("azure_entra_refresh_v1_context", 1013, entra_context + entra_v1),
         ("azure_entra_refresh_far_context", 1013, entra_context + b"." * 3000 + b"\n" + entra_v0),
+        ("azure_entra_sp_v1", "3.v1", entra_context + b"secret '" + alnum("entra-sp-v1-secret", 32) + b"'\n"),
+        ("azure_entra_sp_v2", "3.v2", entra_context + b"secret 'b7c1Q~" + alnum("entra-sp-v2-secret", 31) + b"'\n"),
+        ("azure_entra_sp_v2_standalone", "3.v2", b"b7c1Q~" + alnum("entra-sp-v2-standalone", 31)),
         ("azure_batch", 957, b"https://brbatch.eastus.batch.azure.com\n" + alnum("azure-batch-key", 88)),
         ("azure_batch_false_positive_override", 957, b"https://example.eastus.batch.azure.com\n" + b"=" * 88),
         ("azure_cosmosdb_document", 971, b"briar-cosmos.documents.azure.com\n" + alnum("cosmos-document-key", 86) + b"=="),
         ("azure_cosmosdb_table", 971, b"briar-cosmos.table.cosmos.azure.com\n" + alnum("cosmos-table-key", 86) + b"=="),
+        ("azure_openai", 1007, b"briar-openai.openai.azure.com\napi_key " + synthetic("azure-openai-key", 32)),
+        ("azure_openai_no_hostname", 1007, b".openai.azure.com\nopenai.key " + synthetic("azure-openai-standalone", 32)),
+        ("azure_storage_connection", 931, b"DefaultEndpointsProtocol=https;AccountName=briarstorage;AccountKey=" +
+         alnum("azure-storage-connection", 86) + b"==;EndpointSuffix=core.windows.net"),
+        ("azure_storage_blob", 931, b"https://briarstorage.blob.core.windows.net\nStorage_Key=" +
+         alnum("azure-storage-blob", 86) + b"=="),
+        ("azure_apim_repository", 1018, b"azure url briar-apim.scm.azure-api.net\nazure password git&172635480927&" +
+         alnum("azure-apim-password", 83) + b"+/A=="),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
@@ -570,6 +581,10 @@ def compare(native, reference, case):
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True)
         actual = invoke(native, source, detector, kind, cleaning, directory)
+    # Default false-positive filtering must not turn these positive fixtures
+    # into a vacuous zero-row comparison (for example, a 00000 digit run).
+    if name in ("azure_apim_repository_stdin", "azure_apim_repository_filesystem") and (len(actual) != 1 or len(expected) != 1):
+        raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if not reference_matches(case, actual, expected):
         details = [f"result counts native={len(actual)}, reference={len(expected)}"]
         for index, (got, want) in enumerate(zip(actual, expected)):

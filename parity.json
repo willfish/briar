@@ -654,6 +654,51 @@
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_azure_entra_refreshtoken.c", "tests/detectors/test_azure_entra_common.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Finite numeric and aggregate Go fmt.Sprint claim formatting is explicitly unsupported", "Upstream nil-Claims panic becomes an explicit unsupported scan error with invocation-only rollback; engine recovery granularity differs", "Complete native HTTP policy, Go JSON/Unicode/error text and ABI1 embedded-NUL verification-error behavior", "Runtime concurrency evidence for tenant singleflight and wider source/engine behavior"]
+    },
+    "azure_openai/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
+      "scope_notes": "One finding per unique key even without a usable host; no-verification findings never set RawV2. During verification the verified-or-final-host branch precedes DNS caching, so a single-host DNS error is retained rather than cached. Typed whole-document deployments JSON validates unused data/id fields before accepting a nonempty object string; invalid syntax alone is suppressed.",
+      "native_files": ["src/detectors/azure_openai.c", "src/detectors/host_cache.c", "src/detectors/json.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azure_openai.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Complete request-construction, URL and native HTTP behavior", "Complete Go whole-document typed JSON/Unicode and diagnostic wording", "Complete host-cache lifecycle and source-engine behavior"]
+    },
+    "azure_entra/serviceprincipal/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azure_entra/serviceprincipal/v1/spv1.go",
+      "scope_notes": "V1 requires client IDs and excludes modern-format matches, then shares the source V2 processing. Live client/tenant deletions, persistent invalid pairs, next-client secret-invalid handling and last-assigned confidence remain explicit. Form escaping preserves V1 punctuation; RawV2 deliberately preserves the source's unescaped backslashes.",
+      "native_files": ["src/detectors/azure_entra_serviceprincipal.c", "src/detectors/azure_entra_common.c", "src/detectors/azure_entra_jwt.c", "src/detectors/json.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azure_entra_serviceprincipal.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Finite numeric/aggregate application formatting remains explicitly unsupported", "Nil-Claims panic uses invocation-only rollback rather than upstream engine recovery", "Complete shared HTTP, Go JSON/regexp/Unicode, concurrency and source-engine behavior"]
+    },
+    "azure_entra/serviceprincipal/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azure_entra/serviceprincipal/v2/spv2.go",
+      "scope_notes": "V2 can report standalone secrets. Shared source processing uses live client/tenant counts, deletes valid tenant IDs from the client set but still attempts the current pair, and checks tenant discovery on every eligible pair. HTTP 200 does not depend on JWT validation; missing/null application is omitted while empty application is retained, unlike refresh-token projection.",
+      "native_files": ["src/detectors/azure_entra_serviceprincipal.c", "src/detectors/azure_entra_common.c", "src/detectors/azure_entra_jwt.c", "src/detectors/json.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azure_entra_serviceprincipal.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Finite numeric/aggregate application formatting remains explicitly unsupported", "Nil-Claims panic uses invocation-only rollback rather than upstream engine recovery", "Complete shared HTTP, Go JSON/regexp/Unicode, concurrency and source-engine behavior"]
+    },
+    "azure_storage/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azure_storage/storage.go",
+      "scope_notes": "Preserves exact emulator exclusions, account-major unique pairing and inner-only success break. Signs the decoded Base64 prefix after corruption, including '-' in extracted keys. Storage-private XML uses case-sensitive local-name direct paths and direct text/CDATA, not AWS SDK scalar rules; only successful parsing publishes container metadata. A complete supported document can verify despite a later body-read error.",
+      "native_files": ["src/detectors/azure_storage.c", "src/detectors/azure_shared_key.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azure_storage.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Native PUBLIC HTTP policy remains fail-closed without fallback", "Whole-document XML rejects source-accepted trailing roots/junk; DTD rejection and stricter namespace/parser limits are explicit fail-closed gaps", "Complete streaming XML, encoding/error diagnostics and shared source-engine/regexp behavior"]
+    },
+    "azureapimanagement/repositorykey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
+      "scope_notes": "A provider-private C runner in existing opaque state models the three Git commands and output modes; no native process runs by default. Preserves first version-triplet selection, userinfo escaping, authentication-before-DNS marker precedence, host-only redaction and verify-only invalid-host caching. DNS failure suppresses the current finding and remaining passwords for that host. RawV2 is host followed by password, opposite Raw/part construction.",
+      "native_files": ["src/detectors/azureapimanagement_repositorykey.c", "src/detectors/azureapimanagement_repositorykey.h", "src/detectors/host_cache.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azureapimanagement_repositorykey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
+      "remaining": ["Native Git is intentionally unsupported until process lifecycle, output/resource limits, credential-helper and environment isolation policies are proven", "Missing version triplet uses explicit unsupported scan error and invocation-only rollback rather than upstream panic recovery", "Complete process/URL diagnostics, concurrent configuration/cache lifecycle and shared source-engine/regexp behavior"]
     }
   },
   "components": {
