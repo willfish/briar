@@ -81,6 +81,7 @@ static const registration expected[] = {
     {320, 0, "Axonaut", "axonaut", 32, true, -1},
     {485, 0, "Aylien", "aylien", 32, true, 1024},
     {163, 0, "Ayrshare", "ayrshare", 35, true, -1},
+    {957, 0, "AzureBatch", ".batch.azure.com", sizeof("https://briar.region.batch.azure.com") - 1, true, 1024},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -89,7 +90,7 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
-    char key[5001], secondary_buffer[82], session_buffer[133], input[8192];
+    char key[5001], secondary_buffer[89], session_buffer[133], input[8192];
     test_secret(key, entry->key_len, 0);
     if (entry->type == 163) strcpy(key, "B7C9D2E5-F6G8H3J4-K1M0N2P4-Q6R8S1T3");
     if (entry->type == 41) {
@@ -131,6 +132,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "AKIAQWERTYUIOPASDFGH");
         secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
         secondary_name = "secret_access_key";
+        break;
+    case 957:
+        strcpy(key, "https://briar.region.batch.azure.com");
+        test_secret(secondary_buffer, 88, 7);
+        secondary = secondary_buffer;
+        secondary_name = "account_key";
         break;
     case 1052:
         secondary = "https://abcdefghijklmnopqrstuvwx12.appsync-api.us-east-1.amazonaws.com/graphql";
@@ -273,7 +280,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
-    const char *key_name = (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 957 ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
@@ -345,7 +352,12 @@ int main(void)
         CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : -1) && detector->start_offset == -1 &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
-        CHECK(!detector->false_positive);
+        if (entry->type == 957) {
+            char *reason = NULL;
+            CHECK(detector->false_positive && !detector->false_positive(detector, NULL, &reason));
+            CHECK(reason && !strcmp(reason, ""));
+            free(reason);
+        } else CHECK(!detector->false_positive);
         if (entry->type == 2 || entry->type == 959) CHECK(detector->clean && detector->clean_always);
         else CHECK(!detector->clean && !detector->clean_always);
         if (entry->type == 181 || entry->type == 1042 || entry->type == 1047) {
