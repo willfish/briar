@@ -104,6 +104,7 @@ static const detector_factory named_factories[] = {
     br_betterstack_init,
     br_bitbar_init,
     br_bitbucketdatacenter_init,
+    br_bitcoinaverage_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
 };
@@ -144,7 +145,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
     if (detector && (!detector->custom_name || !detector->custom_name[0])) {
         switch (detector->type) {
         case 3: case 190: case 303: case 430: return detector->version == 1 || detector->version == 2;
-        case 0: case 239: case 521: case 390: case 431: case 684: case 693: case 197: case 802:
+        case 0: case 239: case 521: case 390: case 431: case 432: case 684: case 693: case 197: case 802:
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 506: case 917: case 907:
         case 375: case 522: case 170: case 163: case 399: case 473: case 453:
         case 457: case 42: case 933: case 179: case 1032: case 632: case 212: case 458:
@@ -203,6 +204,7 @@ const char *br_detector_type_name(int32_t type)
     case 401: return "Apiflash";
     case 430: return "Bannerbear";
     case 431: return "Adzuna";
+    case 432: return "BitcoinAverage";
     case 453: return "Amadeus";
     case 457: return "Ambee";
     case 458: return "Api2Cart";

@@ -108,6 +108,7 @@ static const registration expected[] = {
     {947, 0, "BetterStack", "betterstack", 24, true, -1},
     {387, 0, "Bitbar", "bitbar", 32, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
+    {432, 0, "BitcoinAverage", "bitcoinaverage", 43, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
