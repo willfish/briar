@@ -74,5 +74,9 @@ int br_autopilot_init(const br_detector **out, char **error);
 int br_avazapersonalaccesstoken_init(const br_detector **out, char **error);
 int br_aviationstack_init(const br_detector **out, char **error);
 int br_aws_access_keys_init(const br_detector **out, char **error);
+int br_aws_appsync_init(const br_detector **out, char **error);
+int br_aws_session_keys_init(const br_detector **out, char **error);
+int br_axonaut_init(const br_detector **out, char **error);
+int br_aylien_init(const br_detector **out, char **error);
 
 #endif
