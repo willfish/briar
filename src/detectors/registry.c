@@ -114,6 +114,7 @@ static const detector_factory named_factories[] = {
     br_blitapp_init,
     br_blocknative_init,
     br_blogger_init,
+    br_bombbomb_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
 };
@@ -156,7 +157,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 3: case 190: case 303: case 430: return detector->version == 1 || detector->version == 2;
         case 0: case 239: case 521: case 390: case 431: case 432: case 684: case 693: case 197: case 802:
         case 125: case 126: case 277: case 1014: case 1015: case 498: case 506: case 917: case 907:
-        case 302: case 375: case 522: case 523: case 170: case 163: case 399: case 473: case 453:
+        case 302: case 565: case 375: case 522: case 523: case 170: case 163: case 399: case 473: case 453:
         case 457: case 42: case 43: case 933: case 179: case 1032: case 632: case 212: case 458:
         case 401: case 391: case 484: case 485: case 788: case 637: case 1004: case 768: case 588:
         case 320: case 322: case 816: case 646: case 269: case 278: case 1042: case 181: case 385: case 387: case 389: case 800:
@@ -232,6 +233,7 @@ const char *br_detector_type_name(int32_t type)
     case 522: return "AletheiaApi";
     case 523: return "BlitApp";
     case 564: return "AviationStack";
+    case 565: return "BombBomb";
     case 588: return "Appfollow";
     case 603: return "Blazemeter";
     case 604: return "Autodesk";
