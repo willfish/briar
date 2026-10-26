@@ -121,6 +121,7 @@ static const detector_factory named_factories[] = {
     br_box_init,
     br_boxoauth_init,
     br_braintreepayments_init,
+    br_braintrust_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
 };
@@ -300,6 +301,7 @@ const char *br_detector_type_name(int32_t type)
     case 1046: return "JiraDataCenterPAT";
     case 1047: return "ConfluenceDataCenter";
     case 1052: return "AWSAppSync";
+    case 1053: return "BrainTrustApiKey";
     default: return NULL;
     }
 }

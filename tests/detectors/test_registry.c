@@ -124,6 +124,7 @@ static const registration expected[] = {
     {1002, 0, "Box", "box", 32, true, -1},
     {1003, 0, "BoxOauth", "box", 32, true, -1},
     {828, 0, "BraintreePayments", "braintree", 32, true, 1024},
+    {1053, 0, "BrainTrustApiKey", "braintrust", 51, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -332,6 +333,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         test_secret(secondary_buffer, 43, 13);
         secondary = secondary_buffer;
         break;
+    case 1053:
+        memcpy(key, "sk-", 3);
+        break;
     case 828:
         snprintf(key, sizeof(key), "f7c9d2e5b6a8f3c4d1e0b2a4c6d8e1f3");
         secondary = "z9y8x7w6v5u4t3s2";
@@ -489,11 +493,15 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->extra_data, "version", &part));
         CHECK(!strcmp(json_object_get_string(part), entry->version == 1 ? "1" : "2"));
     }
+    if (entry->type == 1053) {
+        CHECK(result->redacted && strlen(result->redacted) == 11);
+        CHECK(!memcmp(result->redacted, key, 8) && !strcmp(result->redacted + 8, "..."));
+    }
     const char *key_name = entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
-                           entry->type == 1047 || entry->type == 1046 ? "token" : "key";
+                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
     CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 ? 3 : secondary ? 2 : 1));
