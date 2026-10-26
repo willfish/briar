@@ -549,6 +549,12 @@ def fixtures():
         ("bombbomb_trim_unicode", 565, b"bombbomb ey.ey\xe3\x80\x80" + b"A" * 172),
         ("bombbomb_embedded_nul", 565, b"bombbomb ey" + alnum("bombbomb-nul-first", 16) + b"\0ey" +
          alnum("bombbomb-nul-second", 19) + b"~" + alnum("bombbomb-nul-third", 23)),
+        ("boostnote", 707, b"BOOSTNOTE " + hashlib.sha256(b"briar-synthetic-boostnote").hexdigest().encode()),
+        ("borgbase", 723, b"borgbase " + alnum("borgbase-first", 70) + b"/_." + alnum("borgbase-last", 77)),
+        ("box", 1002, b"BOX " + alnum("box-access-token", 32)),
+        ("box_oauth", 1003, b"box id " + alnum("box-client-id", 32) + b"\nsecret " + alnum("box-client-secret", 32)),
+        ("box_oauth_subject_context", 1003, b"BOX client_id " + alnum("box-subject-client-id", 32) +
+         b"\nclient_secret " + alnum("box-subject-client-secret", 32) + b"\nenterprise_id 172635480927\nuser_id 0000087"),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),

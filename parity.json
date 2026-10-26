@@ -916,6 +916,42 @@
       "evidence": ["tests/detectors/test_bombbomb.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Embedded NUL Authorization values cannot be represented by ABI1 headers; verification uses an explicit unsupported candidate error without truncation or I/O", "Shared non-NUL control/DEL rejection precedes transport safely, but its error wording and stage are not complete Go Client.Do parity", "Source errors intentionally remain unredacted and are not a credential-safe output boundary", "Complete native HTTP/client diagnostics, streaming drain/deferred-close timing and shared regexp/Unicode/source-engine behavior"]
     },
+    "boostnote/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/boostnote/boostnote.go",
+      "scope_notes": "Preserves occurrences of 64 lowercase-hex bytes under a scoped case-insensitive provider prefix, without entropy, uniqueness, cache or enrichment. The SANE Bearer GET verifies only 200, rejects 401 and ignores body/read errors. Creation and transport errors are retained with zero source redaction arguments, including echoed keys. Numeric status errors keep the source colon spelling; nonzero setter resource failures propagate.",
+      "native_files": ["src/detectors/boostnote.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_boostnote.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source errors intentionally remain unredacted and are not a credential-safe output boundary", "Complete native HTTP/client normalization, diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "borgbase/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/borgbase/borgbase.go",
+      "scope_notes": "Preserves occurrences of 148..152 ASCII alphanumeric/slash/underscore/dot/hyphen bytes with source word boundaries; no JWT/Base64 validation, entropy, uniqueness or cache is introduced. The exact SANE GraphQL JSON POST uses a request-local 10000ms timeout and Bearer authentication with no invented length header. HTTP 200 read errors precede a binary case-sensitive literal sshList-empty-array marker, including after NUL or invalid UTF-8; JSON structure and whitespace are not interpreted. HTTP 401 rejects and ignores body errors; other statuses retain numeric colon errors. Creation/transport/read errors remain entirely unredacted.",
+      "native_files": ["src/detectors/borgbase.c", "src/detectors/key_scan.c", "src/bytes.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_borgbase.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Request-local 10 seconds does not reproduce source shared-client Timeout mutation or concurrency effects", "Native SANE POST redirects remain fail-closed; complete HTTP diagnostics and streaming drain/deferred-close timing are incomplete", "Source errors intentionally remain unredacted and are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "box/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/box/box.go",
+      "scope_notes": "Unique 32-byte mixed-alphanumeric Box-prefixed tokens produce Raw/keypart with no RawV2 or NoV metadata. The SANE Bearer/JSON GET validates the first document as box.user with string id/login/status, skipping unused fields and huge unknown numbers. Ordered duplicates, primitive null preservation, first type-error precedence and case-folded field names follow the typed consumer policy. Successful 200, including null/empty objects, always projects user_id/username/user_status strings; embedded NUL survives retained JSON ownership. A complete first document can ignore later read errors/trailing data. HTTP 401 rejects; other statuses retain the source HTTP-status spelling. Errors redact only the captured token; no partial metadata escapes errors. Injected transport represents the source client seam; resource errors roll back only this invocation.",
+      "native_files": ["src/detectors/box.c", "src/detectors/key_scan.c", "src/detectors/json.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_box.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete Go JSON/Unicode and decoder diagnostic behavior beyond this typed first-document slice", "Complete native client configuration/HTTP diagnostics and Reader/streaming drain/deferred-close timing", "Shared regexp/source-engine, map-order and global output parity"]
+    },
+    "boxoauth/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/boxoauth/boxoauth.go",
+      "scope_notes": "Dispatch keyword box stays distinct from id/secret/subject extraction prefixes. Independent unique 32-byte alphanumeric IDs/secrets form unequal ID-major products; unique 6..20-digit subjects sort lexically with leading zeros and capture lengths preserved. Raw is ID and RawV2 is ID+secret with client_id/client_secret parts. The exact SANE form POST verifies only HTTP 400 after successful body read; binary unauthorized_client wins over invalid_client, missing markers produce the source error and every other status is unexpected. Errors redact ONLY ID, not secret. After the base response is released, verified pairs probe subjects in lexical order, enterprise before user. Probe creation/transport errors are suppressed; only 200 attaches subject_id, body errors are ignored and every response is released before advancing. Failed probes do not erase base verification. Success breaks only the secret loop; later IDs reuse secrets. NoV never probes or adds subject metadata. Resource failures roll back only this invocation, preserving caller findings.",
+      "native_files": ["src/detectors/boxoauth.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/bytes.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_boxoauth.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Subject probes can issue access tokens; verification evidence is synthetic only, not live acceptance", "Source error redaction omits the client secret and is not a credential-safe output boundary", "Native SANE POST redirects remain fail-closed; complete client configuration, HTTP diagnostics and streaming drain/deferred-close timing are incomplete", "Shared regexp/Unicode/source-engine, map-order and global output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
