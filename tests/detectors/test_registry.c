@@ -95,6 +95,7 @@ static const registration expected[] = {
     {1007, 0, "AzureOpenAI", ".openai.azure.com", 32, true, -1},
     {975, 0, "AzureSasToken", "azure", sizeof("https://briar-store.blob.core.windows.net/container") - 1, true, 1024},
     {976, 0, "AzureSearchAdminKey", "azure", 52, true, 1024},
+    {977, 0, "AzureSearchQueryKey", "azure", 52, true, 1024},
     {931, 0, "AzureStorage", "DefaultEndpointsProtocol=http", 88, true, 1024},
     {1018, 0, "AzureApiManagementRepositoryKey", "azure", 105, true, 1024},
     {377, 0, "Baremetrics", "baremetrics", 21, true, -1},
@@ -178,6 +179,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(secondary_buffer + 86, "==", 3);
         secondary = secondary_buffer;
         secondary_name = "key";
+        break;
+    case 977:
+        secondary = "https://briarsearch.search.windows.net/indexes/briarindex";
+        secondary_name = "url";
         break;
     case 976:
         secondary = "BriarSearch7";
