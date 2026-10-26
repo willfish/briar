@@ -154,6 +154,7 @@ static const registration expected[] = {
     {524, 0, "Censys", "censys", 32, true, 1024},
     {318, 0, "CentralStationCRM", "centralstationcrm", 30, true, -1},
     {739, 0, "CexIO", "cexio", 24, true, 1024},
+    {208, 0, "Chatbot", "chatbot", 32, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
