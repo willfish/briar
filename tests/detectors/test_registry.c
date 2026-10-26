@@ -146,6 +146,7 @@ static const registration expected[] = {
     {254, 0, "Campayn", "campayn", 64, true, -1},
     {158, 0, "CannyIo", "canny", 36, true, -1},
     {578, 0, "CarbonInterface", "carboninterface", 21, true, -1},
+    {685, 0, "Cashboard", "cashboard", 15, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -373,6 +374,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 1053:
         memcpy(key, "sk-", 3);
         break;
+    case 685:
+        strcpy(key, "B7C-D9E-F2G-H5J");
+        secondary = "briar7";
+        secondary_name = "username";
+        break;
     case 833:
         secondary = "A7C9D2E5-F6A8-B3C4-D1E0-B2A4C6D8E1F3A";
         secondary_name = "id";
@@ -489,9 +495,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "box id %s\nsecret %s", key, secondary);
     else if (entry->type == 512)
         snprintf(input, sizeof(input), "bitmex %s\nbitmex %s\n", secondary, key);
-    else if (entry->type == 385)
-        /* A provider word after the key can itself be captured as an ID. */
-        snprintf(input, sizeof(input), "billomat %s\nbillomat %s", secondary, key);
+    else if (entry->type == 385 || entry->type == 685)
+        /* Context-first avoids capturing the repeated provider word as ID/user. */
+        snprintf(input, sizeof(input), "%s %s\n%s %s", entry->keyword, secondary, entry->keyword, key);
     else if (entry->type == 322)
         snprintf(input, sizeof(input), "appcues %s\nappcues %s\nappcues 00427", key, secondary);
     else if (entry->type == 197)
