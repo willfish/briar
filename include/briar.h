@@ -34,10 +34,11 @@ typedef struct {
 typedef struct { br_result *items; size_t len, cap; } br_results;
 
 typedef struct { const char *name, *value; } br_header;
-/* AWS is a distinct SDK-client policy, currently injected-transport only. */
+/* AWS and BrowserStack are distinct, currently injected-only client policies. */
 typedef enum {
     BR_HTTP_SANE, BR_HTTP_DETECTOR_LOCAL, BR_HTTP_DETECTOR_PUBLIC,
-    BR_HTTP_PINNED_RETRYABLE, BR_HTTP_RETRYABLE, BR_HTTP_AWS
+    BR_HTTP_PINNED_RETRYABLE, BR_HTTP_RETRYABLE, BR_HTTP_AWS,
+    BR_HTTP_BROWSERSTACK = 6
 } br_http_profile;
 typedef struct {
     const char *method, *url;
@@ -45,6 +46,7 @@ typedef struct {
     size_t nheaders;
     br_slice body;
     br_http_profile profile;
+    /* Zero selects the profile default; BrowserStack has no client timeout. */
     uint32_t timeout_ms;
     int32_t detector_type;
     br_slice dedup_key;

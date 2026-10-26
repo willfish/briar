@@ -335,6 +335,70 @@ static void http_tests(void)
     br_http_release(&ctx, &response);
 }
 
+static int browserstack_send(void *user, const br_scan_ctx *ctx, const br_http_request *request,
+                              br_http_response *response, char **error)
+{
+    (void)error;
+    fake *f = user;
+    ++f->calls;
+    CHECK(request->profile == BR_HTTP_BROWSERSTACK);
+    CHECK(!strcmp(request->method, "GET") && !strcmp(request->url, "https://synthetic.invalid/"));
+    CHECK(request->nheaders == 1 && !strcmp(request->headers[0].name, "User-Agent"));
+    CHECK(!strcmp(request->headers[0].value, "TruffleHog synthetic-tests"));
+    CHECK(!request->body.data && !request->body.len);
+    if (!f->timeout) CHECK(request->timeout_ms == 0);
+    else {
+        CHECK(request->timeout_ms > 0 && request->timeout_ms <= f->timeout);
+        if (!ctx->deadline_monotonic_ms) CHECK(request->timeout_ms == f->timeout);
+    }
+    response->status = 200;
+    return 0;
+}
+
+static void browserstack_http_tests(void)
+{
+    CHECK(BR_HTTP_BROWSERSTACK == 6 && BR_HTTP_AWS == 5);
+    fake f = {0};
+    const br_transport transport = {&f, browserstack_send, fake_release};
+    br_scan_ctx ctx = {.transport = &transport, .user_agent = "synthetic-tests"};
+    br_http_request request = {.method = "GET", .url = "https://synthetic.invalid/", .profile = BR_HTTP_BROWSERSTACK};
+    br_http_response response = {0}; char *error = NULL;
+    CHECK(!br_http_send(&ctx, &request, &response, &error) && !error);
+    CHECK(!request.timeout_ms && !request.nheaders); /* No implicit 5/10 seconds or duplicate UA. */
+    br_http_release(&ctx, &response);
+    request.timeout_ms = f.timeout = 123;
+    CHECK(!br_http_send(&ctx, &request, &response, &error) && !error);
+    br_http_release(&ctx, &response);
+    struct timespec now;
+    CHECK(!clock_gettime(CLOCK_MONOTONIC, &now));
+    ctx.deadline_monotonic_ms = (int64_t)now.tv_sec * 1000 + now.tv_nsec / 1000000 + 1000;
+    request.timeout_ms = 0; f.timeout = 1000;
+    CHECK(!br_http_send(&ctx, &request, &response, &error) && !error);
+    br_http_release(&ctx, &response);
+    request.timeout_ms = f.timeout = 123;
+    CHECK(!br_http_send(&ctx, &request, &response, &error) && !error);
+    br_http_release(&ctx, &response);
+    size_t calls = f.calls;
+    ctx.deadline_monotonic_ms = 1;
+    CHECK(br_http_send(&ctx, &request, &response, &error) && !strcmp(error, "context deadline exceeded"));
+    free(error); error = NULL; br_http_release(&ctx, &response);
+    CHECK(f.calls == calls);
+    ctx.deadline_monotonic_ms = 0; ctx.cancelled = always_cancelled;
+    CHECK(br_http_send(&ctx, &request, &response, &error) && !strcmp(error, "context canceled"));
+    free(error); error = NULL; br_http_release(&ctx, &response);
+    CHECK(f.calls == calls);
+    ctx.cancelled = NULL; ctx.deadline_monotonic_ms = INT64_MAX;
+    request.timeout_ms = f.timeout = 0;
+    CHECK(br_http_send(&ctx, &request, &response, &error) &&
+          !strcmp(error, "unsupported: BrowserStack deadline exceeds 32-bit timeout"));
+    free(error); error = NULL; br_http_release(&ctx, &response);
+    CHECK(f.calls == calls); /* Reject before narrowing or invoking transport. */
+    request.timeout_ms = f.timeout = 123;
+    CHECK(!br_http_send(&ctx, &request, &response, &error) && !error);
+    br_http_release(&ctx, &response);
+    CHECK(f.calls == calls + 1 && f.releases == 8);
+}
+
 /* Private adapter hook, also exercised by the isolated proxy regression. */
 extern const br_transport *br_curl_transport_init(char **error);
 
@@ -349,7 +413,7 @@ static void unsupported_native_profiles(void)
         .method = "GET", .url = "://invalid", .profile = BR_HTTP_DETECTOR_PUBLIC,
     };
     br_http_response response = {0};
-    const br_http_profile unsupported[] = {BR_HTTP_DETECTOR_PUBLIC, BR_HTTP_AWS};
+    const br_http_profile unsupported[] = {BR_HTTP_DETECTOR_PUBLIC, BR_HTTP_AWS, BR_HTTP_BROWSERSTACK};
     for (size_t i = 0; i < sizeof(unsupported) / sizeof(unsupported[0]); ++i) {
         request.profile = unsupported[i];
         CHECK(br_http_send(&ctx, &request, &response, &error) != 0);
@@ -363,7 +427,7 @@ static void unsupported_native_profiles(void)
 int main(void)
 {
     CHECK(BR_ABI_REVISION == 1);
-    result_tests(); regex_tests(); fp_tests(); http_tests(); unsupported_native_profiles();
+    result_tests(); regex_tests(); fp_tests(); http_tests(); browserstack_http_tests(); unsupported_native_profiles();
     printf("core: %zu assertions, 0 failures\n", checks);
     return 0;
 }

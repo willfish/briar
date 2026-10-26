@@ -91,7 +91,8 @@ int br_http_send(const br_scan_ctx *ctx, const br_http_request *request,
     if (!ctx->transport || !ctx->transport->send || !ctx->transport->release)
         return fail(error, "HTTP transport not installed");
     if (request->profile != BR_HTTP_SANE && request->profile != BR_HTTP_DETECTOR_LOCAL &&
-        request->profile != BR_HTTP_DETECTOR_PUBLIC && request->profile != BR_HTTP_AWS)
+        request->profile != BR_HTTP_DETECTOR_PUBLIC && request->profile != BR_HTTP_AWS &&
+        request->profile != BR_HTTP_BROWSERSTACK)
         return fail(error, "unsupported HTTP client profile");
     if (request->dedup_key.len) return fail(error, "unsupported HTTP request coalescing");
     if (!request->method || !*request->method || !request->url ||
@@ -131,17 +132,25 @@ int br_http_send(const br_scan_ctx *ctx, const br_http_request *request,
     br_http_request effective = *request;
     effective.headers = headers;
     ++effective.nheaders;
-    if (!effective.timeout_ms)
+    if (!effective.timeout_ms && request->profile != BR_HTTP_BROWSERSTACK)
         effective.timeout_ms = request->profile == BR_HTTP_SANE || request->profile == BR_HTTP_AWS ? 5000 : 10000;
     if (ctx->deadline_monotonic_ms) {
         int64_t now = now_ms();
-        int64_t remaining = now < 0 ? 0 : ctx->deadline_monotonic_ms - now;
-        if (remaining <= 0) {
+        if (now < 0 || ctx->deadline_monotonic_ms <= now) {
             free(agent);
             free(headers);
             return fail(error, "context deadline exceeded");
         }
-        if (remaining < effective.timeout_ms) effective.timeout_ms = (uint32_t)remaining;
+        int64_t remaining = ctx->deadline_monotonic_ms - now;
+        /* An unbounded Go client must not acquire a wrapped or shorter timeout
+         * merely because ABI1 represents request timeouts in 32 bits. */
+        if (!effective.timeout_ms && remaining > UINT32_MAX) {
+            free(agent);
+            free(headers);
+            return fail(error, "unsupported: BrowserStack deadline exceeds 32-bit timeout");
+        }
+        if (!effective.timeout_ms || remaining < effective.timeout_ms)
+            effective.timeout_ms = (uint32_t)remaining;
     }
     int rc = ctx->transport->send(ctx->transport->user, ctx, &effective, response, error);
     free(agent);
