@@ -141,6 +141,7 @@ static const registration expected[] = {
     {150, 0, "ButterCMS", "buttercms", 40, true, -1},
     {647, 0, "Caflou", "caflou", 155, true, -1},
     {130, 0, "Calendarific", "calendarific", 32, true, -1},
+    {44, 0, "CalendlyApiKey", "calendly", 209, true, -1},
     {474, 0, "CalorieNinja", "calorieninja", 40, true, -1},
     {254, 0, "Campayn", "campayn", 64, true, -1},
     {158, 0, "CannyIo", "canny", 36, true, -1},
@@ -174,6 +175,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[34] = '=';
     }
     if (entry->type == 303 && entry->version == 1) key[7] = '%';
+    if (entry->type == 44) {
+        memcpy(key, "eyJ", 3); key[103] = '.';
+        memcpy(key + 104, "eyJ", 3); key[207] = '.'; key[208] = 'Z';
+    }
     if (entry->type == 110) memcpy(key, "ey", 2);
     if (entry->type == 647) memcpy(key, "eyJhbGciOiJIUzI1NiJ9", 20);
     if (entry->type == 430 && entry->version == 1) key[22] = key[23] = 't';
