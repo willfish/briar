@@ -62,6 +62,7 @@ static const registration expected[] = {
     {1042, 0, "ArtifactoryReferenceToken", "cmVmdGtu", 64, true, 1024},
     {278, 0, "Artsy", "artsy", 32, true, 1024},
     {389, 0, "AssemblyAI", "assemblyai", 32, true, -1},
+    {800, 0, "Atera", "atera", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
