@@ -95,5 +95,10 @@ int br_azuredirectmanagementkey_init(const br_detector **out, char **error);
 int br_azurefunctionkey_init(const br_detector **out, char **error);
 int br_azuresastoken_init(const br_detector **out, char **error);
 int br_azuresearchadminkey_init(const br_detector **out, char **error);
+int br_azuresearchquerykey_init(const br_detector **out, char **error);
+int br_bannerbear_v1_init(const br_detector **out, char **error);
+int br_bannerbear_v2_init(const br_detector **out, char **error);
+int br_baremetrics_init(const br_detector **out, char **error);
+int br_beamer_init(const br_detector **out, char **error);
 
 #endif
