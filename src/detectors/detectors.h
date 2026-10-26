@@ -129,5 +129,10 @@ int br_browshot_init(const br_detector **out, char **error);
 int br_bscscan_init(const br_detector **out, char **error);
 int br_buddyns_init(const br_detector **out, char **error);
 int br_budibase_init(const br_detector **out, char **error);
+int br_bugherd_init(const br_detector **out, char **error);
+int br_bugsnag_init(const br_detector **out, char **error);
+int br_buildkite_v1_init(const br_detector **out, char **error);
+int br_buildkite_v2_init(const br_detector **out, char **error);
+int br_bulbul_init(const br_detector **out, char **error);
 
 #endif
