@@ -78,5 +78,9 @@ int br_aws_appsync_init(const br_detector **out, char **error);
 int br_aws_session_keys_init(const br_detector **out, char **error);
 int br_axonaut_init(const br_detector **out, char **error);
 int br_aylien_init(const br_detector **out, char **error);
+int br_ayrshare_init(const br_detector **out, char **error);
+int br_azure_batch_init(const br_detector **out, char **error);
+int br_azure_cosmosdb_init(const br_detector **out, char **error);
+int br_azure_entra_refreshtoken_init(const br_detector **out, char **error);
 
 #endif
