@@ -530,6 +530,14 @@
       "evidence": ["tests/detectors/test_auth0managementapitoken.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Go regexp/Unicode/resource behavior and native transport diagnostics remain partial"]
     },
+    "auth0oauth/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/auth0oauth/auth0oauth.go",
+      "native_files": ["src/detectors/auth0oauth.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_auth0oauth.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior and native LOCAL POST lifecycle", "Go-map traversal order and native URL/network diagnostics remain partial", "Token issuance remains mocked; source ID-only redaction deliberately does not imply credential-safe errors"]
+    },
     "autodesk/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/autodesk/autodesk.go",

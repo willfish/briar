@@ -69,6 +69,7 @@ static const registration expected[] = {
     {190, 2, "Atlassian", "ATCTT3xFfG", 43, true, -1},
     {376, 0, "Audd", "audd", 32, true, -1},
     {110, 0, "Auth0ManagementApiToken", "auth0", 2000, true, 1024},
+    {55, 0, "Auth0oauth", "auth0", 64, true, 1024},
     {604, 0, "Autodesk", "autodesk", 32, true, 1024},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -113,6 +114,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary_buffer[32] = '\0';
         secondary = secondary_buffer;
         secondary_name = "secret";
+        break;
+    case 55:
+        test_secret(secondary_buffer, 32, 11);
+        secondary = secondary_buffer;
+        secondary_name = "client_id";
         break;
     case 110: secondary = "fixture-tenant.us.auth0.com"; secondary_name = "domain"; break;
     case 125: secondary = "004207"; secondary_name = "id"; break;
@@ -212,6 +218,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "aha %s\n%s", key, secondary);
     else if (entry->type == 179)
         snprintf(input, sizeof(input), "anypoint %s\norg %s", key, secondary);
+    else if (entry->type == 55)
+        snprintf(input, sizeof(input), "auth0 %s\n%s\nfixture-tenant.us.auth0.com", secondary, key);
     else if (entry->type == 1045)
         snprintf(input, sizeof(input), "%s\nbitbucket %s", key, secondary);
     else if (secondary)
@@ -226,7 +234,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
-    const char *key_name = entry->type == 1045 ? "secret" : entry->type == 1032 ? "client_secret" :
+    const char *key_name = entry->type == 1045 ? "secret" :
+                           entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
                            entry->type == 1047 || entry->type == 1046 ? "token" : "key";
@@ -237,7 +246,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[sizeof(key) + sizeof(secondary_buffer) + 1];
-        if (entry->type == 170 || entry->type == 1032) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
+        if (entry->type == 55) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
+        else if (entry->type == 170 || entry->type == 1032) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
         CHECK(result->raw_v2.len == strlen(raw_v2));

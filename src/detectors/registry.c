@@ -65,6 +65,7 @@ static const detector_factory named_factories[] = {
     br_atlassian_v2_init,
     br_audd_init,
     br_auth0managementapitoken_init,
+    br_auth0oauth_init,
     br_autodesk_init,
     br_bitbucketdatacenter_init,
     br_confluencedatacenter_init,
@@ -113,7 +114,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 457: case 42: case 933: case 179: case 1032: case 632: case 212: case 458:
         case 401: case 391: case 484: case 788: case 637: case 1004: case 768: case 588:
         case 322: case 816: case 646: case 269: case 278: case 1042: case 181: case 389: case 800:
-        case 98: case 41: case 376: case 1045: case 1047: case 1046: case 604: case 110:
+        case 98: case 41: case 376: case 1045: case 1047: case 1046: case 604: case 110: case 55:
             return detector->version == 0;
         default: break;
         }
@@ -127,6 +128,7 @@ const char *br_detector_type_name(int32_t type)
     case 0: return "Alibaba";
     case 41: return "AsanaPersonalAccessToken";
     case 42: return "AmplitudeApiKey";
+    case 55: return "Auth0oauth";
     case 98: return "AsanaOauth";
     case 110: return "Auth0ManagementApiToken";
     case 125: return "AirbrakeProjectKey";
