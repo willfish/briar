@@ -130,6 +130,7 @@ static const registration expected[] = {
     {756, 0, "BrowserStack", "browserstack", 20, true, 1024},
     {448, 0, "Browshot", "browshot", 28, true, -1},
     {598, 0, "BuddyNS", "buddyns", 40, true, -1},
+    {953, 0, "Budibase", "budibase", 113, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -376,6 +377,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 506:
         memcpy(key, "pri_", 4);
         for (size_t i = 4; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        break;
+    case 953:
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[32] = '-';
         break;
     case 598:
     case 707:
