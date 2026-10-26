@@ -73,6 +73,7 @@ static const registration expected[] = {
     {604, 0, "Autodesk", "autodesk", 32, true, 1024},
     {323, 0, "Autoklose", "autoklose", 32, true, -1},
     {511, 0, "AutoPilot", "autopilot", 32, true, -1},
+    {733, 0, "AvazaPersonalAccessToken", "avaza", 45, true, -1},
     {564, 0, "AviationStack", "aviationstack", 32, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -177,6 +178,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         test_secret(secondary_buffer, 40, 7);
         secondary = secondary_buffer;
         secondary_name = "id";
+        break;
+    case 733:
+        memcpy(key, "0007-", 5);
+        for (size_t i = 5; i < 45; ++i) key[i] = "0123456789abcdef"[i % 16];
         break;
     case 522:
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789ABCDEF"[i % 16];
