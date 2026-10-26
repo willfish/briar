@@ -147,5 +147,9 @@ int br_captaindata_v1_init(const br_detector **out, char **error);
 int br_captaindata_v2_init(const br_detector **out, char **error);
 int br_carboninterface_init(const br_detector **out, char **error);
 int br_cashboard_init(const br_detector **out, char **error);
+int br_caspio_init(const br_detector **out, char **error);
+int br_censys_init(const br_detector **out, char **error);
+int br_centralstationcrm_init(const br_detector **out, char **error);
+int br_cexio_init(const br_detector **out, char **error);
 
 #endif
