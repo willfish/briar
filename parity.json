@@ -808,6 +808,42 @@
       "evidence": ["tests/detectors/test_betterstack.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete native request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
     },
+    "billomat/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/billomat/billomat.go",
+      "scope_notes": "Independent unique lowercase-alphanumeric IDs and lowercase-hex keys form key-major products. Context words, including the provider name after a key, remain valid ID captures. Raw is key and RawV2 is key+ID. The SANE GET verifies only 200, rejects 401 and handles 404 separately: a successful body read containing the binary account-not-found marker suppresses the current finding and deletes that ID for later keys in this invocation, without removing earlier findings. Read failures and transport error text cannot trigger deletion. No global cache, entropy gate, consumption or success break is introduced; errors redact only the key and resource outcomes remain separate from ID deletion.",
+      "native_files": ["src/detectors/billomat.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_billomat.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine and map-order behavior"]
+    },
+    "bitbar/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bitbar/bitbar.go",
+      "scope_notes": "Preserves occurrence-based 32-byte mixed-alphanumeric capture, not hex-only or unique extraction. The exact SANE GET uses JSON Content-Type and Basic authentication with key as username and an empty password. Only 200 verifies, 401 rejects and other statuses retain colon-form errors; body/read errors are ignored. Creation and transport errors retain candidates with key-only redaction. No entropy, host cache, RawV2, Redacted field or extra metadata is introduced.",
+      "native_files": ["src/detectors/bitbar.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bitbar.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
+    "bitbucketapppassword/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bitbucketapppassword/bitbucketapppassword.go",
+      "scope_notes": "Three direct named regex passes update a case-sensitive username-to-password map in pattern order, with last write winning even when the winning quoted form appears earlier in input. Consuming boundaries, first-pattern punctuation backtracking, URL-pattern full punctuation/no ending boundary and unbounded passwords are explicit. The quoted pattern uses Go's ASCII whitespace set, excluding VT. Raw is username:password; RawV2 and primary-secret overrides remain unset, preserving quoted-form filesystem fallback locations. The SANE Basic-auth GET verifies 200/403, rejects 401, ignores body/read errors and redacts username then password. No cross-product, credential-pair deduplication or password-location substitution is introduced.",
+      "native_files": ["src/detectors/bitbucketapppassword.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bitbucketapppassword.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source uses Go stdlib regexp: arbitrary invalid-UTF-8 RuneError matching differs from the shared PCRE match-barrier policy", "Complete native request/HTTP diagnostics, streaming drain/deferred-close timing and map-order behavior", "Shared source-engine and output parity"]
+    },
+    "bitcoinaverage/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bitcoinaverage/bitcoinaverage.go",
+      "scope_notes": "Preserves occurrence-based 43-byte mixed-alphanumeric keys and the exact SANE ticket GET with x-ba-key. HTTP 200 decodes a typed first JSON document, validating unused string msg as well as boolean success before verification. Ordered duplicate/null reuse, case-folded fields and first type errors remain explicit; unknown huge numbers are skipped rather than float64-validated. A complete first object can ignore a later read error or trailing document. Only successful typed decoding with success=true verifies; 401 rejects without body decoding and other statuses retain colon-form errors. Creation, transport and decode errors redact only the key; no entropy, cache or extra metadata is introduced.",
+      "native_files": ["src/detectors/bitcoinaverage.c", "src/detectors/json.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bitcoinaverage.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete Go JSON/Unicode and diagnostic behavior beyond the typed first-document slice", "Complete native HTTP/streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity; no live ticket execution"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

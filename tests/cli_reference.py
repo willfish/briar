@@ -521,6 +521,16 @@ def fixtures():
         ("beebole", 684, b"BEEBOLE " + alnum("beebole-key", 40).lower()),
         ("besttime", 506, b"BESTTIME pri_" + synthetic("besttime-key", 32)),
         ("betterstack", 947, b"BETTERSTACK " + alnum("betterstack-key", 24)),
+        ("billomat", 385, b"BILLOMAT briar7\nBILLOMAT " + synthetic("billomat-key", 32)),
+        ("billomat_context_id", 385, b"billomat " + synthetic("billomat-context-key", 32) + b"\nbillomat briar8"),
+        ("bitbar", 387, b"BITBAR " + alnum("bitbar-key", 32)),
+        ("bitbucket_app_colon", 1029, b"briar7:ATBB" + alnum("bitbucket-app-colon", 36)),
+        ("bitbucket_app_url", 1029, b"https://briar8:ATBB" + alnum("bitbucket-app-url", 36) + b"=.-@bitbucket.org.evil"),
+        ("bitbucket_app_quoted", 1029, b'"briar9",\n\f"ATBB' + alnum("bitbucket-app-quoted", 36) + b'=.-"'),
+        ("bitbucket_app_overwrite", 1029, b'"briara", "ATBB' + alnum("bitbucket-app-winning", 36) +
+         b'=.-"\nhttps://briara:ATBB' + alnum("bitbucket-app-url-loses", 36) + b"=@bitbucket.org\nbriara:ATBB" +
+         alnum("bitbucket-app-last-input-loses", 36)),
+        ("bitcoinaverage", 432, b"BITCOINAVERAGE " + alnum("bitcoinaverage-key", 43)),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
