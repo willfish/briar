@@ -307,6 +307,13 @@ static void http_tests(void)
         CHECK(!br_http_send(&ctx, &request, &response, &error) && !error);
         br_http_release(&ctx, &response);
     }
+    request.profile = f.profile = BR_HTTP_AWS;
+    request.timeout_ms = 0; f.timeout = 5000;
+    CHECK(!br_http_send(&ctx, &request, &response, &error) && !error);
+    br_http_release(&ctx, &response);
+    request.timeout_ms = 123; f.timeout = 123;
+    CHECK(!br_http_send(&ctx, &request, &response, &error) && !error);
+    br_http_release(&ctx, &response);
     request.timeout_ms = 0;
     sent = f.calls;
     for (int profile = BR_HTTP_PINNED_RETRYABLE; profile <= BR_HTTP_RETRYABLE; ++profile) {
@@ -342,11 +349,15 @@ static void unsupported_native_profiles(void)
         .method = "GET", .url = "://invalid", .profile = BR_HTTP_DETECTOR_PUBLIC,
     };
     br_http_response response = {0};
-    CHECK(br_http_send(&ctx, &request, &response, &error) != 0);
-    CHECK(error && !strcmp(error, "unsupported: native curl HTTP client profile"));
-    CHECK(response.status == 0 && response.body.data == NULL);
-    free(error);
-    br_http_release(&ctx, &response);
+    const br_http_profile unsupported[] = {BR_HTTP_DETECTOR_PUBLIC, BR_HTTP_AWS};
+    for (size_t i = 0; i < sizeof(unsupported) / sizeof(unsupported[0]); ++i) {
+        request.profile = unsupported[i];
+        CHECK(br_http_send(&ctx, &request, &response, &error) != 0);
+        CHECK(error && !strcmp(error, "unsupported: native curl HTTP client profile"));
+        CHECK(response.status == 0 && response.body.data == NULL);
+        free(error); error = NULL;
+        br_http_release(&ctx, &response);
+    }
 }
 
 int main(void)

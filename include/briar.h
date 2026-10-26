@@ -34,9 +34,10 @@ typedef struct {
 typedef struct { br_result *items; size_t len, cap; } br_results;
 
 typedef struct { const char *name, *value; } br_header;
+/* AWS is a distinct SDK-client policy, currently injected-transport only. */
 typedef enum {
     BR_HTTP_SANE, BR_HTTP_DETECTOR_LOCAL, BR_HTTP_DETECTOR_PUBLIC,
-    BR_HTTP_PINNED_RETRYABLE, BR_HTTP_RETRYABLE
+    BR_HTTP_PINNED_RETRYABLE, BR_HTTP_RETRYABLE, BR_HTTP_AWS
 } br_http_profile;
 typedef struct {
     const char *method, *url;

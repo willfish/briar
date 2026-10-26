@@ -91,7 +91,7 @@ int br_http_send(const br_scan_ctx *ctx, const br_http_request *request,
     if (!ctx->transport || !ctx->transport->send || !ctx->transport->release)
         return fail(error, "HTTP transport not installed");
     if (request->profile != BR_HTTP_SANE && request->profile != BR_HTTP_DETECTOR_LOCAL &&
-        request->profile != BR_HTTP_DETECTOR_PUBLIC)
+        request->profile != BR_HTTP_DETECTOR_PUBLIC && request->profile != BR_HTTP_AWS)
         return fail(error, "unsupported HTTP client profile");
     if (request->dedup_key.len) return fail(error, "unsupported HTTP request coalescing");
     if (!request->method || !*request->method || !request->url ||
@@ -132,7 +132,7 @@ int br_http_send(const br_scan_ctx *ctx, const br_http_request *request,
     effective.headers = headers;
     ++effective.nheaders;
     if (!effective.timeout_ms)
-        effective.timeout_ms = request->profile == BR_HTTP_SANE ? 5000 : 10000;
+        effective.timeout_ms = request->profile == BR_HTTP_SANE || request->profile == BR_HTTP_AWS ? 5000 : 10000;
     if (ctx->deadline_monotonic_ms) {
         int64_t now = now_ms();
         int64_t remaining = now < 0 ? 0 : ctx->deadline_monotonic_ms - now;
