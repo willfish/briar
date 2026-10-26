@@ -153,6 +153,7 @@ static const registration expected[] = {
     {648, 0, "Caspio", "caspio", 50, true, 1024},
     {524, 0, "Censys", "censys", 32, true, 1024},
     {318, 0, "CentralStationCRM", "centralstationcrm", 30, true, -1},
+    {739, 0, "CexIO", "cexio", 24, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -380,6 +381,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 1053:
         memcpy(key, "sk-", 3);
         break;
+    case 739:
+        secondary = "ab172635480";
+        secondary_name = "user_id";
+        break;
     case 648:
         secondary = key; /* Identical occurrence patterns include the self-pair. */
         secondary_name = "id";
@@ -592,10 +597,14 @@ static void check_dispatch(const br_detector *detector, const registration *entr
                            entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
-    CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 || entry->type == 648 ? 3 : secondary ? 2 : 1));
+    CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 || entry->type == 648 || entry->type == 739 ? 3 : secondary ? 2 : 1));
     if (entry->type == 1025) {
         CHECK(json_object_object_get_ex(result->secret_parts, "secret", &part));
         CHECK(!strcmp(json_object_get_string(part), "AQIDBA=="));
+    }
+    if (entry->type == 739) {
+        CHECK(json_object_object_get_ex(result->secret_parts, "secret", &part));
+        CHECK(!strcmp(json_object_get_string(part), key)); /* Identical key/secret patterns include self. */
     }
     if (entry->type == 648) {
         CHECK(json_object_object_get_ex(result->secret_parts, "domain", &part));
@@ -615,7 +624,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         else if (session) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", key, secondary, session);
         else if (entry->type == 931) snprintf(raw_v2, sizeof(raw_v2), "{\"accountName\":\"%s\",\"accountKey\":\"%s\"}", secondary, key);
         else if (entry->type == 971) snprintf(raw_v2, sizeof(raw_v2), "key: %s account_url: %s", key, secondary);
-        else if (entry->type == 55 || entry->type == 1018 || entry->type == 512 || entry->type == 708) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
+        else if (entry->type == 55 || entry->type == 1018 || entry->type == 512 || entry->type == 708 || entry->type == 739) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
         else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 1019 || entry->type == 1024 || entry->type == 2 || entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
@@ -683,7 +692,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
-              entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
