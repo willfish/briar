@@ -65,6 +65,8 @@ static const registration expected[] = {
     {41, 0, "AsanaPersonalAccessToken", "asana", 51, true, -1},
     {389, 0, "AssemblyAI", "assemblyai", 32, true, -1},
     {800, 0, "Atera", "atera", 32, true, -1},
+    {190, 1, "Atlassian", "atlassian", 24, true, -1},
+    {190, 2, "Atlassian", "ATCTT3xFfG", 43, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -75,6 +77,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 41) {
         static const char prefix[] = "0/1234567890123456:";
         memcpy(key, prefix, sizeof(prefix) - 1);
+    }
+    if (entry->type == 190 && entry->version == 2) {
+        memcpy(key, "ATCTT3xFfG", 10);
+        key[34] = '=';
     }
     if (entry->type == 303 && entry->version == 1) key[7] = '%';
     if (entry->type == 390) memcpy(key, "aio_", 4);

@@ -473,6 +473,22 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_atera.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
+    },
+    "atlassian/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/atlassian/v1/atlassian.go",
+      "native_files": ["src/detectors/atlassian.c", "src/detectors/json.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_atlassian.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and malformed-input diagnostics", "Successful empty organization data explicitly fails closed instead of reproducing the upstream Data[0] panic; invocation rollback differs from engine-level panic recovery granularity"]
+    },
+    "atlassian/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/atlassian/v2/atlassian.go",
+      "native_files": ["src/detectors/atlassian.c", "src/detectors/json.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_atlassian.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go JSON decoder semantics and malformed-input diagnostics"]
     }
   },
   "components": {
