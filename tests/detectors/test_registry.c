@@ -102,6 +102,7 @@ static const registration expected[] = {
     {430, 2, "Bannerbear", "bb_pr_", 36, true, -1},
     {377, 0, "Baremetrics", "baremetrics", 21, true, -1},
     {166, 0, "Beamer", "beamer", 46, true, -1},
+    {867, 0, "Besnappy", "besnappy", 64, false, -1},
     {947, 0, "BetterStack", "betterstack", 24, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -301,6 +302,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "synthetic.aha.io";
         secondary_name = "url";
         break;
+    case 867:
     case 457:
     case 458:
     case 511:

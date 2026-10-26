@@ -98,6 +98,7 @@ static const detector_factory named_factories[] = {
     br_bannerbear_v2_init,
     br_baremetrics_init,
     br_beamer_init,
+    br_besnappy_init,
     br_betterstack_init,
     br_bitbucketdatacenter_init,
     br_confluencedatacenter_init,
@@ -221,6 +222,7 @@ const char *br_detector_type_name(int32_t type)
     case 800: return "Atera";
     case 802: return "Aha";
     case 816: return "Appointedd";
+    case 867: return "Besnappy";
     case 907: return "Alchemy";
     case 917: return "Aiven";
     case 931: return "AzureStorage";
