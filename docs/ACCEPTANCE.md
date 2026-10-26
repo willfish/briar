@@ -67,6 +67,10 @@ Bannerbear versions share one provider module with explicit differences. V1 reta
 
 Baremetrics and Beamer both ignore body-read errors and verify only HTTP 200, but their transport policies differ. Baremetrics suppresses transport failures without dropping findings; Beamer retains key-redacted errors. Neither introduces entropy filtering, Base64 validation or a host cache.
 
+Beebole uses a JSON POST and Basic authentication with the key as username and literal `x` password. Besnappy uses those credentials in a GET but remains disabled in CLI selection. Beebole's native POST redirects stay unsupported.
+
+Besttime checks literal byte substrings, not parsed JSON. On HTTP 200, read errors win; the exact spaced success marker wins over the invalid-key marker, even after NUL or invalid UTF-8. Every non-200, including 401/403, is an error. Unknown-body diagnostics preserve complete original valid UTF-8 and non-NUL controls. Unknown bodies containing NUL or invalid UTF-8 instead receive an explicit unsupported candidate error after marker checks, allowing later keys; normalized decoder bytes never replace the original body.
+
 Some verifiers mutate services: Azure Function verification can execute user code, Airbrake project-key verification posts a deploy record, AWS SNS Publish can trigger canary tracking, and Entra refresh-token exchanges can issue new tokens. These are not uniformly read-only credential checks. Some upstream verifiers omit secrets from error-redaction helpers; injected transports must not include credentials in those errors. Verification here is synthetic/offline, not evidence of live service acceptance.
 
 Shared regexp/arbitrary-byte semantics, remaining detectors and helpers, complete engine/source/concurrency behavior and global parity remain unfinished. Nothing is deployed into Pi or used as a production security boundary.

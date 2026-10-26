@@ -772,6 +772,42 @@
       "evidence": ["tests/detectors/test_beamer.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete native HTTP diagnostics and response drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
     },
+    "beebole/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/beebole/beebole.go",
+      "scope_notes": "Preserves occurrences of 40 lowercase alphanumeric bytes, not hex-only keys. The exact SANE JSON POST keeps body spacing and Basic authentication with the key as username and literal x password. Only 200 verifies, 401 rejects and other statuses retain colon-form errors; body/read errors are ignored. Creation and transport errors retain candidates with key-only redaction. No host cache, entropy gate, uniqueness, RawV2, Redacted field or extra metadata is introduced. Positive setter failures remain resource errors.",
+      "native_files": ["src/detectors/beebole.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_beebole.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native SANE POST redirects fail closed; injected success does not establish full native client behavior", "Complete request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
+    "besnappy/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/besnappy/besnappy.go",
+      "scope_notes": "Preserves occurrence-based prefixed 64-byte lowercase-hex extraction and the source-disabled default. The exact SANE GET uses Basic authentication with the key as username and literal x password. Only 200 verifies, 401 rejects and body/read errors are ignored. Creation and transport errors are retained with key-only redaction, never suppressed or cached. Native library fixtures cover the detector directly; explicit CLI selectors cannot enable it.",
+      "native_files": ["src/detectors/besnappy.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_besnappy.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Disabled constructor has no positive CLI oracle execution", "Complete native request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
+    "besttime/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/besttime/besttime.go",
+      "scope_notes": "Preserves prefixed lowercase pri_ plus 32 hexadecimal bytes and all occurrences. The exact SANE GET places the key directly in its path and adds no authentication/content headers. HTTP 200 read errors precede binary substring checks; the exact spaced success marker wins over the invalid-key marker even after NUL or invalid UTF-8. Non-200 statuses, including 401/403, always retain numeric colon-form errors and ignore body errors. Unknown supported bodies retain complete original UTF-8 bytes, including controls, with key-only redaction; the existing UTF8 decoder is used solely as a validation predicate, never to publish normalized diagnostics. Unsupported NUL/invalid-byte diagnostics remain candidate errors and allow later occurrences.",
+      "native_files": ["src/detectors/besttime.c", "src/detectors/key_scan.c", "src/utf8.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_besttime.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Unknown HTTP 200 bodies containing NUL or invalid UTF-8 use an explicit unsupported diagnostic: ABI1 lacks error lengths and complete invalid-byte output semantics", "Complete native request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
+    "betterstack/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/betterstack/betterstack.go",
+      "scope_notes": "Preserves prefixed mixed-case 24-byte alphanumeric captures and every occurrence. The exact SANE monitor-list GET uses Bearer authentication only. Only 200 verifies, 401 rejects and other statuses retain colon-form errors; body/read errors are ignored. Creation and transport errors retain candidates with key-only redaction. No entropy, uniqueness, host cache, RawV2, Redacted field or extra metadata is introduced; the protobuf name remains BetterStack.",
+      "native_files": ["src/detectors/betterstack.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_betterstack.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native request/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/Unicode/source-engine parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
