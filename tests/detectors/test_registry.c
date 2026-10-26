@@ -67,6 +67,7 @@ static const registration expected[] = {
     {800, 0, "Atera", "atera", 32, true, -1},
     {190, 1, "Atlassian", "atlassian", 24, true, -1},
     {190, 2, "Atlassian", "ATCTT3xFfG", 43, true, -1},
+    {376, 0, "Audd", "audd", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
