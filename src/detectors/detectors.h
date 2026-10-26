@@ -112,5 +112,9 @@ int br_bitfinex_init(const br_detector **out, char **error);
 int br_bitlyaccesstoken_init(const br_detector **out, char **error);
 int br_bitmex_init(const br_detector **out, char **error);
 int br_blazemeter_init(const br_detector **out, char **error);
+int br_blitapp_init(const br_detector **out, char **error);
+int br_blocknative_init(const br_detector **out, char **error);
+int br_blogger_init(const br_detector **out, char **error);
+int br_bombbomb_init(const br_detector **out, char **error);
 
 #endif
