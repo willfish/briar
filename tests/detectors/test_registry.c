@@ -142,6 +142,7 @@ static const registration expected[] = {
     {647, 0, "Caflou", "caflou", 155, true, -1},
     {130, 0, "Calendarific", "calendarific", 32, true, -1},
     {474, 0, "CalorieNinja", "calorieninja", 40, true, -1},
+    {254, 0, "Campayn", "campayn", 64, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -403,6 +404,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[32] = '-';
         break;
     case 150:
+    case 254:
     case 317:
     case 598:
     case 602:
