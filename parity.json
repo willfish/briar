@@ -1114,6 +1114,42 @@
       "evidence": ["tests/detectors/test_calendarific.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Shared br_http_send nonzero domain combines adapter allocation/setup failures and transport Do errors; allocation/setup-versus-Do classification is not reproduced and those adapter failures are also suppressed", "Source holds responses for scan-deferred Close without draining; ABI1 eager buffering and per-request release do not reproduce lifecycle/timing", "Complete native client configuration/HTTP diagnostics and shared regexp/Unicode/source-engine/global output parity"]
     },
+    "calendlyapikey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/calendlyapikey/calendlyapikey.go",
+      "scope_notes": "Calendly-prefixed word-bounded occurrence captures preserve exact-case eyJ, 100..300 following alphabet bytes in each first segment, literal periods and an unbounded nonempty signature. No JWT/Base64/claims validation, arbitrary token cap or uniqueness is added; trailing word-boundary backtracking is retained. Raw/keypart only. Dynamic Bearer authorization preserves the complete token in SANE GET https://api.calendly.com/users/me, without body or extra Type/Accept headers. Verification nil context skips candidates; NoV nil context still finds them. All successful 2xx verify, every other status rejects, and the entire shared adapter/Do error domain is suppressed without verification errors. Bodies/read errors are ignored. Provider-owned Bearer/finding/capture/push allocation failures instead cause invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/calendlyapikey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_calendlyapikey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter allocation/setup and Do failures; these cannot be classified separately and are suppressed together", "Source scan-deferred close-only lifecycle differs from ABI1 eager buffering and per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "calorieninja/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/calorieninja/calorieninja.go",
+      "scope_notes": "CalorieNinja-prefixed mixed-alphanumeric 40-byte word-bounded occurrence captures retain duplicates and Raw/keypart only. SANE GET https://api.calorieninjas.com/v1/nutrition?query preserves the plural hostname and bare query, JSON Content-Type and X-Api-Key, without a body or Accept header. Verification nil context skips candidates; NoV nil context still finds them. All successful 2xx verify, all other statuses reject, all shared adapter/Do errors are suppressed and body/read errors are ignored. No verification-error/redaction helper, entropy, uniqueness or cache is introduced. Nonzero provider resources are fatal with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/calorieninja.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_calorieninja.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter allocation/setup and Do failures; these cannot be classified separately and are suppressed together", "Source scan-deferred close-only lifecycle differs from ABI1 eager buffering and per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "campayn/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/campayn/campayn.go",
+      "scope_notes": "Campayn-prefixed lowercase-alphanumeric 64-byte word-bounded occurrence captures are not hex validation; keyword case-insensitivity never widens the token alphabet. Duplicates and Raw/keypart only are retained. Exact SANE GET https://campayn.com/api/v1/lists uses Authorization TRUEREST apikey=KEY and no body/Type/Accept. Verification nil context skips candidates; NoV nil context still finds them. All successful 2xx verify, all other statuses reject, all shared adapter/Do errors are suppressed and body/read errors are ignored. No verification-error/redaction helper, entropy, uniqueness or cache is introduced. Nonzero provider resources are fatal with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/campayn.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_campayn.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter allocation/setup and Do failures; these cannot be classified separately and are suppressed together", "Source scan-deferred close-only lifecycle differs from ABI1 eager buffering and per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "cannyio/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/cannyio/cannyio.go",
+      "scope_notes": "Keyword canny prefixes lowercase-alphanumeric 8-4-4-4-12 word-bounded occurrence captures without hex/UUID/version/entropy validation. Duplicates and Raw/keypart only are retained. Exact SANE POST https://canny.io/api/v1/boards/list uses the 43-byte apiKey=KEY form body and form Content-Type, without Accept or invented logical Content-Length. Verification nil context skips candidates; NoV nil context still finds them. All successful 2xx verify, all other statuses reject, all shared adapter/Do errors are suppressed and body/read errors are ignored. No verification-error/redaction helper, uniqueness or cache is introduced. Nonzero provider resources are fatal with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/cannyio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_cannyio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter allocation/setup and Do failures; these cannot be classified separately and are suppressed together", "Source scan-deferred close-only lifecycle differs from ABI1 eager buffering and per-request release", "Native SANE POST redirects remain fail-closed and their diagnostic is suppressed", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

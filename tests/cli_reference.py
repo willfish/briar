@@ -366,6 +366,10 @@ def fixtures():
     entra_context = b"client_id A6B39F20-17C4-4D85-9E62-0F3A7B1C5D98\ntenant Reader.onmicrosoft.com\n"
     canary_bits = ((1 << 47) | (52310077262 << 7) | 7).to_bytes(6, "big") + b"\xab\xcd\xef\x01"
     aws_canary_id = b"AKIA" + base64.b32encode(canary_bits)
+    # An internal keyword keeps the complete 681-byte token in the engine's
+    # default 512-byte keyword radius without changing the detector's bounds.
+    calendly_max_first = alnum("calendly-max-first", 300)
+    calendly_max_first = calendly_max_first[:238] + b"calendly" + calendly_max_first[246:]
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -581,6 +585,12 @@ def fixtures():
         ("buttercms", 150, b"BUTTERCMS " + alnum("buttercms-key", 40).lower()),
         ("caflou", 647, b"caflou " + b"." * 64 + b"eyJhbGciOiJIUzI1NiJ9." + alnum("caflou-payload", 131) + b"_-Q"),
         ("calendarific", 130, b"CALENDARIFIC " + alnum("calendarific-key", 32)),
+        ("calendly_min", 44, b"calendly eyJ" + alnum("calendly-min-first", 100) + b".eyJ" + alnum("calendly-min-second", 100) + b".Z"),
+        ("calendly_max_segments", 44, b"CALENDLY eyJ" + calendly_max_first + b".eyJ" +
+         alnum("calendly-max-second", 300) + b"." + alnum("calendly-max-signature", 71) + b"_9"),
+        ("calorieninja", 474, b"CALORIENINJA " + alnum("calorieninja-key", 40)),
+        ("campayn", 254, b"CAMPAYN " + alnum("campayn-key", 64).lower()),
+        ("cannyio", 158, b"CANNY z7c9d2e5-f6g8-h3j4-k1m0-n2p4q6r8s1t3"),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
@@ -683,9 +693,10 @@ def compare(native, reference, case):
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True)
         actual = invoke(native, source, detector, kind, cleaning, directory)
-    # Default false-positive filtering must not turn these positive fixtures
-    # into a vacuous zero-row comparison (for example, a 00000 digit run).
-    if name in ("azure_apim_repository_stdin", "azure_apim_repository_filesystem") and (len(actual) != 1 or len(expected) != 1):
+    # False-positive filtering or keyword-window clipping must not turn these
+    # positive fixtures into a vacuous zero-row comparison.
+    if name in ("azure_apim_repository_stdin", "azure_apim_repository_filesystem",
+                "calendly_max_segments_stdin", "calendly_max_segments_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if not reference_matches(case, actual, expected):
         details = [f"result counts native={len(actual)}, reference={len(expected)}"]
