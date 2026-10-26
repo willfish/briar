@@ -545,6 +545,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_autodesk.c", "tests/detectors/test_registry.c"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior and native POST redirects", "Nil C context retains an unverified candidate instead of the upstream request-creation skip; response releases are immediate rather than deferred", "Token issuance remains mocked; no live verification evidence"]
+    },
+    "autoklose/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/autoklose/autoklose.go",
+      "native_files": ["src/detectors/autoklose.c", "src/detectors/json.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_autoklose.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go whole-document JSON diagnostics, string fidelity and generic-map semantics beyond original numeric range and ordered email handling"]
     }
   },
   "components": {
