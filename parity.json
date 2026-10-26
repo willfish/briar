@@ -655,6 +655,42 @@
       "evidence": ["tests/detectors/test_azure_entra_refreshtoken.c", "tests/detectors/test_azure_entra_common.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Finite numeric and aggregate Go fmt.Sprint claim formatting is explicitly unsupported", "Upstream nil-Claims panic becomes an explicit unsupported scan error with invocation-only rollback; engine recovery granularity differs", "Complete native HTTP policy, Go JSON/Unicode/error text and ABI1 embedded-NUL verification-error behavior", "Runtime concurrency evidence for tenant singleflight and wider source/engine behavior"]
     },
+    "azureapimanagementsubscriptionkey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azureapimanagementsubscriptionkey/azureapimanagementsubscriptionkey.go",
+      "scope_notes": "Unique full URLs and keys form the complete URL-major product, with no success break. The custom false-positive callback always returns false. All Client.Do errors, including DNS, are suppressed; the source DNS-sentinel cache-population branch is unreachable. Resource failures cannot be mistaken for that sentinel. Raw is the full URL, RawV2 is URL:key, and verification-error redaction receives only the URL.",
+      "native_files": ["src/detectors/azureapimanagementsubscriptionkey.c", "src/detectors/host_cache.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azureapimanagementsubscriptionkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete SANE request-construction, native HTTP and diagnostic behavior", "Streaming response/deferred-close timing and shared source-engine/regexp behavior"]
+    },
+    "azureappconfigconnectionstring/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azureappconfigconnectionstring/azureappconfigconnectionstring.go",
+      "scope_notes": "Connection captures stay coherent and unique by the whole matched string, not ID. Raw is ID and RawV2 is the full connection. Standard Base64 corruption prevents signing and HTTP, unlike Batch/Storage's decoded-prefix signing. The fixed empty-body GET signature preserves host spelling and ignores scan cancellation/deadlines as the source does. DNS text suppresses only the error, not the finding; error redaction receives the whole connection, not individual credential fragments.",
+      "native_files": ["src/detectors/azureappconfigconnectionstring.c", "src/detectors/azure_shared_key.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azureappconfigconnectionstring.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native Go/curl HTTP behavior and error wording, including DNS classification", "Source-engine/regexp semantics and streaming response/deferred-close timing"]
+    },
+    "azurecontainerregistry/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azurecontainerregistry/azurecontainerregistry.go",
+      "scope_notes": "Manual Basic-auth GET only, with no Docker challenge or token exchange. Unique username/password products preserve exclusions and password entropy. A verified password is consumed globally before the inner loop breaks. Verify-only DNS caching uses username, suppresses the current finding and skips remaining passwords for that username; no-verification ignores the cache. The false-positive callback always returns false. RawV2 is ordered username/password JSON and Redacted is username.",
+      "native_files": ["src/detectors/azurecontainerregistry.c", "src/detectors/host_cache.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azurecontainerregistry.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native HTTP/DNS diagnostics and source cache lifecycle", "Shared source-engine/regexp behavior and streaming response/deferred-close timing"]
+    },
+    "azuredevopspersonalaccesstoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/azuredevopspersonalaccesstoken/azuredevopspersonalaccesstoken.go",
+      "scope_notes": "Lowercase-only 52-character keys use a case-insensitive prefix, not a case-insensitive capture. Occurrence-based key-major organization products retain original organization spelling. Basic auth has an empty username and key password. A provider-local binary ScanLines predicate preserves LF/CR limits, earlier matching lines and short final lines despite body errors. A marker-bearing unterminated final line of exactly 65536 bytes on 2xx yields an unsupported candidate error because ABI 1 cannot distinguish final-read shapes; later pairs continue. Scanner/read errors otherwise remain ignored by status policy.",
+      "native_files": ["src/detectors/azuredevopspersonalaccesstoken.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_azuredevopspersonalaccesstoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Exactly 65536-byte unterminated final-line Reader shape remains explicitly unsupported for affected 2xx candidates", "Native buffered transport/per-request release does not reproduce streaming/deferred-close timing", "Complete request-construction/HTTP diagnostics and shared source-engine/regexp behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

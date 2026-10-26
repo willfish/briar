@@ -461,6 +461,10 @@ def fixtures():
         ("aylien", 485, b"aylien " + alnum("aylien-key", 32).lower() +
          b"\naylien " + alnum("aylien-id", 8).lower()),
         ("ayrshare", 163, b"ayrshare " + b"-".join(alnum(f"ayrshare-key-{part}", 8).upper() for part in range(4))),
+        ("azure_apim_subscription", 1019, b"https://briar-apim.azure-api.net\nsubscription " +
+         alnum("azure-apim-subscription", 32)),
+        ("azure_apim_subscription_fp_case", 1019, b"https://example.azure-api.net\nhttps://UPPER.azure-api.net\nsubscription " +
+         alnum("azure-apim-subscription-hyphen", 15) + b"-" + alnum("azure-apim-subscription-tail", 16)),
         ("azure_entra_refresh_v0_default", 1013, entra_v0),
         ("azure_entra_refresh_v1_context", 1013, entra_context + entra_v1),
         ("azure_entra_refresh_far_context", 1013, entra_context + b"." * 3000 + b"\n" + entra_v0),
@@ -469,8 +473,21 @@ def fixtures():
         ("azure_entra_sp_v2_standalone", "3.v2", b"b7c1Q~" + alnum("entra-sp-v2-standalone", 31)),
         ("azure_batch", 957, b"https://brbatch.eastus.batch.azure.com\n" + alnum("azure-batch-key", 88)),
         ("azure_batch_false_positive_override", 957, b"https://example.eastus.batch.azure.com\n" + b"=" * 88),
+        ("azure_appconfig_connection", 1025, b"Endpoint=https://briar-config.azconfig.io;Id=" +
+         alnum("azure-appconfig-id", 32) + b";Secret=" + base64.b64encode(alnum("azure-appconfig-secret", 32))),
+        ("azure_appconfig_whole_identity", 1025, b"Endpoint=https://Briar-config.azconfig.io;Id=" +
+         alnum("azure-appconfig-shared-id", 32) + b";Secret=AAECAw==\nEndpoint=https://Briar-config.azconfig.io;Id=" +
+         alnum("azure-appconfig-shared-id", 32) + b";Secret=AAECAw==Q"),
         ("azure_cosmosdb_document", 971, b"briar-cosmos.documents.azure.com\n" + alnum("cosmos-document-key", 86) + b"=="),
         ("azure_cosmosdb_table", 971, b"briar-cosmos.table.cosmos.azure.com\n" + alnum("cosmos-table-key", 86) + b"=="),
+        ("azure_container_registry", 958, b"briar-registry.azurecr.io\n" +
+         alnum("azure-registry-password", 40) + b"+/+ACR" + alnum("azure-registry-password-tail", 6)),
+        ("azure_container_registry_exclusions", 958, b"briar-registry.azurecr.io\nmyacr.azurecr.io\nprivatelink.azurecr.io\n" +
+         alnum("azure-registry-first-password", 42) + b"+ACR" + alnum("azure-registry-first-tail", 6) + b"\n" +
+         alnum("azure-registry-second-password", 42) + b"+ACR" + alnum("azure-registry-second-tail", 6) + b"\n" +
+         alnum("azure-registry-wrong-case", 42) + b"+acr" + alnum("azure-registry-wrong-tail", 6)),
+        ("azure_devops_pat", 972, b"AZURE token " + alnum("azure-devops-key", 52).lower() + b"\nAZURE org Briar-Org7"),
+        ("azure_devops_pat_uppercase_key", 972, b"AZURE token " + alnum("azure-devops-upper-key", 52).upper() + b"\nAZURE org Briar-Org8"),
         ("azure_openai", 1007, b"briar-openai.openai.azure.com\napi_key " + synthetic("azure-openai-key", 32)),
         ("azure_openai_no_hostname", 1007, b".openai.azure.com\nopenai.key " + synthetic("azure-openai-standalone", 32)),
         ("azure_storage_connection", 931, b"DefaultEndpointsProtocol=https;AccountName=briarstorage;AccountKey=" +
