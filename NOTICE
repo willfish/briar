@@ -20,8 +20,9 @@ Copyright 2014-2015 Stripe, Inc.
 smithy-go
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
-The Azure shared-key Base64 decoder reimplements decoded-prefix behavior from
-Go 1.26.7 encoding/base64 in C. Original copyright and BSD license:
+Azure shared-key Base64 decoding and API Management repository URL serialization
+reimplement Go 1.26.7 encoding/base64 and net/url behavior in C.
+Original copyright and BSD license:
 Copyright 2009 The Go Authors.
 See LICENSES/BSD-3-Clause-Go.txt.
 
