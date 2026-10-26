@@ -84,6 +84,7 @@ static const registration expected[] = {
     {1013, 0, "AzureRefreshToken", "0.A", 366, true, 1024},
     {957, 0, "AzureBatch", ".batch.azure.com", sizeof("https://briar.region.batch.azure.com") - 1, true, 1024},
     {971, 0, "AzureCosmosDBKeyIdentifiable", ".documents.azure.com", 88, true, -1},
+    {1007, 0, "AzureOpenAI", ".openai.azure.com", 32, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -219,6 +220,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 457:
     case 458:
     case 511:
+    case 1007:
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         break;
     case 212:
@@ -275,6 +277,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "token %s\nsecret %s", key, secondary);
     else if (entry->type == 802)
         snprintf(input, sizeof(input), "aha %s\n%s", key, secondary);
+    else if (entry->type == 1007)
+        snprintf(input, sizeof(input), "briar.openai.azure.com\napi_key %s", key);
     else if (entry->type == 179)
         snprintf(input, sizeof(input), "anypoint %s\norg %s", key, secondary);
     else if (entry->type == 55)
