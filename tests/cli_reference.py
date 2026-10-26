@@ -395,6 +395,13 @@ def fixtures():
         ("apimatic", 637, b"apimatic\n" + b"." * 64 + b"\napikey " + alnum("apimatic-oracle", 64)),
         ("apimetrics", 1004, b"apimetrics " + alnum("apimetrics-oracle", 32)),
         ("apitemplate", 768, b"apitemplate " + alnum("apitemplate-oracle", 39)),
+        ("appcues", 322, b"appcues " + alnum("appcues-key", 36).lower() +
+         b"\nappcues " + alnum("appcues-user", 39).lower() + b"\nappcues 00427\nappcues 00428"),
+        ("appfollow", 588, b"appfollow eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." +
+         alnum("appfollow-payload", 74) + b"." + alnum("appfollow-signature", 43)),
+        ("appointedd", 816, b"appointedd " + alnum("appointedd-key", 44) + b"=" +
+         alnum("appointedd-rest", 43) + b"LongerSuffix"),
+        ("appsynergy", 646, b"appsynergy " + alnum("appsynergy-key", 64).lower()),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))

@@ -383,7 +383,7 @@
       "upstream_source": "pkg/detectors/appcues/appcues.go",
       "native_files": ["src/detectors/appcues.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_appcues.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_appcues.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "appfollow/Scanner": {
@@ -391,7 +391,7 @@
       "upstream_source": "pkg/detectors/appfollow/appfollow.go",
       "native_files": ["src/detectors/appfollow.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_appfollow.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_appfollow.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "appointedd/Scanner": {
@@ -399,7 +399,7 @@
       "upstream_source": "pkg/detectors/appointedd/appointedd.go",
       "native_files": ["src/detectors/appointedd.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_appointedd.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_appointedd.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "appsynergy/Scanner": {
@@ -407,7 +407,7 @@
       "upstream_source": "pkg/detectors/appsynergy/appsynergy.go",
       "native_files": ["src/detectors/appsynergy.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_appsynergy.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_appsynergy.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native SANE POST redirects remain explicitly unsupported"]
     }
   },
