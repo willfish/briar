@@ -72,6 +72,7 @@ static const registration expected[] = {
     {55, 0, "Auth0oauth", "auth0", 64, true, 1024},
     {604, 0, "Autodesk", "autodesk", 32, true, 1024},
     {323, 0, "Autoklose", "autoklose", 32, true, -1},
+    {511, 0, "AutoPilot", "autopilot", 32, true, -1},
     {564, 0, "AviationStack", "aviationstack", 32, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -168,6 +169,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         break;
     case 457:
     case 458:
+    case 511:
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         break;
     case 212:
