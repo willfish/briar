@@ -66,5 +66,9 @@ int br_bitbucketdatacenter_init(const br_detector **out, char **error);
 int br_confluencedatacenter_init(const br_detector **out, char **error);
 int br_jiradatacenterpat_init(const br_detector **out, char **error);
 int br_audd_init(const br_detector **out, char **error);
+int br_auth0managementapitoken_init(const br_detector **out, char **error);
+int br_auth0oauth_init(const br_detector **out, char **error);
+int br_autodesk_init(const br_detector **out, char **error);
+int br_autoklose_init(const br_detector **out, char **error);
 
 #endif
