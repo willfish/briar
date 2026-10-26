@@ -125,5 +125,9 @@ int br_braintrust_init(const br_detector **out, char **error);
 int br_brandfetch_v1_init(const br_detector **out, char **error);
 int br_brandfetch_v2_init(const br_detector **out, char **error);
 int br_browserstack_init(const br_detector **out, char **error);
+int br_browshot_init(const br_detector **out, char **error);
+int br_bscscan_init(const br_detector **out, char **error);
+int br_buddyns_init(const br_detector **out, char **error);
+int br_budibase_init(const br_detector **out, char **error);
 
 #endif
