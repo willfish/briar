@@ -142,6 +142,7 @@ static const detector_factory named_factories[] = {
     br_calorieninja_init,
     br_campayn_init,
     br_cannyio_init,
+    br_carboninterface_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
 };
@@ -198,7 +199,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 1002: case 1003: case 401: case 391: case 484: case 485: case 788: case 637: case 647: case 1004: case 768: case 588: case 598:
         case 317: case 320: case 322: case 816: case 646: case 269: case 278: case 1042: case 181: case 385: case 387: case 388: case 389: case 800:
         case 98: case 41: case 376: case 377: case 166: case 1045: case 1047: case 1046:
-        case 602: case 603: case 604: case 110: case 55: case 56: case 323: case 564: case 511: case 512: case 733: case 2: case 1052: case 959: case 947: case 953: case 957: case 971: case 1013: case 1007: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975:
+        case 578: case 602: case 603: case 604: case 110: case 55: case 56: case 323: case 564: case 511: case 512: case 733: case 2: case 1052: case 959: case 947: case 953: case 957: case 971: case 1013: case 1007: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975:
             return detector->version == 0;
         default: break;
         }
@@ -281,6 +282,7 @@ const char *br_detector_type_name(int32_t type)
     case 523: return "BlitApp";
     case 564: return "AviationStack";
     case 565: return "BombBomb";
+    case 578: return "CarbonInterface";
     case 588: return "Appfollow";
     case 598: return "BuddyNS";
     case 602: return "Bugherd";

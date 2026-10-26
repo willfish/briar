@@ -145,6 +145,7 @@ static const registration expected[] = {
     {474, 0, "CalorieNinja", "calorieninja", 40, true, -1},
     {254, 0, "Campayn", "campayn", 64, true, -1},
     {158, 0, "CannyIo", "canny", 36, true, -1},
+    {578, 0, "CarbonInterface", "carboninterface", 21, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
