@@ -119,6 +119,7 @@ static const registration expected[] = {
     {908, 0, "BlockNative", "blocknative", 36, false, -1},
     {302, 0, "Blogger", "blogger", 39, true, -1},
     {565, 0, "BombBomb", "bombbomb", 39, true, -1},
+    {707, 0, "BoostNote", "boostnote", 64, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -347,6 +348,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(key, "pri_", 4);
         for (size_t i = 4; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         break;
+    case 707:
     case 867:
     case 457:
     case 458:
