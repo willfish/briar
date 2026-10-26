@@ -402,6 +402,13 @@ def fixtures():
         ("appointedd", 816, b"appointedd " + alnum("appointedd-key", 44) + b"=" +
          alnum("appointedd-rest", 43) + b"LongerSuffix"),
         ("appsynergy", 646, b"appsynergy " + alnum("appsynergy-key", 64).lower()),
+        ("apptivo", 269, b"apptivo " + alnum("apptivo-api-key", 36).lower() +
+         b"\napptivo " + alnum("apptivo-access-key", 32)),
+        ("artifactory", 181, b"AKCp" + alnum("artifactory-token", 69) +
+         b"\nsynthetic-fixture.jfrog.io"),
+        ("artifactoryreferencetoken", 1042, b"cmVmdGtu" + alnum("artifactory-reference", 56) +
+         b"\nsynthetic-fixture.jfrog.io"),
+        ("artsy", 278, b"artsy " + alnum("artsy-key", 32) + b"\nartsy " + alnum("artsy-id", 20)),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))

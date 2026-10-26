@@ -415,7 +415,7 @@
       "upstream_source": "pkg/detectors/apptivo/apptivo.go",
       "native_files": ["src/detectors/apptivo.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_apptivo.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_apptivo.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior"]
     },
     "artifactory/Scanner": {
@@ -423,7 +423,7 @@
       "upstream_source": "pkg/detectors/artifactory/artifactory.go",
       "native_files": ["src/detectors/artifactory.c", "src/detectors/endpoints.c", "src/detectors/host_cache.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_artifactory.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_artifactory.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native PUBLIC HTTP policy and Go URL diagnostics remain unsupported; mock verification is not native policy evidence", "Complete endpoint configuration application in the wider engine/CLI"]
     },
     "artifactoryreferencetoken/Scanner": {
@@ -431,7 +431,7 @@
       "upstream_source": "pkg/detectors/artifactoryreferencetoken/artifactoryreferencetoken.go",
       "native_files": ["src/detectors/artifactoryreferencetoken.c", "src/detectors/endpoints.c", "src/detectors/host_cache.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_artifactoryreferencetoken.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_artifactoryreferencetoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native PUBLIC HTTP policy and Go URL diagnostics remain unsupported; mock verification is not native policy evidence", "Complete endpoint configuration application in the wider engine/CLI"]
     },
     "artsy/Scanner": {
@@ -439,7 +439,7 @@
       "upstream_source": "pkg/detectors/artsy/artsy.go",
       "native_files": ["src/detectors/artsy.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
-      "evidence": ["tests/detectors/test_artsy.c", "tests/detectors/test_registry.c"],
+      "evidence": ["tests/detectors/test_artsy.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Native SANE POST redirects remain explicitly unsupported"]
     }
   },
