@@ -77,6 +77,7 @@ static const registration expected[] = {
     {733, 0, "AvazaPersonalAccessToken", "avaza", 45, true, -1},
     {564, 0, "AviationStack", "aviationstack", 32, true, -1},
     {2, 0, "AWS", "AKIA", 20, true, 1024},
+    {959, 0, "AWSSessionKey", "ASIA", 20, true, 2048},
     {320, 0, "Axonaut", "axonaut", 32, true, -1},
     {485, 0, "Aylien", "aylien", 32, true, 1024},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
@@ -87,7 +88,7 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
-    char key[5001], secondary_buffer[82], input[8192];
+    char key[5001], secondary_buffer[82], session_buffer[133], input[8192];
     test_secret(key, entry->key_len, 0);
     if (entry->type == 41) {
         static const char prefix[] = "0/1234567890123456:";
@@ -112,8 +113,18 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(key, header, sizeof(header) - 1);
         key[sizeof(header) - 1 + 74] = '.';
     }
-    const char *secondary = NULL, *secondary_name = NULL;
+    const char *secondary = NULL, *secondary_name = NULL, *session = NULL;
     switch (entry->type) {
+    case 959:
+        strcpy(key, "ASIAQWERTYUIOPASDFGH");
+        secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
+        secondary_name = "secret_access_key";
+        memcpy(session_buffer, "YXdz", 4);
+        for (size_t i = 4; i < sizeof(session_buffer) - 1; ++i)
+            session_buffer[i] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[(i - 4) % 64];
+        session_buffer[sizeof(session_buffer) - 1] = '\0';
+        session = session_buffer;
+        break;
     case 2:
         strcpy(key, "AKIAQWERTYUIOPASDFGH");
         secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
@@ -234,7 +245,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[82] = '\0';
         break;
     }
-    if (entry->type == 322)
+    if (session)
+        snprintf(input, sizeof(input), "%s\n%s\n%s", key, secondary, session);
+    else if (entry->type == 322)
         snprintf(input, sizeof(input), "appcues %s\nappcues %s\nappcues 00427", key, secondary);
     else if (entry->type == 197)
         snprintf(input, sizeof(input), "token %s\nsecret %s", key, secondary);
@@ -258,19 +271,24 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
     br_json *part = NULL;
-    const char *key_name = entry->type == 2 ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
                            entry->type == 1047 || entry->type == 1046 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
-    CHECK(json_object_object_length(result->secret_parts) == (secondary ? 2 : 1));
+    CHECK(json_object_object_length(result->secret_parts) == (session ? 3 : secondary ? 2 : 1));
+    if (session) {
+        CHECK(json_object_object_get_ex(result->secret_parts, "session_token", &part));
+        CHECK(!strcmp(json_object_get_string(part), session));
+    }
     if (secondary) {
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
-        char raw_v2[sizeof(key) + sizeof(secondary_buffer) + 1];
-        if (entry->type == 55) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
+        char raw_v2[sizeof(key) + sizeof(secondary_buffer) + sizeof(session_buffer) + 2];
+        if (session) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", key, secondary, session);
+        else if (entry->type == 55) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
         else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 2 || entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
@@ -326,7 +344,7 @@ int main(void)
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
         CHECK(!detector->false_positive);
-        if (entry->type == 2) CHECK(detector->clean && detector->clean_always);
+        if (entry->type == 2 || entry->type == 959) CHECK(detector->clean && detector->clean_always);
         else CHECK(!detector->clean && !detector->clean_always);
         if (entry->type == 181 || entry->type == 1042 || entry->type == 1047) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);

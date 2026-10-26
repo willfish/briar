@@ -73,6 +73,7 @@ static const detector_factory named_factories[] = {
     br_avazapersonalaccesstoken_init,
     br_aviationstack_init,
     br_aws_access_keys_init,
+    br_aws_session_keys_init,
     br_axonaut_init,
     br_aylien_init,
     br_bitbucketdatacenter_init,
@@ -123,7 +124,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 401: case 391: case 484: case 485: case 788: case 637: case 1004: case 768: case 588:
         case 320: case 322: case 816: case 646: case 269: case 278: case 1042: case 181: case 389: case 800:
         case 98: case 41: case 376: case 1045: case 1047: case 1046:
-        case 604: case 110: case 55: case 323: case 564: case 511: case 733: case 2: case 1052:
+        case 604: case 110: case 55: case 323: case 564: case 511: case 733: case 2: case 1052: case 959:
             return detector->version == 0;
         default: break;
         }
@@ -195,6 +196,7 @@ const char *br_detector_type_name(int32_t type)
     case 907: return "Alchemy";
     case 917: return "Aiven";
     case 933: return "Anthropic";
+    case 959: return "AWSSessionKey";
     case 1004: return "ApiMetrics";
     case 1014: return "AirtableOAuth";
     case 1015: return "AirtablePersonalAccessToken";
