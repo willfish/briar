@@ -431,6 +431,17 @@ def fixtures():
         ("jiradatacenterpat_no_endpoint", 1046, b"jira " +
          base64.b64encode(b"123456789012:" + alnum("jira-dc", 20))),
         ("audd", 376, b"audd " + alnum("audd-key", 32).lower()),
+        ("auth0managementapitoken", 110, b"auth0 ey" + alnum("auth0-management", 1998) +
+         b"\nfixture-tenant.us.auth0.com"),
+        ("auth0managementapitoken_maximum", 110, b"eyauth0" + alnum("auth0-management-long", 4993) +
+         b"\nfixture-tenant.us.auth0.com"),
+        ("auth0managementapitoken_overlong", 110, b"eyauth0" + alnum("auth0-management-long", 4994) +
+         b"\nfixture-tenant.us.auth0.com"),
+        ("auth0oauth", 55, b"auth0 " + alnum("auth0-client-id", 32) + b"\n" +
+         alnum("auth0-client-secret", 64) + b"\nfixture-tenant.us.auth0.com"),
+        ("autodesk", 604, b"autodesk " + alnum("autodesk-key", 32) +
+         b"\nautodesk " + alnum("autodesk-secret", 16)),
+        ("autoklose", 323, b"autoklose " + alnum("autoklose-key", 32)),
     )
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
