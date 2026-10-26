@@ -137,6 +137,7 @@ static const registration expected[] = {
     {142, 1, "Buildkite", "buildkite", 40, true, -1},
     {142, 2, "Buildkite", "bkua_", 45, true, -1},
     {317, 0, "Bulbul", "bulbul", 32, true, -1},
+    {833, 0, "Bulksms", "bulksms", 29, true, 1024},
     {150, 0, "ButterCMS", "buttercms", 40, true, -1},
     {647, 0, "Caflou", "caflou", 155, true, -1},
     {130, 0, "Calendarific", "calendarific", 32, true, -1},
@@ -362,6 +363,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         break;
     case 1053:
         memcpy(key, "sk-", 3);
+        break;
+    case 833:
+        secondary = "A7C9D2E5-F6A8-B3C4-D1E0-B2A4C6D8E1F3A";
+        secondary_name = "id";
         break;
     case 828:
         snprintf(key, sizeof(key), "f7c9d2e5b6a8f3c4d1e0b2a4c6d8e1f3");
