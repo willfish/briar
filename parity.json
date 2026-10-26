@@ -1033,6 +1033,51 @@
       "evidence": ["tests/detectors/test_budibase.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Native SANE POST redirects remain fail-closed; full native client configuration/HTTP diagnostics and streaming drain/deferred-close timing are incomplete", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
     },
+    "bugherd/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bugherd/bugherd.go",
+      "scope_notes": "Provider-prefixed exact lowercase-alphanumeric 22-byte word-bounded occurrences retain duplicates and non-hex/low-entropy keys; keyword case-insensitivity does not widen the capture. Raw/keypart only. SANE GET https://www.bugherd.com/api_v2/projects.json preserves JSON Content-Type and Basic(key,literal x), nil body/default UA/no Accept. Exactly 200 verifies, 401 rejects and other statuses produce numeric colon errors, ignoring every body/read/drain error. Source supplies zero redaction secrets, so token and encoded-Basic echoes remain intact in creation/transport errors. Every nonzero helper/setter resource failure normalizes to invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/bugherd.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bugherd.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native client configuration/HTTP diagnostics and streaming drain/deferred-close timing", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "bugsnag/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bugsnag/bugsnag.go",
+      "scope_notes": "Provider-prefixed lowercase-alphanumeric 8-4-4-4-12 shape is NOT hex/UUID validation; exact dashes, word boundaries and occurrences remain, with no entropy, uniqueness or cache policy. Raw/keypart only. SANE GET https://api.bugsnag.com/user/organizations?admin sends JSON Content-Type and literal LOWERCASE token KEY Authorization, not BuddyNS Token, Bearer or Basic; nil body/default UA/no Accept. Exactly 200 verifies and 401 rejects, ignoring all body/read/drain errors; other statuses use numeric colon errors. Source zero redaction arguments retain token-bearing causes unchanged. Nonzero resources normalize and roll back only this invocation.",
+      "native_files": ["src/detectors/bugsnag.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bugsnag.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native client configuration/HTTP diagnostics and streaming drain/deferred-close timing", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "buildkite/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/buildkite/v1/buildkite.go",
+      "scope_notes": "One cohesive module shares genuinely identical occurrence scanning and the verifier delegated to by v2, with separate factories/regexes/descriptions. V1 prefixed lowercase-alphanumeric 40-byte word-bounded tokens retain duplicates, Raw/keypart and EMPTY ExtraData on NoV, not version metadata. Verification replaces metadata: creation/transport/status/decode failures and 401 leave nil; typed first-document HTTP 200 success creates only a scopes string, including empty for null root or missing/null/empty scopes. Ordered field duplicates and Go []string null-slot reuse past prior shrink, null/empty reset, scope order/duplicates and embedded-NUL lengths are preserved; no Algolia filtering/sorting or blanket float64 validation. Shared SANE Bearer GET uses default UA/no extra body/type/Accept. Other statuses use unexpected HTTP response status errors and ignore body errors. Redact the complete token only; normalize nonzero resource failures and preserve caller findings on rollback.",
+      "native_files": ["src/detectors/buildkite.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_buildkite.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Broader encoding/json Unicode/diagnostic and arbitrary-byte streaming behavior remains limited by shared helper scope", "Complete native client configuration/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/source-engine, map-order and global output parity"]
+    },
+    "buildkite/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/buildkite/v2/buildkite.go",
+      "scope_notes": "Separate v2 factory uses the direct word-bounded bkua_ plus 40 lowercase-alphanumeric pattern and bkua_ dispatch keyword, NOT PrefixRegex or a required buildkite context. Occurrences retain duplicates and Raw/keypart, with NIL ExtraData on NoV, unlike v1's empty map; no version field/RawV2/Redacted is introduced. Both source versions share v1 VerifyBuildKite: SANE Bearer GET, typed first-document APIResponse.Scopes []string, 200 success always publishes a joined scopes string, 401 false/nil, other HTTP-status errors and token-only redaction. Metadata stays nil on every failed verification. Ordered duplicates/null backing slots past shrink and reset, unknown huge numbers, type errors, binary-length scope strings and first-document/read-error precedence remain explicit provider policy over existing JSON mechanics. One shared scanner/verifier avoids duplicated version implementations without flattening their different extraction/NoV metadata.",
+      "native_files": ["src/detectors/buildkite.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_buildkite.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Broader encoding/json Unicode/diagnostic and arbitrary-byte streaming behavior remains limited by shared helper scope", "Complete native client configuration/HTTP diagnostics and streaming drain/deferred-close timing", "Shared regexp/source-engine, map-order and global output parity"]
+    },
+    "bulbul/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/bulbul/bulbul.go",
+      "scope_notes": "Provider-prefixed lowercase-alphanumeric 32-byte word-bounded occurrence captures are not hex/entropy/uniqueness constrained; Raw/keypart only. SANE GET preserves the literal view_all_users api_key query, nil body/default UA/no extra headers. HTTP 200 read errors precede the exact case-sensitive binary message-Successful marker, including its REQUIRED trailing comma. Full bytes are searched past NUL/invalid UTF-8; valid JSON with that message as the last field need not verify. Missing/changed/spaced markers return false/nil. HTTP 401 rejects; other statuses produce numeric colon errors, ignoring every non-200 body/read error. Source zero secret arguments preserve key-bearing query/transport/read causes unredacted. Nonzero resources normalize and roll back only this invocation.",
+      "native_files": ["src/detectors/bulbul.c", "src/detectors/key_scan.c", "src/bytes.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_bulbul.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete native client configuration/HTTP diagnostics and streaming read/drain/deferred-close timing", "Source-unredacted errors are not a credential-safe output boundary", "Shared regexp/Unicode/source-engine and global output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

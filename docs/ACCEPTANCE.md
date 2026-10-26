@@ -95,6 +95,10 @@ BrowserStack is not a SANE client alias. Its injected-only profile preserves no 
 
 BscScan verifies HTTP 200 when the complete binary body lacks case-sensitive `NOTOK`, even for empty or non-JSON content. A body read error takes precedence; non-200 statuses ignore body errors. This is a byte-marker policy, not JSON validation. Browshot retains its literal-hyphen boundary quirks. Browshot, BscScan, BuddyNS and Budibase all preserve source-unredacted errors, including echoed query keys or authorization values.
 
+Buildkite versions share verification but not their unverified metadata: v1 starts with an empty map and v2 with nil. Verification replaces both, publishing a joined scopes string only after successful typed first-document decoding; missing or null scopes still verify with an empty string. Scope order, duplicates, embedded NUL and repeated-array backing-slot semantics are retained. No version field is added.
+
+Bulbul requires the literal comma after its binary success marker, so a valid JSON object with that message as its last field need not verify. Bugherd, Bugsnag and Bulbul retain source-unredacted errors; Buildkite redacts only its token. Bugsnag's literal lowercase token authorization remains distinct from BuddyNS's capitalized Token scheme.
+
 Some verifiers mutate services: Azure Function verification can execute user code, Airbrake project-key verification posts a deploy record, AWS SNS Publish can trigger canary tracking, and Entra refresh-token exchanges can issue new tokens. These are not uniformly read-only credential checks. Some upstream verifiers omit secrets from error-redaction helpers; injected transports must not include credentials in those errors. Verification here is synthetic/offline, not evidence of live service acceptance.
 
 Shared regexp/arbitrary-byte semantics, remaining detectors and helpers, complete engine/source/concurrency behavior and global parity remain unfinished. Nothing is deployed into Pi or used as a production security boundary.
