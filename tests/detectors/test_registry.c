@@ -89,6 +89,7 @@ static const registration expected[] = {
     {1025, 0, "AzureAppConfigConnectionString", ".azconfig.io", 32, true, 1024},
     {971, 0, "AzureCosmosDBKeyIdentifiable", ".documents.azure.com", 88, true, -1},
     {958, 0, "AzureContainerRegistry", ".azurecr.io", 52, true, 1024},
+    {972, 0, "AzureDevopsPersonalAccessToken", "azure", 52, true, 1024},
     {1007, 0, "AzureOpenAI", ".openai.azure.com", 32, true, -1},
     {931, 0, "AzureStorage", "DefaultEndpointsProtocol=http", 88, true, 1024},
     {1018, 0, "AzureApiManagementRepositoryKey", "azure", 105, true, 1024},
@@ -153,6 +154,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "AKIAQWERTYUIOPASDFGH");
         secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
         secondary_name = "secret_access_key";
+        break;
+    case 972:
+        for (size_t i = 0; i < entry->key_len; ++i)
+            if (key[i] >= 'A' && key[i] <= 'Z') key[i] += 'a' - 'A';
+        secondary = "Briar-Org7";
+        secondary_name = "organization";
         break;
     case 958:
         memcpy(key + 42, "+ACR", 4);
