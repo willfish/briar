@@ -553,6 +553,14 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_autoklose.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Complete Go whole-document JSON diagnostics, string fidelity and generic-map semantics beyond original numeric range and ordered email handling"]
+    },
+    "aviationstack/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/aviationstack/aviationstack.go",
+      "native_files": ["src/detectors/aviationstack.c", "src/detectors/key_scan.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_aviationstack.c", "tests/detectors/test_registry.c"],
+      "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Ten-second timeout is request-local with deadline clamping, not upstream shared-client mutation/concurrency parity"]
     }
   },
   "components": {

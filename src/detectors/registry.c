@@ -68,6 +68,7 @@ static const detector_factory named_factories[] = {
     br_auth0oauth_init,
     br_autodesk_init,
     br_autoklose_init,
+    br_aviationstack_init,
     br_bitbucketdatacenter_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
@@ -115,7 +116,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 457: case 42: case 933: case 179: case 1032: case 632: case 212: case 458:
         case 401: case 391: case 484: case 788: case 637: case 1004: case 768: case 588:
         case 322: case 816: case 646: case 269: case 278: case 1042: case 181: case 389: case 800:
-        case 98: case 41: case 376: case 1045: case 1047: case 1046: case 604: case 110: case 55: case 323:
+        case 98: case 41: case 376: case 1045: case 1047: case 1046: case 604: case 110: case 55: case 323: case 564:
             return detector->version == 0;
         default: break;
         }
@@ -167,6 +168,7 @@ const char *br_detector_type_name(int32_t type)
     case 498: return "AirVisual";
     case 521: return "AbuseIPDB";
     case 522: return "AletheiaApi";
+    case 564: return "AviationStack";
     case 588: return "Appfollow";
     case 604: return "Autodesk";
     case 632: return "Apacta";

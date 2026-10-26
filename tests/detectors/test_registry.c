@@ -72,6 +72,7 @@ static const registration expected[] = {
     {55, 0, "Auth0oauth", "auth0", 64, true, 1024},
     {604, 0, "Autodesk", "autodesk", 32, true, 1024},
     {323, 0, "Autoklose", "autoklose", 32, true, -1},
+    {564, 0, "AviationStack", "aviationstack", 32, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
