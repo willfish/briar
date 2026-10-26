@@ -58,6 +58,7 @@ static const registration expected[] = {
     {816, 0, "Appointedd", "appointedd", 88, true, -1},
     {646, 0, "AppSynergy", "appsynergy", 64, true, -1},
     {269, 0, "Apptivo", "apptivo", 36, true, 1024},
+    {278, 0, "Artsy", "artsy", 32, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -96,6 +97,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         break;
     case 269:
         test_secret(secondary_buffer, 32, 17);
+        secondary = secondary_buffer;
+        secondary_name = "id";
+        break;
+    case 278:
+        test_secret(secondary_buffer, 20, 17);
         secondary = secondary_buffer;
         secondary_name = "id";
         break;
