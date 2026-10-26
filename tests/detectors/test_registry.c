@@ -127,6 +127,7 @@ static const registration expected[] = {
     {1053, 0, "BrainTrustApiKey", "braintrust", 51, true, -1},
     {333, 1, "Brandfetch", "brandfetch", 40, true, -1},
     {333, 2, "Brandfetch", "brandfetch", 44, true, -1},
+    {756, 0, "BrowserStack", "browserstack", 20, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -335,6 +336,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         test_secret(secondary_buffer, 43, 13);
         secondary = secondary_buffer;
         break;
+    case 756:
+        secondary = "briaruser17";
+        secondary_name = "username";
+        break;
     case 333:
         if (entry->version == 2) key[43] = '=';
         break;
@@ -434,6 +439,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "%s", key);
     else if (session)
         snprintf(input, sizeof(input), "%s\n%s\n%s", key, secondary, session);
+    else if (entry->type == 756)
+        snprintf(input, sizeof(input), "browserstackKey %s\nbrowserstackUser %s", key, secondary);
     else if (entry->type == 1003)
         snprintf(input, sizeof(input), "box id %s\nsecret %s", key, secondary);
     else if (entry->type == 512)
