@@ -146,6 +146,8 @@ static const registration expected[] = {
     {254, 0, "Campayn", "campayn", 64, true, -1},
     {158, 0, "CannyIo", "canny", 36, true, -1},
     {270, 0, "CapsuleCRM", "capsulecrm", 64, true, -1},
+    {708, 1, "CaptainData", "captaindata", 64, true, 1024},
+    {708, 2, "CaptainData", "captaindata", 64, true, -1},
     {578, 0, "CarbonInterface", "carboninterface", 21, true, -1},
     {685, 0, "Cashboard", "cashboard", 15, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -375,6 +377,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 1053:
         memcpy(key, "sk-", 3);
         break;
+    case 708:
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        secondary = "b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3";
+        secondary_name = "project_id";
+        break;
     case 685:
         strcpy(key, "B7C-D9E-F2G-H5J");
         secondary = "briar7";
@@ -589,7 +596,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         else if (session) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", key, secondary, session);
         else if (entry->type == 931) snprintf(raw_v2, sizeof(raw_v2), "{\"accountName\":\"%s\",\"accountKey\":\"%s\"}", secondary, key);
         else if (entry->type == 971) snprintf(raw_v2, sizeof(raw_v2), "key: %s account_url: %s", key, secondary);
-        else if (entry->type == 55 || entry->type == 1018 || entry->type == 512) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
+        else if (entry->type == 55 || entry->type == 1018 || entry->type == 512 || entry->type == 708) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
         else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 1019 || entry->type == 1024 || entry->type == 2 || entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);

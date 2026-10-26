@@ -143,6 +143,8 @@ static const detector_factory named_factories[] = {
     br_campayn_init,
     br_cannyio_init,
     br_capsulecrm_init,
+    br_captaindata_v1_init,
+    br_captaindata_v2_init,
     br_carboninterface_init,
     br_cashboard_init,
     br_confluencedatacenter_init,
@@ -193,7 +195,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_object_get_ex(feature_flags, "BraintrustDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
-        case 3: case 142: case 190: case 303: case 333: case 430: return detector->version == 1 || detector->version == 2;
+        case 3: case 142: case 190: case 303: case 333: case 430: case 708: return detector->version == 1 || detector->version == 2;
         case 0: case 150: case 158: case 239: case 254: case 521: case 390: case 431: case 432: case 684: case 685: case 693: case 197: case 802:
         case 125: case 126: case 130: case 277: case 1014: case 1015: case 498: case 506: case 910: case 917: case 907:
         case 302: case 565: case 707: case 723: case 756: case 828: case 833: case 375: case 522: case 523: case 170: case 163: case 399: case 473: case 474: case 453:
@@ -299,6 +301,7 @@ const char *br_detector_type_name(int32_t type)
     case 685: return "Cashboard";
     case 693: return "Aeroworkflow";
     case 707: return "BoostNote";
+    case 708: return "CaptainData";
     case 723: return "Borgbase";
     case 733: return "AvazaPersonalAccessToken";
     case 756: return "BrowserStack";
