@@ -62,5 +62,9 @@ int br_assemblyai_init(const br_detector **out, char **error);
 int br_atera_init(const br_detector **out, char **error);
 int br_atlassian_v1_init(const br_detector **out, char **error);
 int br_atlassian_v2_init(const br_detector **out, char **error);
+int br_bitbucketdatacenter_init(const br_detector **out, char **error);
+int br_confluencedatacenter_init(const br_detector **out, char **error);
+int br_jiradatacenterpat_init(const br_detector **out, char **error);
+int br_audd_init(const br_detector **out, char **error);
 
 #endif
