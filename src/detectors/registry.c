@@ -51,6 +51,7 @@ static const detector_factory named_factories[] = {
     br_apollo_init,
     br_appcues_init,
     br_appfollow_init,
+    br_appointedd_init,
 };
 
 static int fail(char **error, const char *message)
@@ -94,7 +95,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 375: case 522: case 170: case 399: case 473: case 453:
         case 457: case 42: case 933: case 179: case 1032: case 632: case 212: case 458:
         case 401: case 391: case 484: case 788: case 637: case 1004: case 768: case 588:
-        case 322:
+        case 322: case 816:
             return detector->version == 0;
         default: break;
         }
@@ -142,6 +143,7 @@ const char *br_detector_type_name(int32_t type)
     case 768: return "APITemplate";
     case 788: return "Apilayer";
     case 802: return "Aha";
+    case 816: return "Appointedd";
     case 907: return "Alchemy";
     case 917: return "Aiven";
     case 933: return "Anthropic";

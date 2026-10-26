@@ -55,6 +55,7 @@ static const registration expected[] = {
     {293, 0, "Apollo", "apollo", 22, false, -1},
     {322, 0, "Appcues", "appcues", 36, true, 1024},
     {588, 0, "Appfollow", "appfollow", 155, true, -1},
+    {816, 0, "Appointedd", "appointedd", 88, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
