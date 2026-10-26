@@ -120,6 +120,7 @@ static const registration expected[] = {
     {302, 0, "Blogger", "blogger", 39, true, -1},
     {565, 0, "BombBomb", "bombbomb", 39, true, -1},
     {707, 0, "BoostNote", "boostnote", 64, true, -1},
+    {723, 0, "Borgbase", "borgbase", 150, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
