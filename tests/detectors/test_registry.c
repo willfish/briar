@@ -80,6 +80,7 @@ static const registration expected[] = {
     {959, 0, "AWSSessionKey", "ASIA", 20, true, 2048},
     {320, 0, "Axonaut", "axonaut", 32, true, -1},
     {485, 0, "Aylien", "aylien", 32, true, 1024},
+    {163, 0, "Ayrshare", "ayrshare", 35, true, -1},
     {1045, 0, "BitbucketDataCenter", "BBDC-", 45, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -90,6 +91,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
 {
     char key[5001], secondary_buffer[82], session_buffer[133], input[8192];
     test_secret(key, entry->key_len, 0);
+    if (entry->type == 163) strcpy(key, "B7C9D2E5-F6G8H3J4-K1M0N2P4-Q6R8S1T3");
     if (entry->type == 41) {
         static const char prefix[] = "0/1234567890123456:";
         memcpy(key, prefix, sizeof(prefix) - 1);
