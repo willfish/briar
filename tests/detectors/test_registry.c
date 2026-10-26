@@ -143,6 +143,7 @@ static const registration expected[] = {
     {130, 0, "Calendarific", "calendarific", 32, true, -1},
     {474, 0, "CalorieNinja", "calorieninja", 40, true, -1},
     {254, 0, "Campayn", "campayn", 64, true, -1},
+    {158, 0, "CannyIo", "canny", 36, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -180,7 +181,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(key, "bb_pr_", 6);
         for (size_t i = 6; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
     }
-    if (entry->type == 388 || entry->type == 603) key[8] = key[13] = key[18] = key[23] = '-';
+    if (entry->type == 158 || entry->type == 388 || entry->type == 603) key[8] = key[13] = key[18] = key[23] = '-';
     if (entry->type == 1029) memcpy(key, "briar7:ATBB", 11);
     if (entry->type == 166) key[45] = '=';
     if (entry->type == 377) memcpy(key, "sk_", 3);
