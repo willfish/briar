@@ -197,6 +197,7 @@ static const registration expected[] = {
     {783, 0, "Codequiry", "codequiry", 64, true, -1},
     {554, 0, "CoinApi", "coinapi", 36, true, -1},
     {5, 0, "Coinbase", "begin ec", 88, true, -1},
+    {823, 0, "Collect2", "collect2", 36, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -464,6 +465,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "-----BEGIN EC PRIVATE KEY-----\nMBICAQEEAQGgCgYIKoZIzj0DAQc=\n-----END EC PRIVATE KEY-----");
         secondary = "organizations/ORG__123-AB_C-de_F-GHI_-abcdefgh1234/apiKeys/KEY__123-ZZ__-aaaa-bbbb-GHIJklmn5678";
         secondary_name = "key_name";
+        break;
+    case 823:
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[8] = key[13] = key[18] = key[23] = '-'; /* No UUID version/variant validation. */
         break;
     case 960:
         key[0] = 'g'; key[8] = key[13] = key[18] = key[23] = '-';
