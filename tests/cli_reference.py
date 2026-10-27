@@ -803,6 +803,11 @@ def fixtures():
         ("currencycloud_hidden_emails", 382, b"User7@Example.invalid\nOther8@Example.invalid\ncurrencycloud " + alnum("currencycloud-key", 64).lower()),
         ("currencyfreaks", 499, b"CURRENCYFREAKS " + alnum("currencyfreaks-key", 32).lower()),
         ("currencylayer", 354, b"currencylayer " + alnum("currencylayer-key", 32).lower()),
+        ("currencyscoop", 380, b"CURRENCYSCOOP " + alnum("currencyscoop-key", 32).lower()),
+        ("currentsapi", 403, b"CURRENTSAPI -_" + alnum("currentsapi-key", 46) + b"X"),
+        ("customerguru", 226, b"CuStOmErGuRu " + alnum("customerguru-key", 30) + b"\nGURU " + alnum("customerguru-id", 50)),
+        ("customerio", 211, b"CUSTOMERIO " + alnum("customerio-key", 20)),
+        ("customerio_products", 211, b"customerio " + alnum("customerio-key", 20) + b"\ncustomer " + alnum("customerio-id", 20)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -947,8 +952,14 @@ def compare(native, reference, case):
                 "cryptocompare_stdin", "cryptocompare_filesystem",
                 "currencylayer_stdin", "currencylayer_filesystem",
                 "currencycloud_stdin", "currencycloud_filesystem",
-                "currencycloud_hidden_emails_stdin", "currencycloud_hidden_emails_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "currencycloud_hidden_emails_stdin", "currencycloud_hidden_emails_filesystem",
+                "currencyscoop_stdin", "currencyscoop_filesystem",
+                "currentsapi_stdin", "currentsapi_filesystem",
+                "customerguru_stdin", "customerguru_filesystem",
+                "customerio_stdin", "customerio_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
+    if name in ("customerio_products_stdin", "customerio_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
+        raise AssertionError(name + ": two distinct occurrences must retain all four CustomerIO products")
     if name in ("currencycloud_no_email_stdin", "currencycloud_no_email_filesystem") and (actual or expected):
         raise AssertionError(name + ": missing required email must produce no finding")
     if name.startswith("couchbase_"):
