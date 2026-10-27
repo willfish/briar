@@ -198,5 +198,9 @@ int br_coinlayer_init(const br_detector **out, char **error);
 int br_coinlib_init(const br_detector **out, char **error);
 int br_collect2_init(const br_detector **out, char **error);
 int br_column_init(const br_detector **out, char **error);
+int br_commercejs_init(const br_detector **out, char **error);
+int br_commodities_init(const br_detector **out, char **error);
+int br_companyhub_init(const br_detector **out, char **error);
+int br_confluent_init(const br_detector **out, char **error);
 
 #endif
