@@ -255,6 +255,7 @@ static const registration expected[] = {
     {789, 0, "Disqus", "disqus", 64, true, -1},
     {666, 0, "Ditto", "ditto", 77, true, -1},
     {281, 0, "Dnscheck", "dnscheck", 32, true, 1024},
+    {838, 0, "Docparser", "docparser", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -323,6 +324,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         char secret[69]; test_secret(secret, 68, 11);
         snprintf(key, sizeof(key), "https://discord.com/api/webhooks/123456789012345678/%s", secret);
     }
+    if (entry->type == 838)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
     if (entry->type == 897) {
         memcpy(key, "dop_v1_", 7);
         for (size_t i = 7; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
