@@ -231,6 +231,7 @@ static const registration expected[] = {
     {619, 0, "Dandelion", "dandelion", 32, true, -1},
     {762, 0, "Dareboost", "dareboost", 60, true, -1},
     {834, 0, "Databox", "databox", 21, true, -1},
+    {62, 0, "DatabricksToken", "databricks", 36, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -551,6 +552,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "organizations/ORG__123-AB_C-de_F-GHI_-abcdefgh1234/apiKeys/KEY__123-ZZ__-aaaa-bbbb-GHIJklmn5678";
         secondary_name = "key_name";
         break;
+    case 62:
+        memcpy(key, "dapi", 4);
+        for (size_t i = 4; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        secondary = "briar7.cloud.databricks.com";
+        secondary_name = "domain";
+        break;
     case 749:
         memcpy(key, "live_", 5);
         break;
@@ -860,7 +867,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
-                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 ? "token" : "key";
+                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 || entry->type == 62 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
     CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 || entry->type == 648 || entry->type == 739 || entry->type == 1048 ? 3 : secondary ? 2 : 1));
@@ -1000,7 +1007,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
-              entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 62 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
