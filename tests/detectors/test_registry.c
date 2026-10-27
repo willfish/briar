@@ -218,6 +218,7 @@ static const registration expected[] = {
     {192, 0, "Coveralls", "coveralls", 37, true, -1},
     {770, 0, "CraftMyPDF", "craftmypdf", 35, true, -1},
     {335, 0, "Crowdin", "crowdin", 80, true, -1},
+    {499, 0, "Currencyfreaks", "currencyfreaks", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
