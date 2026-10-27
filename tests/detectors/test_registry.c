@@ -263,6 +263,7 @@ static const registration expected[] = {
     {919, 0, "Docusign", "docusign", 36, true, 1024},
     {196, 0, "Doppler", "dp.ct.", 46, true, -1},
     {325, 0, "Dotdigital", "@apiconnector.com", 37, true, 1024},
+    {651, 0, "DronaHQ", "dronahq", 50, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
