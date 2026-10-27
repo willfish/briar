@@ -167,6 +167,7 @@ static const registration expected[] = {
     {57, 0, "Clarifai", "clarifai", 32, true, -1},
     {334, 0, "Clearbit", "clearbit", 35, true, -1},
     {456, 0, "ClickHelp", "clickhelp.co", 19, true, 1024},
+    {209, 0, "ClickSendsms", "clicksendsms", 36, true, 1024},
     {366, 0, "ClickupPersonalToken", "clickup", 43, true, -1},
     {710, 0, "Cliengo", "cliengo", 36, true, -1},
     {307, 0, "Clientary", "ronin", 26, true, 1024},
@@ -405,6 +406,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
             key[29] = '_';
             for (size_t i = 30; i < 70; ++i) key[i] = "0123456789aBcDeF"[i % 16];
         }
+        break;
+    case 209:
+        strcpy(key, "G7H8IJKL-M9N0-OPQR-STUV-WXYZ1234ABCD");
+        secondary = "briar7@fixture.invalid";
+        secondary_name = "id";
         break;
     case 307:
         secondary = "briar7";
