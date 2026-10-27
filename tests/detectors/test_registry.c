@@ -180,6 +180,8 @@ static const registration expected[] = {
     {100, 1, "CloudflareApiToken", "cloudflare", 40, true, -1},
     {100, 2, "CloudflareApiToken", "cfut_", 53, true, 1024},
     {59, 0, "CloudflareCaKey", "cloudflare", 176, true, -1},
+    {58, 1, "CloudflareGlobalApiKey", "cloudflare", 37, true, 1024},
+    {58, 2, "CloudflareGlobalApiKey", "cfk_", 52, true, 1024},
     {721, 0, "CloudImage", "cloudimage", 30, true, -1},
     {1048, 0, "Cloudinary", "cloudinary", 15, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -429,6 +431,16 @@ static void check_dispatch(const br_detector *detector, const registration *entr
             memcpy(key, "cfut_", 5);
             for (size_t i = 45; i < 53; ++i) key[i] = "0123456789abcdef"[i % 16];
         }
+        break;
+    case 58:
+        if (entry->version == 1) {
+            for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        } else {
+            memcpy(key, "cfk_", 4);
+            for (size_t i = 44; i < 52; ++i) key[i] = "0123456789abcdef"[i % 16];
+        }
+        secondary = "briar7@fixture.invalid";
+        secondary_name = "email";
         break;
     case 59:
         memcpy(key, "v1.0-", 5);
@@ -690,6 +702,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         return;
     }
     if (entry->type == 307) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
+    if (entry->type == 58) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, secondary));
     if (entry->type == 100) CHECK(!result->extra_data && !result->redacted); /* No invented version metadata. */
     if (entry->type == 142) {
         if (entry->version == 1) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);

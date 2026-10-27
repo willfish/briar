@@ -177,6 +177,8 @@ static const detector_factory named_factories[] = {
     br_cloudflareapitoken_v1_init,
     br_cloudflareapitoken_v2_init,
     br_cloudflarecakey_init,
+    br_cloudflareglobalapikey_v1_init,
+    br_cloudflareglobalapikey_v2_init,
     br_cloudimage_init,
     br_cloudinary_init,
     br_confluencedatacenter_init,
@@ -287,6 +289,7 @@ const char *br_detector_type_name(int32_t type)
     case 55: return "Auth0oauth";
     case 56: return "Bitfinex";
     case 57: return "Clarifai";
+    case 58: return "CloudflareGlobalApiKey";
     case 59: return "CloudflareCaKey";
     case 98: return "AsanaOauth";
     case 100: return "CloudflareApiToken";
