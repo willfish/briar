@@ -172,5 +172,10 @@ int br_clinchpad_init(const br_detector **out, char **error);
 int br_clockify_init(const br_detector **out, char **error);
 int br_clockworksms_init(const br_detector **out, char **error);
 int br_closecrm_init(const br_detector **out, char **error);
+int br_cloudconvert_init(const br_detector **out, char **error);
+int br_cloudelements_init(const br_detector **out, char **error);
+int br_cloudflareapitoken_v1_init(const br_detector **out, char **error);
+int br_cloudflareapitoken_v2_init(const br_detector **out, char **error);
+int br_cloudflarecakey_init(const br_detector **out, char **error);
 
 #endif
