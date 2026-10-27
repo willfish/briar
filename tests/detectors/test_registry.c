@@ -259,6 +259,7 @@ static const registration expected[] = {
     {921, 1, "Dockerhub", "docker", 36, true, 1024},
     {921, 2, "Dockerhub", "docker", 36, true, 1024},
     {838, 0, "Docparser", "docparser", 40, true, -1},
+    {311, 0, "Documo", "documo", 237, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -339,6 +340,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 138) key[23] = '=';
     if (entry->type == 665) memcpy(key, "pk_Z_", 5);
     if (entry->type == 65) key[24] = key[31] = '.';
+    if (entry->type == 311) {
+        key[0] = key[37] = 'e'; key[1] = key[38] = 'y';
+        key[36] = key[193] = '.';
+    }
     if (entry->type == 921) {
         if (entry->version == 1) key[8] = key[13] = key[18] = key[23] = '-';
         else memcpy(key, "dckr_pat_", 9);
