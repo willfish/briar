@@ -223,6 +223,7 @@ static const registration expected[] = {
     {499, 0, "Currencyfreaks", "currencyfreaks", 32, true, -1},
     {354, 0, "Currencylayer", "currencylayer", 32, true, -1},
     {380, 0, "CurrencyScoop", "currencyscoop", 32, true, -1},
+    {403, 0, "CurrentsAPI", "currentsapi", 48, true, -1},
     {226, 0, "CustomerGuru", "customerguru", 30, true, 1024},
     {211, 0, "CustomerIO", "customerio", 20, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
