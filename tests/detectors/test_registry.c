@@ -180,6 +180,7 @@ static const registration expected[] = {
     {100, 1, "CloudflareApiToken", "cloudflare", 40, true, -1},
     {100, 2, "CloudflareApiToken", "cfut_", 53, true, 1024},
     {59, 0, "CloudflareCaKey", "cloudflare", 176, true, -1},
+    {721, 0, "CloudImage", "cloudimage", 30, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
