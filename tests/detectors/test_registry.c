@@ -238,6 +238,7 @@ static const registration expected[] = {
     {257, 0, "Debounce", "debounce", 13, false, -1},
     {621, 0, "DeepAI", "deepai", 36, true, -1},
     {418, 0, "Deepgram", "deepgram", 40, true, -1},
+    {237, 0, "Delighted", "delighted", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
