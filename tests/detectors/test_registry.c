@@ -246,6 +246,7 @@ static const registration expected[] = {
     {794, 0, "Detectify", "detectify", 32, true, -1},
     {434, 0, "DetectLanguage", "detectlanguage", 32, true, -1},
     {567, 0, "Dfuse", "dfuse", 36, true, -1},
+    {819, 0, "Diggernaut", "diggernaut", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
