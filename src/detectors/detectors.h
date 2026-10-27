@@ -242,5 +242,9 @@ int br_deputy_init(const br_detector **out, char **error);
 int br_detectify_init(const br_detector **out, char **error);
 int br_detectlanguage_init(const br_detector **out, char **error);
 int br_dfuse_init(const br_detector **out, char **error);
+int br_diffbot_init(const br_detector **out, char **error);
+int br_diggernaut_init(const br_detector **out, char **error);
+int br_digitaloceantoken_init(const br_detector **out, char **error);
+int br_digitaloceanv2_init(const br_detector **out, char **error);
 
 #endif
