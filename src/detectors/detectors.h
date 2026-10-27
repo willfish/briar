@@ -194,5 +194,9 @@ int br_codemagic_init(const br_detector **out, char **error);
 int br_codequiry_init(const br_detector **out, char **error);
 int br_coinapi_init(const br_detector **out, char **error);
 int br_coinbase_init(const br_detector **out, char **error);
+int br_coinlayer_init(const br_detector **out, char **error);
+int br_coinlib_init(const br_detector **out, char **error);
+int br_collect2_init(const br_detector **out, char **error);
+int br_column_init(const br_detector **out, char **error);
 
 #endif
