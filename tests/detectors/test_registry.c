@@ -230,6 +230,7 @@ static const registration expected[] = {
     {585, 0, "DailyCO", "daily", 64, false, -1},
     {619, 0, "Dandelion", "dandelion", 32, true, -1},
     {762, 0, "Dareboost", "dareboost", 60, true, -1},
+    {834, 0, "Databox", "databox", 21, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
