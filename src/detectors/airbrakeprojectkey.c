@@ -81,6 +81,7 @@ static int scan_airbrake_project(const br_detector *detector, const br_scan_ctx 
     if (!patterns->key || !patterns->id)
         return fail(error, "uninitialized AirbrakeProjectKey detector");
 
+    size_t original_len = out->len;
     br_captures keys = {0}, ids = {0};
     int rc = br_captures_find(patterns->key, input, &keys, true, error);
     if (rc == 0) rc = br_captures_find(patterns->id, input, &ids, true, error);
@@ -99,6 +100,8 @@ static int scan_airbrake_project(const br_detector *detector, const br_scan_ctx 
             }
         }
     }
+    if (rc != 0)
+        while (out->len > original_len) br_result_clear(&out->items[--out->len]);
     br_captures_clear(&keys);
     br_captures_clear(&ids);
     return rc;

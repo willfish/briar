@@ -1,6 +1,16 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "../../src/detectors/detectors.h"
 #include "../support/detector_test.h"
+#include "../../src/detectors/findings.h"
+
+static size_t fail_key_after;
+
+/* Exercise the real positive metadata failure after one pair was appended. */
+int json_object_object_add(struct json_object *object, const char *name, struct json_object *value)
+{
+    if (fail_key_after && !strcmp(name, "key") && --fail_key_after == 0) return 1;
+    return json_object_object_add_ex(object, name, value, 0);
+}
 
 typedef struct { const char *key, *id; } expected_pair;
 typedef struct { const expected_pair *pairs; size_t len; } expected_requests;
@@ -249,11 +259,42 @@ static void test_verification(const br_detector *detector)
     }
 }
 
+static void test_late_failure_rollback(const br_detector *detector)
+{
+    static const unsigned char input[] =
+        "aylien 0123456789abcdefghijklmnopqrstuv\n"
+        "aylien vutsrqponmlkjihgfedcba9876543210\n"
+        "aylien q7r8s9t0";
+    for (int with_prior = 0; with_prior < 2; ++with_prior) {
+        for (int with_error = 0; with_error < 2; ++with_error) {
+            br_results out = {0}; br_result prior = {0}; char *error = NULL;
+            if (with_prior) {
+                CHECK(br_finding_key(&prior, 12345, "keep", "prior") == 0);
+                prior.verified = true; prior.verification_error = strdup("caller-owned");
+                CHECK(prior.verification_error && br_results_push(&out, &prior) == 0);
+                prior = out.items[0];
+            }
+            fail_key_after = 2;
+            CHECK(detector->scan(detector, NULL, false, (br_slice){input, sizeof(input) - 1},
+                                 &out, with_error ? &error : NULL) == -1);
+            CHECK(!fail_key_after && out.len == (size_t)with_prior);
+            CHECK(with_error ? error != NULL : error == NULL);
+            if (with_prior) {
+                CHECK(out.items[0].raw.data == prior.raw.data && out.items[0].raw.len == 4 && !memcmp(prior.raw.data, "keep", 4));
+                CHECK(out.items[0].secret_parts == prior.secret_parts && out.items[0].detector_type == 12345 && out.items[0].verified);
+                CHECK(out.items[0].verification_error == prior.verification_error && !strcmp(prior.verification_error, "caller-owned"));
+            }
+            free(error); br_results_clear(&out);
+        }
+    }
+}
+
 int main(void)
 {
     const br_detector *detector = test_descriptor();
     test_extraction(detector);
     test_pairing(detector);
     test_verification(detector);
+    test_late_failure_rollback(detector);
     return test_finish("Aylien");
 }

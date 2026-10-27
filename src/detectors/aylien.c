@@ -64,6 +64,7 @@ static int aylien_scan(const br_detector *detector, const br_scan_ctx *ctx, bool
     if (!patterns->key || !patterns->id)
         return aylien_fail(error, "uninitialized Aylien detector");
 
+    size_t original_len = out->len;
     br_captures keys = {0}, ids = {0};
     int rc = br_captures_find(patterns->key, input, &keys, false, error);
     if (rc == 0) rc = br_captures_find(patterns->id, input, &ids, false, error);
@@ -80,6 +81,8 @@ static int aylien_scan(const br_detector *detector, const br_scan_ctx *ctx, bool
             br_result_clear(&result);
         }
     }
+    if (rc != 0)
+        while (out->len > original_len) br_result_clear(&out->items[--out->len]);
     br_captures_clear(&keys);
     br_captures_clear(&ids);
     return rc;

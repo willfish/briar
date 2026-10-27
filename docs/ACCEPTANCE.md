@@ -29,7 +29,7 @@ Verify `.reference/trufflehog` with `nix hash path`; its hash must equal `UPSTRE
 
 Named detector tests cover provider-specific extraction, filtering, pairing, metadata and verifier request/status/body/error behavior. Shared fixtures use synthetic candidates and injected HTTP, never real credentials against services. Registry tests cover identities, versions, defaults, order and dispatch to real scanners, without depending on implementation file grouping.
 
-Shared single-key occurrence and unique helpers preserve caller findings and discard only additions from a failed invocation, including a later positive verifier failure and calls without an error-output pointer.
+Shared single-key occurrence and unique helpers preserve caller findings and discard only additions from a failed invocation, including a later positive verifier failure and calls without an error-output pointer. Aylien and AirbrakeProjectKey enforce the same invocation-tail rollback boundary in their custom pair scanners.
 
 Selected JSON helpers use offset-preserving validation shadows for json-c integer-range and raw-Unicode string defects, then decode original bytes and numeric spans. Already validated child visits avoid redundant strict parsing and shadow allocation. This does not establish complete Go invalid-UTF8 replacement, unquoting, Reader or diagnostic parity.
 

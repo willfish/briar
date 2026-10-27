@@ -125,6 +125,7 @@
     "airbrakeprojectkey/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/airbrakeprojectkey/airbrakeprojectkey.go",
+      "scope_notes": "The custom unique-pair scanner discards only its invocation's appended tail on any failure, including a positive metadata insertion failure after an earlier pair succeeded. Preexisting caller findings and their owned raw/error/parts remain intact, with or without an error-output pointer.",
       "native_files": ["src/detectors/airbrakeprojectkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_airbrakeprojectkey.c", "tests/detectors/test_registry.c", "tests/core/http_profiles.c"],
@@ -605,6 +606,7 @@
     "aylien/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/aylien/aylien.go",
+      "scope_notes": "The custom occurrence-pair scanner discards only its invocation's appended tail on any failure, including a positive metadata insertion failure after an earlier pair succeeded. Preexisting caller findings and their owned raw/error/parts remain intact, with or without an error-output pointer.",
       "native_files": ["src/detectors/aylien.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_aylien.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
