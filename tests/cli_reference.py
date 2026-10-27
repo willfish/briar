@@ -443,6 +443,11 @@ def fixtures():
     convier_key = b"07|" + alnum("convier-key", 40)
     copper_key = b"g" + alnum("copper-key", 31).lower()
     countrylayer_key = b"g" + alnum("countrylayer-key", 31).lower()
+    databricks_token = b"dapi" + hashlib.sha256(b"databricks-token").hexdigest()[:32].encode()
+    databricks_other = b"dapi" + hashlib.sha256(b"databricks-other").hexdigest()[:32].encode() + b"-7"
+    databricks_domain = b"briar7.cloud.databricks.com"
+    datadog_api_key = alnum("datadog-api-key", 32)
+    datadog_api_key = datadog_api_key[:11] + b"-" + datadog_api_key[12:]
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -816,6 +821,16 @@ def fixtures():
         ("d7network_nul", 138, b"d7network " + d7network_nul),
         ("dandelion", 619, b"DANDELION " + alnum("dandelion-key", 32).lower()),
         ("dareboost", 762, b"dareboost " + alnum("dareboost-key", 60)),
+        ("databox", 834, b"DATABOX " + alnum("databox-key", 21).lower()),
+        ("databrickstoken", 62, databricks_other + b"\n" + databricks_domain),
+        # Same-line duplicates keep line attribution independent of Go map order.
+        ("databrickstoken_products", 62, b"\n".join((
+            databricks_token + b"-12 " + databricks_token + b"-12", databricks_other,
+            databricks_domain, databricks_domain, b"workspace7.gcp.databricks.com",
+            b"adb-71.azuredatabricks.net"))),
+        ("datadogapikey", 1043, b"DaTaDoG " + datadog_api_key),
+        ("datadogapikey_no_dispatch", 1043, b"dd " + datadog_api_key),
+        ("datadogtoken", 39, b"datadog " + datadog_api_key + b"\ndd " + alnum("datadog-app-key", 40)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -879,6 +894,8 @@ def invoke(binary, source, detector, kind, cleaning, directory, reference_run=Fa
         command.append(str(path))
         stdin = b""
     result = run_isolated(command, stdin)
+    if kind == "filesystem" and path.read_bytes() != source:
+        raise AssertionError("filesystem scanner modified fixture input bytes")
     if result.returncode != 0:
         raise AssertionError(f"{binary.name} exited {result.returncode}; stderr bytes={len(result.stderr)}")
     rows = [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
@@ -970,8 +987,16 @@ def compare(native, reference, case):
                 "d7network_runes_stdin", "d7network_runes_filesystem",
                 "d7network_nul_stdin", "d7network_nul_filesystem",
                 "dandelion_stdin", "dandelion_filesystem",
-                "dareboost_stdin", "dareboost_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "dareboost_stdin", "dareboost_filesystem",
+                "databox_stdin", "databox_filesystem",
+                "databrickstoken_stdin", "databrickstoken_filesystem",
+                "datadogapikey_stdin", "datadogapikey_filesystem",
+                "datadogtoken_stdin", "datadogtoken_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
+    if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):
+        raise AssertionError(name + ": unique token/domain sets must retain six products, including optional-suffix fallback")
+    if name in ("datadogapikey_no_dispatch_stdin", "datadogapikey_no_dispatch_filesystem") and (actual or expected):
+        raise AssertionError(name + ": extraction prefix alone must not replace the detector dispatch keywords")
     if name in ("customerio_products_stdin", "customerio_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": two distinct occurrences must retain all four CustomerIO products")
     if name in ("currencycloud_no_email_stdin", "currencycloud_no_email_filesystem") and (actual or expected):
