@@ -256,6 +256,8 @@ static const registration expected[] = {
     {666, 0, "Ditto", "ditto", 77, true, -1},
     {281, 0, "Dnscheck", "dnscheck", 32, true, 1024},
     {343, 0, "Docker", "\"auths\"", 4, true, -1},
+    {921, 1, "Dockerhub", "docker", 36, true, 1024},
+    {921, 2, "Dockerhub", "docker", 36, true, 1024},
     {838, 0, "Docparser", "docparser", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -337,6 +339,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 138) key[23] = '=';
     if (entry->type == 665) memcpy(key, "pk_Z_", 5);
     if (entry->type == 65) key[24] = key[31] = '.';
+    if (entry->type == 921) {
+        if (entry->version == 1) key[8] = key[13] = key[18] = key[23] = '-';
+        else memcpy(key, "dckr_pat_", 9);
+    }
     if (entry->type == 666) {
         key[8] = key[13] = key[18] = key[23] = '-';
         key[36] = '.';
@@ -493,6 +499,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 110: secondary = "fixture-tenant.us.auth0.com"; secondary_name = "domain"; break;
     case 65: secondary = "12345678901234567"; secondary_name = "id"; break;
     case 281: secondary = "G7h9K2m4-N6p8-Q1r3-S5t7-U9v1W3x5Y7z9"; secondary_name = "id"; break;
+    case 921: secondary = "briar7"; secondary_name = "username"; break;
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
     case 170: secondary = "B7C9D2E5F6"; secondary_name = "id"; break;
@@ -887,6 +894,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "%s\nbitbucket %s", key, secondary);
     else if (entry->type == 211)
         snprintf(input, sizeof(input), "customerio %s", key); /* One occurrence, one self-pair. */
+    else if (entry->type == 921)
+        snprintf(input, sizeof(input), "docker %s\ndocker user=%s", key, secondary);
     else if (secondary)
         snprintf(input, sizeof(input), "%s %s\n%s %s", entry->keyword, key, entry->keyword, secondary);
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);
@@ -952,7 +961,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->redacted && strlen(result->redacted) == 11);
         CHECK(!memcmp(result->redacted, key, 8) && !strcmp(result->redacted + 8, "..."));
     }
-    const char *key_name = entry->type == 39 ? "app_key" : (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 921 ? "pat" : entry->type == 39 ? "app_key" : (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
@@ -994,7 +1003,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         else if (entry->type == 931) snprintf(raw_v2, sizeof(raw_v2), "{\"accountName\":\"%s\",\"accountKey\":\"%s\"}", secondary, key);
         else if (entry->type == 971) snprintf(raw_v2, sizeof(raw_v2), "key: %s account_url: %s", key, secondary);
         else if (entry->type == 55 || entry->type == 1018 || entry->type == 512 || entry->type == 708 || entry->type == 739) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
-        else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
+        else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052 || entry->type == 921) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 1019 || entry->type == 1024 || entry->type == 2 || entry->type == 307 || entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
         CHECK(result->raw_v2.len == strlen(raw_v2));
@@ -1096,7 +1105,7 @@ int main(void)
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
-              entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 ? 3u :
+              entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
               entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
@@ -1123,6 +1132,10 @@ int main(void)
         if (entry->type == 2) {
             CHECK(!strcmp(detector->keywords[1], "ABIA"));
             CHECK(!strcmp(detector->keywords[2], "ACCA"));
+        }
+        if (entry->type == 921 && entry->version == 2) {
+            CHECK(!strcmp(detector->keywords[1], "dckr_pat_"));
+            CHECK(!strcmp(detector->keywords[2], "dckr_oat_"));
         }
         if (entry->type == 897) {
             CHECK(!strcmp(detector->keywords[1], "doo_v1_"));

@@ -36,8 +36,9 @@ Copyright 2012 The Go Authors. All rights reserved.
 Copyright 2013 The Go Authors. All rights reserved.
 See LICENSES/BSD-3-Clause-Go.txt.
 
-Azure Entra unverified claims parsing and Coinbase ES256 token construction
-follow selected github.com/golang-jwt/jwt/v5 v5.2.3 behavior, reimplemented in C.
+Azure Entra and Dockerhub unverified claims parsing, and Coinbase ES256 token
+construction follow selected github.com/golang-jwt/jwt/v5 v5.2.3 behavior,
+reimplemented in C.
 Original MIT copyright and license:
 Copyright (c) 2012 Dave Grijalva
 Copyright (c) 2021 golang-jwt maintainers
