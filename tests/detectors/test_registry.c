@@ -167,6 +167,7 @@ static const registration expected[] = {
     {57, 0, "Clarifai", "clarifai", 32, true, -1},
     {334, 0, "Clearbit", "clearbit", 35, true, -1},
     {456, 0, "ClickHelp", "clickhelp.co", 19, true, 1024},
+    {710, 0, "Cliengo", "cliengo", 36, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -402,6 +403,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
             key[29] = '_';
             for (size_t i = 30; i < 70; ++i) key[i] = "0123456789aBcDeF"[i % 16];
         }
+        break;
+    case 710:
+        strcpy(key, "b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3");
         break;
     case 456:
         strcpy(key, "briar7.clickhelp.co"); /* Raw is portal, not the hidden API key. */
