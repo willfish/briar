@@ -233,6 +233,7 @@ static const registration expected[] = {
     {834, 0, "Databox", "databox", 21, true, -1},
     {62, 0, "DatabricksToken", "databricks", 36, true, 1024},
     {1043, 0, "DatadogApikey", "datadog", 32, true, 1024},
+    {39, 0, "DatadogToken", "datadog", 40, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -535,6 +536,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         test_secret(secondary_buffer, 50, 7);
         secondary = secondary_buffer;
         secondary_name = "id";
+        break;
+    case 39:
+        test_secret(secondary_buffer, 32, 7);
+        secondary = secondary_buffer;
+        secondary_name = "api_key";
         break;
     case 211:
         secondary = key; /* Identical source patterns retain the self-pair. */
@@ -860,11 +866,16 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->redacted && strlen(result->redacted) == 7);
         CHECK(!memcmp(result->redacted, "...", 3) && !strcmp(result->redacted + 3, key + 45));
     }
+    if (entry->type == 39) {
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
+        CHECK(json_object_object_get_ex(result->extra_data, "Type", &part));
+        CHECK(!strcmp(json_object_get_string(part), "Application+APIKey"));
+    }
     if (entry->type == 1053) {
         CHECK(result->redacted && strlen(result->redacted) == 11);
         CHECK(!memcmp(result->redacted, key, 8) && !strcmp(result->redacted + 8, "..."));
     }
-    const char *key_name = (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 39 ? "app_key" : (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
@@ -1009,14 +1020,14 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
-              entry->type == 1043 || entry->type == 62 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
             for (size_t j = 0; j < 5; ++j) CHECK(!strcmp(detector->keywords[j + 1], aliases[j]));
         }
         if (entry->type == 430 && entry->version == 2) CHECK(!strcmp(detector->keywords[1], "bb_ma_"));
-        if (entry->type == 1043) CHECK(!strcmp(detector->keywords[1], "ddog-gov"));
+        if (entry->type == 39 || entry->type == 1043) CHECK(!strcmp(detector->keywords[1], "ddog-gov"));
         if (entry->type == 920) CHECK(!strcmp(detector->keywords[1], "couchbases://"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
@@ -1058,7 +1069,7 @@ int main(void)
         if (entry->type == 181 || entry->type == 1042 || entry->type == 1047) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);
             CHECK(!detector->cloud_endpoint[0]);
-        } else if (entry->type == 1043) {
+        } else if (entry->type == 39 || entry->type == 1043) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);
             CHECK(!strcmp(detector->cloud_endpoint, "https://api.datadoghq.com"));
         } else if (entry->type == 1045 || entry->type == 1046) {
