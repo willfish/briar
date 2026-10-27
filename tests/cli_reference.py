@@ -382,6 +382,9 @@ def fixtures():
     circleci_hex = circleci_hex[:20].upper() + circleci_hex[20:]
     circleci_pat = b"CCIPAT_" + alnum("circleci-payload", 22) + b"_" + circleci_hex
     clickhelp_context = b"B7c9d2.clickhelp.co\nBriar7@Fixture.Invalid\n"
+    clickup_tail = b"G7B9D2E5F6H8J3K4M1N0P2Q4R6S8T1U3"
+    clicksend_key = b"B7C9D2E5-F6G8-H3J4-K1M0-N2P4Q6R8S1T3"
+    clicksend_email = b"Case.User@EXAMPLE.INVALID"
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -641,6 +644,15 @@ def fixtures():
         ("clickhelp", 456, clickhelp_context + b"secret " + alnum("clickhelp-key", 24)),
         ("clickhelp_hidden_keys", 456, clickhelp_context + b"secret " + alnum("clickhelp-key", 24) + b"\napi " + alnum("clickhelp-other-key", 24)),
         ("clickhelp_missing_key", 456, clickhelp_context),
+        ("clicksendsms", 209, clicksend_key + b"\nclicksendsms " + clicksend_email),
+        ("clicksendsms_no_space", 209, clicksend_key + b"\nCLICKSENDSMS\t" + clicksend_email),
+        ("clicksendsms_trim_unicode", 209, clicksend_key + b"\nclicksendsms \t\xe3\x80\x80" + clicksend_email),
+        ("clicksendsms_embedded_nul", 209, clicksend_key + b"\nCLICKSENDSMS\0" + clicksend_email),
+        ("clickup_min", 366, b"CLICKUP pk_1726354_" + clickup_tail),
+        ("clickup_max", 366, b"clickup pk_172635480_" + clickup_tail),
+        ("cliengo", 710, b"CLIENGO b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3"),
+        ("clientary_min", 307, b"RONIN Briar7\nclientary " + alnum("clientary-min-key", 24)),
+        ("clientary_max", 307, b"clientary B7-C9\nronin " + alnum("clientary-max-key", 26)),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
