@@ -260,6 +260,7 @@ static const registration expected[] = {
     {921, 2, "Dockerhub", "docker", 36, true, 1024},
     {838, 0, "Docparser", "docparser", 40, true, -1},
     {311, 0, "Documo", "documo", 237, true, -1},
+    {919, 0, "Docusign", "docusign", 36, true, 1024},
     {196, 0, "Doppler", "dp.ct.", 46, true, -1},
     {325, 0, "Dotdigital", "@apiconnector.com", 37, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -357,6 +358,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 567) memcpy(key, "web_", 4);
     if (entry->type == 196) memcpy(key, "dp.ct.", 6);
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
+    if (entry->type == 919) {
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[8] = key[13] = key[18] = key[23] = '-';
+    }
     if (entry->type == 66) {
         char secret[69]; test_secret(secret, 68, 11);
         snprintf(key, sizeof(key), "https://discord.com/api/webhooks/123456789012345678/%s", secret);
@@ -510,6 +515,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 281: secondary = "G7h9K2m4-N6p8-Q1r3-S5t7-U9v1W3x5Y7z9"; secondary_name = "id"; break;
     case 921: secondary = "briar7"; secondary_name = "username"; break;
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
+    case 919: secondary = "a2b4c6d8-e0f1-2345-6789-abcdf0123456"; secondary_name = "secret"; break;
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
     case 170: secondary = "B7C9D2E5F6"; secondary_name = "id"; break;
@@ -908,6 +914,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "docker %s\ndocker user=%s", key, secondary);
     else if (entry->type == 325)
         snprintf(input, sizeof(input), "%s\npass %s", key, secondary);
+    else if (entry->type == 919)
+        snprintf(input, sizeof(input), "docusign\nintegration %s\nsecret %s", key, secondary);
     else if (secondary)
         snprintf(input, sizeof(input), "%s %s\n%s %s", entry->keyword, key, entry->keyword, secondary);
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);
@@ -950,6 +958,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     }
     if (entry->type == 307 || entry->type == 196) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
     if (entry->type == 58 || entry->type == 65) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, secondary));
+    if (entry->type == 919) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, key));
     if (entry->type == 100) CHECK(!result->extra_data && !result->redacted); /* No invented version metadata. */
     if (entry->type == 142) {
         if (entry->version == 1) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
@@ -973,7 +982,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->redacted && strlen(result->redacted) == 11);
         CHECK(!memcmp(result->redacted, key, 8) && !strcmp(result->redacted + 8, "..."));
     }
-    const char *key_name = entry->type == 325 ? "email" : entry->type == 921 ? "pat" : entry->type == 39 ? "app_key" : (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 919 ? "id" : entry->type == 325 ? "email" : entry->type == 921 ? "pat" : entry->type == 39 ? "app_key" : (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
