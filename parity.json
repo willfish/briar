@@ -1690,6 +1690,42 @@
       "evidence": ["tests/detectors/test_confluent.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Combined shared setup/allocation/Do domain; scan-deferred close-only versus eager buffering/per-request release", "Full native client/configuration, shared regexp/Unicode/source-engine and global parity"]
     },
+    "contentfulpersonalaccesstoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/contentfulpersonalaccesstoken/contentfulpersonalaccesstoken.go",
+      "scope_notes": "ContentfulPersonalAccessToken103/v0/default enabled/all hints absent. Direct case-sensitive word-bounded CFPAT- plus43 mixed-alphanumeric/underscore/hyphen bytes, not PrefixRegex; dispatch keyword CFPAT-. Preserve occurrence duplicates, Raw key, key part and Redacted three dots plus last4, including NoV. Redacted allocation is a finding resource before known nil-context constructor skip. SANE GET https://api.contentful.com/organizations uses complete bounded Bearer borrowed through send/release, common UA and nil body, without invented Type/Accept/Content-Length. Every2xx verifies despite body/read errors; combined shared setup/allocation/Do domain is suppressed without setter/text classification. All own nonzero capture/finding/redaction/push failures are fatal with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/contentfulpersonalaccesstoken.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_contentfulpersonalaccesstoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; source scan-deferred close-only differs from eager buffering/per-request release", "Full native client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
+    "conversiontools/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/conversiontools/conversiontools.go",
+      "scope_notes": "ConversionTools769/v0/default enabled/all hints absent. Prefix keyword CI only; literal lowercase ey plus157..165 mixed-alphanumeric/underscore/dot bytes gives159..167-byte word-bounded occurrences, not JWT parsing or semantic validation. Raw/key only, no RawV2/Extra/Redacted. SANE POST https://api.conversiontools.io/v1/tasks uses exact104-byte source JSON literal, including spaces and no trailing newline, JSON Content-Type/Bearer/common UA. This creates a conversion task; verification evidence is injected/offline only. Complete bounded Bearer remains borrowed through release; finding resources precede nil-context constructor skip, which precedes auth preparation. Every2xx verifies despite body/read errors; whole combined setup/allocation/Do domain is suppressed. All own nonzero resource failures are fatal before skip, with invocation-only rollback. No dependencies, shared APIs, heap auth copies or framework added.",
+      "native_files": ["src/detectors/conversiontools.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_conversiontools.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; source scan-deferred close-only differs from eager buffering/per-request release", "Native POST redirects and full client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
+    "convertapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/convertapi/convertapi.go",
+      "scope_notes": "ConvertApi831/v0/default enabled/all hints absent. Prefix keyword CI only; word-bounded literal lowercase secret_ plus16 mixed-alphanumeric bytes gives23-byte occurrences. Raw/key only, no RawV2/Extra/Redacted. SANE GET https://v2.convertapi.com/user?auth=KEY uses complete borrowed bounded stack URL, common UA and nil body, without invented Authorization/Type/Accept/Content-Length. Finding resources and URL preparation precede known nil-context constructor skip. Every2xx verifies despite body/read errors; whole combined setup/allocation/Do domain is suppressed without setter/text classification. All own nonzero helper/resource failures normalize to fatal invocation-only rollback; no URL heap copies, new shared APIs or dependencies.",
+      "native_files": ["src/detectors/convertapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_convertapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; source scan-deferred close-only differs from eager buffering/per-request release", "Full native client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
+    "convertkit/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/convertkit/convertkit.go",
+      "scope_notes": "Convertkit225/v0/default enabled/all hints absent. Prefix keyword CI only; word-bounded22-byte mixed-alphanumeric/underscore occurrences, no semantic token validation. Raw/key only, no RawV2/Extra/Redacted. SANE GET https://api.convertkit.com/v3/forms?api_key=KEY uses complete borrowed bounded stack URL, common UA and nil body, without invented Authorization/Type/Accept/Content-Length. Finding resources and URL preparation precede known nil-context constructor skip. Every2xx verifies despite body/read errors; whole mixed setup/allocation/Do domain is suppressed without setter/text classification. All own nonzero failures normalize to fatal before skip, with caller-preserving invocation rollback. Pinned default wordlist sign term remains unchanged: retain the original filtered-zero synthetic fixture and a separate one-byte-adjusted positive control, not a production or filtering repair.",
+      "native_files": ["src/detectors/convertkit.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_convertkit.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; source scan-deferred close-only differs from eager buffering/per-request release", "Full native client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

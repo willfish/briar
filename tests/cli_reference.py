@@ -430,6 +430,16 @@ def fixtures():
     confluent_key = alnum("confluent-key", 16)
     confluent_secret = alnum("confluent-secret", 64)
     confluent_secret = confluent_secret[:19] + b"+" + confluent_secret[20:37] + b"/" + confluent_secret[38:]
+    contentful_pat = b"CFPAT-" + alnum("contentful-pat", 43)
+    contentful_pat = contentful_pat[:17] + b"_" + contentful_pat[18:28] + b"-" + contentful_pat[29:]
+    conversiontools_key = b"ey" + alnum("conversiontools-key", 165)
+    conversiontools_key = conversiontools_key[:19] + b"." + conversiontools_key[20:47] + b"_" + conversiontools_key[48:]
+    convertkit_key = alnum("convertkit-key", 22)
+    convertkit_key = convertkit_key[:6] + b"_" + convertkit_key[7:]
+    # Retain the observed sign-filtered original; change one byte for a positive control.
+    convertkit_filtered_key = convertkit_key
+    convertkit_sign_at = convertkit_key.lower().index(b"sign")
+    convertkit_key = convertkit_key[:convertkit_sign_at] + b"x" + convertkit_key[convertkit_sign_at + 1:]
     coinbase_escaped = coinbase_name.replace(b"/", b"\\/") + b"\n" + coinbase_key.replace(b"\n", b"\\n")
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
@@ -770,6 +780,11 @@ def fixtures():
         ("companyhub", 256, companyhub_payload),
         ("companyhub_self", 256, b"COMPANYHUB " + companyhub_key),
         ("confluent", 60, b"confluent " + confluent_key + b"\n" + b"!" * 48 + b"\nconfluent " + confluent_secret),
+        ("contentful_pat", 103, contentful_pat),
+        ("conversiontools", 769, b"CONVERSIONTOOLS " + conversiontools_key),
+        ("convertapi", 831, b"convertapi secret_" + alnum("convertapi-key", 16)),
+        ("convertkit", 225, b"convertkit " + convertkit_key),
+        ("convertkit_filtered", 225, b"convertkit " + convertkit_filtered_key),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
@@ -887,7 +902,11 @@ def compare(native, reference, case):
                 "commercejs_stdin", "commercejs_filesystem",
                 "commodities_stdin", "commodities_filesystem",
                 "companyhub_self_stdin", "companyhub_self_filesystem",
-                "confluent_stdin", "confluent_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "confluent_stdin", "confluent_filesystem",
+                "contentful_pat_stdin", "contentful_pat_filesystem",
+                "conversiontools_stdin", "conversiontools_filesystem",
+                "convertapi_stdin", "convertapi_filesystem",
+                "convertkit_stdin", "convertkit_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("companyhub_stdin", "companyhub_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": key must self-pair and also pair with the separate symbol-bearing ID")
@@ -897,6 +916,8 @@ def compare(native, reference, case):
         raise AssertionError(name + ": default wordlist must filter sk_test_ credentials")
     if name in ("clinchpad_filtered_stdin", "clinchpad_filtered_filesystem") and (actual or expected):
         raise AssertionError(name + ": default wordlist must filter the safe substring")
+    if name in ("convertkit_filtered_stdin", "convertkit_filtered_filesystem") and (actual or expected):
+        raise AssertionError(name + ": default wordlist must filter the original sign substring")
     if name in ("column_test_filtered_stdin", "column_test_filtered_filesystem") and (actual or expected):
         raise AssertionError(name + ": default wordlist must filter test_ Column credentials")
     if name in ("coinbase_filtered_stdin", "coinbase_filtered_filesystem") and (actual or expected):
