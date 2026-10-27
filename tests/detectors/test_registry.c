@@ -173,6 +173,7 @@ static const registration expected[] = {
     {307, 0, "Clientary", "ronin", 26, true, 1024},
     {255, 0, "Clinchpad", "clinchpad", 32, true, -1},
     {280, 0, "Clockify", "clockify", 48, true, -1},
+    {189, 0, "ClockworkSMS", "clockworksms", 5, true, 1024},
     {215, 0, "Close", "close", 49, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -409,6 +410,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
             key[29] = '_';
             for (size_t i = 30; i < 70; ++i) key[i] = "0123456789aBcDeF"[i % 16];
         }
+        break;
+    case 189:
+        strcpy(key, "17263");
+        secondary = "b7C9d2E5f6G8h3J4k1M0n2P4";
+        secondary_name = "token";
         break;
     case 209:
         strcpy(key, "G7H8IJKL-M9N0-OPQR-STUV-WXYZ1234ABCD");
@@ -765,7 +771,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
-              entry->type == 307 || entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
@@ -774,6 +780,7 @@ int main(void)
         if (entry->type == 430 && entry->version == 2) CHECK(!strcmp(detector->keywords[1], "bb_ma_"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
+        if (entry->type == 189) CHECK(!strcmp(detector->keywords[1], "textanywhere"));
         if (entry->type == 1029) CHECK(!strcmp(detector->keywords[1], "ATBB"));
         if (entry->type == 1018) CHECK(!strcmp(detector->keywords[1], ".scm.azure-api.net"));
         if (entry->type == 975) CHECK(!strcmp(detector->keywords[1], ".blob.core.windows.net"));
