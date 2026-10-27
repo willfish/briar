@@ -189,6 +189,7 @@ static const registration expected[] = {
     {805, 0, "Cloudsmith", "cloudsmith", 40, true, -1},
     {525, 0, "Cloverly", "cloverly", 28, true, -1},
     {711, 0, "Cloze", "cloze", 32, true, 1024},
+    {513, 0, "ClustDoc", "clustdoc", 60, true, -1},
     {185, 0, "Codacy", "codacy", 20, true, -1},
     {844, 0, "Codeclimate", "codeclimate", 40, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
