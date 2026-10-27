@@ -169,6 +169,7 @@ static const registration expected[] = {
     {456, 0, "ClickHelp", "clickhelp.co", 19, true, 1024},
     {366, 0, "ClickupPersonalToken", "clickup", 43, true, -1},
     {710, 0, "Cliengo", "cliengo", 36, true, -1},
+    {307, 0, "Clientary", "ronin", 26, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -405,6 +406,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
             for (size_t i = 30; i < 70; ++i) key[i] = "0123456789aBcDeF"[i % 16];
         }
         break;
+    case 307:
+        secondary = "briar7";
+        secondary_name = "id";
+        break;
     case 366:
         memcpy(key, "pk_1726354_", 11);
         for (size_t i = 11; i < 43; ++i) if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
@@ -572,7 +577,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "box id %s\nsecret %s", key, secondary);
     else if (entry->type == 512)
         snprintf(input, sizeof(input), "bitmex %s\nbitmex %s\n", secondary, key);
-    else if (entry->type == 385 || entry->type == 685)
+    else if (entry->type == 307 || entry->type == 385 || entry->type == 685)
         /* Context-first avoids capturing the repeated provider word as ID/user. */
         snprintf(input, sizeof(input), "%s %s\n%s %s", entry->keyword, secondary, entry->keyword, key);
     else if (entry->type == 322)
@@ -631,6 +636,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
+    if (entry->type == 307) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
     if (entry->type == 142) {
         if (entry->version == 1) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
         else CHECK(!result->extra_data);
@@ -680,7 +686,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         else if (entry->type == 971) snprintf(raw_v2, sizeof(raw_v2), "key: %s account_url: %s", key, secondary);
         else if (entry->type == 55 || entry->type == 1018 || entry->type == 512 || entry->type == 708 || entry->type == 739) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
         else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
-        else snprintf(raw_v2, sizeof(raw_v2), entry->type == 1019 || entry->type == 1024 || entry->type == 2 || entry->type == 375 || entry->type == 1045 ||
+        else snprintf(raw_v2, sizeof(raw_v2), entry->type == 1019 || entry->type == 1024 || entry->type == 2 || entry->type == 307 || entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
         CHECK(result->raw_v2.len == strlen(raw_v2));
         CHECK(!memcmp(result->raw_v2.data, raw_v2, strlen(raw_v2)));
@@ -746,7 +752,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
-              entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 307 || entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
@@ -754,6 +760,7 @@ int main(void)
         }
         if (entry->type == 430 && entry->version == 2) CHECK(!strcmp(detector->keywords[1], "bb_ma_"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
+        if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
         if (entry->type == 1029) CHECK(!strcmp(detector->keywords[1], "ATBB"));
         if (entry->type == 1018) CHECK(!strcmp(detector->keywords[1], ".scm.azure-api.net"));
         if (entry->type == 975) CHECK(!strcmp(detector->keywords[1], ".blob.core.windows.net"));
