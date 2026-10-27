@@ -262,6 +262,7 @@ static const detector_factory named_factories[] = {
     br_dotdigital_init,
     br_dronahq_init,
     br_droneci_init,
+    br_dropbox_init,
     br_jiradatacenterpat_init,
 };
 
@@ -349,7 +350,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
         case 3: case 4: case 142: case 190: case 303: case 333: case 430: case 708: case 921: return detector->version == 1 || detector->version == 2;
-        case 0: case 5: case 39: case 138: case 192: case 196: case 150: case 158: case 237: case 239: case 254: case 255: case 256: case 521: case 390: case 431: case 432: case 433: case 434: case 683: case 684: case 685: case 692: case 334: case 335: case 343: case 693: case 197: case 802: case 805:
+        case 0: case 5: case 18: case 39: case 138: case 192: case 196: case 150: case 158: case 237: case 239: case 254: case 255: case 256: case 521: case 390: case 431: case 432: case 433: case 434: case 683: case 684: case 685: case 692: case 334: case 335: case 343: case 693: case 197: case 802: case 805:
         case 125: case 126: case 130: case 135: case 277: case 1014: case 1015: case 498: case 499: case 506: case 910: case 917: case 919: case 920: case 907:
         case 302: case 565: case 566: case 567: case 707: case 709: case 710: case 711: case 721: case 723: case 726: case 756: case 762: case 828: case 829: case 831: case 833: case 834: case 838: case 863: case 844: case 845: case 354: case 358: case 366: case 375: case 380: case 382: case 522: case 523: case 524: case 525: case 526: case 170: case 163: case 399: case 473: case 474: case 477: case 453:
         case 448: case 456: case 457: case 42: case 43: case 44: case 933: case 179: case 1032: case 632: case 209: case 211: case 212: case 214: case 215: case 225: case 226: case 458:
@@ -372,6 +373,7 @@ const char *br_detector_type_name(int32_t type)
     case 3: return "Azure";
     case 4: return "Circle";
     case 5: return "Coinbase";
+    case 18: return "Dropbox";
     case 39: return "DatadogToken";
     case 41: return "AsanaPersonalAccessToken";
     case 42: return "AmplitudeApiKey";

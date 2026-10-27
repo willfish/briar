@@ -265,6 +265,7 @@ static const registration expected[] = {
     {325, 0, "Dotdigital", "@apiconnector.com", 37, true, 1024},
     {651, 0, "DronaHQ", "dronahq", 50, true, -1},
     {135, 0, "DroneCI", "droneci", 32, true, -1},
+    {18, 0, "Dropbox", "dropbox", 133, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -359,6 +360,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     }
     if (entry->type == 567) memcpy(key, "web_", 4);
     if (entry->type == 196) memcpy(key, "dp.ct.", 6);
+    if (entry->type == 18) memcpy(key, "sl.", 3);
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
     if (entry->type == 919) {
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
@@ -988,7 +990,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
-                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 || entry->type == 62 ? "token" : "key";
+                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 || entry->type == 62 || entry->type == 18 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
     CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 || entry->type == 648 || entry->type == 739 || entry->type == 1048 ? 3 : secondary ? 2 : 1));
@@ -1129,7 +1131,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 196 || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
@@ -1144,6 +1146,7 @@ int main(void)
         if (entry->type == 920) CHECK(!strcmp(detector->keywords[1], "couchbases://"));
         if (entry->type == 954) CHECK(!strcmp(detector->keywords[1], "ddw_"));
         if (entry->type == 343) CHECK(!strcmp(detector->keywords[1], "\\\"auths\\"));
+        if (entry->type == 18) CHECK(!strcmp(detector->keywords[1], "sl."));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
         if (entry->type == 189) CHECK(!strcmp(detector->keywords[1], "textanywhere"));
@@ -1177,7 +1180,7 @@ int main(void)
             CHECK(!strcmp(detector->keywords[1], "jfrog.io"));
             CHECK(!strcmp(detector->keywords[2], "AKCp"));
         }
-        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 343 ? 4096 : entry->type == 1013 ? 2048 : entry->type == 829 ? 1300 : -1) &&
+        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 343 || entry->type == 18 ? 4096 : entry->type == 1013 ? 2048 : entry->type == 829 ? 1300 : -1) &&
               detector->start_offset == (entry->type == 1013 ? 4096 : -1) &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
