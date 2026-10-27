@@ -185,6 +185,7 @@ static const registration expected[] = {
     {721, 0, "CloudImage", "cloudimage", 30, true, -1},
     {1048, 0, "Cloudinary", "cloudinary", 15, true, 1024},
     {358, 0, "Cloudmersive", "cloudmersive", 36, true, -1},
+    {324, 0, "Cloudplan", "cloudplan", 32, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -442,6 +443,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         }
         secondary = "briar7@fixture.invalid";
         secondary_name = "email";
+        break;
+    case 324:
+        for (size_t i = 0; i < 32; ++i) if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
+        key[12] = '-';
         break;
     case 59:
         memcpy(key, "v1.0-", 5);
