@@ -177,5 +177,10 @@ int br_cloudelements_init(const br_detector **out, char **error);
 int br_cloudflareapitoken_v1_init(const br_detector **out, char **error);
 int br_cloudflareapitoken_v2_init(const br_detector **out, char **error);
 int br_cloudflarecakey_init(const br_detector **out, char **error);
+int br_cloudflareglobalapikey_v1_init(const br_detector **out, char **error);
+int br_cloudflareglobalapikey_v2_init(const br_detector **out, char **error);
+int br_cloudimage_init(const br_detector **out, char **error);
+int br_cloudinary_init(const br_detector **out, char **error);
+int br_cloudmersive_init(const br_detector **out, char **error);
 
 #endif
