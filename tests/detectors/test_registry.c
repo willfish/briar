@@ -203,6 +203,7 @@ static const registration expected[] = {
     {749, 0, "Column", "column", 32, true, -1},
     {433, 0, "CommerceJS", "commercejs", 48, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
+    {60, 0, "Confluent", "confluent", 16, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -411,6 +412,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[64] = '\0';
         secondary = "synthetic.aha.io";
         secondary_name = "url";
+        break;
+    case 60:
+        test_secret(secondary_buffer, 64, 11);
+        secondary = secondary_buffer;
+        secondary_name = "secret";
         break;
     case 56:
         test_secret(secondary_buffer, 43, 13);
