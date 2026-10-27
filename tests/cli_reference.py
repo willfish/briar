@@ -480,6 +480,10 @@ def fixtures():
         value = synthetic("docusign-" + label, 32)
         docusign_uuids.append(b"-".join((value[:8], value[8:12], value[12:16], value[16:20], value[20:])))
     docusign_id, docusign_other_id, docusign_secret, docusign_other_secret = docusign_uuids
+    dovico_key = alnum("dovico-key", 32).lower() + b"." + alnum("dovico-key-tail", 7).lower()
+    dovico_user = alnum("dovico-user", 32).lower() + b"." + alnum("dovico-user-tail", 9).lower()
+    dropbox_token = b"sl." + alnum("dropbox-key", 130)
+    dropbox_scoped_token = b"sl.u." + alnum("dropbox-scoped-key", 1500)
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -916,6 +920,14 @@ def fixtures():
         ("docusign", 919, b"docusign\nintegration " + docusign_id + b"\nsecret " + docusign_secret),
         ("docusign_products", 919, b"docusign integration " + docusign_id + b" id " + docusign_other_id + b" secret " + docusign_secret + b" secret " + docusign_other_secret),
         ("docusign_no_secret", 919, b"docusign integration " + docusign_id),
+        ("dovico", 386, b"dovico " + dovico_key + b" dovico " + dovico_user),
+        ("dovico_equal", 386, b"dovico " + dovico_key + b" dovico " + dovico_key),
+        ("dronahq", 651, b"DRONAHQ " + alnum("dronahq-key", 50).lower()),
+        ("droneci", 135, b"DrOnEcI " + alnum("droneci-key", 32)),
+        ("dropbox", 18, b"dropbox " + dropbox_token),
+        ("dropbox_scoped_filtered", 18, b"dropbox " + dropbox_scoped_token),
+        ("dropbox_retained_scoped", 18, b"dropbox " + dropbox_scoped_token),
+        ("dropbox_no_prefix", 18, dropbox_token),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1029,10 +1041,10 @@ def reference_matches(case, actual, expected):
 
 def compare(native, reference, case):
     name, source, detector, kind, cleaning = case
-    # PRIVATE, normalized hosts, webhook schemes and Dotdigital's required email
-    # stem match pinned wordlist terms. Retained cases use an ALREADY supported
-    # flag in BOTH CLIs, not normalization/filter changes. Keep default-zero guards.
-    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_")) else None
+    # Retained fixtures match pinned false-positive terms, including check in
+    # the long scoped Dropbox payload. Use an ALREADY supported flag in BOTH
+    # CLIs, not normalization/filter changes. Keep default-zero guards.
+    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_")) else None
     with tempfile.TemporaryDirectory(prefix="briar-reference-", dir=ROOT / "state") as tmp:
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True, result_types=result_types)
@@ -1107,7 +1119,9 @@ def compare(native, reference, case):
                 "dotdigital_retained_stdin", "dotdigital_retained_filesystem",
                 "dotdigital_retained_bytes_stdin", "dotdigital_retained_bytes_filesystem",
                 "dotdigital_retained_wildcard_stdin", "dotdigital_retained_wildcard_filesystem",
-                "docusign_stdin", "docusign_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "docusign_stdin", "docusign_filesystem",
+                "dronahq_stdin", "dronahq_filesystem", "droneci_stdin", "droneci_filesystem",
+                "dropbox_stdin", "dropbox_filesystem", "dropbox_retained_scoped_stdin", "dropbox_retained_scoped_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1143,6 +1157,14 @@ def compare(native, reference, case):
         raise AssertionError(name + ": Docusign ID/secret occurrences must retain four distinct RawV2 projections")
     if name in ("docusign_no_secret_stdin", "docusign_no_secret_filesystem") and (actual or expected):
         raise AssertionError(name + ": the Docusign secret remains required alongside its visible ID")
+    if name in ("dovico_stdin", "dovico_filesystem") and (len(actual) != 2 or len(expected) != 2):
+        raise AssertionError(name + ": identical Dovico grammars must retain both unequal directed products")
+    if name in ("dovico_equal_stdin", "dovico_equal_filesystem") and (actual or expected):
+        raise AssertionError(name + ": unique Dovico candidates must not produce an equal self-pair")
+    if name in ("dropbox_scoped_filtered_stdin", "dropbox_scoped_filtered_filesystem") and (actual or expected):
+        raise AssertionError(name + ": pinned badlist check in the long scoped fixture remains filtered by default")
+    if name in ("dropbox_no_prefix_stdin", "dropbox_no_prefix_filesystem") and (actual or expected):
+        raise AssertionError(name + ": Dropbox sl. dispatch must not bypass the required dropbox extraction prefix")
     if name in ("denodeploy_stdin", "denodeploy_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": both direct Deno token prefixes must dispatch without a provider name")
     if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):
