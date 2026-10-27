@@ -249,6 +249,7 @@ static const registration expected[] = {
     {726, 0, "Diffbot", "diffbot", 32, true, -1},
     {819, 0, "Diggernaut", "diggernaut", 40, true, -1},
     {64, 0, "DigitalOceanToken", "digitalocean", 64, true, -1},
+    {897, 0, "DigitalOceanV2", "dop_v1_", 71, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -308,6 +309,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 138) key[23] = '=';
     if (entry->type == 665) memcpy(key, "pk_Z_", 5);
     if (entry->type == 567) memcpy(key, "web_", 4);
+    if (entry->type == 897) {
+        memcpy(key, "dop_v1_", 7);
+        for (size_t i = 7; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+    }
     if (entry->type == 225) key[5] = '_';
     if (entry->type == 831) memcpy(key, "secret_", 7);
     if (entry->type == 103) memcpy(key, "CFPAT-", 6);
@@ -1050,7 +1055,7 @@ int main(void)
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
-              entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
+              entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 ? 3u :
               entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
@@ -1076,6 +1081,10 @@ int main(void)
         if (entry->type == 2) {
             CHECK(!strcmp(detector->keywords[1], "ABIA"));
             CHECK(!strcmp(detector->keywords[2], "ACCA"));
+        }
+        if (entry->type == 897) {
+            CHECK(!strcmp(detector->keywords[1], "doo_v1_"));
+            CHECK(!strcmp(detector->keywords[2], "dor_v1_"));
         }
         if (entry->type == 1046) CHECK(!strcmp(detector->keywords[1], "atlassian"));
         if (entry->type == 1047) {
