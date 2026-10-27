@@ -226,5 +226,9 @@ int br_d7network_init(const br_detector **out, char **error);
 int br_dailyco_init(const br_detector **out, char **error);
 int br_dandelion_init(const br_detector **out, char **error);
 int br_dareboost_init(const br_detector **out, char **error);
+int br_databox_init(const br_detector **out, char **error);
+int br_databrickstoken_init(const br_detector **out, char **error);
+int br_datadogapikey_init(const br_detector **out, char **error);
+int br_datadogtoken_init(const br_detector **out, char **error);
 
 #endif
