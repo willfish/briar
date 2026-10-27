@@ -202,6 +202,7 @@ static const registration expected[] = {
     {823, 0, "Collect2", "collect2", 36, true, -1},
     {749, 0, "Column", "column", 32, true, -1},
     {433, 0, "CommerceJS", "commercejs", 48, true, -1},
+    {256, 0, "CompanyHub", "companyhub", 20, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {60, 0, "Confluent", "confluent", 16, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -412,6 +413,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[64] = '\0';
         secondary = "synthetic.aha.io";
         secondary_name = "url";
+        break;
+    case 256:
+        secondary = key; /* The key also matches the ID grammar: retain its self-pair. */
+        secondary_name = "id";
         break;
     case 60:
         test_secret(secondary_buffer, 64, 11);
@@ -675,7 +680,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[82] = '\0';
         break;
     }
-    if (entry->type == 456)
+    if (entry->type == 256)
+        snprintf(input, sizeof(input), "%s %s", entry->keyword, key); /* One occurrence, both patterns. */
+    else if (entry->type == 456)
         snprintf(input, sizeof(input), "%s\n%s\nsecret AbCd0123EfGh4567IjKl8901", key, secondary);
     else if (entry->type == 1025)
         snprintf(input, sizeof(input), "Endpoint=%s;Id=%s;Secret=AQIDBA==", secondary, key);
