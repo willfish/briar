@@ -25,11 +25,13 @@ DevOps line scanning and SAS/Function request guards reimplement selected Go
 1.26.7 encoding/base64, net/url, bufio and net/http behavior in C. Coinbase
 reimplements selected encoding/pem and crypto/x509 SEC1 validation mechanics.
 Datadog token response projection follows selected encoding/json pointer and
-slice-reuse mechanics. Selected Unicode 15.0 category, whitespace and lowercase ranges derive from Go 1.26.7
-src/unicode/tables.go; regenerate them with tools/generate_go_unicode.py.
+slice-reuse mechanics. DeepAI's fixed multipart form follows selected
+mime/multipart writer behavior. Selected Unicode 15.0 category, whitespace and
+lowercase ranges derive from Go 1.26.7 src/unicode/tables.go; regenerate them with tools/generate_go_unicode.py.
 Original copyright and BSD license:
 Copyright 2009 The Go Authors.
 Copyright 2010 The Go Authors. All rights reserved.
+Copyright 2011 The Go Authors. All rights reserved.
 Copyright 2012 The Go Authors. All rights reserved.
 Copyright 2013 The Go Authors. All rights reserved.
 See LICENSES/BSD-3-Clause-Go.txt.

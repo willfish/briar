@@ -236,6 +236,7 @@ static const registration expected[] = {
     {39, 0, "DatadogToken", "datadog", 40, true, 1024},
     {404, 0, "DataGov", "data.gov", 40, true, -1},
     {257, 0, "Debounce", "debounce", 13, false, -1},
+    {621, 0, "DeepAI", "deepai", 36, true, -1},
     {418, 0, "Deepgram", "deepgram", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
