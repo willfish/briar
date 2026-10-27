@@ -207,6 +207,7 @@ static const registration expected[] = {
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {60, 0, "Confluent", "confluent", 16, true, 1024},
     {103, 0, "ContentfulPersonalAccessToken", "CFPAT-", 49, true, -1},
+    {769, 0, "ConversionTools", "conversiontools", 159, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -242,6 +243,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(key + 104, "eyJ", 3); key[207] = '.'; key[208] = 'Z';
     }
     if (entry->type == 103) memcpy(key, "CFPAT-", 6);
+    if (entry->type == 769) { memcpy(key, "ey", 2); key[10] = '.'; key[20] = '_'; }
     if (entry->type == 110) memcpy(key, "ey", 2);
     if (entry->type == 647) memcpy(key, "eyJhbGciOiJIUzI1NiJ9", 20);
     if (entry->type == 430 && entry->version == 1) key[22] = key[23] = 't';
