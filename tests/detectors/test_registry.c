@@ -172,6 +172,7 @@ static const registration expected[] = {
     {710, 0, "Cliengo", "cliengo", 36, true, -1},
     {307, 0, "Clientary", "ronin", 26, true, 1024},
     {280, 0, "Clockify", "clockify", 48, true, -1},
+    {215, 0, "Close", "close", 49, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -412,6 +413,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "G7H8IJKL-M9N0-OPQR-STUV-WXYZ1234ABCD");
         secondary = "briar7@fixture.invalid";
         secondary_name = "id";
+        break;
+    case 215:
+        memcpy(key, "api_", 4);
+        key[20] = '.';
         break;
     case 307:
         secondary = "briar7";

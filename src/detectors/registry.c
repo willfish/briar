@@ -169,6 +169,7 @@ static const detector_factory named_factories[] = {
     br_cliengo_init,
     br_clientary_init,
     br_clockify_init,
+    br_closecrm_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
 };
@@ -221,7 +222,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 0: case 150: case 158: case 239: case 254: case 521: case 390: case 431: case 432: case 684: case 685: case 692: case 334: case 693: case 197: case 802:
         case 125: case 126: case 130: case 277: case 1014: case 1015: case 498: case 506: case 910: case 917: case 907:
         case 302: case 565: case 707: case 709: case 710: case 723: case 756: case 828: case 833: case 366: case 375: case 522: case 523: case 524: case 170: case 163: case 399: case 473: case 474: case 477: case 453:
-        case 448: case 456: case 457: case 42: case 43: case 44: case 933: case 179: case 1032: case 632: case 209: case 212: case 458:
+        case 448: case 456: case 457: case 42: case 43: case 44: case 933: case 179: case 1032: case 632: case 209: case 212: case 215: case 458:
         case 1002: case 1003: case 401: case 391: case 484: case 485: case 788: case 637: case 647: case 648: case 649: case 643: case 208: case 1004: case 768: case 588: case 598:
         case 307: case 317: case 318: case 320: case 322: case 815: case 816: case 646: case 269: case 270: case 278: case 280: case 1042: case 181: case 187: case 385: case 387: case 388: case 389: case 800:
         case 98: case 41: case 376: case 377: case 166: case 1045: case 1047: case 1046:
@@ -267,6 +268,7 @@ const char *br_detector_type_name(int32_t type)
     case 208: return "Chatbot";
     case 209: return "ClickSendsms";
     case 212: return "ApiDeck";
+    case 215: return "Close";
     case 239: return "Abyssale";
     case 254: return "Campayn";
     case 269: return "Apptivo";
