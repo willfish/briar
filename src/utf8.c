@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 /* PLAIN normalization from TruffleHog v3.97.2, pkg/decoders/utf8.go. */
 #include "briar.h"
+#include "utf8.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +32,28 @@ static size_t rune_width(const unsigned char *p, size_t len)
         return 4;
     }
     return 0;
+}
+
+bool br_utf8_valid(br_slice input)
+{
+    if (!input.data && input.len) return false;
+    for (size_t at = 0; at < input.len;) {
+        size_t width = rune_width(input.data + at, input.len - at);
+        if (!width) return false;
+        at += width;
+    }
+    return true;
+}
+
+size_t br_utf8_rune(br_slice input, uint32_t *rune)
+{
+    if (!rune || !input.data || !input.len) return 0;
+    size_t width = rune_width(input.data, input.len);
+    if (!width) return 0;
+    uint32_t value = input.data[0] & (width == 1 ? 0x7fu : 0x7fu >> width);
+    for (size_t i = 1; i < width; ++i) value = (value << 6) | (input.data[i] & 0x3fu);
+    *rune = value;
+    return width;
 }
 
 int br_utf8_decode(br_slice input, br_slice *decoded, br_bytes *storage, char **error)
