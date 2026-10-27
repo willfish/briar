@@ -188,6 +188,7 @@ static const registration expected[] = {
     {324, 0, "Cloudplan", "cloudplan", 32, true, -1},
     {805, 0, "Cloudsmith", "cloudsmith", 40, true, -1},
     {525, 0, "Cloverly", "cloverly", 28, true, -1},
+    {711, 0, "Cloze", "cloze", 32, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -446,6 +447,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "briar7@fixture.invalid";
         secondary_name = "email";
         break;
+    case 711:
+        for (size_t i = 0; i < 32; ++i) key[i] = "0123456789abcdef"[i % 16];
+        secondary = "briar7@fixture.invalid"; /* Required email is hidden from results. */
+        break;
     case 805:
         for (size_t i = 0; i < 40; ++i) key[i] = "0123456789abcdef"[i % 16];
         break;
@@ -699,8 +704,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 828) {
-        test_key_result(result, 828, key, "key"); /* Public ID is required but never exposed. */
+    if (entry->type == 828 || entry->type == 711) {
+        test_key_result(result, entry->type, key, "key"); /* Required public ID/email stays hidden. */
         br_results_clear(&results);
         return;
     }
