@@ -222,5 +222,9 @@ int br_currencyscoop_init(const br_detector **out, char **error);
 int br_currentsapi_init(const br_detector **out, char **error);
 int br_customerguru_init(const br_detector **out, char **error);
 int br_customerio_init(const br_detector **out, char **error);
+int br_d7network_init(const br_detector **out, char **error);
+int br_dailyco_init(const br_detector **out, char **error);
+int br_dandelion_init(const br_detector **out, char **error);
+int br_dareboost_init(const br_detector **out, char **error);
 
 #endif
