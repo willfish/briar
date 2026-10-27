@@ -197,7 +197,7 @@
     "alegra/Scanner": {
       "state": "partial",
       "upstream_source": "pkg/detectors/alegra/alegra.go",
-      "native_files": ["src/detectors/alegra.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "native_files": ["src/detectors/alegra.c", "src/detectors/email_pattern.h", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_alegra.c", "tests/detectors/test_captures.c", "tests/detectors/test_findings.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Complete shared HTTP/regexp/source-engine behavior", "Preserve full email-pattern and context behavior beyond current source-derived byte fixtures"]
@@ -1265,6 +1265,42 @@
       "native_files": ["src/detectors/checio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_checio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter setup/allocation with Do failures, suppressing them together without stage classification", "Source scan-deferred close-only lifecycle differs from eager buffering/per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "checklyhq/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/checklyhq/checklyhq.go",
+      "scope_notes": "Prefixed lowercase-alphanumeric 32-byte occurrence keys retain duplicates, Raw/key part only and absent hints, without hex validation, entropy, uniqueness, cache or extra metadata. SANE GET https://api.checklyhq.com/v1/checks uses a complete stack Bearer header and default UA, no body/Type/Accept/logical Content-Length or unnecessary auth allocation. Known nil-context construction skips verification candidates; NoV nil context still finds them. Every 2xx verifies, other statuses reject, all shared adapter/Do errors are suppressed without an error setter, and body/read errors are ignored. Provider-owned resource failures normalize every nonzero return to fatal caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/checklyhq.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_checklyhq.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter setup/allocation with Do failures, suppressing them together without stage classification", "Source scan-deferred close-only lifecycle differs from eager buffering/per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "checkout/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/checkout/checkout.go",
+      "scope_notes": "Prefixed exact lowercase sk_ or sk_test_ plus mixed-case hexadecimal 8-4-4-4-12 shapes produce 39/44-byte occurrence keys, not parsed/validated UUIDs. Independent lowercase cus_ plus 26 mixed-alphanumeric bytes produce 30-byte ID occurrences. Preserve key-major products, duplicates, Raw key, RawV2 key+ID, key/id parts and span1024 without entropy/uniqueness/cache/consumption/success breaks. SANE GET always targets https://api.sandbox.checkout.com/customers/ID even for production-format sk_ keys, with literal Authorization:key, complete bounded stack URL/default UA/no body/Type/Accept. Verification nil context skips pairs; NoV finds them. Every 2xx verifies, other statuses reject, all shared adapter/Do errors are suppressed and bodies ignored. Provider-owned resources fail fatally with caller-preserving invocation rollback. Direct detector tests retain sandbox keys, while default CLI wordlist filtering drops sk_test_ because the pinned badlist contains test; the explicit filtered fixture expects zero in both scanners.",
+      "native_files": ["src/detectors/checkout.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_checkout.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared br_http_send combines adapter setup/allocation with Do failures, suppressing them together without stage classification", "Source scan-deferred close-only lifecycle differs from eager buffering/per-request release", "Complete native sensitive-header redirect/client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "checkvist/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/checkvist/checkvist.go",
+      "scope_notes": "Prefixed mixed-alphanumeric 14-byte key occurrences pair email-major with independently byte-unique capture1 emails from the exact shared pinned grammar. Email case, quoted controls, duplicate key occurrences and keys captured from 14-byte email local parts remain intact. This is not Alegra's full-match/last-space projection; only the unchanged grammar is shared. Raw key, RawV2 key+email, key/email parts/span1024 and absent other metadata remain. Complete unbounded byte-aware QueryEscape forms are sorted remote_key=KEY&username=EMAIL and prepared before nil-context construction skips; positive provider form failures become ABORT, not SKIP or suppressed Do errors. Exact SANE GET WITH BODY https://checkvist.com/auth/login.json?version=2 uses form Content-Type/default UA/no Authorization/Accept/logical Content-Length, never POST or URL parameters. Every 2xx verifies, other statuses reject, the whole shared adapter/Do domain is suppressed and response bodies ignored. Native curl rejects nonempty GET bodies before I/O; suppressed diagnostics retain unverified findings without claiming mocked success as native support. All provider resources are fatal with caller-preserving invocation rollback; NoV does not build forms/send HTTP.",
+      "native_files": ["src/detectors/checkvist.c", "src/detectors/email_pattern.h", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_checkvist.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native curl nonempty GET-body verification remains unsupported and fails before I/O; its diagnostic is suppressed by provider policy", "Shared br_http_send combines adapter setup/allocation with Do failures, suppressing them together without stage classification", "Source scan-deferred close-only lifecycle differs from eager buffering/per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
+    },
+    "cicero/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/cicero/cicero.go",
+      "scope_notes": "Prefixed lowercase-alphanumeric 40-byte occurrence keys retain duplicates, Raw/key part only and absent hints, without hex validation/entropy/unique/cache/extra metadata. SANE GET https://cicero.azavea.com/v3.1/account/credits_remaining?key=KEY uses a complete bounded stack URL, JSON Content-Type/default UA/no body/Authorization/Accept/logical Content-Length. Known nil-context construction skips verification candidates; NoV nil context finds them. Every 2xx verifies, all other statuses reject, all shared adapter/Do errors are suppressed without an error setter, and body/read errors are ignored. Provider-owned resource failures normalize every nonzero return to fatal caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/cicero.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_cicero.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Shared br_http_send combines adapter setup/allocation with Do failures, suppressing them together without stage classification", "Source scan-deferred close-only lifecycle differs from eager buffering/per-request release", "Complete native client configuration, shared regexp/Unicode/source-engine and global output parity"]
     },
     "azure_openai/Scanner": {

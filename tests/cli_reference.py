@@ -375,6 +375,9 @@ def fixtures():
     caspio_credential = alnum("caspio-credential", 50).lower()
     caspio_payload = b"CASPIO " + caspio_credential + b"\nCASPIO briar7c9"
     cexio_value = alnum("cexio-value", 24)
+    checkout_uuid = b"B7c9d2e5-F6a8-b3C4-d1E0-f2A4b6C8d1e3"
+    checkout_id = b"cus_" + alnum("checkout-id", 26)
+    checkvist_key = alnum("checkvist-key", 14)
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -618,6 +621,13 @@ def fixtures():
         ("chatfule", 692, b"CHATFUEL " + alnum("chatfuel-key", 128)),
         ("chatfule_package_spelling", 692, b"chatfule " + alnum("chatfuel-key", 128)),
         ("checio", 643, b"CHECIO pk_" + alnum("checio-key", 45).lower()),
+        ("checklyhq", 649, b"CHECKLYHQ " + alnum("checklyhq-key", 32).lower()),
+        ("checkout_production", 187, b"CHECKOUT sk_" + checkout_uuid + b"\nCHECKOUT " + checkout_id),
+        ("checkout_sandbox_filtered", 187, b"CHECKOUT sk_test_" + checkout_uuid + b"\nCHECKOUT " + checkout_id),
+        ("checkvist", 709, b"CHECKVIST " + checkvist_key + b"\nCHECKVIST Briar7+Tag@Fixture.Invalid"),
+        ("checkvist_email_key", 709, b"CHECKVIST " + checkvist_key + b"\nCHECKVIST " + alnum("checkvist-email-key", 14) + b"@Fixture.Invalid"),
+        ("checkvist_quoted_control", 709, b'CHECKVISTx"Briar\\\x01"@Fixture.Invalid\nCHECKVIST ' + checkvist_key),
+        ("cicero", 477, b"CICERO " + alnum("cicero-key", 40).lower()),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
@@ -727,6 +737,8 @@ def compare(native, reference, case):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("cexio_products_stdin", "cexio_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": both keys and both secrets must retain all four products")
+    if name in ("checkout_sandbox_filtered_stdin", "checkout_sandbox_filtered_filesystem") and (actual or expected):
+        raise AssertionError(name + ": default wordlist must filter sk_test_ credentials")
     if not reference_matches(case, actual, expected):
         details = [f"result counts native={len(actual)}, reference={len(expected)}"]
         for index, (got, want) in enumerate(zip(actual, expected)):
