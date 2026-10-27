@@ -182,5 +182,9 @@ int br_cloudflareglobalapikey_v2_init(const br_detector **out, char **error);
 int br_cloudimage_init(const br_detector **out, char **error);
 int br_cloudinary_init(const br_detector **out, char **error);
 int br_cloudmersive_init(const br_detector **out, char **error);
+int br_cloudplan_init(const br_detector **out, char **error);
+int br_cloudsmith_init(const br_detector **out, char **error);
+int br_cloverly_init(const br_detector **out, char **error);
+int br_cloze_init(const br_detector **out, char **error);
 
 #endif
