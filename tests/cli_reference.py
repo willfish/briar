@@ -404,6 +404,19 @@ def fixtures():
     cloze_email = b"Case.User@Example.INVALID"
     coda_key = b"-".join(alnum("coda-key-" + str(i), width).lower() for i, width in enumerate((8, 4, 4, 4, 12)))
     coda_key = b"g" + coda_key[1:]  # Lowercase alphanumeric shape, deliberately not hex.
+    codemagic_key = alnum("codemagic-key", 43)
+    codemagic_key = codemagic_key[:12] + b"_" + codemagic_key[13:]
+    codequiry_key = alnum("codequiry-key", 64)
+    codequiry_key = codequiry_key[:17] + b"-" + codequiry_key[18:]
+    coinapi_key = b"G" + alnum("coinapi-key", 35).upper()
+    coinapi_key = coinapi_key[:12] + b"-" + coinapi_key[13:]  # Neither hex nor UUID grouping.
+    # PUBLIC scalar ONE and fictitious nonhex/underscore names, never account credentials.
+    coinbase_name = b"organizations/ORG__123-AB_C-de_F-GHI_-abcdefgh1234/apiKeys/KEY__123-ZZ__-aaaa-bbbb-GHIJklmn5678"
+    coinbase_der = bytes.fromhex("3012020101040101a00a06082a8648ce3d030107")
+    def coinbase_pem(der):
+        return b"-----BEGIN EC PRIVATE KEY-----\n" + base64.b64encode(der) + b"\n-----END EC PRIVATE KEY-----"
+    coinbase_key = coinbase_pem(coinbase_der)
+    coinbase_escaped = coinbase_name.replace(b"/", b"\\/") + b"\n" + coinbase_key.replace(b"\n", b"\\n")
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -717,6 +730,22 @@ def fixtures():
         ("coda", 960, b"coda " + coda_key),
         ("codacy", 185, b"codacy " + alnum("codacy-key", 20)),
         ("codeclimate", 844, b"codeclimate " + synthetic("codeclimate-key", 40)),
+        ("codemagic", 845, b"CODEMAGIC " + codemagic_key),
+        ("codequiry", 783, b"codequiry " + codequiry_key),
+        ("coinapi", 554, b"coinapi " + coinapi_key),
+        ("coinbase_filtered", 5, coinbase_name + b"\n" + coinbase_key),
+        ("coinbase_retained", 5, coinbase_name + b"\n" + coinbase_key),
+        ("coinbase_retained_escaped", 5, coinbase_escaped),
+        ("coinbase_retained_escaped_final", 5, coinbase_escaped + b"\\n"),
+        ("coinbase_retained_original_products", 5, coinbase_name + b"\n" + coinbase_key + b"\n" + coinbase_escaped),
+        ("coinbase_retained_ecdsa_label", 5, coinbase_name + b"\n" + coinbase_key.replace(b"EC PRIVATE", b"ECDSA PRIVATE")),
+        ("coinbase_retained_crlf", 5, coinbase_name + b"\n" + coinbase_key.replace(b"\n", b"\r\n")),
+        ("coinbase_retained_no_name", 5, coinbase_key),
+        ("coinbase_retained_zero_scalar", 5, coinbase_name + b"\n" + coinbase_pem(coinbase_der.replace(b"\x04\x01\x01", b"\x04\x01\x00"))),
+        ("coinbase_retained_ignored_public_and_tail", 5, coinbase_name + b"\n" + coinbase_pem(b"\x30\x18" + coinbase_der[2:] + b"\xa1\x04\x03\x02\x00\x00\x00\xff")),
+        ("coinbase_retained_p224", 5, coinbase_name + b"\n" + coinbase_pem(bytes.fromhex("300f020101040101a00706052b81040021"))),
+        ("coinbase_retained_p384", 5, coinbase_name + b"\n" + coinbase_pem(bytes.fromhex("300f020101040101a00706052b81040022"))),
+        ("coinbase_retained_p521", 5, coinbase_name + b"\n" + coinbase_pem(bytes.fromhex("300f020101040101a00706052b81040023"))),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
@@ -750,13 +779,15 @@ def run_isolated(command, source=b"", timeout=45):
                               timeout=timeout, env={"HOME": home, "PATH": os.environ["PATH"], "LANG": "C.UTF-8"})
 
 
-def invoke(binary, source, detector, kind, cleaning, directory, reference_run=False):
+def invoke(binary, source, detector, kind, cleaning, directory, reference_run=False, result_types=None):
     command = [str(binary)]
     if reference_run:
         # Controls for the Go oracle, not claims that native updater/concurrency
         # options are already ported. Compare only the shared implemented path.
         command.extend(["--no-update", "--concurrency=1"])
     command.extend(["--no-verification", "--json", "--include-detectors=" + detector])
+    if result_types is not None:
+        command.append("--results=" + result_types)
     if cleaning:
         command.append("--filter-unverified")
     command.append(kind)
@@ -815,10 +846,14 @@ def reference_matches(case, actual, expected):
 
 def compare(native, reference, case):
     name, source, detector, kind, cleaning = case
+    # Every Coinbase Raw contains PRIVATE, a pinned wordlist term. These cases
+    # use an ALREADY supported flag in BOTH programs, not output normalization
+    # or a detector/filter change. Keep a separate default-filter zero guard.
+    result_types = "filtered_unverified" if name.startswith("coinbase_retained_") else None
     with tempfile.TemporaryDirectory(prefix="briar-reference-", dir=ROOT / "state") as tmp:
         directory = Path(tmp)
-        expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True)
-        actual = invoke(native, source, detector, kind, cleaning, directory)
+        expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True, result_types=result_types)
+        actual = invoke(native, source, detector, kind, cleaning, directory, result_types=result_types)
     # False-positive filtering or keyword-window clipping must not turn these
     # positive fixtures into a vacuous zero-row comparison.
     if name in ("azure_apim_repository_stdin", "azure_apim_repository_filesystem",
@@ -831,6 +866,13 @@ def compare(native, reference, case):
         raise AssertionError(name + ": default wordlist must filter sk_test_ credentials")
     if name in ("clinchpad_filtered_stdin", "clinchpad_filtered_filesystem") and (actual or expected):
         raise AssertionError(name + ": default wordlist must filter the safe substring")
+    if name in ("coinbase_filtered_stdin", "coinbase_filtered_filesystem") and (actual or expected):
+        raise AssertionError(name + ": default wordlist must filter PRIVATE in Coinbase Raw")
+    if name.startswith("coinbase_retained_"):
+        empty = name.startswith(("coinbase_retained_crlf_", "coinbase_retained_no_name_", "coinbase_retained_zero_scalar_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": retained-key validation and normalization must not be vacuous")
     if not reference_matches(case, actual, expected):
         details = [f"result counts native={len(actual)}, reference={len(expected)}"]
         for index, (got, want) in enumerate(zip(actual, expected)):
