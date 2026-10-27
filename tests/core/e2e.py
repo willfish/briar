@@ -482,6 +482,8 @@ for args in (
     ["stdin", "--json", "--no-verification", "--include-detectors=908.v0"],
     ["stdin", "--json", "--no-verification", "--include-detectors=585"],
     ["stdin", "--json", "--no-verification", "--include-detectors=585.v0"],
+    ["stdin", "--json", "--no-verification", "--include-detectors=257"],
+    ["stdin", "--json", "--no-verification", "--include-detectors=257.v0"],
     ["stdin", "--json", "--no-verification", "--include-detectors=239.v1"],
     ["stdin", "--json", "--no-verification", "--include-detectors=431.v1"],
     ["stdin", "--json", "--no-verification", "--include-detectors=693.v1"],

@@ -232,6 +232,7 @@ static const detector_factory named_factories[] = {
     br_datadogapikey_init,
     br_datadogtoken_init,
     br_datagov_init,
+    br_debounce_init,
     br_deepgram_init,
     br_jiradatacenterpat_init,
 };
@@ -390,6 +391,7 @@ const char *br_detector_type_name(int32_t type)
     case 254: return "Campayn";
     case 255: return "Clinchpad";
     case 256: return "CompanyHub";
+    case 257: return "Debounce";
     case 269: return "Apptivo";
     case 270: return "CapsuleCRM";
     case 277: return "Airship";
