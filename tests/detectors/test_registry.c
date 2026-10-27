@@ -251,6 +251,7 @@ static const registration expected[] = {
     {64, 0, "DigitalOceanToken", "digitalocean", 64, true, -1},
     {897, 0, "DigitalOceanV2", "dop_v1_", 71, true, -1},
     {66, 0, "DiscordWebhook", "https://discord.com/api/webhooks/", 120, true, -1},
+    {666, 0, "Ditto", "ditto", 77, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -309,6 +310,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 664) memcpy(key, "07|", 3);
     if (entry->type == 138) key[23] = '=';
     if (entry->type == 665) memcpy(key, "pk_Z_", 5);
+    if (entry->type == 666) {
+        key[8] = key[13] = key[18] = key[23] = '-';
+        key[36] = '.';
+    }
     if (entry->type == 567) memcpy(key, "web_", 4);
     if (entry->type == 66) {
         char secret[69]; test_secret(secret, 68, 11);
