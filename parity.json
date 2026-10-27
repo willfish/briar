@@ -2088,6 +2088,42 @@
       "evidence": ["tests/detectors/test_digitaloceanv2.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Selected whole-map JSON/float64/name semantics do not establish complete Go invalid-UTF8/unquoting/error-chain parity", "Mixed send/body-error runtime/resource stages, ReadAll-before-defer versus eager ABI release and full private/native client/POST redirect/body/Reader behavior", "Go map iteration, complete regexp/source-engine and global parity"]
     },
+    "discordbottoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/discordbottoken/discordbottoken.go",
+      "scope_notes": "DiscordBotToken65/v0/default enabled/span1024. Keyword-only CI discord prefixes independently capture59-byte URL-safe dot-shaped keys and17-digit IDs, preserving all key-major occurrence products without JWT/Base64/snowflake/ownership validation. Raw is key, RawV2 is key+ID without separator, Redacted is original ID and both key/id parts stay visible; no Extra/primary/cache. Finding and owned Redacted resources precede complete50-byte v8 users/ID URL preparation and nil-context candidate skipping. Literal Bot authorization follows construction,63 bytes plus NUL borrowed through send/release. SANE5s GET uses the provided ID, never @me or a derived ID. Every2xx ignores body/read errors; the entire mixed shared send domain is suppressed without setter/classifier. Provider-owned failures normalize fatal before skips and preserve caller findings through invocation-tail rollback.",
+      "native_files": ["src/detectors/discordbottoken.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_discordbottoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Mixed setup/allocation/Do stages and scan-deferred close-only versus eager buffering/release", "Complete native/private SANE client, regexp, source-engine and global parity"]
+    },
+    "discordwebhook/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/discordwebhook/discordwebhook.go",
+      "scope_notes": "DiscordWebhook66/v0/default enabled/all hints absent. Direct case-sensitive discord.com API webhook URL captures18..19 digits and68 mixed-alphanumeric/hyphen characters, with occurrences and no underscore, word boundary or ending anchor. Longer secrets retain prefix captures; no discordapp aliases or URL/ID normalization. Raw/full URL and key part only; no RawV2/Redacted/Extra/primary/local filter/cache. PUBLIC10s bodyless GET borrows the original owned capture through release, without a second URL allocation; finding resources precede nil-context skip. Common UA only, every2xx/bodyignore and whole mixed send suppression. Provider-owned failures are fatal with invocation rollback. Full Raw includes https:, so pinned default wordlist filtering suppresses CLI findings; explicit filtered_unverified in both CLIs tests retained complete rows without changing filtering or normalization.",
+      "native_files": ["src/detectors/discordwebhook.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_discordwebhook.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native PUBLIC policy remains fail-closed; injected success does not establish DNS/proxy/redirect parity", "Mixed HTTP stages and scan-deferred close-only versus eager buffering/release", "Complete regexp, source-engine and global parity"]
+    },
+    "disqus/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/disqus/disqus.go",
+      "scope_notes": "Disqus789/v0/default enabled/all hints absent. Keyword-only CI disqus plus word-bounded64 mixed-alphanumeric occurrences, not hex/lowercase/unique. Raw/key only with no local filter/cache/RawV2/Redacted/Extra/primary. Finding resources precede the complete123-byte trends/listThreads.json?api_key=KEY URL and nil-context candidate skipping. Bounded literal URL concatenation has no heap copy or artificial formatting failure. SANE5s bodyless GET keeps exact path/capital T, UA only and no auth/type/accept/dedup/JSON parser. Every2xx ignores all body/read errors; mixed shared send failures are suppressed whole without a setter/classifier. Provider-owned failures normalize fatal before private outcomes and roll back only invocation additions.",
+      "native_files": ["src/detectors/disqus.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_disqus.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Mixed setup/allocation/Do stages and scan-deferred close-only versus eager buffering/release", "Complete native/private SANE client, regexp, source-engine and global parity"]
+    },
+    "ditto/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/ditto/ditto.go",
+      "scope_notes": "Ditto666/v0/default enabled/all hints absent. Keyword-only CI ditto plus word-bounded lowercase-alphanumeric8-4-4-4-12 dot40 shapes,77 original bytes and occurrences, without UUID hex/version/variant or JWT validation. Raw/key only; no local filtering/cache/RawV2/Redacted/Extra/primary. Finding resources precede nil-context candidate skipping; literal lowercase token authorization follows construction,83 bytes plus NUL borrowed on stack through release. SANE5s bodyless variants GET, common UA only, no inherited Diggernaut Token/Accept. Every2xx ignores body/read errors and the whole mixed shared send domain is suppressed without setter/classifier. Provider-owned failures normalize fatal before private outcomes with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/ditto.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_ditto.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Mixed setup/allocation/Do stages and scan-deferred close-only versus eager buffering/release", "Complete native/private SANE client, regexp, source-engine and global parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
