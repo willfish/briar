@@ -206,8 +206,8 @@ static void fp_tests(void)
     }
     CHECK(br_known_false_positive(SLICE("k\0example"), terms, 7, false, &reason));
     CHECK(!strcmp(reason, "contains term: example")); free(reason);
-    CHECK(br_known_false_positive(SLICE("\xc3\x89"), terms, 7, true, &reason));
-    CHECK(!strncmp(reason, "unsupported:", 12)); free(reason);
+    CHECK(!br_known_false_positive(SLICE("\xc3\x89"), terms, 7, true, &reason));
+    CHECK(!reason);
 }
 
 typedef struct { size_t calls, releases; bool transport_failure; uint32_t timeout; br_http_profile profile; } fake;

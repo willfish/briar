@@ -3,6 +3,7 @@
 #include "../../src/utf8.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static size_t assertions, failures;
@@ -74,9 +75,38 @@ static void invalid_encodings(void)
     CHECK(!br_utf8_rune((br_slice){replacement, sizeof(replacement)}, NULL));
 }
 
+static void lowercase(void)
+{
+    static const struct { uint32_t input, output; } cases[] = {
+        {'A', 'a'}, {'a', 'a'}, {0, 0}, {0xc9, 0xe9},
+        {0x100, 0x101}, {0x101, 0x101}, {0x139, 0x13a}, {0x13a, 0x13a},
+        {0x130, 'i'}, {0x212a, 'k'}, {0x17f, 0x17f}, /* Simple lower is NOT SimpleFold. */
+        {0x23a, 0x2c65}, {0x1c5, 0x1c6}, {0x10400, 0x10428},
+        {0x1c89, 0x1c89}, {0x1c8a, 0x1c8a}, {0x110000, 0x110000},
+    };
+    for (size_t i = 0; i < sizeof(cases) / sizeof(*cases); ++i)
+        CHECK(br_go_unicode_lower(cases[i].input) == cases[i].output);
+    static const struct { const char *input, *term, *reason; } matches[] = {
+        {"\xc3\x89", "\xc3\xa9", "matches term: \xc3\xa9"},
+        {"\xc4\xb0" "D", "id", "matches term: id"},
+        {"\xe2\x84\xaa" "ING", "king", "matches term: king"},
+        {"\xc8\xba", "\xe2\xb1\xa5", "matches term: \xe2\xb1\xa5"},
+        {"x\xc4\xb0" "Dy", "id", "contains term: id"},
+    };
+    for (size_t i = 0; i < sizeof(matches) / sizeof(*matches); ++i) {
+        const char *terms[] = {matches[i].term}; char *reason = NULL;
+        br_slice input = {(const unsigned char *)matches[i].input, strlen(matches[i].input)};
+        CHECK(br_known_false_positive(input, terms, 1, false, &reason));
+        CHECK(reason && !strcmp(reason, matches[i].reason)); free(reason);
+    }
+    static const unsigned char long_s[] = "\xc5\xbf" "ample";
+    const char *terms[] = {"sample"}; char *reason = NULL;
+    CHECK(!br_known_false_positive((br_slice){long_s, sizeof(long_s) - 1}, terms, 1, false, &reason) && !reason);
+}
+
 int main(void)
 {
-    properties(); scalar_bytes(); invalid_encodings();
+    properties(); scalar_bytes(); invalid_encodings(); lowercase();
     printf("Pinned Go15 Unicode properties + original UTF8 scalars: %zu assertions, %zu failures\n", assertions, failures);
     return failures ? 1 : 0;
 }

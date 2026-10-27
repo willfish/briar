@@ -44,7 +44,24 @@ def generate(source):
             lines.append(f"    {{0x{lo:06x}, 0x{hi:06x}, {stride}}},")
             previous = hi
         lines.extend(["};", ""])
-    lines.extend(["#endif", ""])
+    case_table = re.search(r"var _CaseRanges = \[\]CaseRange\{(.*?)\n\}", text, re.S)
+    if not case_table:
+        raise ValueError("missing Unicode case ranges")
+    rows = re.findall(r"\{(0x[0-9A-F]+), (0x[0-9A-F]+), d\{([^,]+), ([^,]+), ([^}]+)\}\}", case_table[1])
+    if not rows:
+        raise ValueError("empty Unicode case ranges")
+    lines.append("static const unicode_case_range go_lower_case[] = {")
+    previous = -1
+    for lo_text, hi_text, _, lower_text, _ in rows:
+        lo, hi = int(lo_text, 0), int(hi_text, 0)
+        delta = 0x110000 if lower_text == "UpperLower" else int(lower_text)
+        if not (previous < lo <= hi <= 0x10ffff):
+            raise ValueError("invalid or unordered Unicode case range")
+        previous = hi
+        # Zero lower deltas are identity, which the native lookup returns anyway.
+        if delta:
+            lines.append(f"    {{0x{lo:06x}, 0x{hi:06x}, {delta}}},")
+    lines.extend(["};", "", "#endif", ""])
     return "\n".join(lines)
 
 

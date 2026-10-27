@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "briar.h"
+#include "go_unicode.h"
+#include "utf8.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -27,28 +29,50 @@ double br_ascii_shannon_entropy(br_slice input)
 extern const char *const br_fp_words[];
 extern const size_t br_fp_word_count;
 
-static bool valid_utf8(br_slice s)
+static size_t encode_rune(uint32_t rune, unsigned char *out)
 {
-    for (size_t i = 0; i < s.len;) {
-        unsigned char c = s.data[i++];
-        if (c < 0x80) continue;
-        uint32_t cp;
-        size_t n;
-        if (c >= 0xc2 && c <= 0xdf) { cp = c & 0x1f; n = 1; }
-        else if (c >= 0xe0 && c <= 0xef) { cp = c & 0x0f; n = 2; }
-        else if (c >= 0xf0 && c <= 0xf4) { cp = c & 7; n = 3; }
-        else return false;
-        if (n > s.len - i) return false;
-        for (size_t j = 0; j < n; ++j) {
-            c = s.data[i++];
-            if ((c & 0xc0) != 0x80) return false;
-            cp = (cp << 6) | (c & 0x3f);
+    size_t width = rune <= 0x7f ? 1 : rune <= 0x7ff ? 2 : rune <= 0xffff ? 3 : 4;
+    if (out) {
+        if (width == 1) out[0] = (unsigned char)rune;
+        else {
+            uint32_t rest = rune;
+            for (size_t i = width - 1; i > 0; --i) {
+                out[i] = (unsigned char)(0x80 | (rest & 0x3f));
+                rest >>= 6;
+            }
+            out[0] = (unsigned char)((width == 2 ? 0xc0 : width == 3 ? 0xe0 : 0xf0) | rest);
         }
-        if ((n == 1 && cp < 0x80) || (n == 2 && cp < 0x800) ||
-            (n == 3 && cp < 0x10000) || cp > 0x10ffff ||
-            (cp >= 0xd800 && cp <= 0xdfff)) return false;
     }
-    return true;
+    return width;
+}
+
+static unsigned char *lower_utf8(br_slice input, size_t *length)
+{
+    /* IsKnownFalsePositive validates first, then strings.ToLower. Mapping one
+     * scalar can shrink OR grow its UTF8 encoding; size the complete result. */
+    size_t needed = 0;
+    for (size_t at = 0; at < input.len;) {
+        uint32_t rune;
+        size_t width = br_utf8_rune((br_slice){input.data + at, input.len - at}, &rune);
+        if (!width) return NULL;
+        size_t bytes = encode_rune(br_go_unicode_lower(rune), NULL);
+        if (bytes > SIZE_MAX - needed - 1) return NULL;
+        needed += bytes;
+        at += width;
+    }
+    unsigned char *lower = malloc(needed + 1);
+    if (!lower) return NULL;
+    size_t used = 0;
+    for (size_t at = 0; at < input.len;) {
+        uint32_t rune;
+        size_t width = br_utf8_rune((br_slice){input.data + at, input.len - at}, &rune);
+        if (!width) { free(lower); return NULL; }
+        used += encode_rune(br_go_unicode_lower(rune), lower + used);
+        at += width;
+    }
+    lower[used] = '\0';
+    *length = used;
+    return lower;
 }
 
 static size_t find(const unsigned char *data, size_t len, const char *term)
@@ -79,30 +103,21 @@ bool br_known_false_positive(br_slice s, const char *const *terms, size_t nterms
                              bool word_check, char **reason)
 {
     if (reason) *reason = NULL;
-    if ((!s.data && s.len) || !valid_utf8(s)) return found(reason, "invalid utf8", "");
+    if (!br_utf8_valid(s)) return found(reason, "invalid utf8", "");
     if ((nterms && !terms) || s.len == SIZE_MAX)
         return found(reason, "unsupported: invalid false-positive arguments", "");
-    unsigned char *lower = malloc(s.len + 1);
+    size_t lower_len = 0;
+    unsigned char *lower = lower_utf8(s, &lower_len);
     if (!lower) return found(reason, "unsupported: false-positive allocation failed", "");
-    for (size_t i = 0; i < s.len; ++i) {
-        unsigned char c = s.data[i];
-        /* First-batch credentials are ASCII. Do not pretend ASCII lower is Unicode lower. */
-        if (c >= 0x80) {
-            free(lower);
-            return found(reason, "unsupported: Unicode false-positive case conversion", "");
-        }
-        lower[i] = c >= 'A' && c <= 'Z' ? (unsigned char)(c + 'a' - 'A') : c;
-    }
-    lower[s.len] = 0;
     for (size_t i = 0; i < nterms; ++i) {
         if (!terms[i]) continue;
-        if (strlen(terms[i]) == s.len && !memcmp(lower, terms[i], s.len)) {
+        if (strlen(terms[i]) == lower_len && !memcmp(lower, terms[i], lower_len)) {
             free(lower);
             return found(reason, "matches term: ", terms[i]);
         }
     }
     for (size_t i = 0; i < nterms; ++i) {
-        if (terms[i] && find(lower, s.len, terms[i]) != SIZE_MAX) {
+        if (terms[i] && find(lower, lower_len, terms[i]) != SIZE_MAX) {
             free(lower);
             return found(reason, "contains term: ", terms[i]);
         }
@@ -111,7 +126,7 @@ bool br_known_false_positive(br_slice s, const char *const *terms, size_t nterms
     size_t first_end = SIZE_MAX;
     if (word_check) {
         for (size_t i = 0; i < br_fp_word_count; ++i) {
-            size_t at = find(lower, s.len, br_fp_words[i]);
+            size_t at = find(lower, lower_len, br_fp_words[i]);
             if (at != SIZE_MAX && at + strlen(br_fp_words[i]) < first_end) {
                 first_end = at + strlen(br_fp_words[i]);
                 word = br_fp_words[i];

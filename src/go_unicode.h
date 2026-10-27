@@ -13,5 +13,7 @@ enum {
 /* Selected Go 1.26.7 / Unicode 15.0 properties, independent of locale and PCRE
  * table upgrades. Number is all N, not just Nd. Invalid scalars have no flags. */
 unsigned br_go_unicode_properties(uint32_t rune);
+/* Go's simple ToLower mapping, not locale-sensitive or full case folding. */
+uint32_t br_go_unicode_lower(uint32_t rune);
 
 #endif

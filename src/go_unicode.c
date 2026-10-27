@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 typedef struct { uint32_t lo, hi, stride; } unicode_range;
+typedef struct { uint32_t lo, hi; int32_t delta; } unicode_case_range;
 #include "go_unicode_tables.h"
 
 static bool in_ranges(uint32_t rune, const unicode_range *ranges, size_t len)
@@ -18,6 +19,21 @@ static bool in_ranges(uint32_t rune, const unicode_range *ranges, size_t len)
         else return (rune - range->lo) % range->stride == 0;
     }
     return false;
+}
+
+uint32_t br_go_unicode_lower(uint32_t rune)
+{
+    size_t lo = 0, hi = sizeof(go_lower_case) / sizeof(*go_lower_case);
+    while (lo < hi) {
+        size_t middle = lo + (hi - lo) / 2;
+        const unicode_case_range *range = &go_lower_case[middle];
+        if (rune < range->lo) hi = middle;
+        else if (rune > range->hi) lo = middle + 1;
+        else if (range->delta > 0x10ffff)
+            return range->lo + (((rune - range->lo) & ~UINT32_C(1)) | 1u);
+        else return (uint32_t)((int64_t)rune + range->delta);
+    }
+    return rune;
 }
 
 unsigned br_go_unicode_properties(uint32_t rune)
