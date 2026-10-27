@@ -166,6 +166,7 @@ static const registration expected[] = {
     {4, 2, "Circle", "CCIPAT_", 70, true, -1},
     {57, 0, "Clarifai", "clarifai", 32, true, -1},
     {334, 0, "Clearbit", "clearbit", 35, true, -1},
+    {456, 0, "ClickHelp", "clickhelp.co", 19, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -402,6 +403,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
             for (size_t i = 30; i < 70; ++i) key[i] = "0123456789aBcDeF"[i % 16];
         }
         break;
+    case 456:
+        strcpy(key, "briar7.clickhelp.co"); /* Raw is portal, not the hidden API key. */
+        secondary = "briar7@fixture.invalid";
+        secondary_name = "email";
+        break;
     case 709:
         secondary = "briar7@example.test";
         secondary_name = "email";
@@ -537,7 +543,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[82] = '\0';
         break;
     }
-    if (entry->type == 1025)
+    if (entry->type == 456)
+        snprintf(input, sizeof(input), "%s\n%s\nsecret AbCd0123EfGh4567IjKl8901", key, secondary);
+    else if (entry->type == 1025)
         snprintf(input, sizeof(input), "Endpoint=%s;Id=%s;Secret=AQIDBA==", secondary, key);
     else if (entry->type == 958)
         snprintf(input, sizeof(input), "%s.azurecr.io\n%s", secondary, key);
@@ -585,6 +593,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(result->detector_type == entry->type);
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
     CHECK(!result->verified && !result->verification_error);
+    if (entry->type == 456) {
+        CHECK(!result->primary_secret.data && !result->primary_secret.len);
+        CHECK(!result->primary_line && !result->chunk_offset_set);
+    }
     br_json *part = NULL;
     if (entry->type == 56) {
         for (size_t i = 0; i < 2; ++i) {
@@ -623,7 +635,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->redacted && strlen(result->redacted) == 11);
         CHECK(!memcmp(result->redacted, key, 8) && !strcmp(result->redacted + 8, "..."));
     }
-    const char *key_name = entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
