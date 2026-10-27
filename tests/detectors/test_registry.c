@@ -219,6 +219,7 @@ static const registration expected[] = {
     {770, 0, "CraftMyPDF", "craftmypdf", 35, true, -1},
     {335, 0, "Crowdin", "crowdin", 80, true, -1},
     {393, 0, "CryptoCompare", "cryptocompare", 64, true, -1},
+    {382, 0, "CurrencyCloud", "currencycloud", 64, true, 1024},
     {499, 0, "Currencyfreaks", "currencyfreaks", 32, true, -1},
     {354, 0, "Currencylayer", "currencylayer", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -518,6 +519,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "briar7@fixture.invalid";
         secondary_name = "email";
         break;
+    case 382:
+        secondary = "briar7@fixture.invalid"; /* Required bare email is hidden. */
+        break;
     case 711:
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789abcdef"[i % 16];
         secondary = "briar7@fixture.invalid"; /* Required email is hidden from results. */
@@ -794,7 +798,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 828 || entry->type == 711) {
+    if (entry->type == 828 || entry->type == 711 || entry->type == 382) {
         test_key_result(result, entry->type, key, "key"); /* Required public ID/email stays hidden. */
         br_results_clear(&results);
         return;
