@@ -211,6 +211,7 @@ static const registration expected[] = {
     {831, 0, "ConvertApi", "convertapi", 23, true, -1},
     {225, 0, "Convertkit", "convertkit", 22, true, -1},
     {664, 0, "Convier", "convier", 43, true, -1},
+    {214, 0, "Copper", "copper", 32, true, 1024},
     {526, 0, "CountryLayer", "countrylayer", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -425,6 +426,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[64] = '\0';
         secondary = "synthetic.aha.io";
         secondary_name = "url";
+        break;
+    case 214:
+        secondary = "briar7@FiXtUrE.test";
+        secondary_name = "id";
         break;
     case 256:
         secondary = key; /* The key also matches the ID grammar: retain its self-pair. */
