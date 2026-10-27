@@ -214,6 +214,7 @@ static const registration expected[] = {
     {214, 0, "Copper", "copper", 32, true, 1024},
     {920, 0, "Couchbase", "couchbase://", 50, true, 1024},
     {526, 0, "CountryLayer", "countrylayer", 32, true, -1},
+    {192, 0, "Coveralls", "coveralls", 37, true, -1},
     {770, 0, "CraftMyPDF", "craftmypdf", 35, true, -1},
     {335, 0, "Crowdin", "crowdin", 80, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
