@@ -797,6 +797,12 @@ def fixtures():
         ("coveralls", 192, b"COVERALLS " + alnum("coveralls-key", 18) + b"-" + alnum("coveralls-tail", 18)),
         ("craftmypdf", 770, b"CRAFTMYPDF " + alnum("craftmypdf-key", 35)),
         ("crowdin", 335, b"crowdin " + alnum("crowdin-key", 80)),
+        ("cryptocompare", 393, b"CRYPTOCOMPARE " + alnum("cryptocompare-key", 30).lower() + b"-" + alnum("cryptocompare-tail", 33).lower()),
+        ("currencycloud", 382, b"User7@Example.invalid\nCURRENCYCLOUD " + alnum("currencycloud-key", 64).lower()),
+        ("currencycloud_no_email", 382, b"currencycloud " + alnum("currencycloud-key", 64).lower()),
+        ("currencycloud_hidden_emails", 382, b"User7@Example.invalid\nOther8@Example.invalid\ncurrencycloud " + alnum("currencycloud-key", 64).lower()),
+        ("currencyfreaks", 499, b"CURRENCYFREAKS " + alnum("currencyfreaks-key", 32).lower()),
+        ("currencylayer", 354, b"currencylayer " + alnum("currencylayer-key", 32).lower()),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -936,8 +942,15 @@ def compare(native, reference, case):
                 "craftmypdf_stdin", "craftmypdf_filesystem",
                 "courier_stdin", "courier_filesystem",
                 "coveralls_stdin", "coveralls_filesystem",
-                "crowdin_stdin", "crowdin_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "crowdin_stdin", "crowdin_filesystem",
+                "currencyfreaks_stdin", "currencyfreaks_filesystem",
+                "cryptocompare_stdin", "cryptocompare_filesystem",
+                "currencylayer_stdin", "currencylayer_filesystem",
+                "currencycloud_stdin", "currencycloud_filesystem",
+                "currencycloud_hidden_emails_stdin", "currencycloud_hidden_emails_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
+    if name in ("currencycloud_no_email_stdin", "currencycloud_no_email_filesystem") and (actual or expected):
+        raise AssertionError(name + ": missing required email must produce no finding")
     if name.startswith("couchbase_"):
         count = 0 if name.startswith(("couchbase_filtered_", "couchbase_retained_unicode16_upper_rejected_", "couchbase_retained_unicode16_lower_rejected_")) else 1
         if len(actual) != count or len(expected) != count:
