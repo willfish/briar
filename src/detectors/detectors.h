@@ -214,5 +214,9 @@ int br_courier_init(const br_detector **out, char **error);
 int br_coveralls_init(const br_detector **out, char **error);
 int br_craftmypdf_init(const br_detector **out, char **error);
 int br_crowdin_init(const br_detector **out, char **error);
+int br_cryptocompare_init(const br_detector **out, char **error);
+int br_currencycloud_init(const br_detector **out, char **error);
+int br_currencyfreaks_init(const br_detector **out, char **error);
+int br_currencylayer_init(const br_detector **out, char **error);
 
 #endif
