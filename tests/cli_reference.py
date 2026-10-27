@@ -440,6 +440,11 @@ def fixtures():
     convertkit_filtered_key = convertkit_key
     convertkit_sign_at = convertkit_key.lower().index(b"sign")
     convertkit_key = convertkit_key[:convertkit_sign_at] + b"x" + convertkit_key[convertkit_sign_at + 1:]
+    convier_key = b"07|" + alnum("convier-key", 40)
+    copper_key = b"g" + alnum("copper-key", 31).lower()
+    countrylayer_key = b"g" + alnum("countrylayer-key", 31).lower()
+    couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
+    couchbase_payload = couchbase_prefix + b"user:Name\npass:aB7!\n"
     coinbase_escaped = coinbase_name.replace(b"/", b"\\/") + b"\n" + coinbase_key.replace(b"\n", b"\\n")
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
@@ -785,6 +790,20 @@ def fixtures():
         ("convertapi", 831, b"convertapi secret_" + alnum("convertapi-key", 16)),
         ("convertkit", 225, b"convertkit " + convertkit_key),
         ("convertkit_filtered", 225, b"convertkit " + convertkit_filtered_key),
+        ("convier", 664, b"CONVIER " + convier_key),
+        ("copper", 214, b"copper " + copper_key + b"\nuser7@ExAmPlE!TEST"),
+        ("countrylayer", 526, b"countrylayer " + countrylayer_key),
+        ("couchbase_filtered", 920, couchbase_payload),
+        ("couchbase_retained", 920, couchbase_payload),
+        ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
+        ("couchbase_retained_number_other", 920, couchbase_prefix + "user:Name\npass:aB²!\n".encode()),
+        ("couchbase_retained_unicode16_upper_rejected", 920, couchbase_prefix + "user:Name\npass:a\u1c891!\n".encode()),
+        ("couchbase_retained_unicode16_lower_rejected", 920, couchbase_prefix + "user:Name\npass:\u1c8aB1!\n".encode()),
+        ("couchbase_retained_long_s", 920, couchbase_prefix + "uſer:Name\npaſſword:aB7!\n".encode()),
+        ("couchbase_retained_empty_username", 920, couchbase_prefix + b"user:" + b"'" * 41 + b"X\npass:aB7!\n"),
+        ("couchbase_retained_trim_order", 920, couchbase_prefix + "user:''\u00a0Name\npass:aB7!\n".encode()),
+        ("couchbase_retained_nul", 920, couchbase_prefix + b"user:ab\0Cx\npass:aB7!\0x\n"),
+        ("couchbase_retained_transformed_unique", 920, couchbase_payload + b"couchbases://cb.z71p8q.cloud.couchbase.com\nuser:'Name\npassword:'aB7!'\n"),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
@@ -885,10 +904,10 @@ def reference_matches(case, actual, expected):
 
 def compare(native, reference, case):
     name, source, detector, kind, cleaning = case
-    # Every Coinbase Raw contains PRIVATE, a pinned wordlist term. These cases
-    # use an ALREADY supported flag in BOTH programs, not output normalization
-    # or a detector/filter change. Keep a separate default-filter zero guard.
-    result_types = "filtered_unverified" if name.startswith("coinbase_retained_") else None
+    # Coinbase PRIVATE and Couchbase normalized hostnames match pinned default
+    # wordlist terms. Retained cases use an ALREADY supported flag in BOTH CLIs,
+    # not output normalization or a detector/filter change. Keep default-zero guards.
+    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_")) else None
     with tempfile.TemporaryDirectory(prefix="briar-reference-", dir=ROOT / "state") as tmp:
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True, result_types=result_types)
@@ -906,8 +925,15 @@ def compare(native, reference, case):
                 "contentful_pat_stdin", "contentful_pat_filesystem",
                 "conversiontools_stdin", "conversiontools_filesystem",
                 "convertapi_stdin", "convertapi_filesystem",
-                "convertkit_stdin", "convertkit_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "convertkit_stdin", "convertkit_filesystem",
+                "convier_stdin", "convier_filesystem",
+                "copper_stdin", "copper_filesystem",
+                "countrylayer_stdin", "countrylayer_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
+    if name.startswith("couchbase_"):
+        count = 0 if name.startswith(("couchbase_filtered_", "couchbase_retained_unicode16_upper_rejected_", "couchbase_retained_unicode16_lower_rejected_")) else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": source transformations and pinned Unicode15 validation must not be vacuous")
     if name in ("companyhub_stdin", "companyhub_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": key must self-pair and also pair with the separate symbol-bearing ID")
     if name in ("cexio_products_stdin", "cexio_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
