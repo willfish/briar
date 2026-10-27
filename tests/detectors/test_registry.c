@@ -239,6 +239,7 @@ static const registration expected[] = {
     {621, 0, "DeepAI", "deepai", 36, true, -1},
     {418, 0, "Deepgram", "deepgram", 40, true, -1},
     {237, 0, "Delighted", "delighted", 32, true, -1},
+    {863, 0, "Demio", "demio", 32, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -551,6 +552,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = key; /* Identical source patterns retain the self-pair. */
         secondary_name = "id";
         break;
+    case 863:
+        secondary = "B7c9D2e5F6g8H3j4K1m0"; /* Required API secret stays hidden. */
+        break;
     case 382:
         secondary = "briar7@fixture.invalid"; /* Required bare email is hidden. */
         break;
@@ -839,8 +843,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 828 || entry->type == 711 || entry->type == 382) {
-        test_key_result(result, entry->type, key, "key"); /* Required public ID/email stays hidden. */
+    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863) {
+        test_key_result(result, entry->type, key, "key"); /* Required counterpart stays hidden. */
         br_results_clear(&results);
         return;
     }
