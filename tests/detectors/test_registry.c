@@ -244,6 +244,7 @@ static const registration expected[] = {
     {954, 0, "DenoDeploy", "ddp_", 40, true, -1},
     {794, 0, "Detectify", "detectify", 32, true, -1},
     {434, 0, "DetectLanguage", "detectlanguage", 32, true, -1},
+    {567, 0, "Dfuse", "dfuse", 36, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -302,6 +303,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 664) memcpy(key, "07|", 3);
     if (entry->type == 138) key[23] = '=';
     if (entry->type == 665) memcpy(key, "pk_Z_", 5);
+    if (entry->type == 567) memcpy(key, "web_", 4);
     if (entry->type == 225) key[5] = '_';
     if (entry->type == 831) memcpy(key, "secret_", 7);
     if (entry->type == 103) memcpy(key, "CFPAT-", 6);
