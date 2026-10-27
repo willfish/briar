@@ -171,6 +171,7 @@ static const registration expected[] = {
     {366, 0, "ClickupPersonalToken", "clickup", 43, true, -1},
     {710, 0, "Cliengo", "cliengo", 36, true, -1},
     {307, 0, "Clientary", "ronin", 26, true, 1024},
+    {255, 0, "Clinchpad", "clinchpad", 32, true, -1},
     {280, 0, "Clockify", "clockify", 48, true, -1},
     {215, 0, "Close", "close", 49, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
