@@ -162,6 +162,8 @@ static const registration expected[] = {
     {187, 0, "Checkout", "checkout", 39, true, 1024},
     {709, 0, "Checkvist", "checkvist", 14, true, 1024},
     {477, 0, "Cicero", "cicero", 40, true, -1},
+    {4, 1, "Circle", "circle", 40, true, -1},
+    {4, 2, "Circle", "CCIPAT_", 70, true, -1},
     {57, 0, "Clarifai", "clarifai", 32, true, -1},
     {334, 0, "Clearbit", "clearbit", 35, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -391,6 +393,15 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 1053:
         memcpy(key, "sk-", 3);
         break;
+    case 4:
+        if (entry->version == 1) {
+            for (size_t i = 0; i < 40; ++i) key[i] = "0123456789aBcDeF"[i % 16];
+        } else {
+            memcpy(key, "CCIPAT_", 7);
+            key[29] = '_';
+            for (size_t i = 30; i < 70; ++i) key[i] = "0123456789aBcDeF"[i % 16];
+        }
+        break;
     case 709:
         secondary = "briar7@example.test";
         secondary_name = "email";
@@ -603,9 +614,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         if (entry->version == 1) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
         else CHECK(!result->extra_data);
     }
-    if (entry->type == 430 || entry->type == 333) {
+    if (entry->type == 4 || entry->type == 430 || entry->type == 333) {
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
-        CHECK(json_object_object_get_ex(result->extra_data, "version", &part));
+        CHECK(json_object_object_get_ex(result->extra_data, entry->type == 4 ? "Version" : "version", &part));
         CHECK(!strcmp(json_object_get_string(part), entry->version == 1 ? "1" : "2"));
     }
     if (entry->type == 1053) {

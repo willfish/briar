@@ -159,6 +159,8 @@ static const detector_factory named_factories[] = {
     br_checkout_init,
     br_checkvist_init,
     br_cicero_init,
+    br_circleci_v1_init,
+    br_circleci_v2_init,
     br_clarifai_init,
     br_clearbit_init,
     br_confluencedatacenter_init,
@@ -209,7 +211,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_object_get_ex(feature_flags, "BraintrustDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
-        case 3: case 142: case 190: case 303: case 333: case 430: case 708: return detector->version == 1 || detector->version == 2;
+        case 3: case 4: case 142: case 190: case 303: case 333: case 430: case 708: return detector->version == 1 || detector->version == 2;
         case 0: case 150: case 158: case 239: case 254: case 521: case 390: case 431: case 432: case 684: case 685: case 692: case 334: case 693: case 197: case 802:
         case 125: case 126: case 130: case 277: case 1014: case 1015: case 498: case 506: case 910: case 917: case 907:
         case 302: case 565: case 707: case 709: case 723: case 756: case 828: case 833: case 375: case 522: case 523: case 524: case 170: case 163: case 399: case 473: case 474: case 477: case 453:
@@ -231,6 +233,7 @@ const char *br_detector_type_name(int32_t type)
     case 0: return "Alibaba";
     case 2: return "AWS";
     case 3: return "Azure";
+    case 4: return "Circle";
     case 41: return "AsanaPersonalAccessToken";
     case 42: return "AmplitudeApiKey";
     case 43: return "BitLyAccessToken";
