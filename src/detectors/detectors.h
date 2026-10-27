@@ -230,5 +230,9 @@ int br_databox_init(const br_detector **out, char **error);
 int br_databrickstoken_init(const br_detector **out, char **error);
 int br_datadogapikey_init(const br_detector **out, char **error);
 int br_datadogtoken_init(const br_detector **out, char **error);
+int br_datagov_init(const br_detector **out, char **error);
+int br_debounce_init(const br_detector **out, char **error);
+int br_deepai_init(const br_detector **out, char **error);
+int br_deepgram_init(const br_detector **out, char **error);
 
 #endif
