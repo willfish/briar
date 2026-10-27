@@ -260,6 +260,7 @@ static const registration expected[] = {
     {921, 2, "Dockerhub", "docker", 36, true, 1024},
     {838, 0, "Docparser", "docparser", 40, true, -1},
     {311, 0, "Documo", "documo", 237, true, -1},
+    {196, 0, "Doppler", "dp.ct.", 46, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -353,6 +354,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         key[36] = '.';
     }
     if (entry->type == 567) memcpy(key, "web_", 4);
+    if (entry->type == 196) memcpy(key, "dp.ct.", 6);
     if (entry->type == 66) {
         char secret[69]; test_secret(secret, 68, 11);
         snprintf(key, sizeof(key), "https://discord.com/api/webhooks/123456789012345678/%s", secret);
@@ -941,7 +943,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 307) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
+    if (entry->type == 307 || entry->type == 196) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
     if (entry->type == 58 || entry->type == 65) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, secondary));
     if (entry->type == 100) CHECK(!result->extra_data && !result->redacted); /* No invented version metadata. */
     if (entry->type == 142) {
@@ -1109,12 +1111,16 @@ int main(void)
         CHECK(!strcmp(br_detector_type_name(detector->type), entry->name));
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
-        CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
+        CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 196 || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
               entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
+            for (size_t j = 0; j < 5; ++j) CHECK(!strcmp(detector->keywords[j + 1], aliases[j]));
+        }
+        if (entry->type == 196) {
+            const char *aliases[] = {"dp.pt.", "dp.st", "dp.sa.", "dp.scim.", "dp.audit."};
             for (size_t j = 0; j < 5; ++j) CHECK(!strcmp(detector->keywords[j + 1], aliases[j]));
         }
         if (entry->type == 430 && entry->version == 2) CHECK(!strcmp(detector->keywords[1], "bb_ma_"));
