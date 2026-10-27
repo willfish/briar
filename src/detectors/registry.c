@@ -178,6 +178,7 @@ static const detector_factory named_factories[] = {
     br_cloudflareapitoken_v2_init,
     br_cloudflarecakey_init,
     br_cloudimage_init,
+    br_cloudinary_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
 };
@@ -437,6 +438,7 @@ const char *br_detector_type_name(int32_t type)
     case 1045: return "BitbucketDataCenter";
     case 1046: return "JiraDataCenterPAT";
     case 1047: return "ConfluenceDataCenter";
+    case 1048: return "Cloudinary";
     case 1052: return "AWSAppSync";
     case 1053: return "BrainTrustApiKey";
     default: return NULL;

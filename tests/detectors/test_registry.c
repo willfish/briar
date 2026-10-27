@@ -181,6 +181,7 @@ static const registration expected[] = {
     {100, 2, "CloudflareApiToken", "cfut_", 53, true, 1024},
     {59, 0, "CloudflareCaKey", "cloudflare", 176, true, -1},
     {721, 0, "CloudImage", "cloudimage", 30, true, -1},
+    {1048, 0, "Cloudinary", "cloudinary", 15, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -189,6 +190,7 @@ static const registration expected[] = {
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
     char key[5001], secondary_buffer[89], session_buffer[133], input[8192];
+    static const char cloudinary_secret[] = "AbCd0123EfGh4567IjKl8901MnO";
     test_secret(key, entry->key_len, 0);
     if (entry->type == 163) strcpy(key, "B7C9D2E5-F6G8H3J4-K1M0N2P4-Q6R8S1T3");
     if (entry->type == 3 && entry->version == 2) memcpy(key, "b7c1Q~", 6);
@@ -431,6 +433,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 59:
         memcpy(key, "v1.0-", 5);
         break;
+    case 1048:
+        strcpy(key, "001726354809273");
+        secondary = "Briar7";
+        secondary_name = "cloud_name";
+        break;
     case 650:
         test_secret(secondary_buffer, 32, 7);
         secondary = secondary_buffer;
@@ -617,6 +624,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "caspio %s\ncaspio region7q", key);
     else if (entry->type == 756)
         snprintf(input, sizeof(input), "browserstackKey %s\nbrowserstackUser %s", key, secondary);
+    else if (entry->type == 1048)
+        snprintf(input, sizeof(input), "cloudinary name %s\ncloudinary key %s\ncloudinary secret %s", secondary, key, cloudinary_secret);
     else if (entry->type == 1003)
         snprintf(input, sizeof(input), "box id %s\nsecret %s", key, secondary);
     else if (entry->type == 512)
@@ -695,14 +704,19 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->redacted && strlen(result->redacted) == 11);
         CHECK(!memcmp(result->redacted, key, 8) && !strcmp(result->redacted + 8, "..."));
     }
-    const char *key_name = entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 1048 ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
                            entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
-    CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 || entry->type == 648 || entry->type == 739 ? 3 : secondary ? 2 : 1));
+    CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 || entry->type == 648 || entry->type == 739 || entry->type == 1048 ? 3 : secondary ? 2 : 1));
+    if (entry->type == 1048) {
+        CHECK(json_object_object_get_ex(result->secret_parts, "api_secret", &part));
+        CHECK(!strcmp(json_object_get_string(part), cloudinary_secret));
+        CHECK(!result->extra_data && !result->redacted);
+    }
     if (entry->type == 1025) {
         CHECK(json_object_object_get_ex(result->secret_parts, "secret", &part));
         CHECK(!strcmp(json_object_get_string(part), "AQIDBA=="));
@@ -723,7 +737,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[sizeof(key) + sizeof(secondary_buffer) + sizeof(session_buffer) + 2];
-        if (entry->type == 648) snprintf(raw_v2, sizeof(raw_v2), "%s%sregion7q", key, secondary);
+        if (entry->type == 1048) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", secondary, key, cloudinary_secret);
+        else if (entry->type == 648) snprintf(raw_v2, sizeof(raw_v2), "%s%sregion7q", key, secondary);
         else if (entry->type == 1025) snprintf(raw_v2, sizeof(raw_v2), "Endpoint=%s;Id=%s;Secret=AQIDBA==", secondary, key);
         else if (entry->type == 958) snprintf(raw_v2, sizeof(raw_v2), "{\"username\":\"%s\",\"password\":\"%s\"}", secondary, key);
         else if (session) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", key, secondary, session);
