@@ -229,6 +229,7 @@ static const detector_factory named_factories[] = {
     br_dareboost_init,
     br_databox_init,
     br_databrickstoken_init,
+    br_datadogapikey_init,
     br_jiradatacenterpat_init,
 };
 
@@ -294,6 +295,15 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_is_type(feature_flags, json_type_object)) return false;
             br_json *enabled = NULL;
             if (!json_object_object_get_ex(feature_flags, "CloudinaryDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1043: {
+            if (detector->version != 0) return false;
+            /* OSS main enables this exact flag; package-zero remains false. */
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "DatadogApiKeyDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
         case 1053: {
@@ -532,6 +542,7 @@ const char *br_detector_type_name(int32_t type)
     case 1029: return "BitbucketAppPassword";
     case 1032: return "AnypointOAuth2";
     case 1042: return "ArtifactoryReferenceToken";
+    case 1043: return "DatadogApikey";
     case 1045: return "BitbucketDataCenter";
     case 1046: return "JiraDataCenterPAT";
     case 1047: return "ConfluenceDataCenter";
