@@ -234,5 +234,9 @@ int br_datagov_init(const br_detector **out, char **error);
 int br_debounce_init(const br_detector **out, char **error);
 int br_deepai_init(const br_detector **out, char **error);
 int br_deepgram_init(const br_detector **out, char **error);
+int br_deepseek_init(const br_detector **out, char **error);
+int br_delighted_init(const br_detector **out, char **error);
+int br_demio_init(const br_detector **out, char **error);
+int br_denodeploy_init(const br_detector **out, char **error);
 
 #endif
