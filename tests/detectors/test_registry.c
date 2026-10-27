@@ -209,6 +209,7 @@ static const registration expected[] = {
     {103, 0, "ContentfulPersonalAccessToken", "CFPAT-", 49, true, -1},
     {769, 0, "ConversionTools", "conversiontools", 159, true, -1},
     {831, 0, "ConvertApi", "convertapi", 23, true, -1},
+    {225, 0, "Convertkit", "convertkit", 22, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -243,6 +244,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(key, "eyJ", 3); key[103] = '.';
         memcpy(key + 104, "eyJ", 3); key[207] = '.'; key[208] = 'Z';
     }
+    if (entry->type == 225) key[5] = '_';
     if (entry->type == 831) memcpy(key, "secret_", 7);
     if (entry->type == 103) memcpy(key, "CFPAT-", 6);
     if (entry->type == 769) { memcpy(key, "ey", 2); key[10] = '.'; key[20] = '_'; }
