@@ -250,5 +250,10 @@ int br_discordbottoken_init(const br_detector **out, char **error);
 int br_discordwebhook_init(const br_detector **out, char **error);
 int br_disqus_init(const br_detector **out, char **error);
 int br_ditto_init(const br_detector **out, char **error);
+int br_dnscheck_init(const br_detector **out, char **error);
+int br_docker_init(const br_detector **out, char **error);
+int br_dockerhub_v1_init(const br_detector **out, char **error);
+int br_dockerhub_v2_init(const br_detector **out, char **error);
+int br_docparser_init(const br_detector **out, char **error);
 
 #endif
