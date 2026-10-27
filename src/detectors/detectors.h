@@ -210,5 +210,9 @@ int br_convier_init(const br_detector **out, char **error);
 int br_copper_init(const br_detector **out, char **error);
 int br_couchbase_init(const br_detector **out, char **error);
 int br_countrylayer_init(const br_detector **out, char **error);
+int br_courier_init(const br_detector **out, char **error);
+int br_coveralls_init(const br_detector **out, char **error);
+int br_craftmypdf_init(const br_detector **out, char **error);
+int br_crowdin_init(const br_detector **out, char **error);
 
 #endif
