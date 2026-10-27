@@ -168,5 +168,9 @@ int br_clicksendsms_init(const br_detector **out, char **error);
 int br_clickuppersonaltoken_init(const br_detector **out, char **error);
 int br_cliengo_init(const br_detector **out, char **error);
 int br_clientary_init(const br_detector **out, char **error);
+int br_clinchpad_init(const br_detector **out, char **error);
+int br_clockify_init(const br_detector **out, char **error);
+int br_clockworksms_init(const br_detector **out, char **error);
+int br_closecrm_init(const br_detector **out, char **error);
 
 #endif
