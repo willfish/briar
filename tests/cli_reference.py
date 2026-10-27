@@ -378,6 +378,10 @@ def fixtures():
     checkout_uuid = b"B7c9d2e5-F6a8-b3C4-d1E0-f2A4b6C8d1e3"
     checkout_id = b"cus_" + alnum("checkout-id", 26)
     checkvist_key = alnum("checkvist-key", 14)
+    circleci_hex = synthetic("circleci-hex", 40)
+    circleci_hex = circleci_hex[:20].upper() + circleci_hex[20:]
+    circleci_pat = b"CCIPAT_" + alnum("circleci-payload", 22) + b"_" + circleci_hex
+    clickhelp_context = b"B7c9d2.clickhelp.co\nBriar7@Fixture.Invalid\n"
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -628,6 +632,15 @@ def fixtures():
         ("checkvist_email_key", 709, b"CHECKVIST " + checkvist_key + b"\nCHECKVIST " + alnum("checkvist-email-key", 14) + b"@Fixture.Invalid"),
         ("checkvist_quoted_control", 709, b'CHECKVISTx"Briar\\\x01"@Fixture.Invalid\nCHECKVIST ' + checkvist_key),
         ("cicero", 477, b"CICERO " + alnum("cicero-key", 40).lower()),
+        ("circleci_v1", "4.v1", b"CIRCLE " + circleci_hex),
+        ("circleci_v1_inside_word", "4.v1", b"circleX" + circleci_hex + b"abc123"),
+        ("circleci_v2", "4.v2", circleci_pat),
+        ("circleci_v2_inside_word", "4.v2", b"x" + circleci_pat + b"ABCDEF"),
+        ("clarifai", 57, b"CLARIFAI " + alnum("clarifai-key", 32)),
+        ("clearbit_underscores", 334, b"CLEARBIT _" + alnum("clearbit-key", 33).lower() + b"_"),
+        ("clickhelp", 456, clickhelp_context + b"secret " + alnum("clickhelp-key", 24)),
+        ("clickhelp_hidden_keys", 456, clickhelp_context + b"secret " + alnum("clickhelp-key", 24) + b"\napi " + alnum("clickhelp-other-key", 24)),
+        ("clickhelp_missing_key", 456, clickhelp_context),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
