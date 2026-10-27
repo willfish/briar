@@ -1942,6 +1942,42 @@
       "evidence": ["tests/detectors/test_datadogtoken.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Shared mixed send/body-error runtime/resource stages are not typed; ordinary injected read-error outcomes do not prove reliable native resource-error separation", "Selected pinned Go1.26.7 encoding/json semantics only; complete Unicode/unquoting/Reader behavior and source panic recovery remain unported", "Full native SANE/Go URL/client/streaming/drain-close, map iteration, source-engine/global parity"]
     },
+    "datagov/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/datagov/datagov.go",
+      "scope_notes": "DataGov404/v0/default enabled/all hints absent. Literal dispatch data.gov differs from the unescaped dot in PrefixRegex(data.gov): keyword-only CI extraction accepts one non-LF rune in that position, including Unicode/CR/NUL, without a whole-input UTF8 guard. Word-bounded40 mixed-alphanumeric occurrences; Raw/key only, no RawV2/Extra/Redacted/primary/local filter/cache. Exact SANE GET https://api.ers.usda.gov/data/arms/state?api_key=KEY uses complete89-byte stack URL plus NUL before known nil-context candidate skipping and through send/release; common UA only. Every2xx ignores body/read errors. Entire shared setup/allocation/Do domain suppressed without setter/text classifier. Rollback-safe shared occurrence scanning is reused; the known constructor-skip path still creates finding resources and prepares URL without an artificial append. Own nonzero failures are fatal, preserving caller findings.",
+      "native_files": ["src/detectors/datagov.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_datagov.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte/source-engine behavior", "Mixed setup/allocation/Do domain, source scan-deferred close-only versus eager buffering/release", "Full native SANE configuration and global parity"]
+    },
+    "debounce/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/debounce/debounce.go",
+      "scope_notes": "Debounce257/v0/all hints absent remains default DISABLED because pinned constructor is commented out; direct factory ports source behavior, selectors cannot enable it and no positive CLI oracle execution is claimed. Keyword-only CI prefix and word-bounded13 mixed-alphanumeric occurrences, Raw/key only/no RawV2/Extra/Redacted/primary/local filtering/cache. Exact SANE GET https://api.debounce.io/v1/?api=KEY&email=some@gmail.com retains source email/query order/trailing slash. Complete66-byte stack URL plus NUL precedes nil-context candidate skipping and survives send/release; common UA only. Every2xx ignores body errors, entire mixed shared send domain is suppressed without setter/classifier. Own finding/capture/format/push failures normalize fatal before skips with invocation-only rollback preserving caller. Email validation can consume credits/account activity; all evidence is synthetic/offline.",
+      "native_files": ["src/detectors/debounce.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_debounce.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Disabled constructor has source-derived direct native evidence, not positive CLI oracle coverage", "Mixed shared setup/allocation/Do stages and scan-deferred close versus eager buffering/release", "Complete regexp/Unicode/native SANE/source-engine/global parity"]
+    },
+    "deepai/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/deepai/deepai.go",
+      "scope_notes": "DeepAI621/v0/default enabled/all hints absent. Keyword-only CI plus word-bounded36 lowercase-alphanumeric/hyphen occurrences, not UUID/hex validation; Raw/key only and no RawV2/Extra/Redacted/primary/cache. Exact SANE POST https://api.deepai.org/api/text-tagging borrows one complete183-byte multipart body and90-byte Type plus NUL, Api-Key capture and common UA through synchronous send/release. Selected pinned Go1.26.7 writer mechanics draw30 fresh crypto bytes for every candidate, encode60 lowercase hex boundary characters, and emit only form field text with literal test and exact CRLF framing. Finding/RNG/body preparation precedes nil-context candidate skip; Content-Type/header preparation follows successful construction. Bounded stack buffers avoid heap copies/general MIME machinery. RAND_bytes accepts only1; failures are explicit fatal scan errors rather than source RNG panics or skipped candidates. Every2xx ignores body errors; whole shared send domain is suppressed. Own resources fail before skips with caller-preserving invocation rollback. AI processing can consume credits; no live requests occurred.",
+      "native_files": ["src/detectors/deepai.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_deepai.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "NOTICE", "docs/ACCEPTANCE.md"],
+      "remaining": ["Selected fixed one-field multipart encoding, not a general Go MIME/runtime port; source RNG panic recovery differs from fatal C scan failure", "Mixed shared send stages, scan-deferred close-only versus eager buffering/release and native POST redirects", "Full native SANE/regexp/source-engine/global parity"]
+    },
+    "deepgram/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/deepgram/deepgram.go",
+      "scope_notes": "Deepgram418/v0/default enabled/all hints absent. Keyword-only CI plus word-bounded40 lowercase-alphanumeric occurrences, not hex/mixed case/unique; Raw/key only and no RawV2/Extra/Redacted/primary/local filter/cache. Exact SANE bodyless GET https://api.deepgram.com/v1/projects uses JSON Type/common UA/literal Token SPACE KEY authorization,46 bytes plus NUL on stack through send/release, not Bearer. Finding resources precede nil-context constructor candidate skip; authorization/header preparation follows it. Every2xx ignores body/read errors; entire shared setup/allocation/Do domain is suppressed without setter/text classifier. Shared occurrence scanning supplies invocation-only rollback; known nil-context handling creates then clears findings without an artificial push. Own nonzero failures normalize fatal, preserving caller findings.",
+      "native_files": ["src/detectors/deepgram.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_deepgram.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Mixed shared setup/allocation/Do domain and source scan-deferred close-only versus eager buffering/release", "Full native SANE/regexp/Unicode/source-engine/global parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

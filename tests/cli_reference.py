@@ -448,6 +448,9 @@ def fixtures():
     databricks_domain = b"briar7.cloud.databricks.com"
     datadog_api_key = alnum("datadog-api-key", 32)
     datadog_api_key = datadog_api_key[:11] + b"-" + datadog_api_key[12:]
+    datagov_key = alnum("datagov-key", 40)
+    deepai_key = b"g" + alnum("deepai-key", 35).lower()
+    deepai_key = deepai_key[:3] + b"-" + deepai_key[4:]
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -831,6 +834,10 @@ def fixtures():
         ("datadogapikey", 1043, b"DaTaDoG " + datadog_api_key),
         ("datadogapikey_no_dispatch", 1043, b"dd " + datadog_api_key),
         ("datadogtoken", 39, b"datadog " + datadog_api_key + b"\ndd " + alnum("datadog-app-key", 40)),
+        ("datagov", 404, b"DaTa.GoV " + datagov_key),
+        ("datagov_wildcard", 404, b"data.gov" + b"." * 50 + b"\ndataXgov " + datagov_key),
+        ("deepai", 621, b"DEEPAI " + deepai_key),
+        ("deepgram", 418, b"DeEpGrAm g" + alnum("deepgram-key", 39).lower()),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -991,7 +998,11 @@ def compare(native, reference, case):
                 "databox_stdin", "databox_filesystem",
                 "databrickstoken_stdin", "databrickstoken_filesystem",
                 "datadogapikey_stdin", "datadogapikey_filesystem",
-                "datadogtoken_stdin", "datadogtoken_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "datadogtoken_stdin", "datadogtoken_filesystem",
+                "datagov_stdin", "datagov_filesystem",
+                "datagov_wildcard_stdin", "datagov_wildcard_filesystem",
+                "deepai_stdin", "deepai_filesystem",
+                "deepgram_stdin", "deepgram_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):
         raise AssertionError(name + ": unique token/domain sets must retain six products, including optional-suffix fallback")
