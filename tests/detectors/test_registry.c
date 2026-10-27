@@ -263,6 +263,7 @@ static const registration expected[] = {
     {919, 0, "Docusign", "docusign", 36, true, 1024},
     {196, 0, "Doppler", "dp.ct.", 46, true, -1},
     {325, 0, "Dotdigital", "@apiconnector.com", 37, true, 1024},
+    {386, 0, "Dovico", "dovico", 34, true, 1024},
     {651, 0, "DronaHQ", "dronahq", 50, true, -1},
     {135, 0, "DroneCI", "droneci", 32, true, -1},
     {18, 0, "Dropbox", "dropbox", 133, true, -1},
@@ -361,6 +362,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 567) memcpy(key, "web_", 4);
     if (entry->type == 196) memcpy(key, "dp.ct.", 6);
     if (entry->type == 18) memcpy(key, "sl.", 3);
+    if (entry->type == 386) key[32] = '.';
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
     if (entry->type == 919) {
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
@@ -519,6 +521,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 281: secondary = "G7h9K2m4-N6p8-Q1r3-S5t7-U9v1W3x5Y7z9"; secondary_name = "id"; break;
     case 921: secondary = "briar7"; secondary_name = "username"; break;
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
+    case 386:
+        memcpy(secondary_buffer, key, entry->key_len + 1);
+        secondary_buffer[33] = key[33] == 'q' ? 'z' : 'q';
+        secondary = secondary_buffer; secondary_name = "user_key";
+        break;
     case 919: secondary = "a2b4c6d8-e0f1-2345-6789-abcdf0123456"; secondary_name = "secret"; break;
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
@@ -926,7 +933,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
-    CHECK(results.len == (entry->type == 42 || entry->type == 56 ? 2u : 1u));
+    CHECK(results.len == (entry->type == 42 || entry->type == 56 || entry->type == 386 ? 2u : 1u));
     const br_result *result = &results.items[0];
     CHECK(result->detector_type == entry->type);
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
@@ -1020,6 +1027,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[sizeof(key) + sizeof(secondary_buffer) + sizeof(session_buffer) + 2];
         if (entry->type == 5) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
+        else if (entry->type == 386) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", key, secondary);
         else if (entry->type == 1048) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", secondary, key, cloudinary_secret);
         else if (entry->type == 648) snprintf(raw_v2, sizeof(raw_v2), "%s%sregion7q", key, secondary);
         else if (entry->type == 1025) snprintf(raw_v2, sizeof(raw_v2), "Endpoint=%s;Id=%s;Secret=AQIDBA==", secondary, key);
