@@ -248,6 +248,7 @@ static const registration expected[] = {
     {567, 0, "Dfuse", "dfuse", 36, true, -1},
     {726, 0, "Diffbot", "diffbot", 32, true, -1},
     {819, 0, "Diggernaut", "diggernaut", 40, true, -1},
+    {64, 0, "DigitalOceanToken", "digitalocean", 64, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
