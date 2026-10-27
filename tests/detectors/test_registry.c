@@ -226,6 +226,7 @@ static const registration expected[] = {
     {403, 0, "CurrentsAPI", "currentsapi", 48, true, -1},
     {226, 0, "CustomerGuru", "customerguru", 30, true, 1024},
     {211, 0, "CustomerIO", "customerio", 20, true, 1024},
+    {138, 0, "D7Network", "d7network", 24, true, -1},
     {585, 0, "DailyCO", "daily", 64, false, -1},
     {619, 0, "Dandelion", "dandelion", 32, true, -1},
     {762, 0, "Dareboost", "dareboost", 60, true, -1},
@@ -285,6 +286,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(key + 104, "eyJ", 3); key[207] = '.'; key[208] = 'Z';
     }
     if (entry->type == 664) memcpy(key, "07|", 3);
+    if (entry->type == 138) key[23] = '=';
     if (entry->type == 665) memcpy(key, "pk_Z_", 5);
     if (entry->type == 225) key[5] = '_';
     if (entry->type == 831) memcpy(key, "secret_", 7);
