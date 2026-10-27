@@ -223,6 +223,7 @@ static const registration expected[] = {
     {499, 0, "Currencyfreaks", "currencyfreaks", 32, true, -1},
     {354, 0, "Currencylayer", "currencylayer", 32, true, -1},
     {380, 0, "CurrencyScoop", "currencyscoop", 32, true, -1},
+    {211, 0, "CustomerIO", "customerio", 20, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -520,6 +521,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "briar7@fixture.invalid";
         secondary_name = "email";
         break;
+    case 211:
+        secondary = key; /* Identical source patterns retain the self-pair. */
+        secondary_name = "id";
+        break;
     case 382:
         secondary = "briar7@fixture.invalid"; /* Required bare email is hidden. */
         break;
@@ -775,6 +780,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "auth0 %s\n%s\nfixture-tenant.us.auth0.com", secondary, key);
     else if (entry->type == 1045)
         snprintf(input, sizeof(input), "%s\nbitbucket %s", key, secondary);
+    else if (entry->type == 211)
+        snprintf(input, sizeof(input), "customerio %s", key); /* One occurrence, one self-pair. */
     else if (secondary)
         snprintf(input, sizeof(input), "%s %s\n%s %s", entry->keyword, key, entry->keyword, secondary);
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);
