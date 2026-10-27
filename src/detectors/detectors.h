@@ -246,5 +246,9 @@ int br_diffbot_init(const br_detector **out, char **error);
 int br_diggernaut_init(const br_detector **out, char **error);
 int br_digitaloceantoken_init(const br_detector **out, char **error);
 int br_digitaloceanv2_init(const br_detector **out, char **error);
+int br_discordbottoken_init(const br_detector **out, char **error);
+int br_discordwebhook_init(const br_detector **out, char **error);
+int br_disqus_init(const br_detector **out, char **error);
+int br_ditto_init(const br_detector **out, char **error);
 
 #endif
