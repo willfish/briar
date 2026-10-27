@@ -238,6 +238,7 @@ static const registration expected[] = {
     {257, 0, "Debounce", "debounce", 13, false, -1},
     {621, 0, "DeepAI", "deepai", 36, true, -1},
     {418, 0, "Deepgram", "deepgram", 40, true, -1},
+    {1026, 0, "DeepSeek", "deepseek", 35, true, -1},
     {237, 0, "Delighted", "delighted", 32, true, -1},
     {863, 0, "Demio", "demio", 32, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -366,6 +367,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 976:
         secondary = "BriarSearch7";
         secondary_name = "service";
+        break;
+    case 1026:
+        memcpy(key, "sk-", 3);
+        /* The token suffix is lowercase alphanumeric, not hex-only. */
+        for (size_t i = 3; i < entry->key_len; ++i)
+            if (key[i] >= 'A' && key[i] <= 'Z') key[i] += 'a' - 'A';
         break;
     case 972:
         for (size_t i = 0; i < entry->key_len; ++i)
