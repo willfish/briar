@@ -226,6 +226,25 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_object_get_ex(feature_flags, "CloudflareApiTokenV2DetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
+        case 58: {
+            if (detector->version == 1) return true;
+            if (detector->version != 2) return false;
+            /* The global-key flag never disables legacy v1. */
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "CloudflareGlobalApiKeyV2DetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1048: {
+            if (detector->version != 0) return false;
+            /* OSS main enables Cloudinary; explicit false retains package zero. */
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "CloudinaryDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
         case 1053: {
             if (detector->version != 0) return false;
             /* OSS main enables this flag; explicit false models package-zero

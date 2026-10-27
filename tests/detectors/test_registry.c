@@ -738,42 +738,42 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     br_results_clear(&results);
 }
 
-static void feature_gate_tests(void)
+static void feature_gate_tests(int32_t type, const char *flag)
 {
-    br_detector braintrust = {.type = 1053, .version = 0, .custom_name = ""};
+    br_detector gated = {.type = type, .version = 0, .custom_name = ""};
     br_detector disabled = {.type = 384, .version = 0, .custom_name = ""};
     br_detector enabled = {.type = 239, .version = 0, .custom_name = ""};
     br_json *flags = json_object_new_object();
-    CHECK(flags && br_detector_is_default(&braintrust, NULL));
-    CHECK(br_detector_is_default(&braintrust, flags));
+    CHECK(flags && br_detector_is_default(&gated, NULL));
+    CHECK(br_detector_is_default(&gated, flags));
     CHECK(!json_object_object_add(flags, "all", json_object_new_boolean(true)));
-    CHECK(br_detector_is_default(&braintrust, flags)); /* Unrelated keys inherit OSS defaults. */
-    CHECK(!json_object_object_add(flags, "BraintrustDetectorEnabled", json_object_new_boolean(false)));
-    CHECK(!br_detector_is_default(&braintrust, flags)); /* Explicit package atomic-zero state. */
+    CHECK(br_detector_is_default(&gated, flags)); /* Unrelated keys inherit OSS defaults. */
+    CHECK(!json_object_object_add(flags, flag, json_object_new_boolean(false)));
+    CHECK(!br_detector_is_default(&gated, flags)); /* Explicit package atomic-zero state. */
     CHECK(br_detector_is_default(&enabled, flags) && !br_detector_is_default(&disabled, flags));
-    CHECK(!json_object_object_add(flags, "BraintrustDetectorEnabled", json_object_new_string("true")));
-    CHECK(!br_detector_is_default(&braintrust, flags));
-    CHECK(!json_object_object_add(flags, "BraintrustDetectorEnabled", json_object_new_int(1)));
-    CHECK(!br_detector_is_default(&braintrust, flags));
-    CHECK(!json_object_object_add(flags, "BraintrustDetectorEnabled", NULL));
-    CHECK(!br_detector_is_default(&braintrust, flags));
-    CHECK(!json_object_object_add(flags, "BraintrustDetectorEnabled", json_object_new_boolean(true)));
-    CHECK(br_detector_is_default(&braintrust, flags) && !br_detector_is_default(&disabled, flags));
-    braintrust.version = 1;
-    CHECK(!br_detector_is_default(&braintrust, flags));
-    braintrust.version = 0; braintrust.custom_name = "custom";
-    CHECK(!br_detector_is_default(&braintrust, flags));
-    braintrust.custom_name = "";
+    CHECK(!json_object_object_add(flags, flag, json_object_new_string("true")));
+    CHECK(!br_detector_is_default(&gated, flags));
+    CHECK(!json_object_object_add(flags, flag, json_object_new_int(1)));
+    CHECK(!br_detector_is_default(&gated, flags));
+    CHECK(!json_object_object_add(flags, flag, NULL));
+    CHECK(!br_detector_is_default(&gated, flags));
+    CHECK(!json_object_object_add(flags, flag, json_object_new_boolean(true)));
+    CHECK(br_detector_is_default(&gated, flags) && !br_detector_is_default(&disabled, flags));
+    gated.version = 1;
+    CHECK(!br_detector_is_default(&gated, flags));
+    gated.version = 0; gated.custom_name = "custom";
+    CHECK(!br_detector_is_default(&gated, flags));
+    gated.custom_name = "";
     br_json *invalid = json_object_new_boolean(true);
-    CHECK(invalid && !br_detector_is_default(&braintrust, invalid));
+    CHECK(invalid && !br_detector_is_default(&gated, invalid));
     CHECK(br_detector_is_default(&enabled, invalid));
     json_object_put(invalid); json_object_put(flags);
 }
 
-static void cloudflare_feature_gate_tests(void)
+static void cloudflare_feature_gate_tests(int32_t type, const char *flag)
 {
-    br_detector legacy = {.type = 100, .version = 1, .custom_name = ""};
-    br_detector modern = {.type = 100, .version = 2, .custom_name = ""};
+    br_detector legacy = {.type = type, .version = 1, .custom_name = ""};
+    br_detector modern = {.type = type, .version = 2, .custom_name = ""};
     br_detector enabled = {.type = 239, .version = 0, .custom_name = ""};
     br_detector disabled = {.type = 384, .version = 0, .custom_name = ""};
     br_json *flags = json_object_new_object();
@@ -781,16 +781,16 @@ static void cloudflare_feature_gate_tests(void)
     CHECK(br_detector_is_default(&legacy, flags) && br_detector_is_default(&modern, flags));
     CHECK(!json_object_object_add(flags, "all", json_object_new_boolean(true)));
     CHECK(br_detector_is_default(&modern, flags));
-    CHECK(!json_object_object_add(flags, "CloudflareApiTokenV2DetectorEnabled", json_object_new_boolean(false)));
+    CHECK(!json_object_object_add(flags, flag, json_object_new_boolean(false)));
     CHECK(br_detector_is_default(&legacy, flags) && !br_detector_is_default(&modern, flags));
     CHECK(br_detector_is_default(&enabled, flags) && !br_detector_is_default(&disabled, flags));
-    CHECK(!json_object_object_add(flags, "CloudflareApiTokenV2DetectorEnabled", json_object_new_string("true")));
+    CHECK(!json_object_object_add(flags, flag, json_object_new_string("true")));
     CHECK(!br_detector_is_default(&modern, flags));
-    CHECK(!json_object_object_add(flags, "CloudflareApiTokenV2DetectorEnabled", json_object_new_int(1)));
+    CHECK(!json_object_object_add(flags, flag, json_object_new_int(1)));
     CHECK(!br_detector_is_default(&modern, flags));
-    CHECK(!json_object_object_add(flags, "CloudflareApiTokenV2DetectorEnabled", NULL));
+    CHECK(!json_object_object_add(flags, flag, NULL));
     CHECK(!br_detector_is_default(&modern, flags));
-    CHECK(!json_object_object_add(flags, "CloudflareApiTokenV2DetectorEnabled", json_object_new_boolean(true)));
+    CHECK(!json_object_object_add(flags, flag, json_object_new_boolean(true)));
     CHECK(br_detector_is_default(&legacy, flags) && br_detector_is_default(&modern, flags));
     modern.version = 0; CHECK(!br_detector_is_default(&modern, flags));
     modern.version = 3; CHECK(!br_detector_is_default(&modern, flags));
@@ -808,8 +808,10 @@ int main(void)
     size_t count = 0;
     char *error = NULL;
     CHECK(BR_ABI_REVISION == 1);
-    feature_gate_tests();
-    cloudflare_feature_gate_tests();
+    feature_gate_tests(1053, "BraintrustDetectorEnabled");
+    feature_gate_tests(1048, "CloudinaryDetectorEnabled");
+    cloudflare_feature_gate_tests(100, "CloudflareApiTokenV2DetectorEnabled");
+    cloudflare_feature_gate_tests(58, "CloudflareGlobalApiKeyV2DetectorEnabled");
     CHECK(br_registry(&detectors, &count, &error) == 0 && error == NULL);
     CHECK(count == sizeof(expected) / sizeof(expected[0]));
     CHECK(!br_detector_type_name(-1));
