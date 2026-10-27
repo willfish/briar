@@ -242,6 +242,7 @@ static const registration expected[] = {
     {237, 0, "Delighted", "delighted", 32, true, -1},
     {863, 0, "Demio", "demio", 32, true, 1024},
     {954, 0, "DenoDeploy", "ddp_", 40, true, -1},
+    {683, 0, "Deputy", "deputy", 32, true, 1024},
     {794, 0, "Detectify", "detectify", 32, true, -1},
     {434, 0, "DetectLanguage", "detectlanguage", 32, true, -1},
     {567, 0, "Dfuse", "dfuse", 36, true, -1},
@@ -567,6 +568,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = key; /* Identical source patterns retain the self-pair. */
         secondary_name = "id";
         break;
+    case 683:
+        secondary = "briar7.as.deputy.com"; /* Required host stays hidden. */
+        break;
     case 863:
         secondary = "B7c9D2e5F6g8H3j4K1m0"; /* Required API secret stays hidden. */
         break;
@@ -858,7 +862,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863) {
+    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683) {
         test_key_result(result, entry->type, key, "key"); /* Required counterpart stays hidden. */
         br_results_clear(&results);
         return;
