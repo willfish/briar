@@ -402,6 +402,8 @@ def fixtures():
     cloudinary_secret = alnum("cloudinary-secret", 27)
     cloze_key = synthetic("cloze-key", 32)
     cloze_email = b"Case.User@Example.INVALID"
+    coda_key = b"-".join(alnum("coda-key-" + str(i), width).lower() for i, width in enumerate((8, 4, 4, 4, 12)))
+    coda_key = b"g" + coda_key[1:]  # Lowercase alphanumeric shape, deliberately not hex.
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -711,6 +713,10 @@ def fixtures():
         ("cloze_hidden_emails", 711, b"cloze " + cloze_key + b"\ncloze " + cloze_email + b"\ncloze Other.User@Example.INVALID\ncloze " + cloze_email),
         ("cloze_no_email", 711, b"cloze " + cloze_key),
         ("cloze_quoted_email", 711, b"cloze " + cloze_key + b'\ncloze x"q\x07R"@Example.INVALID'),
+        ("clustdoc", 513, b"CLUSTDOC " + alnum("clustdoc-key", 60)),
+        ("coda", 960, b"coda " + coda_key),
+        ("codacy", 185, b"codacy " + alnum("codacy-key", 20)),
+        ("codeclimate", 844, b"codeclimate " + synthetic("codeclimate-key", 40)),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
