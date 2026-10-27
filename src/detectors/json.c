@@ -129,9 +129,9 @@ static size_t number_end(br_slice body, size_t at, bool *integer)
     return i;
 }
 
-/* json-c STRICT conflates integer range with JSON syntax. Validate range-limited
- * input using an offset-preserving shadow, never return the shadow's values. */
-static int range_shadow(br_slice body, char **out)
+/* json-c STRICT confuses integer range and signed raw string bytes with syntax.
+ * Validate an offset-preserving shadow, never return its substituted values. */
+static int validation_shadow(br_slice body, char **out)
 {
     *out = malloc(body.len + 1);
     if (!*out) return -1;
@@ -145,6 +145,7 @@ static int range_shadow(br_slice body, char **out)
             if (escape) escape = false;
             else if (c == '\\') escape = true;
             else if (c == '"') { string = false; previous = '"'; }
+            else if (c >= 0x80) { (*out)[i] = '?'; changed = true; }
             ++i;
             continue;
         }
@@ -202,9 +203,12 @@ static int response_value(br_slice body, bool finish, br_json **value,
                           enum json_tokener_error *code, size_t *offset, bool *incomplete)
 {
     int rc = native_value(body, true, finish, value, code, offset, incomplete);
-    if (rc || *code != json_tokener_error_parse_number) return rc;
+    if (rc) return rc;
+    bool raw_string_byte = *code == json_tokener_error_parse_string &&
+                           *offset < body.len && body.data[*offset] >= 0x80;
+    if (*code != json_tokener_error_parse_number && !raw_string_byte) return 0;
     char *shadow = NULL;
-    if (range_shadow(body, &shadow) != 0) return -1;
+    if (validation_shadow(body, &shadow) != 0) return -1;
     if (!shadow) return 0;
     br_json *validated = NULL;
     enum json_tokener_error checked;
@@ -215,9 +219,15 @@ static int response_value(br_slice body, bool finish, br_json **value,
     if (!rc && checked == json_tokener_success) {
         json_object_put(*value);
         *value = NULL;
-        /* Syntax is strict-validated; now decode ORIGINAL bytes using json-c's
-         * native range handling. Typed numeric fields use encoded_value. */
+        /* Syntax is strict-validated; decode ORIGINAL strings and numbers.
+         * Typed numeric fields still use their original encoded_value. */
         rc = native_value(body, false, finish, value, code, offset, incomplete);
+    } else if (!rc) {
+        /* A later syntax/truncation error takes precedence over the initial
+         * signed-byte failure, including terminal Reader-error handling. */
+        *code = checked;
+        *offset = end;
+        *incomplete = partial;
     }
     json_object_put(validated);
     free(shadow);
@@ -349,8 +359,11 @@ static int member_value(br_slice body, size_t *at, br_json **out)
     enum json_tokener_error code;
     size_t offset;
     bool incomplete;
-    int rc = response_value((br_slice){body.data + *at, body.len - *at}, false,
-                            out, &code, &offset, &incomplete);
+    /* The containing document is syntax-validated. Decode original child bytes
+     * directly, avoiding STRICT's signed-char check and repeated shadows while
+     * preserving source offsets and original numeric spans. */
+    int rc = native_value((br_slice){body.data + *at, body.len - *at}, false, false,
+                          out, &code, &offset, &incomplete);
     if (rc) return rc;
     *at += offset;
     return code == json_tokener_success ? 0 : -1;
