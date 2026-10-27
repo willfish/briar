@@ -238,5 +238,9 @@ int br_deepseek_init(const br_detector **out, char **error);
 int br_delighted_init(const br_detector **out, char **error);
 int br_demio_init(const br_detector **out, char **error);
 int br_denodeploy_init(const br_detector **out, char **error);
+int br_deputy_init(const br_detector **out, char **error);
+int br_detectify_init(const br_detector **out, char **error);
+int br_detectlanguage_init(const br_detector **out, char **error);
+int br_dfuse_init(const br_detector **out, char **error);
 
 #endif
