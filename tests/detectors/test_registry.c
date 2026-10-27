@@ -160,6 +160,7 @@ static const registration expected[] = {
     {643, 0, "ChecIO", "checio", 48, true, -1},
     {649, 0, "ChecklyHQ", "checklyhq", 32, true, -1},
     {187, 0, "Checkout", "checkout", 39, true, 1024},
+    {709, 0, "Checkvist", "checkvist", 14, true, 1024},
     {477, 0, "Cicero", "cicero", 40, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -387,6 +388,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         break;
     case 1053:
         memcpy(key, "sk-", 3);
+        break;
+    case 709:
+        secondary = "briar7@example.test";
+        secondary_name = "email";
         break;
     case 187:
         strcpy(key, "sk_B7c9d2e5-F6a8-b3C4-d1E0-f2A4b6C8d1e3");
