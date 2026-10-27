@@ -202,6 +202,7 @@ static const registration expected[] = {
     {823, 0, "Collect2", "collect2", 36, true, -1},
     {749, 0, "Column", "column", 32, true, -1},
     {433, 0, "CommerceJS", "commercejs", 48, true, -1},
+    {566, 0, "Commodities", "commodities", 60, true, -1},
     {256, 0, "CompanyHub", "companyhub", 20, true, 1024},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {60, 0, "Confluent", "confluent", 16, true, 1024},
