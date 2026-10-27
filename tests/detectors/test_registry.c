@@ -193,6 +193,7 @@ static const registration expected[] = {
     {960, 0, "Coda", "coda", 36, true, -1},
     {185, 0, "Codacy", "codacy", 20, true, -1},
     {844, 0, "Codeclimate", "codeclimate", 40, true, -1},
+    {845, 0, "Codemagic", "codemagic", 43, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
