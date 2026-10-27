@@ -186,5 +186,9 @@ int br_cloudplan_init(const br_detector **out, char **error);
 int br_cloudsmith_init(const br_detector **out, char **error);
 int br_cloverly_init(const br_detector **out, char **error);
 int br_cloze_init(const br_detector **out, char **error);
+int br_clustdoc_init(const br_detector **out, char **error);
+int br_coda_init(const br_detector **out, char **error);
+int br_codacy_init(const br_detector **out, char **error);
+int br_codeclimate_init(const br_detector **out, char **error);
 
 #endif
