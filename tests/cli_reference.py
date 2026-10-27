@@ -465,6 +465,11 @@ def fixtures():
     webhook18 = b"https://discord.com/api/webhooks/000000000000000000/" + alnum("discord-webhook18", 68)
     webhook19 = b"https://discord.com/api/webhooks/9999999999999999999/" + alnum("discord-webhook19", 68)
     ditto_key = b"ghijklm0-np12-qrst-uv34-wxyz567890ab." + alnum("ditto-key", 40).lower()
+    dnscheck_key, dnscheck_other = alnum("dnscheck-key", 32), alnum("dnscheck-other", 32)
+    dnscheck_id = b"G7h9K2m4-N6p8-Q1r3-S5t7-U9v1W3x5Y7z9"
+    dockerhub_v1 = b"ghjkmnpq-rstv-wxyz-2345-6789abcef123"
+    dockerhub_pat = b"dckr_pat_" + alnum("dockerhub-pat", 27)
+    dockerhub_oat = b"dckr_oat_" + alnum("dockerhub-oat", 32)
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -877,6 +882,18 @@ def fixtures():
         ("discordwebhook_retained", 66, webhook18 + b"MORE_SUFFIX\n" + webhook19 + b"EXTRA"),
         ("disqus", 789, b"DiSqUs " + alnum("disqus-key", 64)),
         ("ditto", 666, b"DiTtO " + ditto_key),
+        ("dnscheck", 281, b"DnScHeCk " + dnscheck_key + b"\ndnscheck " + dnscheck_id),
+        ("dnscheck_products", 281, b"dnscheck " + dnscheck_key + b" dnscheck " + dnscheck_other + b" dnscheck " + dnscheck_id + b" dnscheck " + dnscheck_id[::-1]),
+        ("dnscheck_no_id", 281, b"dnscheck " + dnscheck_key),
+        ("docparser", 838, b"DoCpArSeR " + synthetic("docparser-key", 40)),
+        ("docker", 343, b'{"auths":{"reg.invalid":{"auth":"dTp="}}}'),
+        ("docker_escaped", 343, b'{"auths":{"reg.invalid":{"auth":"dTo="}}}'.replace(b'"', b'\\"')),
+        ("docker_hub", 343, b'{"auths":{"docker.io":{"auth":"dTo="}}}'),
+        ("docker_empty", 343, b'{"auths":{"reg.invalid":{"auth":"Og=="}}}'),
+        ("dockerhub_v1", "921.v1", b"docker " + dockerhub_v1 + b" docker user=briar7"),
+        ("dockerhub_v1_pat_only", "921.v1", b"docker " + dockerhub_v1),
+        ("dockerhub_v2", "921.v2", b"user=briar7 " + dockerhub_pat + b" " + dockerhub_oat),
+        ("dockerhub_v2_pat_only", "921.v2", dockerhub_pat),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1056,7 +1073,13 @@ def compare(native, reference, case):
                 "digitaloceantoken_stdin", "digitaloceantoken_filesystem",
                 "digitaloceantoken_short_prefix_stdin", "digitaloceantoken_short_prefix_filesystem",
                 "discordbottoken_stdin", "discordbottoken_filesystem",
-                "disqus_stdin", "disqus_filesystem", "ditto_stdin", "ditto_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "disqus_stdin", "disqus_filesystem", "ditto_stdin", "ditto_filesystem",
+                "dnscheck_stdin", "dnscheck_filesystem", "docparser_stdin", "docparser_filesystem",
+                "docker_stdin", "docker_filesystem", "docker_escaped_stdin", "docker_escaped_filesystem",
+                "docker_hub_stdin", "docker_hub_filesystem",
+                "dockerhub_v1_stdin", "dockerhub_v1_filesystem",
+                "dockerhub_v1_pat_only_stdin", "dockerhub_v1_pat_only_filesystem",
+                "dockerhub_v2_pat_only_stdin", "dockerhub_v2_pat_only_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1074,6 +1097,16 @@ def compare(native, reference, case):
         raise AssertionError(name + ": default wordlist must filter the webhook URL scheme in Raw")
     if name in ("discordwebhook_retained_stdin", "discordwebhook_retained_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": both webhook ID widths must preserve their captured URL prefixes")
+    if name in ("dnscheck_products_stdin", "dnscheck_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
+        raise AssertionError(name + ": DNSCheck key/ID products must retain four distinct RawV2 projections")
+    if name in ("dnscheck_no_id_stdin", "dnscheck_no_id_filesystem") and (actual or expected):
+        raise AssertionError(name + ": the DNSCheck ID remains required even though it is not a UUID")
+    if name in ("docker_empty_stdin", "docker_empty_filesystem") and (actual or expected):
+        raise AssertionError(name + ": decoded empty username and password must suppress Docker findings")
+    if name in ("dockerhub_v2_stdin", "dockerhub_v2_filesystem") and (len(actual) != 2 or len(expected) != 2):
+        raise AssertionError(name + ": both direct Dockerhub PAT and OAT shapes must dispatch and retain distinct identities")
+    if name.startswith(("dockerhub_v1_pat_only_", "dockerhub_v2_pat_only_")) and any(row["RawV2"] for row in actual + expected):
+        raise AssertionError(name + ": PAT-only Dockerhub fallback must not invent a username or RawV2")
     if name in ("denodeploy_stdin", "denodeploy_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": both direct Deno token prefixes must dispatch without a provider name")
     if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):
