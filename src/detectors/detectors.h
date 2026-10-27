@@ -206,5 +206,9 @@ int br_contentfulpersonalaccesstoken_init(const br_detector **out, char **error)
 int br_conversiontools_init(const br_detector **out, char **error);
 int br_convertapi_init(const br_detector **out, char **error);
 int br_convertkit_init(const br_detector **out, char **error);
+int br_convier_init(const br_detector **out, char **error);
+int br_copper_init(const br_detector **out, char **error);
+int br_couchbase_init(const br_detector **out, char **error);
+int br_countrylayer_init(const br_detector **out, char **error);
 
 #endif
