@@ -255,5 +255,9 @@ int br_docker_init(const br_detector **out, char **error);
 int br_dockerhub_v1_init(const br_detector **out, char **error);
 int br_dockerhub_v2_init(const br_detector **out, char **error);
 int br_docparser_init(const br_detector **out, char **error);
+int br_documo_init(const br_detector **out, char **error);
+int br_docusign_init(const br_detector **out, char **error);
+int br_doppler_init(const br_detector **out, char **error);
+int br_dotdigital_init(const br_detector **out, char **error);
 
 #endif
