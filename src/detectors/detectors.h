@@ -259,5 +259,9 @@ int br_documo_init(const br_detector **out, char **error);
 int br_docusign_init(const br_detector **out, char **error);
 int br_doppler_init(const br_detector **out, char **error);
 int br_dotdigital_init(const br_detector **out, char **error);
+int br_dovico_init(const br_detector **out, char **error);
+int br_dronahq_init(const br_detector **out, char **error);
+int br_droneci_init(const br_detector **out, char **error);
+int br_dropbox_init(const br_detector **out, char **error);
 
 #endif
