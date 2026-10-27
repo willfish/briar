@@ -195,6 +195,7 @@ static const registration expected[] = {
     {844, 0, "Codeclimate", "codeclimate", 40, true, -1},
     {845, 0, "Codemagic", "codemagic", 43, true, -1},
     {783, 0, "Codequiry", "codequiry", 64, true, -1},
+    {554, 0, "CoinApi", "coinapi", 36, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -466,8 +467,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 525:
         key[4] = ':'; key[13] = '_';
         break;
-    case 324:
-        for (size_t i = 0; i < 32; ++i) if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
+    case 324: case 554:
+        for (size_t i = 0; i < entry->key_len; ++i) if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
+        if (entry->type == 554) key[0] = 'G'; /* Nonhex, nongrouped source grammar. */
         key[12] = '-';
         break;
     case 59:
