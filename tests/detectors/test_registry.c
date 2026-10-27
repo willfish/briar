@@ -176,6 +176,7 @@ static const registration expected[] = {
     {189, 0, "ClockworkSMS", "clockworksms", 5, true, 1024},
     {215, 0, "Close", "close", 49, true, -1},
     {650, 0, "CloudElements", "cloudelements", 43, true, 1024},
+    {59, 0, "CloudflareCaKey", "cloudflare", 176, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -411,6 +412,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
             key[29] = '_';
             for (size_t i = 30; i < 70; ++i) key[i] = "0123456789aBcDeF"[i % 16];
         }
+        break;
+    case 59:
+        memcpy(key, "v1.0-", 5);
         break;
     case 650:
         test_secret(secondary_buffer, 32, 7);
