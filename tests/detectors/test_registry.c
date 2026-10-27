@@ -250,6 +250,7 @@ static const registration expected[] = {
     {819, 0, "Diggernaut", "diggernaut", 40, true, -1},
     {64, 0, "DigitalOceanToken", "digitalocean", 64, true, -1},
     {897, 0, "DigitalOceanV2", "dop_v1_", 71, true, -1},
+    {65, 0, "DiscordBotToken", "discord", 59, true, 1024},
     {66, 0, "DiscordWebhook", "https://discord.com/api/webhooks/", 120, true, -1},
     {789, 0, "Disqus", "disqus", 64, true, -1},
     {666, 0, "Ditto", "ditto", 77, true, -1},
@@ -311,6 +312,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 664) memcpy(key, "07|", 3);
     if (entry->type == 138) key[23] = '=';
     if (entry->type == 665) memcpy(key, "pk_Z_", 5);
+    if (entry->type == 65) key[24] = key[31] = '.';
     if (entry->type == 666) {
         key[8] = key[13] = key[18] = key[23] = '-';
         key[36] = '.';
@@ -463,6 +465,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary_name = "client_id";
         break;
     case 110: secondary = "fixture-tenant.us.auth0.com"; secondary_name = "domain"; break;
+    case 65: secondary = "12345678901234567"; secondary_name = "id"; break;
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
     case 170: secondary = "B7C9D2E5F6"; secondary_name = "id"; break;
@@ -898,7 +901,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         return;
     }
     if (entry->type == 307) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
-    if (entry->type == 58) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, secondary));
+    if (entry->type == 58 || entry->type == 65) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, secondary));
     if (entry->type == 100) CHECK(!result->extra_data && !result->redacted); /* No invented version metadata. */
     if (entry->type == 142) {
         if (entry->version == 1) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
