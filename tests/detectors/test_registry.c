@@ -223,6 +223,7 @@ static const registration expected[] = {
     {499, 0, "Currencyfreaks", "currencyfreaks", 32, true, -1},
     {354, 0, "Currencylayer", "currencylayer", 32, true, -1},
     {380, 0, "CurrencyScoop", "currencyscoop", 32, true, -1},
+    {226, 0, "CustomerGuru", "customerguru", 30, true, 1024},
     {211, 0, "CustomerIO", "customerio", 20, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -520,6 +521,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         }
         secondary = "briar7@fixture.invalid";
         secondary_name = "email";
+        break;
+    case 226:
+        test_secret(secondary_buffer, 50, 7);
+        secondary = secondary_buffer;
+        secondary_name = "id";
         break;
     case 211:
         secondary = key; /* Identical source patterns retain the self-pair. */

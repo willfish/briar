@@ -220,6 +220,7 @@ static const detector_factory named_factories[] = {
     br_currencyfreaks_init,
     br_currencylayer_init,
     br_currencyscoop_init,
+    br_customerguru_init,
     br_customerio_init,
     br_jiradatacenterpat_init,
 };
@@ -302,7 +303,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 0: case 5: case 192: case 150: case 158: case 239: case 254: case 255: case 256: case 521: case 390: case 431: case 432: case 433: case 684: case 685: case 692: case 334: case 335: case 693: case 197: case 802: case 805:
         case 125: case 126: case 130: case 277: case 1014: case 1015: case 498: case 499: case 506: case 910: case 917: case 920: case 907:
         case 302: case 565: case 566: case 707: case 709: case 710: case 711: case 721: case 723: case 756: case 828: case 829: case 831: case 833: case 844: case 845: case 354: case 358: case 366: case 375: case 380: case 382: case 522: case 523: case 524: case 525: case 526: case 170: case 163: case 399: case 473: case 474: case 477: case 453:
-        case 448: case 456: case 457: case 42: case 43: case 44: case 933: case 179: case 1032: case 632: case 209: case 211: case 212: case 214: case 215: case 225: case 458:
+        case 448: case 456: case 457: case 42: case 43: case 44: case 933: case 179: case 1032: case 632: case 209: case 211: case 212: case 214: case 215: case 225: case 226: case 458:
         case 1002: case 1003: case 401: case 402: case 391: case 393: case 484: case 485: case 783: case 788: case 637: case 647: case 648: case 649: case 650: case 664: case 665: case 643: case 208: case 1004: case 768: case 769: case 770: case 588: case 598:
         case 307: case 317: case 318: case 320: case 322: case 815: case 816: case 823: case 646: case 269: case 270: case 278: case 280: case 1042: case 181: case 185: case 187: case 189: case 385: case 387: case 388: case 389: case 800:
         case 98: case 103: case 41: case 376: case 377: case 378: case 166: case 1045: case 1047: case 1046:
@@ -361,6 +362,7 @@ const char *br_detector_type_name(int32_t type)
     case 214: return "Copper";
     case 215: return "Close";
     case 225: return "Convertkit";
+    case 226: return "CustomerGuru";
     case 239: return "Abyssale";
     case 254: return "Campayn";
     case 255: return "Clinchpad";
