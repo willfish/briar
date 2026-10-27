@@ -241,6 +241,7 @@ static const registration expected[] = {
     {1026, 0, "DeepSeek", "deepseek", 35, true, -1},
     {237, 0, "Delighted", "delighted", 32, true, -1},
     {863, 0, "Demio", "demio", 32, true, 1024},
+    {954, 0, "DenoDeploy", "ddp_", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -367,6 +368,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 976:
         secondary = "BriarSearch7";
         secondary_name = "service";
+        break;
+    case 954:
+        memcpy(key, "ddp_", 4);
         break;
     case 1026:
         memcpy(key, "sk-", 3);
@@ -1036,7 +1040,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
-              entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
@@ -1045,6 +1049,7 @@ int main(void)
         if (entry->type == 430 && entry->version == 2) CHECK(!strcmp(detector->keywords[1], "bb_ma_"));
         if (entry->type == 39 || entry->type == 1043) CHECK(!strcmp(detector->keywords[1], "ddog-gov"));
         if (entry->type == 920) CHECK(!strcmp(detector->keywords[1], "couchbases://"));
+        if (entry->type == 954) CHECK(!strcmp(detector->keywords[1], "ddw_"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
         if (entry->type == 189) CHECK(!strcmp(detector->keywords[1], "textanywhere"));
