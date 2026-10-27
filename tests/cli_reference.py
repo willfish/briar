@@ -453,6 +453,8 @@ def fixtures():
     deepai_key = deepai_key[:3] + b"-" + deepai_key[4:]
     demio_key = alnum("demio-key", 32)
     demio_secret = alnum("demio-secret", 15)
+    deputy_key = b"g" + alnum("deputy-key", 31).lower()
+    dfuse_key = b"web_" + alnum("dfuse-key", 32).lower()
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -845,6 +847,13 @@ def fixtures():
         ("demio", 863, b"demio " + demio_key + b"\nDEMIO " + demio_secret),
         ("demio_hidden_secrets", 863, b"demio " + demio_key + b"\nDEMIO " + demio_secret + b"\ndemio " + alnum("demio-other-secret", 20)),
         ("denodeploy", 954, b"ddp_" + alnum("denodeploy-key", 36) + b"\nddw_" + alnum("denodeploy-worker-key", 36)),
+        ("deputy", 683, b"DEPUTY " + deputy_key + b"\none7.as.deputy.com"),
+        ("deputy_hidden_hosts", 683, b"DEPUTY " + deputy_key + b"\none7.as.deputy.com\ntwo9.as.deputy.com"),
+        ("deputy_no_host", 683, b"deputy " + deputy_key),
+        ("detectify", 794, b"DeTeCtIfY " + alnum("detectify-key", 32).lower()),
+        ("detectlanguage", 434, b"DeTeCtLaNgUaGe " + alnum("detectlanguage-key", 32).lower()),
+        ("dfuse", 567, b"DFUSE" + b"." * 50 + b"\n" + dfuse_key),
+        ("dfuse_no_dispatch", 567, dfuse_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1013,8 +1022,17 @@ def compare(native, reference, case):
                 "deepseek_stdin", "deepseek_filesystem",
                 "delighted_stdin", "delighted_filesystem",
                 "demio_stdin", "demio_filesystem",
-                "demio_hidden_secrets_stdin", "demio_hidden_secrets_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "demio_hidden_secrets_stdin", "demio_hidden_secrets_filesystem",
+                "deputy_stdin", "deputy_filesystem",
+                "deputy_hidden_hosts_stdin", "deputy_hidden_hosts_filesystem",
+                "detectify_stdin", "detectify_filesystem",
+                "detectlanguage_stdin", "detectlanguage_filesystem",
+                "dfuse_stdin", "dfuse_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
+    if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
+        raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
+    if name in ("dfuse_no_dispatch_stdin", "dfuse_no_dispatch_filesystem") and (actual or expected):
+        raise AssertionError(name + ": direct token extraction must not bypass the Dfuse dispatch keyword")
     if name in ("denodeploy_stdin", "denodeploy_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": both direct Deno token prefixes must dispatch without a provider name")
     if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):

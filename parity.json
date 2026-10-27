@@ -2016,6 +2016,42 @@
       "evidence": ["tests/detectors/test_denodeploy.c", "tests/detectors/test_json.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Explicit nil-request panic and invalid-UTF8 guards are unsupported boundaries, not full Go panic recovery or Unicode/unquoting/diagnostic parity", "Mixed send/body-error resource stages, conditional ReadAll and scan-deferred close-only differ from eager buffering/release", "Complete native/private-client, regexp, source-engine and global parity"]
     },
+    "deputy/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/deputy/deputy.go",
+      "scope_notes": "Deputy 683/v0/default enabled, span1024 and other hints absent. Keyword-only CI prefix with32 lower-alphanumeric key occurrences times direct unbounded lowercase host occurrences, key-major with duplicates. Host is required but hidden: Raw/key only, no RawV2/host part/Extra/Redacted/primary. PUBLIC10s GET https://HOST/api/v1/me uses JSON Type, literal OAuth authorization and common UA. Finding and one complete owned unbounded URL precede nil-context candidate skipping; bounded38-byte authorization plus NUL is prepared afterward and borrowed through release. No hostname caps, normalization, truncation or redundant URL/auth copies. Every2xx ignores body/read errors; whole mixed send domain suppressed without setter/classifier/dedup. Own resources are fatal before skips, with caller-preserving invocation rollback. Native PUBLIC remains fail-closed; hidden products collapse only at notifier deduplication.",
+      "native_files": ["src/detectors/deputy.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_deputy.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native PUBLIC DNS/proxy/no-redirect policy remains unsupported; injected success does not prove native parity", "Mixed setup/allocation/Do stages and scan-deferred close-only versus eager buffering/release", "Complete regexp, source-engine/notifier and global parity"]
+    },
+    "detectify/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/detectify/detectify.go",
+      "scope_notes": "Detectify 794/v0/default enabled/all hints absent. Keyword-only CI prefix plus word-bounded32 lower-alphanumeric occurrences, not hex-only or unique; TrimSpace is a no-op. Raw/key only, no RawV2/Extra/Redacted/primary/local filtering/cache. SANE5s GET https://api.detectify.com/rest/v2/assets/ retains its trailing slash and borrows X-Detectify-Key through send/release; common UA only, no Type/Accept/Bearer/dedup. Finding resources precede nil-context constructor candidate skipping, with no artificial append. Every2xx ignores body/read errors; the entire mixed shared send domain is suppressed without setter or text classifier. Own nonzero capture/finding/push failures normalize fatal before skip/suppression with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/detectify.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_detectify.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Mixed setup/allocation/Do stages and scan-deferred close-only versus eager buffering/release", "Complete native SANE client, regexp, source-engine and global parity"]
+    },
+    "detectlanguage/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/detectlanguage/detectlanguage.go",
+      "scope_notes": "DetectLanguage 434/v0/default enabled/all hints absent. Keyword-only CI prefix plus word-bounded32 lower-alphanumeric occurrences, not hex-only or unique; Raw/key only and no local filtering/cache/RawV2/Extra/Redacted/primary. SANE5s GET https://ws.detectlanguage.com/0.2/user/status uses a complete39-byte Bearer value plus NUL on stack after nil-context constructor candidate skipping; finding resources precede the skip. Authorization/common UA only, no Type/Accept/dedup. Borrow complete authorization through synchronous send and release. Every2xx ignores body/read errors. Whole mixed send domain suppressed without setter or text classifier, not Deno's retained-error or panic policy. Own nonzero resources fail before private outcomes with caller-preserving invocation rollback and no artificial append.",
+      "native_files": ["src/detectors/detectlanguage.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_detectlanguage.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Mixed setup/allocation/Do stages and scan-deferred close-only versus eager buffering/release", "Complete native/private SANE client, Reader/regexp, source-engine and global parity"]
+    },
+    "dfuse/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/dfuse/dfuse.go",
+      "scope_notes": "Dfuse 567/v0/default enabled/all hints absent. Direct word-bounded web_ plus32 lowercase-alphanumeric characters,36 bytes and original occurrences; dispatch keyword dfuse is separate, never a PrefixRegex requirement. Raw/key only, no local filtering/cache/RawV2/Extra/Redacted/primary. SANE5s auth/issue POST preserves the exact compact50-byte api_key JSON body, no newline or response JWT/JSON parsing. Finding and bounded body preparation precede nil-context candidate skipping; JSON Type/common UA follow construction. Complete stack body remains borrowed through send/release, with no heap copy/writer framework/auth header/dedup. Every2xx ignores all body/read errors; whole mixed send domain suppressed without setter/classifier. Own failures are fatal before skip/suppression with invocation rollback. Issuing auth tokens/sessions can affect accounts; verification evidence is synthetic/offline only.",
+      "native_files": ["src/detectors/dfuse.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_dfuse.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Mixed setup/allocation/Do stages and scan-deferred close-only versus eager buffering/release", "Native POST redirects remain fail-closed; complete native SANE/private-client behavior is unported", "Complete regexp, source-engine and global parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
