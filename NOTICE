@@ -22,14 +22,17 @@ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
 Azure shared-key Base64 decoding, API Management repository URL serialization,
 DevOps line scanning and SAS/Function request guards reimplement selected Go
-1.26.7 encoding/base64, net/url, bufio and net/http behavior in C.
+1.26.7 encoding/base64, net/url, bufio and net/http behavior in C. Coinbase
+reimplements selected encoding/pem and crypto/x509 SEC1 validation mechanics.
 Original copyright and BSD license:
 Copyright 2009 The Go Authors.
+Copyright 2012 The Go Authors. All rights reserved.
 Copyright 2013 The Go Authors. All rights reserved.
 See LICENSES/BSD-3-Clause-Go.txt.
 
-Azure Entra unverified claims parsing follows github.com/golang-jwt/jwt/v5
-v5.2.3 parser behavior, reimplemented in C. Original MIT copyright and license:
+Azure Entra unverified claims parsing and Coinbase ES256 token construction
+follow selected github.com/golang-jwt/jwt/v5 v5.2.3 behavior, reimplemented in C.
+Original MIT copyright and license:
 Copyright (c) 2012 Dave Grijalva
 Copyright (c) 2021 golang-jwt maintainers
 See LICENSES/MIT-golang-jwt.txt.

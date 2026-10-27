@@ -196,6 +196,7 @@ static const registration expected[] = {
     {845, 0, "Codemagic", "codemagic", 43, true, -1},
     {783, 0, "Codequiry", "codequiry", 64, true, -1},
     {554, 0, "CoinApi", "coinapi", 36, true, -1},
+    {5, 0, "Coinbase", "begin ec", 88, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -457,6 +458,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 711:
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789abcdef"[i % 16];
         secondary = "briar7@fixture.invalid"; /* Required email is hidden from results. */
+        break;
+    case 5:
+        /* Public scalar ONE, short SEC1 scalar and no supplied public point. */
+        strcpy(key, "-----BEGIN EC PRIVATE KEY-----\nMBICAQEEAQGgCgYIKoZIzj0DAQc=\n-----END EC PRIVATE KEY-----");
+        secondary = "organizations/ORG__123-AB_C-de_F-GHI_-abcdefgh1234/apiKeys/KEY__123-ZZ__-aaaa-bbbb-GHIJklmn5678";
+        secondary_name = "key_name";
         break;
     case 960:
         key[0] = 'g'; key[8] = key[13] = key[18] = key[23] = '-';
@@ -780,7 +787,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[sizeof(key) + sizeof(secondary_buffer) + sizeof(session_buffer) + 2];
-        if (entry->type == 1048) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", secondary, key, cloudinary_secret);
+        if (entry->type == 5) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
+        else if (entry->type == 1048) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", secondary, key, cloudinary_secret);
         else if (entry->type == 648) snprintf(raw_v2, sizeof(raw_v2), "%s%sregion7q", key, secondary);
         else if (entry->type == 1025) snprintf(raw_v2, sizeof(raw_v2), "Endpoint=%s;Id=%s;Secret=AQIDBA==", secondary, key);
         else if (entry->type == 958) snprintf(raw_v2, sizeof(raw_v2), "{\"username\":\"%s\",\"password\":\"%s\"}", secondary, key);
