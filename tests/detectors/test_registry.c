@@ -177,6 +177,8 @@ static const registration expected[] = {
     {215, 0, "Close", "close", 49, true, -1},
     {829, 0, "CloudConvert", "cloudconvert", 836, true, -1},
     {650, 0, "CloudElements", "cloudelements", 43, true, 1024},
+    {100, 1, "CloudflareApiToken", "cloudflare", 40, true, -1},
+    {100, 2, "CloudflareApiToken", "cfut_", 53, true, 1024},
     {59, 0, "CloudflareCaKey", "cloudflare", 176, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -417,6 +419,13 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 829:
         memcpy(key, "ey", 2); key[32] = '.';
         memcpy(key + 33, "ey", 2); key[235] = '.';
+        break;
+    case 100:
+        if (entry->version == 1) { key[10] = '_'; key[22] = '-'; }
+        else {
+            memcpy(key, "cfut_", 5);
+            for (size_t i = 45; i < 53; ++i) key[i] = "0123456789abcdef"[i % 16];
+        }
         break;
     case 59:
         memcpy(key, "v1.0-", 5);
@@ -671,6 +680,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         return;
     }
     if (entry->type == 307) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
+    if (entry->type == 100) CHECK(!result->extra_data && !result->redacted); /* No invented version metadata. */
     if (entry->type == 142) {
         if (entry->version == 1) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
         else CHECK(!result->extra_data);
@@ -760,6 +770,38 @@ static void feature_gate_tests(void)
     json_object_put(invalid); json_object_put(flags);
 }
 
+static void cloudflare_feature_gate_tests(void)
+{
+    br_detector legacy = {.type = 100, .version = 1, .custom_name = ""};
+    br_detector modern = {.type = 100, .version = 2, .custom_name = ""};
+    br_detector enabled = {.type = 239, .version = 0, .custom_name = ""};
+    br_detector disabled = {.type = 384, .version = 0, .custom_name = ""};
+    br_json *flags = json_object_new_object();
+    CHECK(flags && br_detector_is_default(&legacy, NULL) && br_detector_is_default(&modern, NULL));
+    CHECK(br_detector_is_default(&legacy, flags) && br_detector_is_default(&modern, flags));
+    CHECK(!json_object_object_add(flags, "all", json_object_new_boolean(true)));
+    CHECK(br_detector_is_default(&modern, flags));
+    CHECK(!json_object_object_add(flags, "CloudflareApiTokenV2DetectorEnabled", json_object_new_boolean(false)));
+    CHECK(br_detector_is_default(&legacy, flags) && !br_detector_is_default(&modern, flags));
+    CHECK(br_detector_is_default(&enabled, flags) && !br_detector_is_default(&disabled, flags));
+    CHECK(!json_object_object_add(flags, "CloudflareApiTokenV2DetectorEnabled", json_object_new_string("true")));
+    CHECK(!br_detector_is_default(&modern, flags));
+    CHECK(!json_object_object_add(flags, "CloudflareApiTokenV2DetectorEnabled", json_object_new_int(1)));
+    CHECK(!br_detector_is_default(&modern, flags));
+    CHECK(!json_object_object_add(flags, "CloudflareApiTokenV2DetectorEnabled", NULL));
+    CHECK(!br_detector_is_default(&modern, flags));
+    CHECK(!json_object_object_add(flags, "CloudflareApiTokenV2DetectorEnabled", json_object_new_boolean(true)));
+    CHECK(br_detector_is_default(&legacy, flags) && br_detector_is_default(&modern, flags));
+    modern.version = 0; CHECK(!br_detector_is_default(&modern, flags));
+    modern.version = 3; CHECK(!br_detector_is_default(&modern, flags));
+    modern.version = 2; modern.custom_name = "custom"; CHECK(!br_detector_is_default(&modern, flags));
+    modern.custom_name = "";
+    br_json *invalid = json_object_new_boolean(true);
+    CHECK(invalid && br_detector_is_default(&legacy, invalid) && !br_detector_is_default(&modern, invalid));
+    CHECK(br_detector_is_default(&enabled, invalid));
+    json_object_put(invalid); json_object_put(flags);
+}
+
 int main(void)
 {
     const br_detector *const *detectors = NULL;
@@ -767,6 +809,7 @@ int main(void)
     char *error = NULL;
     CHECK(BR_ABI_REVISION == 1);
     feature_gate_tests();
+    cloudflare_feature_gate_tests();
     CHECK(br_registry(&detectors, &count, &error) == 0 && error == NULL);
     CHECK(count == sizeof(expected) / sizeof(expected[0]));
     CHECK(!br_detector_type_name(-1));
@@ -786,7 +829,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 ? 3u :
-              entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
@@ -796,6 +839,7 @@ int main(void)
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
         if (entry->type == 189) CHECK(!strcmp(detector->keywords[1], "textanywhere"));
+        if (entry->type == 100 && entry->version == 2) CHECK(!strcmp(detector->keywords[1], "cfat_"));
         if (entry->type == 1029) CHECK(!strcmp(detector->keywords[1], "ATBB"));
         if (entry->type == 1018) CHECK(!strcmp(detector->keywords[1], ".scm.azure-api.net"));
         if (entry->type == 975) CHECK(!strcmp(detector->keywords[1], ".blob.core.windows.net"));

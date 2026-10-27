@@ -174,6 +174,8 @@ static const detector_factory named_factories[] = {
     br_closecrm_init,
     br_cloudconvert_init,
     br_cloudelements_init,
+    br_cloudflareapitoken_v1_init,
+    br_cloudflareapitoken_v2_init,
     br_cloudflarecakey_init,
     br_confluencedatacenter_init,
     br_jiradatacenterpat_init,
@@ -213,6 +215,17 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
 {
     if (detector && (!detector->custom_name || !detector->custom_name[0])) {
         switch (detector->type) {
+        case 100: {
+            if (detector->version == 1) return true;
+            if (detector->version != 2) return false;
+            /* OSS main enables v2; explicit false retains package-zero state.
+             * This exact boolean never changes legacy v1 or other detectors. */
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "CloudflareApiTokenV2DetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
         case 1053: {
             if (detector->version != 0) return false;
             /* OSS main enables this flag; explicit false models package-zero
@@ -255,6 +268,7 @@ const char *br_detector_type_name(int32_t type)
     case 57: return "Clarifai";
     case 59: return "CloudflareCaKey";
     case 98: return "AsanaOauth";
+    case 100: return "CloudflareApiToken";
     case 110: return "Auth0ManagementApiToken";
     case 125: return "AirbrakeProjectKey";
     case 126: return "AirbrakeUserKey";
