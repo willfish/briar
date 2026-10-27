@@ -197,6 +197,7 @@ static const registration expected[] = {
     {783, 0, "Codequiry", "codequiry", 64, true, -1},
     {554, 0, "CoinApi", "coinapi", 36, true, -1},
     {5, 0, "Coinbase", "begin ec", 88, true, -1},
+    {402, 0, "Coinlayer", "coinlayer", 32, true, -1},
     {823, 0, "Collect2", "collect2", 36, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
