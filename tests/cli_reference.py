@@ -416,6 +416,12 @@ def fixtures():
     def coinbase_pem(der):
         return b"-----BEGIN EC PRIVATE KEY-----\n" + base64.b64encode(der) + b"\n-----END EC PRIVATE KEY-----"
     coinbase_key = coinbase_pem(coinbase_der)
+    coinlayer_key = b"g" + alnum("coinlayer-key", 31).lower()  # Lowercase alphanumeric, not hex.
+    coinlib_key = b"g" + alnum("coinlib-key", 15).lower()
+    collect2_hex = synthetic("collect2-key", 32)
+    collect2_key = b"-".join(collect2_hex[a:b] for a, b in ((0, 8), (8, 12), (12, 16), (16, 20), (20, 32)))
+    collect2_key = collect2_key[:14] + b"f" + collect2_key[15:19] + b"f" + collect2_key[20:]  # No UUID version/variant validation.
+    column_material = alnum("column-key", 27)
     coinbase_escaped = coinbase_name.replace(b"/", b"\\/") + b"\n" + coinbase_key.replace(b"\n", b"\\n")
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
@@ -746,6 +752,11 @@ def fixtures():
         ("coinbase_retained_p224", 5, coinbase_name + b"\n" + coinbase_pem(bytes.fromhex("300f020101040101a00706052b81040021"))),
         ("coinbase_retained_p384", 5, coinbase_name + b"\n" + coinbase_pem(bytes.fromhex("300f020101040101a00706052b81040022"))),
         ("coinbase_retained_p521", 5, coinbase_name + b"\n" + coinbase_pem(bytes.fromhex("300f020101040101a00706052b81040023"))),
+        ("coinlayer", 402, b"COINLAYER " + coinlayer_key),
+        ("coinlib", 378, b"coinlib " + coinlib_key),
+        ("collect2", 823, b"collect2 " + collect2_key),
+        ("column", 749, b"column live_" + column_material),
+        ("column_test_filtered", 749, b"column test_" + column_material),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
@@ -858,7 +869,8 @@ def compare(native, reference, case):
     # positive fixtures into a vacuous zero-row comparison.
     if name in ("azure_apim_repository_stdin", "azure_apim_repository_filesystem",
                 "calendly_max_segments_stdin", "calendly_max_segments_filesystem",
-                "clinchpad_stdin", "clinchpad_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "clinchpad_stdin", "clinchpad_filesystem",
+                "column_stdin", "column_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("cexio_products_stdin", "cexio_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": both keys and both secrets must retain all four products")
@@ -866,6 +878,8 @@ def compare(native, reference, case):
         raise AssertionError(name + ": default wordlist must filter sk_test_ credentials")
     if name in ("clinchpad_filtered_stdin", "clinchpad_filtered_filesystem") and (actual or expected):
         raise AssertionError(name + ": default wordlist must filter the safe substring")
+    if name in ("column_test_filtered_stdin", "column_test_filtered_filesystem") and (actual or expected):
+        raise AssertionError(name + ": default wordlist must filter test_ Column credentials")
     if name in ("coinbase_filtered_stdin", "coinbase_filtered_filesystem") and (actual or expected):
         raise AssertionError(name + ": default wordlist must filter PRIVATE in Coinbase Raw")
     if name.startswith("coinbase_retained_"):
