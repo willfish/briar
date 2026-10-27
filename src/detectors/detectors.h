@@ -202,5 +202,9 @@ int br_commercejs_init(const br_detector **out, char **error);
 int br_commodities_init(const br_detector **out, char **error);
 int br_companyhub_init(const br_detector **out, char **error);
 int br_confluent_init(const br_detector **out, char **error);
+int br_contentfulpersonalaccesstoken_init(const br_detector **out, char **error);
+int br_conversiontools_init(const br_detector **out, char **error);
+int br_convertapi_init(const br_detector **out, char **error);
+int br_convertkit_init(const br_detector **out, char **error);
 
 #endif
