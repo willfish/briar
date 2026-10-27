@@ -175,6 +175,7 @@ static const registration expected[] = {
     {280, 0, "Clockify", "clockify", 48, true, -1},
     {189, 0, "ClockworkSMS", "clockworksms", 5, true, 1024},
     {215, 0, "Close", "close", 49, true, -1},
+    {829, 0, "CloudConvert", "cloudconvert", 836, true, -1},
     {650, 0, "CloudElements", "cloudelements", 43, true, 1024},
     {59, 0, "CloudflareCaKey", "cloudflare", 176, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
@@ -412,6 +413,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
             key[29] = '_';
             for (size_t i = 30; i < 70; ++i) key[i] = "0123456789aBcDeF"[i % 16];
         }
+        break;
+    case 829:
+        memcpy(key, "ey", 2); key[32] = '.';
+        memcpy(key + 33, "ey", 2); key[235] = '.';
         break;
     case 59:
         memcpy(key, "v1.0-", 5);
@@ -812,7 +817,7 @@ int main(void)
             CHECK(!strcmp(detector->keywords[1], "jfrog.io"));
             CHECK(!strcmp(detector->keywords[2], "AKCp"));
         }
-        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 1013 ? 2048 : -1) &&
+        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 1013 ? 2048 : entry->type == 829 ? 1300 : -1) &&
               detector->start_offset == (entry->type == 1013 ? 4096 : -1) &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
