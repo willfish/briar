@@ -201,6 +201,7 @@ static const registration expected[] = {
     {378, 0, "Coinlib", "coinlib", 16, true, -1},
     {823, 0, "Collect2", "collect2", 36, true, -1},
     {749, 0, "Column", "column", 32, true, -1},
+    {433, 0, "CommerceJS", "commercejs", 48, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
