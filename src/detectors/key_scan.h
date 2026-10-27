@@ -7,7 +7,8 @@
 typedef int (*br_key_verifier)(const br_scan_ctx *, const char *, br_result *);
 
 /* For detectors whose single captured key is their complete finding. Keeps
- * match order and duplicates; provider-specific filtering stays in the provider. */
+ * match order and duplicates; provider-specific filtering stays in the provider.
+ * On error, both helpers discard only findings appended by this invocation. */
 int br_scan_key(const br_detector *, const br_scan_ctx *, bool verify,
                 br_slice input, br_results *, const char *secret_part,
                 br_key_verifier, char **error);

@@ -66,6 +66,7 @@ static int scan_keys(const br_detector *detector, const br_scan_ctx *ctx, bool v
     if (!detector || !detector->state || !out || !secret_part || !verifier ||
         (!input.data && input.len))
         return fail(error, "invalid or uninitialized detector scan");
+    size_t original_len = out->len;
     key_matches matches = {detector, ctx, input, out, secret_part, verifier, verify, NULL};
     char *regex_error = NULL;
     int rc;
@@ -82,6 +83,8 @@ static int scan_keys(const br_detector *detector, const br_scan_ctx *ctx, bool v
         free(regex_error);
         regex_error = matches.error;
     }
+    if (rc != 0)
+        while (out->len > original_len) br_result_clear(&out->items[--out->len]);
     if (error) *error = regex_error;
     else free(regex_error);
     return rc;

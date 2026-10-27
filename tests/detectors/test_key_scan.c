@@ -13,6 +13,43 @@ static int verify_key(const br_scan_ctx *ctx, const char *key, br_result *result
     return 0;
 }
 
+static int fail_second_key(const br_scan_ctx *ctx, const char *key, br_result *result)
+{
+    verify_key(ctx, key, result);
+    return verification_calls == 2 ? 1 : 0;
+}
+
+static void rollback_failures(const br_detector *detector, br_slice input)
+{
+    /* Both iteration paths must discard only this invocation's findings after
+     * a later positive verifier failure, even without an error-output pointer. */
+    for (unsigned mode = 0; mode < 4; ++mode) {
+        br_results results = {0};
+        br_result caller = {.detector_type = 12345, .verified = true};
+        caller.raw.data = (unsigned char *)strdup("keep"); caller.raw.len = 4;
+        caller.verification_error = strdup("caller-owned");
+        CHECK(caller.raw.data && caller.verification_error);
+        CHECK(br_results_push(&results, &caller) == 0);
+        br_result prior = results.items[0];
+        char *error = NULL;
+        char **error_out = mode & 2 ? NULL : &error;
+        verification_calls = 0;
+        int rc = mode & 1 ? br_scan_unique_key(detector, NULL, true, input, &results,
+                               "key", fail_second_key, error_out) :
+                           br_scan_key(detector, NULL, true, input, &results,
+                               "key", fail_second_key, error_out);
+        CHECK(rc != 0 && verification_calls == 2 && results.len == 1);
+        CHECK(results.items[0].detector_type == 12345 && results.items[0].verified);
+        CHECK(results.items[0].raw.data == prior.raw.data && results.items[0].raw.len == 4);
+        CHECK(!memcmp(results.items[0].raw.data, "keep", 4));
+        CHECK(results.items[0].verification_error == prior.verification_error);
+        CHECK(!strcmp(results.items[0].verification_error, "caller-owned"));
+        if (error_out) CHECK(error && !strcmp(error, "out of memory sanitizing verification error"));
+        free(error);
+        br_results_clear(&results);
+    }
+}
+
 int main(void)
 {
     br_regex *pattern = NULL;
@@ -46,6 +83,8 @@ int main(void)
     test_key_result(&results.items[1], 239, "tokenbeta", "key");
     CHECK(!results.items[0].verified && !results.items[1].verified);
     br_results_clear(&results);
+    rollback_failures(&detector, input);
+    verification_calls = 0;
     br_regex_free(pattern);
 
     pattern = NULL;
