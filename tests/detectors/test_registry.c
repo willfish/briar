@@ -184,6 +184,7 @@ static const registration expected[] = {
     {58, 2, "CloudflareGlobalApiKey", "cfk_", 52, true, 1024},
     {721, 0, "CloudImage", "cloudimage", 30, true, -1},
     {1048, 0, "Cloudinary", "cloudinary", 15, true, 1024},
+    {358, 0, "Cloudmersive", "cloudmersive", 36, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
