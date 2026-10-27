@@ -349,6 +349,8 @@ bool br_json_field_name(br_slice name, const char *expected)
         if (c >= 'A' && c <= 'Z') c += 'a' - 'A';
         if (c == (unsigned char)expected[i]) continue;
         if (expected[i] == 's' && c == 0xc5 && at < name.len && name.data[at] == 0xbf) { ++at; continue; }
+        if (expected[i] == 'k' && c == 0xe2 && name.len - at >= 2 &&
+            name.data[at] == 0x84 && name.data[at + 1] == 0xaa) { at += 2; continue; }
         return false;
     }
     return at == name.len;

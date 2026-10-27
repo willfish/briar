@@ -30,7 +30,7 @@ int br_json_each_element(br_slice array, br_json_element_fn, void *user);
 
 /* Borrow string bytes; JSON null is the empty string. Caller checks other types. */
 br_slice br_json_text(br_json *);
-/* Current ASCII field names, case-folded like Go, including long-s. */
+/* Current ASCII field names, case-folded like Go, including long-s/Kelvin. */
 bool br_json_field_name(br_slice name, const char *expected_lowercase);
 /* Allocate a Go-style type cause. field=NULL describes a top-level value;
  * otherwise pass the struct-qualified field name and its expected type. */

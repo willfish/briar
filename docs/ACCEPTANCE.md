@@ -31,7 +31,7 @@ Named detector tests cover provider-specific extraction, filtering, pairing, met
 
 Shared single-key occurrence and unique helpers preserve caller findings and discard only additions from a failed invocation, including a later positive verifier failure and calls without an error-output pointer. Aylien and AirbrakeProjectKey enforce the same invocation-tail rollback boundary in their custom pair scanners.
 
-Selected JSON helpers use offset-preserving validation shadows for json-c integer-range and raw-Unicode string defects, then decode original bytes and numeric spans. Already validated child visits avoid redundant strict parsing and shadow allocation. This does not establish complete Go invalid-UTF8 replacement, unquoting, Reader or diagnostic parity.
+Selected JSON helpers use offset-preserving validation shadows for json-c integer-range and raw-Unicode string defects, then decode original bytes and numeric spans. Already validated child visits avoid redundant strict parsing and shadow allocation. Typed ASCII field matching includes the long-s and Kelvin-sign fold partners; generic map keys remain exact. This does not establish complete Go invalid-UTF8 replacement, unquoting, Reader or diagnostic parity.
 
 Core tests cover result ownership, matching and decoder behavior. CLI checks cover source boundaries, multipart windows, decoded locations and selection. The source-window counterexamples distinguish correct credential pairing from unsafe whole-file merging. Loopback-only HTTP fixtures cover implemented profile/body handling and the CONNECT-success-followed-by-TLS-failure regression.
 

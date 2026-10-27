@@ -110,6 +110,8 @@ static int unicode_number_member(void *user, br_slice name, br_json *value, br_s
 
 int main(void)
 {
+    static const unsigned char kelvin[] = "wor\xe2\x84\xaaplace";
+    CHECK(br_json_field_name((br_slice){kelvin, sizeof(kelvin) - 1}, "workplace"));
     static const unsigned char bytes[] = " [ {\"name\":\"first\",\"name\":null}, null, \"tail\" ] ";
     br_slice array = {bytes, sizeof(bytes) - 1};
     br_json *root = NULL;
