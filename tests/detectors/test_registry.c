@@ -190,6 +190,7 @@ static const registration expected[] = {
     {525, 0, "Cloverly", "cloverly", 28, true, -1},
     {711, 0, "Cloze", "cloze", 32, true, 1024},
     {185, 0, "Codacy", "codacy", 20, true, -1},
+    {844, 0, "Codeclimate", "codeclimate", 40, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -452,7 +453,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789abcdef"[i % 16];
         secondary = "briar7@fixture.invalid"; /* Required email is hidden from results. */
         break;
-    case 805:
+    case 805: case 844:
         for (size_t i = 0; i < 40; ++i) key[i] = "0123456789abcdef"[i % 16];
         break;
     case 525:
