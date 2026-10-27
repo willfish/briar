@@ -226,6 +226,7 @@ static const registration expected[] = {
     {403, 0, "CurrentsAPI", "currentsapi", 48, true, -1},
     {226, 0, "CustomerGuru", "customerguru", 30, true, 1024},
     {211, 0, "CustomerIO", "customerio", 20, true, 1024},
+    {585, 0, "DailyCO", "daily", 64, false, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -688,6 +689,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 602:
     case 707:
     case 867:
+    case 585:
     case 457:
     case 458:
     case 511:

@@ -223,6 +223,7 @@ static const detector_factory named_factories[] = {
     br_currentsapi_init,
     br_customerguru_init,
     br_customerio_init,
+    br_dailyco_init,
     br_jiradatacenterpat_init,
 };
 
@@ -439,6 +440,7 @@ const char *br_detector_type_name(int32_t type)
     case 565: return "BombBomb";
     case 566: return "Commodities";
     case 578: return "CarbonInterface";
+    case 585: return "DailyCO";
     case 588: return "Appfollow";
     case 598: return "BuddyNS";
     case 602: return "Bugherd";
