@@ -793,6 +793,10 @@ def fixtures():
         ("convier", 664, b"CONVIER " + convier_key),
         ("copper", 214, b"copper " + copper_key + b"\nuser7@ExAmPlE!TEST"),
         ("countrylayer", 526, b"countrylayer " + countrylayer_key),
+        ("courier", 665, b"CoUrIeR pk_B7_" + alnum("courier-key", 28)),
+        ("coveralls", 192, b"COVERALLS " + alnum("coveralls-key", 18) + b"-" + alnum("coveralls-tail", 18)),
+        ("craftmypdf", 770, b"CRAFTMYPDF " + alnum("craftmypdf-key", 35)),
+        ("crowdin", 335, b"crowdin " + alnum("crowdin-key", 80)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -928,7 +932,11 @@ def compare(native, reference, case):
                 "convertkit_stdin", "convertkit_filesystem",
                 "convier_stdin", "convier_filesystem",
                 "copper_stdin", "copper_filesystem",
-                "countrylayer_stdin", "countrylayer_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "countrylayer_stdin", "countrylayer_filesystem",
+                "craftmypdf_stdin", "craftmypdf_filesystem",
+                "courier_stdin", "courier_filesystem",
+                "coveralls_stdin", "coveralls_filesystem",
+                "crowdin_stdin", "crowdin_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name.startswith("couchbase_"):
         count = 0 if name.startswith(("couchbase_filtered_", "couchbase_retained_unicode16_upper_rejected_", "couchbase_retained_unicode16_lower_rejected_")) else 1

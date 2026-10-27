@@ -1762,6 +1762,42 @@
       "evidence": ["tests/detectors/test_countrylayer.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Combined shared setup/allocation/Do domain; source scan-deferred close-only versus eager buffering/release", "Full native client/configuration, shared regexp/Unicode/source-engine and global parity"]
     },
+    "courier/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/courier/courier.go",
+      "scope_notes": "Courier665/v0/default enabled/all hints absent. Prefix keyword CI only; word-bounded lowercase pk_, one-or-more unbounded mixed-alphanumeric middle bytes, underscore and28 mixed-alphanumeric suffix bytes. No environment whitelist, semantic validation or cap. Occurrences/Raw/key only, no RawV2/Extra/Redacted. Exact SANE bodyless GET https://api.courier.com/preferences uses Accept application/json, complete unbounded Bearer and common UA, no invented Type/Content-Length. Finding resources precede known nil-context constructor skip, which precedes one necessary full owned auth buffer with checked size arithmetic. Buffer lives through send AND release. Every2xx verifies despite body/read errors; entire combined setup/allocation/Do domain suppressed without setter or error-text classification. Own capture/finding/auth/push nonzero failures normalize to fatal before skips with caller-preserving invocation rollback; no global UTF8 rejection.",
+      "native_files": ["src/detectors/courier.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_courier.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; source scan-deferred close-only versus eager buffering/per-request release", "Full native SANE client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
+    "coveralls/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/coveralls/coveralls.go",
+      "scope_notes": "Coveralls192/v0/default enabled/all hints absent. Prefix keyword CI only; word-bounded37 mixed-alphanumeric/hyphen bytes, not hex or UUID validation, including source leading/trailing-hyphen boundary behavior. Preserve occurrences/Raw/key only, no RawV2/Extra/Redacted. Exact SANE bodyless GET https://coveralls.io/api/repos/github/secretscanner02/scanner uses literal lowercase token SPACE KEY Authorization, not Bearer or Basic; complete43-byte auth plus NUL borrowed on stack through synchronous send AND release, common UA/no Type/Accept/invented Content-Length. Finding resources precede known nil-context constructor skip and auth preparation. Every2xx verifies despite body/read errors; whole mixed setup/allocation/Do domain suppressed without setter/text classification. Own nonzero helper/resource failures fatal and normalized before skips, with invocation-only rollback preserving caller findings; no new auth-copy seam or global UTF8 rejection.",
+      "native_files": ["src/detectors/coveralls.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_coveralls.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; source scan-deferred close-only versus eager buffering/per-request release", "Full native SANE client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
+    "craftmypdf/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/craftmypdf/craftmypdf.go",
+      "scope_notes": "CraftMyPDF770/v0/default enabled/all hints absent. Prefix keyword CI only; word-bounded35 mixed-alphanumeric occurrences, not hex validation. Raw/key only, no RawV2/Extra/Redacted. Exact SANE bodyless GET https://api.craftmypdf.com/v1/get-account-info uses JSON Content-Type, canonical X-Api-Key borrowed directly from complete NUL-terminated ASCII capture through synchronous send AND release, common UA/no Accept/Authorization/invented Content-Length. Finding resources precede known nil-context constructor skip. Every2xx verifies despite body/read errors; whole combined shared setup/allocation/Do domain suppressed without setter or cause-text classification. All own nonzero capture/finding/push failures fatal before skips with invocation-only caller-preserving rollback; no redundant key/header copy or global UTF8 rejection.",
+      "native_files": ["src/detectors/craftmypdf.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_craftmypdf.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; source scan-deferred close-only versus eager buffering/per-request release", "Full native SANE client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
+    "crowdin/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/crowdin/crowdin.go",
+      "scope_notes": "Crowdin335/v0/default enabled/all hints absent. Prefix keyword CI only; word-bounded80 mixed-alphanumeric occurrences. Raw/key only, no RawV2/Extra/Redacted. Exact SANE bodyless GET https://api.crowdin.com/api/v2/storages retains the /api/v2 path and uses complete87-byte Bearer plus NUL borrowed on stack through synchronous send AND release, common UA/no Type/Accept/invented Content-Length. Finding resources precede known nil-context constructor skip and auth preparation. Every2xx verifies despite body/read errors; entire mixed setup/allocation/Do domain suppressed without setter/text classification. All own nonzero captures/findings/push failures fatal before skips with caller-preserving invocation rollback; no heap auth-copy seam or global UTF8 rejection.",
+      "native_files": ["src/detectors/crowdin.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_crowdin.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; source scan-deferred close-only versus eager buffering/per-request release", "Full native SANE client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
