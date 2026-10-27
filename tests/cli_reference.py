@@ -470,6 +470,16 @@ def fixtures():
     dockerhub_v1 = b"ghjkmnpq-rstv-wxyz-2345-6789abcef123"
     dockerhub_pat = b"dckr_pat_" + alnum("dockerhub-pat", 27)
     dockerhub_oat = b"dckr_oat_" + alnum("dockerhub-oat", 32)
+    documo_parts = (b"ey" + alnum("documo-header", 34), b"ey" + alnum("documo-payload", 154), alnum("documo-signature", 43))
+    doppler_namespace = alnum("doppler-namespace", 35).lower()
+    doppler_namespace = doppler_namespace[:7] + b"_" + doppler_namespace[8:16] + b"-" + doppler_namespace[17:]
+    dotdigital_user = b"apiuser-" + alnum("dotdigital-user", 12).lower()
+    dotdigital_password = alnum("dotdigital-password", 8)
+    docusign_uuids = []
+    for label in ("id", "other-id", "secret", "other-secret"):
+        value = synthetic("docusign-" + label, 32)
+        docusign_uuids.append(b"-".join((value[:8], value[8:12], value[12:16], value[16:20], value[20:])))
+    docusign_id, docusign_other_id, docusign_secret, docusign_other_secret = docusign_uuids
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -894,6 +904,18 @@ def fixtures():
         ("dockerhub_v1_pat_only", "921.v1", b"docker " + dockerhub_v1),
         ("dockerhub_v2", "921.v2", b"user=briar7 " + dockerhub_pat + b" " + dockerhub_oat),
         ("dockerhub_v2_pat_only", "921.v2", dockerhub_pat),
+        ("documo", 311, b"documo" + b"." * 60 + b"\n" + b".".join(documo_parts)),
+        ("documo_wildcard", 311, b"documo " + b"!".join(documo_parts)),
+        ("documo_no_dispatch", 311, b".".join(documo_parts)),
+        ("doppler", 196, b"dp.pt." + alnum("doppler-key", 40)),
+        ("doppler_namespace", 196, b"dp.st." + doppler_namespace + b"." + alnum("doppler-long-key", 44)),
+        ("dotdigital_filtered", 325, dotdigital_user + b"@apiconnector.com\npass " + dotdigital_password),
+        ("dotdigital_retained", 325, dotdigital_user + b"@apiconnector.com\npass " + dotdigital_password),
+        ("dotdigital_retained_bytes", 325, dotdigital_user + b"@apiconnector.com\npass A7b\x00C9d2"),
+        ("dotdigital_retained_wildcard", 325, b"@apiconnector.com\n" + dotdigital_user + b"@apiconnectorXcom\npass " + dotdigital_password),
+        ("docusign", 919, b"docusign\nintegration " + docusign_id + b"\nsecret " + docusign_secret),
+        ("docusign_products", 919, b"docusign integration " + docusign_id + b" id " + docusign_other_id + b" secret " + docusign_secret + b" secret " + docusign_other_secret),
+        ("docusign_no_secret", 919, b"docusign integration " + docusign_id),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1007,10 +1029,10 @@ def reference_matches(case, actual, expected):
 
 def compare(native, reference, case):
     name, source, detector, kind, cleaning = case
-    # Coinbase PRIVATE, Couchbase normalized hosts and webhook URL schemes match
-    # pinned default wordlist terms. Retained cases use an ALREADY supported flag
-    # in BOTH CLIs, not normalization or a filter change. Keep default-zero guards.
-    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_")) else None
+    # PRIVATE, normalized hosts, webhook schemes and Dotdigital's required email
+    # stem match pinned wordlist terms. Retained cases use an ALREADY supported
+    # flag in BOTH CLIs, not normalization/filter changes. Keep default-zero guards.
+    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_")) else None
     with tempfile.TemporaryDirectory(prefix="briar-reference-", dir=ROOT / "state") as tmp:
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True, result_types=result_types)
@@ -1079,7 +1101,13 @@ def compare(native, reference, case):
                 "docker_hub_stdin", "docker_hub_filesystem",
                 "dockerhub_v1_stdin", "dockerhub_v1_filesystem",
                 "dockerhub_v1_pat_only_stdin", "dockerhub_v1_pat_only_filesystem",
-                "dockerhub_v2_pat_only_stdin", "dockerhub_v2_pat_only_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "dockerhub_v2_pat_only_stdin", "dockerhub_v2_pat_only_filesystem",
+                "documo_stdin", "documo_filesystem", "documo_wildcard_stdin", "documo_wildcard_filesystem",
+                "doppler_stdin", "doppler_filesystem", "doppler_namespace_stdin", "doppler_namespace_filesystem",
+                "dotdigital_retained_stdin", "dotdigital_retained_filesystem",
+                "dotdigital_retained_bytes_stdin", "dotdigital_retained_bytes_filesystem",
+                "dotdigital_retained_wildcard_stdin", "dotdigital_retained_wildcard_filesystem",
+                "docusign_stdin", "docusign_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1107,6 +1135,14 @@ def compare(native, reference, case):
         raise AssertionError(name + ": both direct Dockerhub PAT and OAT shapes must dispatch and retain distinct identities")
     if name.startswith(("dockerhub_v1_pat_only_", "dockerhub_v2_pat_only_")) and any(row["RawV2"] for row in actual + expected):
         raise AssertionError(name + ": PAT-only Dockerhub fallback must not invent a username or RawV2")
+    if name in ("documo_no_dispatch_stdin", "documo_no_dispatch_filesystem") and (actual or expected):
+        raise AssertionError(name + ": direct Documo extraction must not bypass the dispatch keyword")
+    if name in ("dotdigital_filtered_stdin", "dotdigital_filtered_filesystem") and (actual or expected):
+        raise AssertionError(name + ": default wordlist must filter connect in the required Dotdigital email Raw")
+    if name in ("docusign_products_stdin", "docusign_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
+        raise AssertionError(name + ": Docusign ID/secret occurrences must retain four distinct RawV2 projections")
+    if name in ("docusign_no_secret_stdin", "docusign_no_secret_filesystem") and (actual or expected):
+        raise AssertionError(name + ": the Docusign secret remains required alongside its visible ID")
     if name in ("denodeploy_stdin", "denodeploy_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": both direct Deno token prefixes must dispatch without a provider name")
     if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):
