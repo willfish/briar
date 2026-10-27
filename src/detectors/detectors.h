@@ -190,5 +190,9 @@ int br_clustdoc_init(const br_detector **out, char **error);
 int br_coda_init(const br_detector **out, char **error);
 int br_codacy_init(const br_detector **out, char **error);
 int br_codeclimate_init(const br_detector **out, char **error);
+int br_codemagic_init(const br_detector **out, char **error);
+int br_codequiry_init(const br_detector **out, char **error);
+int br_coinapi_init(const br_detector **out, char **error);
+int br_coinbase_init(const br_detector **out, char **error);
 
 #endif
