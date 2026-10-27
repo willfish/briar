@@ -254,6 +254,7 @@ static const registration expected[] = {
     {66, 0, "DiscordWebhook", "https://discord.com/api/webhooks/", 120, true, -1},
     {789, 0, "Disqus", "disqus", 64, true, -1},
     {666, 0, "Ditto", "ditto", 77, true, -1},
+    {281, 0, "Dnscheck", "dnscheck", 32, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -466,6 +467,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         break;
     case 110: secondary = "fixture-tenant.us.auth0.com"; secondary_name = "domain"; break;
     case 65: secondary = "12345678901234567"; secondary_name = "id"; break;
+    case 281: secondary = "G7h9K2m4-N6p8-Q1r3-S5t7-U9v1W3x5Y7z9"; secondary_name = "id"; break;
     case 125: secondary = "004207"; secondary_name = "id"; break;
     case 136: secondary = "C7d8E9f0.G1H"; secondary_name = "id"; break;
     case 170: secondary = "B7C9D2E5F6"; secondary_name = "id"; break;
