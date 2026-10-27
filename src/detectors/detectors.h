@@ -164,5 +164,9 @@ int br_circleci_v2_init(const br_detector **out, char **error);
 int br_clarifai_init(const br_detector **out, char **error);
 int br_clearbit_init(const br_detector **out, char **error);
 int br_clickhelp_init(const br_detector **out, char **error);
+int br_clicksendsms_init(const br_detector **out, char **error);
+int br_clickuppersonaltoken_init(const br_detector **out, char **error);
+int br_cliengo_init(const br_detector **out, char **error);
+int br_clientary_init(const br_detector **out, char **error);
 
 #endif
