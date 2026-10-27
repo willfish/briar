@@ -400,6 +400,8 @@ def fixtures():
     cloudflare_global_email = b"Case.User@Example.INVALID"
     cloudinary_key = b"001726354809273"
     cloudinary_secret = alnum("cloudinary-secret", 27)
+    cloze_key = synthetic("cloze-key", 32)
+    cloze_email = b"Case.User@Example.INVALID"
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -702,6 +704,13 @@ def fixtures():
         ("cloudinary", 1048, b"cloudinary name A7b\ncloudinary key " + cloudinary_key + b"\ncloudinary secret " + cloudinary_secret),
         ("cloudinary_url", 1048, b"cloudinary://" + cloudinary_key + b":" + cloudinary_secret + b"@B" + alnum("cloudinary-name", 49)),
         ("cloudmersive", 358, b"cloudmersive " + alnum("cloudmersive-key", 18).lower() + b"-" + alnum("cloudmersive-tail", 17).lower()),
+        ("cloudplan", 324, b"CLOUDPLAN " + alnum("cloudplan-key", 11).upper() + b"-" + alnum("cloudplan-tail", 20).upper()),
+        ("cloudsmith", 805, b"cloudsmith " + synthetic("cloudsmith-key", 40)),
+        ("cloverly", 525, b"cloverly " + alnum("cloverly-key", 8).lower() + b":" + alnum("cloverly-middle", 9).lower() + b"_" + alnum("cloverly-tail", 9).lower()),
+        ("cloze", 711, b"cloze " + cloze_key + b"\ncloze " + cloze_email),
+        ("cloze_hidden_emails", 711, b"cloze " + cloze_key + b"\ncloze " + cloze_email + b"\ncloze Other.User@Example.INVALID\ncloze " + cloze_email),
+        ("cloze_no_email", 711, b"cloze " + cloze_key),
+        ("cloze_quoted_email", 711, b"cloze " + cloze_key + b'\ncloze x"q\x07R"@Example.INVALID'),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
