@@ -199,6 +199,7 @@ static const registration expected[] = {
     {5, 0, "Coinbase", "begin ec", 88, true, -1},
     {402, 0, "Coinlayer", "coinlayer", 32, true, -1},
     {823, 0, "Collect2", "collect2", 36, true, -1},
+    {749, 0, "Column", "column", 32, true, -1},
     {1047, 0, "ConfluenceDataCenter", "confluence", 44, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -466,6 +467,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         strcpy(key, "-----BEGIN EC PRIVATE KEY-----\nMBICAQEEAQGgCgYIKoZIzj0DAQc=\n-----END EC PRIVATE KEY-----");
         secondary = "organizations/ORG__123-AB_C-de_F-GHI_-abcdefgh1234/apiKeys/KEY__123-ZZ__-aaaa-bbbb-GHIJklmn5678";
         secondary_name = "key_name";
+        break;
+    case 749:
+        memcpy(key, "live_", 5);
         break;
     case 823:
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
