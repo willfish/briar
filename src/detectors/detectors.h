@@ -218,5 +218,9 @@ int br_cryptocompare_init(const br_detector **out, char **error);
 int br_currencycloud_init(const br_detector **out, char **error);
 int br_currencyfreaks_init(const br_detector **out, char **error);
 int br_currencylayer_init(const br_detector **out, char **error);
+int br_currencyscoop_init(const br_detector **out, char **error);
+int br_currentsapi_init(const br_detector **out, char **error);
+int br_customerguru_init(const br_detector **out, char **error);
+int br_customerio_init(const br_detector **out, char **error);
 
 #endif
