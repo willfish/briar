@@ -443,6 +443,8 @@ def fixtures():
     convier_key = b"07|" + alnum("convier-key", 40)
     copper_key = b"g" + alnum("copper-key", 31).lower()
     countrylayer_key = b"g" + alnum("countrylayer-key", 31).lower()
+    d7network_key = alnum("d7network-key", 23) + b"="
+    d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
     couchbase_payload = couchbase_prefix + b"user:Name\npass:aB7!\n"
     coinbase_escaped = coinbase_name.replace(b"/", b"\\/") + b"\n" + coinbase_key.replace(b"\n", b"\\n")
@@ -808,6 +810,12 @@ def fixtures():
         ("customerguru", 226, b"CuStOmErGuRu " + alnum("customerguru-key", 30) + b"\nGURU " + alnum("customerguru-id", 50)),
         ("customerio", 211, b"CUSTOMERIO " + alnum("customerio-key", 20)),
         ("customerio_products", 211, b"customerio " + alnum("customerio-key", 20) + b"\ncustomer " + alnum("customerio-id", 20)),
+        ("d7network", 138, b"D7NETWORK " + d7network_key),
+        ("d7network_trim", 138, b"d7network" + b" " * 23 + b"="),
+        ("d7network_runes", 138, ("d7network" + "é" * 23 + "=").encode()),
+        ("d7network_nul", 138, b"d7network " + d7network_nul),
+        ("dandelion", 619, b"DANDELION " + alnum("dandelion-key", 32).lower()),
+        ("dareboost", 762, b"dareboost " + alnum("dareboost-key", 60)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -956,7 +964,13 @@ def compare(native, reference, case):
                 "currencyscoop_stdin", "currencyscoop_filesystem",
                 "currentsapi_stdin", "currentsapi_filesystem",
                 "customerguru_stdin", "customerguru_filesystem",
-                "customerio_stdin", "customerio_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "customerio_stdin", "customerio_filesystem",
+                "d7network_stdin", "d7network_filesystem",
+                "d7network_trim_stdin", "d7network_trim_filesystem",
+                "d7network_runes_stdin", "d7network_runes_filesystem",
+                "d7network_nul_stdin", "d7network_nul_filesystem",
+                "dandelion_stdin", "dandelion_filesystem",
+                "dareboost_stdin", "dareboost_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("customerio_products_stdin", "customerio_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": two distinct occurrences must retain all four CustomerIO products")
