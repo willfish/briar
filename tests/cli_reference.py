@@ -387,6 +387,14 @@ def fixtures():
     clicksend_email = b"Case.User@EXAMPLE.INVALID"
     clockwork_token = alnum("clockwork-token", 24)
     close_key = b"api_" + alnum("close-key", 20) + b"." + alnum("close-key-tail", 24)
+    cloudconvert_min = b"ey" + synthetic("cloudconvert-first", 30) + b".ey" + synthetic("cloudconvert-second", 200) + b"." + synthetic("cloudconvert-third", 600)
+    cloudconvert_max = b"ey" + synthetic("cloudconvert-max-first", 34) + b".ey" + synthetic("cloudconvert-max-second", 500) + b"." + synthetic("cloudconvert-max-third", 700)
+    cloudflare_v1 = alnum("cloudflare-v1-first", 12) + b"_" + alnum("cloudflare-v1-middle", 12) + b"-" + alnum("cloudflare-v1-last", 14)
+    cloudflare_v2_body = alnum("cloudflare-v2-body", 40) + synthetic("cloudflare-v2-checksum", 8)
+    cloudflare_user = b"cfut_" + cloudflare_v2_body
+    cloudflare_account = b"cfat_" + cloudflare_v2_body
+    cloudflare_account_id = synthetic("cloudflare-account-id", 32)
+    cloudflare_other_id = synthetic("cloudflare-other-id", 32)
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -667,6 +675,17 @@ def fixtures():
         ("closecrm", 215, b"close " + close_key),
         ("closecrm_distant", 215, b"close" + b":" * 80 + close_key),
         ("closecrm_ending_dot", 215, b"close " + close_key[:-1] + b".X"),
+        ("cloudconvert", 829, b"cloudconvert " + cloudconvert_min),
+        ("cloudconvert_max", 829, b"CLOUDCONVERT " + cloudconvert_max),
+        ("cloudconvert_wildcard", 829, b"cloudconvert " + cloudconvert_min[:32] + b"!" + cloudconvert_min[33:235] + b"?" + cloudconvert_min[236:]),
+        ("cloudconvert_embedded_nul", 829, b"cloudconvert " + cloudconvert_min[:32] + b"\0" + cloudconvert_min[33:]),
+        ("cloudelements", 650, b"CLOUDELEMENTS " + alnum("cloudelements-key", 43) + b"\ncloudelements " + alnum("cloudelements-org", 32).lower()),
+        ("cloudflare_api_v1", "100.v1", b"cloudflare " + cloudflare_v1),
+        ("cloudflare_api_user_v2", "100.v2", cloudflare_user),
+        ("cloudflare_api_account_v2", "100.v2", cloudflare_account + b" " + cloudflare_account_id),
+        ("cloudflare_api_account_no_id_v2", "100.v2", cloudflare_account),
+        ("cloudflare_api_account_products_v2", "100.v2", cloudflare_account + b" " + cloudflare_account_id + b" " + cloudflare_other_id + b" " + cloudflare_account_id),
+        ("cloudflarecakey", 59, b"cloudflare v1.0-G" + synthetic("cloudflare-ca-first", 80) + b"-" + synthetic("cloudflare-ca-last", 89)),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
