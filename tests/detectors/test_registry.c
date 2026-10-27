@@ -242,6 +242,7 @@ static const registration expected[] = {
     {237, 0, "Delighted", "delighted", 32, true, -1},
     {863, 0, "Demio", "demio", 32, true, 1024},
     {954, 0, "DenoDeploy", "ddp_", 40, true, -1},
+    {794, 0, "Detectify", "detectify", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
