@@ -159,5 +159,10 @@ int br_checklyhq_init(const br_detector **out, char **error);
 int br_checkout_init(const br_detector **out, char **error);
 int br_checkvist_init(const br_detector **out, char **error);
 int br_cicero_init(const br_detector **out, char **error);
+int br_circleci_v1_init(const br_detector **out, char **error);
+int br_circleci_v2_init(const br_detector **out, char **error);
+int br_clarifai_init(const br_detector **out, char **error);
+int br_clearbit_init(const br_detector **out, char **error);
+int br_clickhelp_init(const br_detector **out, char **error);
 
 #endif
