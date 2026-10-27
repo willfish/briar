@@ -422,6 +422,14 @@ def fixtures():
     collect2_key = b"-".join(collect2_hex[a:b] for a, b in ((0, 8), (8, 12), (12, 16), (16, 20), (20, 32)))
     collect2_key = collect2_key[:14] + b"f" + collect2_key[15:19] + b"f" + collect2_key[20:]  # No UUID version/variant validation.
     column_material = alnum("column-key", 27)
+    commercejs_key = b"g" + alnum("commercejs-key", 47).lower()
+    commercejs_key = commercejs_key[:11] + b"_" + commercejs_key[12:]
+    commodities_key = b"Z" + alnum("commodities-key", 59)
+    companyhub_key = alnum("companyhub-key", 20)
+    companyhub_payload = b"companyhub " + companyhub_key + b"\n" + b"!" * 48 + b"\ncompanyhub A$%^=-z9"
+    confluent_key = alnum("confluent-key", 16)
+    confluent_secret = alnum("confluent-secret", 64)
+    confluent_secret = confluent_secret[:19] + b"+" + confluent_secret[20:37] + b"/" + confluent_secret[38:]
     coinbase_escaped = coinbase_name.replace(b"/", b"\\/") + b"\n" + coinbase_key.replace(b"\n", b"\\n")
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
@@ -757,6 +765,11 @@ def fixtures():
         ("collect2", 823, b"collect2 " + collect2_key),
         ("column", 749, b"column live_" + column_material),
         ("column_test_filtered", 749, b"column test_" + column_material),
+        ("commercejs", 433, b"COMMERCEJS " + commercejs_key),
+        ("commodities", 566, b"commodities " + commodities_key),
+        ("companyhub", 256, companyhub_payload),
+        ("companyhub_self", 256, b"COMPANYHUB " + companyhub_key),
+        ("confluent", 60, b"confluent " + confluent_key + b"\n" + b"!" * 48 + b"\nconfluent " + confluent_secret),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
@@ -870,8 +883,14 @@ def compare(native, reference, case):
     if name in ("azure_apim_repository_stdin", "azure_apim_repository_filesystem",
                 "calendly_max_segments_stdin", "calendly_max_segments_filesystem",
                 "clinchpad_stdin", "clinchpad_filesystem",
-                "column_stdin", "column_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "column_stdin", "column_filesystem",
+                "commercejs_stdin", "commercejs_filesystem",
+                "commodities_stdin", "commodities_filesystem",
+                "companyhub_self_stdin", "companyhub_self_filesystem",
+                "confluent_stdin", "confluent_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
+    if name in ("companyhub_stdin", "companyhub_filesystem") and (len(actual) != 2 or len(expected) != 2):
+        raise AssertionError(name + ": key must self-pair and also pair with the separate symbol-bearing ID")
     if name in ("cexio_products_stdin", "cexio_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": both keys and both secrets must retain all four products")
     if name in ("checkout_sandbox_filtered_stdin", "checkout_sandbox_filtered_filesystem") and (actual or expected):

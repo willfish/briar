@@ -1654,6 +1654,42 @@
       "evidence": ["tests/detectors/test_column.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Combined setup/allocation+Do domain; source scan-deferred close-only versus buffered/eager ABI release", "Full native client/configuration, shared regexp/Unicode/source-engine and global parity"]
     },
+    "commercejs/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/commercejs/commercejs.go",
+      "scope_notes": "CommerceJS433/v0/default enabled. Prefix keyword alone is case-insensitive; the 48-byte lowercase-alphanumeric/underscore grammar has no ChecIO pk_ constraint. Occurrences retain Raw key and key part only. SANE GET https://api.chec.io/v1/categories uses the complete borrowed X-Authorization value, not the ChecIO products endpoint or Bearer. Every 2xx verifies despite body/read errors. Finding resources precede known nil-context constructor skip; all own nonzero resource failures abort with invocation-only rollback. Entire combined adapter setup/allocation/Do domain is suppressed without a verification-error setter.",
+      "native_files": ["src/detectors/commercejs.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_commercejs.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; scan-deferred close-only versus eager buffering/per-request release", "Full native client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
+    "commodities/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/commodities/commodities.go",
+      "scope_notes": "Commodities566/v0/default enabled preserves mixed-alphanumeric 60-byte occurrences, Raw key and key part only. SANE GET https://commodities-api.com/api/latest?access_key=KEY uses a complete borrowed stack URL and request-local 5000ms deadline-clamped timeout. Successful send followed by any non-null body_error, including an empty string, DROPS only this candidate at every status and continues later occurrences. Send failure instead KEEPS an unverified finding, taking precedence over body_error. Successful reads verify only for 2xx plus the exact binary substring quoted-success-colon-true, without whitespace, searchable past NUL; this is not JSON parsing. All own resource failures are fatal before constructor/read-error drops, with invocation-only rollback. Always release ABI responses rather than imitating the upstream read-error leak.",
+      "native_files": ["src/detectors/commodities.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/bytes.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_commodities.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Request-local timeout is not shared-client Timeout mutation/configuration/concurrency parity", "Combined setup/allocation/Do domain; streaming ReadAll and conditional scan-deferred close differ from eager ABI release", "Full native client, shared regexp/Unicode/source-engine and global parity"]
+    },
+    "companyhub/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/companyhub/companyhub.go",
+      "scope_notes": "CompanyHub256/v0/default enabled/span1024 uses independent prefixed 20-byte mixed-alphanumeric keys and 4..32-byte alphanumeric/$%^=- IDs. Preserve key-major/ID-minor occurrence products, duplicates, context-word IDs and self-pairs: a key can also be an ID match. Raw is key; RawV2 is key+ID with key/id parts and no added separator or metadata. SANE GET https://api.companyhub.com/v1/me uses JSON Content-Type and exact ID SPACE KEY Authorization, not Basic/Bearer. The complete bounded header remains on the stack through response release. Finding resources precede known nil-context constructor skip, which precedes auth preparation. Every 2xx verifies despite body/read errors; combined adapter setup/allocation/Do failures are suppressed. Own nonzero resource failures normalize to fatal invocation-only rollback, including positive finding-part failure before nil-context skip.",
+      "native_files": ["src/detectors/companyhub.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_companyhub.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; scan-deferred close-only versus eager buffering/per-request release", "Full native client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
+    "confluent/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/confluent/confluent.go",
+      "scope_notes": "Confluent60/v0/default enabled/span1024 preserves independent prefixed 16-byte mixed-alphanumeric key and 64-byte alphanumeric/+/ secret occurrences, source word-boundary quirks and all key-major products. No semantic Base64 validation or success consumption. Raw is key; RawV2 is key+secret with key/secret parts. SANE GET https://api.confluent.cloud/iam/v2/api-keys/KEY uses true Basic: standard Base64 of KEY:SECRET, 81 input bytes and 108 encoded bytes without padding, not Column's key-alone input. Complete bounded URL/header stay on the stack through response release. Base64 preparation occurs before known nil-context constructor skip; native encoder/resource failures remain fatal before that skip. Every 2xx verifies despite body/read errors; the combined adapter setup/allocation/Do domain is suppressed. Every own nonzero resource failure aborts with invocation-only rollback, preserving caller findings.",
+      "native_files": ["src/detectors/confluent.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_confluent.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Combined shared setup/allocation/Do domain; scan-deferred close-only versus eager buffering/per-request release", "Full native client/configuration, shared regexp/Unicode/source-engine and global parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
