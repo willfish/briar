@@ -255,6 +255,7 @@ static const registration expected[] = {
     {789, 0, "Disqus", "disqus", 64, true, -1},
     {666, 0, "Ditto", "ditto", 77, true, -1},
     {281, 0, "Dnscheck", "dnscheck", 32, true, 1024},
+    {343, 0, "Docker", "\"auths\"", 4, true, -1},
     {838, 0, "Docparser", "docparser", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -262,6 +263,27 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 343) {
+        static const char input[] = "{\"auths\":{\"reg.invalid\":{\"auth\":\"dTo=\"}}}";
+        static const char raw_v2[] = "{\"registry\":\"reg.invalid\",\"auth\":\"dTo=\"}";
+        br_scan_ctx ctx = {0}; /* Source AddLogger requires a nonnil context even without verification. */
+        br_results results = test_scan(detector, &ctx, false, input, sizeof(input) - 1);
+        CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 343 && result->raw.len == entry->key_len);
+        CHECK(result->raw.len == 4 && !memcmp(result->raw.data, "dTo=", 4));
+        CHECK(result->raw_v2.len == sizeof(raw_v2) - 1 && !memcmp(result->raw_v2.data, raw_v2, sizeof(raw_v2) - 1));
+        CHECK(!result->verified && !result->verification_error && !result->redacted && !result->structured_data);
+        CHECK(!result->primary_secret.data && !result->primary_secret.len && !result->primary_line && !result->chunk_offset_set);
+        br_json *part = NULL;
+        CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(result->secret_parts, "registry", &part) && !strcmp(json_object_get_string(part), "reg.invalid"));
+        CHECK(json_object_object_get_ex(result->secret_parts, "auth", &part) && !strcmp(json_object_get_string(part), "dTo="));
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
+        CHECK(json_object_object_get_ex(result->extra_data, "Username", &part) && !strcmp(json_object_get_string(part), "u"));
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 920) {
         static const char input[] = "couchbase://cb.a1.cloud.couchbase.com\nuser:briar7\npass:aB7!\n";
         static const char raw[] = "briar7:aB7!@couchbases://cb.a1.cloud.couchbase.com";
@@ -1075,7 +1097,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 3 && entry->version == 1 ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 ? 3u :
-              entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
@@ -1085,6 +1107,7 @@ int main(void)
         if (entry->type == 39 || entry->type == 1043) CHECK(!strcmp(detector->keywords[1], "ddog-gov"));
         if (entry->type == 920) CHECK(!strcmp(detector->keywords[1], "couchbases://"));
         if (entry->type == 954) CHECK(!strcmp(detector->keywords[1], "ddw_"));
+        if (entry->type == 343) CHECK(!strcmp(detector->keywords[1], "\\\"auths\\"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
         if (entry->type == 189) CHECK(!strcmp(detector->keywords[1], "textanywhere"));
@@ -1114,7 +1137,7 @@ int main(void)
             CHECK(!strcmp(detector->keywords[1], "jfrog.io"));
             CHECK(!strcmp(detector->keywords[2], "AKCp"));
         }
-        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 1013 ? 2048 : entry->type == 829 ? 1300 : -1) &&
+        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 343 ? 4096 : entry->type == 1013 ? 2048 : entry->type == 829 ? 1300 : -1) &&
               detector->start_offset == (entry->type == 1013 ? 4096 : -1) &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
