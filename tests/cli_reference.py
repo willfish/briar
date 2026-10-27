@@ -395,6 +395,11 @@ def fixtures():
     cloudflare_account = b"cfat_" + cloudflare_v2_body
     cloudflare_account_id = synthetic("cloudflare-account-id", 32)
     cloudflare_other_id = synthetic("cloudflare-other-id", 32)
+    cloudflare_global_legacy = synthetic("cloudflare-global-legacy", 37)
+    cloudflare_global_modern = b"cfk_" + cloudflare_v2_body
+    cloudflare_global_email = b"Case.User@Example.INVALID"
+    cloudinary_key = b"001726354809273"
+    cloudinary_secret = alnum("cloudinary-secret", 27)
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -686,6 +691,17 @@ def fixtures():
         ("cloudflare_api_account_no_id_v2", "100.v2", cloudflare_account),
         ("cloudflare_api_account_products_v2", "100.v2", cloudflare_account + b" " + cloudflare_account_id + b" " + cloudflare_other_id + b" " + cloudflare_account_id),
         ("cloudflarecakey", 59, b"cloudflare v1.0-G" + synthetic("cloudflare-ca-first", 80) + b"-" + synthetic("cloudflare-ca-last", 89)),
+        ("cloudflare_global_min_v1", "58.v1", b"CLOUDFLARE " + cloudflare_global_legacy + b" " + cloudflare_global_email),
+        ("cloudflare_global_max_v1", "58.v1", b"cloudflare " + synthetic("cloudflare-global-max", 45) + b" " + cloudflare_global_email),
+        ("cloudflare_global_no_email_v1", "58.v1", b"cloudflare " + cloudflare_global_legacy),
+        ("cloudflare_global_v2", "58.v2", cloudflare_global_modern + b" " + cloudflare_global_email),
+        ("cloudflare_global_no_email_v2", "58.v2", cloudflare_global_modern),
+        ("cloudflare_global_emails_v2", "58.v2", cloudflare_global_modern + b" " + cloudflare_global_email + b" Other.User@Example.INVALID " + cloudflare_global_email),
+        ("cloudflare_global_quoted_v2", "58.v2", cloudflare_global_modern + b' x"q\x07R"@Example.INVALID'),
+        ("cloudimage", 721, b"CLOUDIMAGE _" + alnum("cloudimage-key", 28).lower() + b"_"),
+        ("cloudinary", 1048, b"cloudinary name A7b\ncloudinary key " + cloudinary_key + b"\ncloudinary secret " + cloudinary_secret),
+        ("cloudinary_url", 1048, b"cloudinary://" + cloudinary_key + b":" + cloudinary_secret + b"@B" + alnum("cloudinary-name", 49)),
+        ("cloudmersive", 358, b"cloudmersive " + alnum("cloudmersive-key", 18).lower() + b"-" + alnum("cloudmersive-tail", 17).lower()),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
