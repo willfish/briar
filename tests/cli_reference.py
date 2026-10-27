@@ -385,6 +385,8 @@ def fixtures():
     clickup_tail = b"G7B9D2E5F6H8J3K4M1N0P2Q4R6S8T1U3"
     clicksend_key = b"B7C9D2E5-F6G8-H3J4-K1M0-N2P4Q6R8S1T3"
     clicksend_email = b"Case.User@EXAMPLE.INVALID"
+    clockwork_token = alnum("clockwork-token", 24)
+    close_key = b"api_" + alnum("close-key", 20) + b"." + alnum("close-key-tail", 24)
     provider_cases = (
         ("airbrake_project", 125, b"airbrake key " + synthetic("airbrake-project", 32) + b"\nairbrake project 317849"),
         ("airbrake_user", 126, b"airbrake " + synthetic("airbrake-user", 40)),
@@ -653,6 +655,18 @@ def fixtures():
         ("cliengo", 710, b"CLIENGO b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3"),
         ("clientary_min", 307, b"RONIN Briar7\nclientary " + alnum("clientary-min-key", 24)),
         ("clientary_max", 307, b"clientary B7-C9\nronin " + alnum("clientary-max-key", 26)),
+        ("clinchpad", 255, b"CLINCHPAD zsinomxc37ynfxwy9nd8sonsafxhx5qs"),
+        # Pinned badlist term "safe" intentionally filters this synthetic key.
+        ("clinchpad_filtered", 255, b"CLINCHPAD z" + alnum("clinchpad-key", 31).lower()),
+        ("clockify", 280, b"CLOCKIFY " + alnum("clockify-key", 48)),
+        ("clockworksms", 189, b"clockworksms 17263\ntextanywhere " + clockwork_token),
+        ("clockworksms_textanywhere", 189, b"TEXTANYWHERE 00427\nTEXTANYWHERE " + clockwork_token),
+        ("clockworksms_short_prefix", 189, b"clockwork 17263\nclockwork " + clockwork_token),
+        ("clockworksms_gap_37", 189, b"clockworksms" + b"." * 37 + b"17263\ntextanywhere " + clockwork_token),
+        ("clockworksms_gap_38", 189, b"clockworksms" + b"." * 38 + b"17263\ntextanywhere " + clockwork_token),
+        ("closecrm", 215, b"close " + close_key),
+        ("closecrm_distant", 215, b"close" + b":" * 80 + close_key),
+        ("closecrm_ending_dot", 215, b"close " + close_key[:-1] + b".X"),
         ("aws_session_keys", 959, aws_session_payload),
         ("aws_session_url_encoded", 959, aws_session_payload.replace(b"+", b"%2B").replace(b"/", b"%2f").replace(b"=", b"%3D")),
         ("aws_access_keys", 2, aws_id + b"\n" + aws_secret),
@@ -758,12 +772,15 @@ def compare(native, reference, case):
     # False-positive filtering or keyword-window clipping must not turn these
     # positive fixtures into a vacuous zero-row comparison.
     if name in ("azure_apim_repository_stdin", "azure_apim_repository_filesystem",
-                "calendly_max_segments_stdin", "calendly_max_segments_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "calendly_max_segments_stdin", "calendly_max_segments_filesystem",
+                "clinchpad_stdin", "clinchpad_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("cexio_products_stdin", "cexio_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": both keys and both secrets must retain all four products")
     if name in ("checkout_sandbox_filtered_stdin", "checkout_sandbox_filtered_filesystem") and (actual or expected):
         raise AssertionError(name + ": default wordlist must filter sk_test_ credentials")
+    if name in ("clinchpad_filtered_stdin", "clinchpad_filtered_filesystem") and (actual or expected):
+        raise AssertionError(name + ": default wordlist must filter the safe substring")
     if not reference_matches(case, actual, expected):
         details = [f"result counts native={len(actual)}, reference={len(expected)}"]
         for index, (got, want) in enumerate(zip(actual, expected)):
