@@ -251,6 +251,7 @@ static const registration expected[] = {
     {64, 0, "DigitalOceanToken", "digitalocean", 64, true, -1},
     {897, 0, "DigitalOceanV2", "dop_v1_", 71, true, -1},
     {66, 0, "DiscordWebhook", "https://discord.com/api/webhooks/", 120, true, -1},
+    {789, 0, "Disqus", "disqus", 64, true, -1},
     {666, 0, "Ditto", "ditto", 77, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
