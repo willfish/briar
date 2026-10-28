@@ -634,6 +634,17 @@ check(rows[0]["Raw"] == grafana_key and rows[0]["SecretParts"] == {"key": grafan
 check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None, "Grafana adds no invented metadata")
 check(not rows[0]["Verified"] and not rows[0]["VerificationFromCache"], "Grafana NoV does not contact the provider")
 
+grafana_service_key = "glsa_" + key40 + "_"
+grafana_domain = "Tenant97.grafana.net"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GrafanaServiceAccount"],
+                 (grafana_service_key + "\n" + grafana_domain).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 963, "Grafana service-account selector dispatches its enabled scanner")
+check(rows[0]["Raw"] == grafana_service_key and rows[0]["RawV2"] == grafana_domain + ":" + grafana_service_key, "service-account RawV2 is domain then key, not key then domain")
+check(rows[0]["SecretParts"] == {"domain": grafana_domain, "key": grafana_service_key}, "service-account domain and key are both visible parts")
+check(not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "service-account NoV adds no metadata or verification")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GrafanaServiceAccount"], grafana_service_key.encode())
+check(not rows, "a service-account key alone is not a complete credential")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

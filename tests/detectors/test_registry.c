@@ -373,12 +373,30 @@ static const registration expected[] = {
     {1041, 0, "GoogleGeminiAPIKey", "aizasy", 39, true, -1},
     {69, 0, "GoogleOauth2", "ya29.", 15, true, -1},
     {830, 0, "Grafana", "glc_eyJ", 67, true, -1},
+    {963, 0, "GrafanaServiceAccount", "glsa_", 46, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 963) {
+        char key[47] = "glsa_", input[100], raw_v2[100];
+        const char *domain = "Tenant97.grafana.net";
+        test_secret(key + 5, 41, 0); key[20] = '_';
+        snprintf(input, sizeof(input), "%s\n%s", key, domain);
+        snprintf(raw_v2, sizeof(raw_v2), "%s:%s", domain, key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 963 && result->raw.len == 46 && !memcmp(result->raw.data, key, 46));
+        CHECK(result->raw_v2.len == strlen(raw_v2) && !memcmp(result->raw_v2.data, raw_v2, strlen(raw_v2)));
+        CHECK(!result->verified && !result->verification_error && !result->redacted && !result->extra_data && !result->structured_data);
+        br_json *part = NULL; CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(result->secret_parts, "domain", &part) && !strcmp(json_object_get_string(part), domain));
+        CHECK(json_object_object_get_ex(result->secret_parts, "key", &part) && !strcmp(json_object_get_string(part), key));
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 830) {
         char key[68] = "glc_eyJ"; test_secret(key + 7, 60, 0); key[20] = '+'; key[40] = '/';
         br_results results = test_scan(detector, NULL, false, key, 67); CHECK(results.len == 1);
