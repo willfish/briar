@@ -334,6 +334,8 @@ static const registration expected[] = {
     {427, 0, "Front", "front", 281, true, -1},
     {899, 0, "FTP", "ftp://", 38, true, -1},
     {285, 0, "Fulcrum", "fulcrum", 80, true, -1},
+    {394, 1, "Fullstory", "fullstory", 88, true, -1},
+    {394, 2, "Fullstory", "fullstory", 104, true, -1},
     {381, 0, "FXMarket", "fxmarket", 20, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -491,6 +493,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 527) { key[8] = '.'; key[21] = '-'; }
     if (entry->type == 592) key[15] = '.';
     if (entry->type == 381) { key[4] = '_'; key[8] = '-'; key[15] = '='; }
+    if (entry->type == 394) { if (entry->version == 1) key[8] = '-'; else memcpy(key, "na1.", 4); key[10] = '+'; key[36] = '/'; }
     if (entry->type == 428) memcpy(key, "flb_live_", 9);
     if (entry->type == 427) { key[36] = '!'; key[80] = '.'; key[120] = '_'; key[190] = '-'; }
     if (entry->type == 199) memcpy(key, "fio-u-", 6);
@@ -1180,7 +1183,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         if (entry->version == 1) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
         else CHECK(!result->extra_data);
     }
-    if (entry->type == 4 || entry->type == 113 || entry->type == 430 || entry->type == 333) {
+    if (entry->type == 4 || entry->type == 113 || entry->type == 430 || entry->type == 333 || entry->type == 394) {
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
         CHECK(json_object_object_get_ex(result->extra_data, entry->type == 4 ? "Version" : "version", &part));
         CHECK(json_object_is_type(part, json_type_string));
