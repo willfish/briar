@@ -657,6 +657,9 @@ def fixtures():
     groq_key = b"gsk_" + alnum("groq-key", 52)
     gtmetrix_key = synthetic("gtmetrix-key", 32)
     guardian_key = b"A" + alnum("guardian-first", 7).lower() + b"-" + synthetic("guardian-second", 4) + b"-" + synthetic("guardian-third", 4) + b"-" + synthetic("guardian-fourth", 4) + b"-" + alnum("guardian-last", 12).lower()
+    gumroad_key = alnum("gumroad-key", 21) + b"-" + alnum("gumroad-tail", 21)
+    gyazo_key = alnum("gyazo-key", 21) + b"-" + alnum("gyazo-tail", 21)
+    happyscribe_key = alnum("happyscribe-key", 24)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1311,6 +1314,12 @@ def fixtures():
         ("guardianapi", 259, b"GuArDiAnApI " + guardian_key),
         ("guardianapi_first_upper_other", 259, b"guardianapi B" + guardian_key[1:]),
         ("guardianapi_later_upper", 259, b"guardianapi " + guardian_key[:9] + b"A" + guardian_key[10:]),
+        ("gumroad", 792, b"GuMrOaD " + gumroad_key),
+        ("gumroad_end_hyphen", 792, b"gumroad " + gumroad_key[:42] + b"-x"),
+        ("gyazo", 467, b"GyAzO " + gyazo_key),
+        ("gyazo_end_hyphen", 467, b"gyazo " + gyazo_key[:42] + b"-x"),
+        ("happyscribe", 507, b"HaPpYsCrIbE " + happyscribe_key),
+        ("happyscribe_short", 507, b"happyscribe " + happyscribe_key[:23]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1596,6 +1605,10 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": dispatch, uniqueness and provider-specific alphabets must retain the expected findings")
+    if name.startswith(("gumroad_", "gyazo_", "happyscribe_")):
+        count = 0 if name.startswith("happyscribe_short_") else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": mixed alphabets, hyphen boundaries and required lengths must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

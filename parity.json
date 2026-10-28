@@ -3249,6 +3249,42 @@
       "evidence": ["tests/detectors/test_guardianapi.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
     },
+    "gumroad/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/gumroad/gumroad.go",
+      "scope_notes": "Enabled Gumroad 792/v0 has no hints. Keyword-only folding captures word-bounded 43-byte mixed-alphanumeric/hyphen occurrences, retaining duplicates and context-dependent hyphen boundaries. Raw/key only. Construct the finding and complete literal 56-byte access_token=KEY payload even in NoV, before nil-context constructor skip. Verification preserves a nonempty SANE GET to /v2/products with form Content-Type and no Authorization. Native nonempty-GET rejection remains intact. Every successful 2xx verifies despite read errors; whole mixed shared setup/Do failures retain false without a setter. Owned failures are fatal before ordinary outcomes with invocation-only rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/gumroad.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_gumroad.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native nonempty GET bodies and full HTTP/client/Reader/deferred-close behavior", "Complete shared regexp/arbitrary-byte and engine/output behavior"]
+    },
+    "guru/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/guru/guru.go",
+      "scope_notes": "Guru 570/v0 is absent from source defaults and cannot be enabled by selectors. Its inherited 1024 multipart span is not a direct product cap. Independent guru-prefixed username and lowercase-alphanumeric UUID-shaped API-key occurrences form username-major products, including duplicates. The username separator is a non-LF wildcard rune, preserving NUL/VT/Unicode and backtracking rather than using common email validation. Required API keys stay hidden: Raw and SecretParts.key are username, with no RawV2 or invented metadata. Encode full username bytes, colon and API key before nil-context constructor skip, then assemble Basic authorization after construction; bounded native Base64 preserves embedded NUL. SANE bodyless GET retains literal teamId in its path. Every successful 2xx verifies despite read errors; shared setup/Do failures retain false without a setter. Owned encoding and other failures precede ordinary skips with invocation-only rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/guru.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_guru.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Absent source constructor has no positive CLI oracle execution; positive evidence is direct source-derived native byte fixtures", "Complete shared regexp/arbitrary-byte, HTTP/client/Reader/deferred-close and engine/output behavior"]
+    },
+    "gyazo/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/gyazo/gyazo.go",
+      "scope_notes": "Enabled Gyazo 467/v0 has no hints. Keyword-only folding captures word-bounded 43-byte mixed-alphanumeric/hyphen occurrences, preserving duplicates and leading/trailing-hyphen boundary context without token validation. Raw/key only. Complete literal images?access_token=KEY URL precedes nil-context constructor skip. SANE bodyless GET adds only common User-Agent, not Authorization/Content-Type/Accept. Every successful 2xx verifies despite body/read errors; the whole shared setup/Do domain retains false without a setter. Original provider URL survives release without extending synthesized storage. Owned failures are fatal with invocation-only caller-preserving rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/gyazo.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_gyazo.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
+    "happyscribe/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/happyscribe/happyscribe.go",
+      "scope_notes": "Enabled Happyscribe 507/v0 has no hints. Keyword-only folding captures word-bounded 24-byte mixed-alphanumeric occurrences, preserving duplicates without entropy or token validation. Raw/key only. Finding resources precede nil-context constructor skip and complete bounded Bearer assembly. SANE bodyless transcriptions GET uses Authorization and common User-Agent only. Every successful 2xx verifies despite body/read errors; the entire shared setup/Do domain retains false without a setter. Module-owned failures remain fatal before ordinary outcomes with invocation-only rollback preserving caller findings. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/happyscribe.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_happyscribe.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
