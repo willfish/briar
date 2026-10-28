@@ -267,5 +267,9 @@ int br_duffeltoken_init(const br_detector **out, char **error);
 int br_duo_init(const br_detector **out, char **error);
 int br_duply_init(const br_detector **out, char **error);
 int br_dwolla_init(const br_detector **out, char **error);
+int br_dynalist_init(const br_detector **out, char **error);
+int br_dyspatch_init(const br_detector **out, char **error);
+int br_eagleeyenetworks_init(const br_detector **out, char **error);
+int br_easyinsight_init(const br_detector **out, char **error);
 
 #endif
