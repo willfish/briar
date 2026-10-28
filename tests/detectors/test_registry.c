@@ -276,6 +276,7 @@ static const registration expected[] = {
     {639, 0, "EagleEyeNetworks", "eagleeyenetworks", 15, true, 1024},
     {282, 0, "EasyInsight", "easyinsight", 20, true, 1024},
     {801, 0, "EcoStruxureIT", "ecostruxureit", 58, true, -1},
+    {424, 0, "Edamam", "edamam", 32, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -563,6 +564,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 921: secondary = "briar7"; secondary_name = "username"; break;
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
     case 639: secondary = "u7b9r@m4c8p.k2"; secondary_name = "email"; break;
+    case 424: secondary = "z7m9q2r4"; secondary_name = "id"; break;
     case 821: secondary = "AB7CD9E-F2G4H6J-K8L1M3N-P5Q7R9S"; secondary_name = "id"; break;
     case 282:
         memcpy(secondary_buffer, key, entry->key_len + 1);
