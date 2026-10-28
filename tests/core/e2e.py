@@ -516,6 +516,9 @@ invoke(["stdin", *base], b"x" * (64 * 1024 + 1), code=1)
 _, rows = invoke(["stdin", *base], b"")
 check(not rows, "empty supported input")
 
+proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=7"], b"key A!bcdefghijklmnop", code=1)
+check(b"no enabled implemented detectors selected" in proc.stderr, "Generic remains source-disabled despite explicit selection")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

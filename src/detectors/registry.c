@@ -337,6 +337,7 @@ static const detector_factory named_factories[] = {
     br_gcp_init,
     br_gcpapplicationdefaultcredentials_init,
     br_geckoboard_init,
+    br_generic_init,
     br_jiradatacenterpat_init,
 };
 
@@ -476,6 +477,7 @@ const char *br_detector_type_name(int32_t type)
     case 4: return "Circle";
     case 5: return "Coinbase";
     case 6: return "GCP";
+    case 7: return "Generic";
     case 18: return "Dropbox";
     case 39: return "DatadogToken";
     case 40: return "FacebookOAuth";

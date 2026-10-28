@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "../support/detector_test.h"
+#include "../../src/detectors/detectors.h"
 
 typedef struct {
     int32_t type, version;
@@ -340,6 +341,7 @@ static const registration expected[] = {
     {6, 0, "GCP", "provider_x509", sizeof("briar87@offline.invalid") - 1, true, -1},
     {983, 0, "GCPApplicationDefaultCredentials", ".apps.googleusercontent.com", 2, true, -1},
     {696, 0, "Geckoboard", "geckoboard", 44, true, -1},
+    {7, 0, "Generic", "pass", 17, false, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -1407,10 +1409,17 @@ int main(void)
         CHECK(!strcmp(br_detector_type_name(detector->type), entry->name));
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
-        CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 196 || (entry->type == 3 && entry->version == 1) ? 6u :
+        CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : entry->type == 196 || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
               entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
+        if (entry->type == 7) {
+            const br_detector *configured = NULL;
+            CHECK(br_generic_new_init(&configured, NULL) == 0 && configured && configured != detector);
+            CHECK(!br_detector_is_default(configured, NULL));
+            const char *const rest[] = {"token", "cred", "secret", "key"};
+            for (size_t j = 0; j < 4; ++j) CHECK(!strcmp(detector->keywords[j + 1], rest[j]));
+        }
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
             for (size_t j = 0; j < 5; ++j) CHECK(!strcmp(detector->keywords[j + 1], aliases[j]));
