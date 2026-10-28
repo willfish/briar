@@ -352,6 +352,7 @@ static const registration expected[] = {
     {326, 0, "GetEmail", "getemail", 20, false, -1},
     {327, 0, "GetEmails", "getemails", 26, false, 1024},
     {383, 0, "GetGeoAPI", "getgeoapi", 40, true, -1},
+    {861, 0, "Getresponse", "getresponse", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
