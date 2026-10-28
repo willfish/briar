@@ -365,6 +365,7 @@ static const registration expected[] = {
     {1050, 0, "GitLabOauth2", "gloas-", 70, true, 1024},
     {555, 0, "Gitter", "gitter", 40, true, -1},
     {569, 0, "Glassnode", "glassnode", 27, true, -1},
+    {184, 0, "GoCardless", "gocardless", 45, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -1079,7 +1080,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary = "briar7.cloud.databricks.com";
         secondary_name = "domain";
         break;
-    case 749:
+    case 184: case 749:
         memcpy(key, "live_", 5);
         break;
     case 823:
@@ -1340,7 +1341,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else if (entry->type == 681) snprintf(input, sizeof(input), "freshbooks %s\nfreshbooks https://www.Briar85.com", key); /* Required URI stays hidden. */
     else if (entry->type == 678) snprintf(input, sizeof(input), "freshdesk %s\nbriar86.freshdesk.com", key); /* Direct required host stays hidden. */
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);
-    else if (entry->type == 712) snprintf(input, sizeof(input), "%s %s\n", entry->keyword, key); /* Required consumed suffix, absent from Raw. */
+    else if (entry->type == 712 || entry->type == 184) snprintf(input, sizeof(input), "%s %s\n", entry->keyword, key); /* Required consumed suffix, absent from Raw. */
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
