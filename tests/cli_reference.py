@@ -579,6 +579,17 @@ def fixtures():
     flutterwave_key = b"FLWSECK-" + alnum("flutterwave-key", 32).lower() + b"-X"
     flyio_bypass = b"FlyV1 fm123_exampleAAAAAA+/,=_-" + alnum("flyio-payload", 581)
     flyio_filtered = flyio_bypass.replace(b"AAAAAA", b"aaaaaa", 1)
+    fmfw_key = alnum("fmfw-key", 32)
+    fmfw_key = fmfw_key[:12] + b"_" + fmfw_key[13:]
+    fmfw_id = alnum("fmfw-id", 32)
+    fmfw_id = fmfw_id[:10] + b"-" + fmfw_id[11:]
+    formbucket_signature = alnum("formbucket-signature", 43)
+    formbucket_signature = formbucket_signature[:12] + b"_" + formbucket_signature[13:22] + b"-" + formbucket_signature[23:]
+    formbucket_key = alnum("formbucket-head", 19) + b"\0" + alnum("formbucket-payload", 27) + b"." + formbucket_signature
+    formcraft_key = alnum("formcraft-key", 16).lower()
+    formio_signature = alnum("formio-signature", 43)
+    formio_signature = formio_signature[:8] + b"_" + formio_signature[9:20] + b"-" + formio_signature[21:]
+    formio_key = b"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." + alnum("formio-payload", 250) + b"." + formio_signature
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1108,6 +1119,10 @@ def fixtures():
         ("flyio_bypass", 980, flyio_bypass),
         ("flyio_filtered", 980, flyio_filtered),
         ("flyio_retained", 980, flyio_filtered),
+        ("fmfw", 653, b"FMFW " + fmfw_key + b"\nfmfw " + fmfw_id),
+        ("formbucket", 713, b"FoRmBuCkEt " + formbucket_key),
+        ("formcraft", 812, b"FoRmCrAfT " + formcraft_key),
+        ("formio", 712, b"FoRmIo " + formio_key + b" "),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1131,6 +1146,12 @@ def fixtures():
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
         cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
+    # Do not use the common filesystem wrapper: its final LF would satisfy
+    # FormIO's REQUIRED whitespace and silently turn the EOF negative positive.
+    for label, suffix in (("formio_missing_suffix", b""), ("formio_tab_suffix", b"\t")):
+        payload = b"FoRmIo " + formio_key + suffix
+        cases.append((label + "_stdin", payload, "712", "stdin", False))
+        cases.append((label + "_filesystem", b"heading\n" + payload, "712", "filesystem", False))
     cases.append(("aws_custom_cleaner", aws_id + b"\n\n" + aws_secret + b"\n\n" + alnum("aws-second-secret", 40), "2", "stdin", True))
     cases.append(("aws_session_custom_cleaner", aws_session_payload + b"\n\nJb3JpZ2luX2Vj" + alnum("aws-second-session", 120), "959", "stdin", True))
     cases.append(("datacenter_nonstructural", b"atlassian M" + b"A" * 43, "1046,1047", "stdin", False))
@@ -1333,7 +1354,9 @@ def compare(native, reference, case):
                 "flightapi_stdin", "flightapi_filesystem", "flightlabs_stdin", "flightlabs_filesystem",
                 "flightstats_stdin", "flightstats_filesystem", "float_stdin", "float_filesystem",
                 "flowflu_stdin", "flowflu_filesystem", "flutterwave_stdin", "flutterwave_filesystem",
-                "flyio_bypass_stdin", "flyio_bypass_filesystem", "flyio_retained_stdin", "flyio_retained_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "flyio_bypass_stdin", "flyio_bypass_filesystem", "flyio_retained_stdin", "flyio_retained_filesystem",
+                "formbucket_stdin", "formbucket_filesystem", "formcraft_stdin", "formcraft_filesystem",
+                "formio_stdin", "formio_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1424,6 +1447,12 @@ def compare(native, reference, case):
         raise AssertionError(name + ": ExportSDK must not expose its hidden template ID through RawV2")
     if name.startswith("faceplusplus_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": FacePlusPlus preserves all four directed products, including both self-pairs")
+    if name.startswith("fmfw_") and (len(actual) != 2 or len(expected) != 2 or any(row["RawV2"] for row in actual + expected)):
+        raise AssertionError(name + ": independent FMFW grammars produce two keys with one hidden required ID, including its self-pair")
+    if name.startswith("formbucket_") and any("\0" not in row["Raw"] for row in actual + expected):
+        raise AssertionError(name + ": FormBucket's first separator is a wildcard and must preserve the original NUL byte")
+    if name.startswith(("formio_missing_suffix_", "formio_tab_suffix_")) and (actual or expected):
+        raise AssertionError(name + ": FormIO requires one immediate space, CR or LF; EOF and HTAB do not qualify")
     if name.startswith("flyio_filtered_") and (actual or expected):
         raise AssertionError(name + ": lowercase aaaaaa does not bypass FlyIO's default false-positive fallback")
     if name.startswith("flowflu_") and any(row["RawV2"] for row in actual + expected):
