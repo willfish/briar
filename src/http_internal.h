@@ -34,7 +34,7 @@ void br_http_client_destroy(br_http_client *client);
 bool br_http_client_is_owned(const br_transport *transport);
 
 /* Private native runtime. Initialize before concurrent use, destroy after all
- * scan callers and response releases are quiescent. Its six source clients are
+ * scan callers and response releases are quiescent. Source clients remain
  * distinct; drain all detached work before ending the curl initialization.
  * Binding changes only this runtime's raw context, never an injected/explicit
  * client, and recognizes built-in descriptor identities rather than types. */

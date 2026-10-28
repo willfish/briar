@@ -27,6 +27,7 @@ int main(void)
     const struct { int (*factory)(const br_detector **, char **); int type; } sources[] = {
         {br_cliengo_init, 710}, {br_clockify_init, 280}, {br_databox_init, 834},
         {br_duffeltoken_init, 1059}, {br_finage_init, 423}, {br_geocode_init, 486},
+        {br_gitter_init, 555},
     };
     char *error = NULL;
     CHECK(br_native_http_init(NULL, &error) && error);

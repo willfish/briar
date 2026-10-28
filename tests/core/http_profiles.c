@@ -36,9 +36,10 @@ int main(int argc, char **argv)
     CHECK(argc == 3);
     CHECK(getenv("BRIAR_TEST_ISOLATED_NET") && !strcmp(getenv("BRIAR_TEST_ISOLATED_NET"), "1"));
     CHECK(!strncmp(argv[2], "http://127.0.0.1:", sizeof("http://127.0.0.1:") - 1));
+    bool runtime_gitter = !strcmp(argv[1], "runtime-gitter");
     bool runtime_unknown = !strcmp(argv[1], "runtime-unknown");
     bool runtime_cancel = !strcmp(argv[1], "runtime-cancel-drain");
-    bool runtime_mode = !strcmp(argv[1], "runtime-success") || !strcmp(argv[1], "runtime-redirect") || runtime_unknown || runtime_cancel;
+    bool runtime_mode = !strcmp(argv[1], "runtime-success") || !strcmp(argv[1], "runtime-redirect") || runtime_unknown || runtime_cancel || runtime_gitter;
     bool owned_mode = !strcmp(argv[1], "SANE-owned") || !strcmp(argv[1], "SANE-owned-redirect") || runtime_mode;
     bool owned_redirect = !strcmp(argv[1], "SANE-owned-redirect") || !strcmp(argv[1], "runtime-redirect");
     bool sane = !strcmp(argv[1], "SANE") || owned_mode, public = !strcmp(argv[1], "PUBLIC");
@@ -68,7 +69,8 @@ int main(int argc, char **argv)
     br_detector unknown = {0};
     if (runtime_mode) {
         const br_detector *detector = NULL;
-        CHECK(!br_geocode_init(&detector, &error) && detector && !error);
+        int init = runtime_gitter ? br_gitter_init(&detector, &error) : br_geocode_init(&detector, &error);
+        CHECK(!init && detector && !error);
         if (runtime_unknown) { unknown = *detector; detector = &unknown; }
         br_native_http_bind(runtime, detector, &ctx);
         CHECK(br_http_client_is_owned(ctx.transport) == !runtime_unknown);
@@ -89,7 +91,9 @@ int main(int argc, char **argv)
         .body = {post ? payload : NULL, post && !post_empty ? sizeof(payload) - 1 : 0},
         .profile = public ? BR_HTTP_DETECTOR_PUBLIC : sane ? BR_HTTP_SANE : BR_HTTP_DETECTOR_LOCAL,
     };
-    if (owned_mode) request.dedup_key = (br_slice){(const unsigned char *)"486:native", sizeof("486:native") - 1};
+    if (owned_mode) request.dedup_key = runtime_gitter ?
+        (br_slice){(const unsigned char *)"555:native", sizeof("555:native") - 1} :
+        (br_slice){(const unsigned char *)"486:native", sizeof("486:native") - 1};
     br_http_response response = {0};
     int rc = br_http_send(&ctx, &request, &response, &error);
     if (runtime_unknown || runtime_cancel) {

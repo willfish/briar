@@ -16,6 +16,7 @@ static int (*const source_clients[])(const br_detector **, char **) = {
     br_duffeltoken_init,
     br_finage_init,
     br_geocode_init,
+    br_gitter_init,
 };
 #define SOURCE_CLIENT_COUNT (sizeof(source_clients) / sizeof(*source_clients))
 

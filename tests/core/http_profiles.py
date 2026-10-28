@@ -67,6 +67,7 @@ for profile, path, expected_paths in (
     ("SANE-owned", "/destination", ["/destination"]),
     ("SANE-owned-redirect", "/redirect", ["/redirect"]),
     ("runtime-success", "/destination", ["/destination"]),
+    ("runtime-gitter", "/destination", ["/destination"]),
     ("runtime-redirect", "/redirect", ["/redirect"]),
     ("runtime-unknown", "/destination", []),
     ("runtime-cancel-drain", "/abandoned", ["/abandoned"]),
