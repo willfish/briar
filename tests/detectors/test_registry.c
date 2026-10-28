@@ -296,6 +296,7 @@ static const registration expected[] = {
     {771, 0, "ExportSDK", "exportsdk", 46, true, 1024},
     {784, 0, "ExtractorAPI", "extractorapi", 40, true, -1},
     {40, 0, "FacebookOAuth", "facebook", 32, true, 1024},
+    {416, 0, "FacePlusPlus", "faceplusplus", 32, true, 1024},
     {636, 0, "FastForex", "fastforex", 28, true, -1},
     {238, 0, "Feedier", "feedier", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -431,6 +432,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 784) key[14] = '-';
     if (entry->type == 771) { key[9] = '_'; key[18] = '-'; }
     if (entry->type == 636) { key[8] = '-'; key[9] = 'z'; }
+    if (entry->type == 416) { key[6] = '_'; key[17] = '-'; }
     if (entry->type == 994) {
         if (entry->version == 1)
             for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789ABCDEF"[i % 16];
@@ -598,6 +600,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         break;
     case 110: secondary = "fixture-tenant.us.auth0.com"; secondary_name = "domain"; break;
     case 40: case 65: secondary = "12345678901234567"; secondary_name = "id"; break;
+    case 416: secondary = key; secondary_name = "secret"; break;
     case 771:
         test_secret(secondary_buffer, 36, 11); secondary_buffer[12] = '-';
         secondary = secondary_buffer; secondary_name = "id"; break;
@@ -1043,7 +1046,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
-    CHECK(results.len == (entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 || entry->type == 282 || entry->type == 993 ? 2u : 1u));
+    CHECK(results.len == (entry->type == 416 ? 4u : entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 || entry->type == 282 || entry->type == 993 ? 2u : 1u));
     const br_result *result = &results.items[0];
     CHECK(result->detector_type == entry->type);
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
