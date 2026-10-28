@@ -2430,6 +2430,42 @@
       "evidence": ["tests/detectors/test_etherscan.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Reader/scan-deferred Close versus eager buffering/release timing", "Complete native/private SANE clients, mixed HTTP stages, regexp and global engine/output parity"]
     },
+    "ethplorer/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/ethplorer/ethplorer.go",
+      "scope_notes": "Ethplorer283/v0/default enabled/all hints absent. Keyword-CI prefix with word-bounded22 mixed-alphanumeric/hyphen original occurrences, including terminal-hyphen boundary behavior. Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding and complete127-byte literal pool form precede nil-context constructor skipping. Preserve camelCase apiKey, fixed address order and uppercase %2C without encoding/serialization/heap-copy seams. SANE5s POST https://api-mon.ethplorer.io/createPool; Accept JSON then Content-Type form/common UA after constructor, no dedup or invented logical Content-Length. Complete stack body remains live through send and release. Every2xx verifies, bodies/read errors ignored. Whole mixed shared send domain suppressed without diagnostic classification. Provider-owned nonzero failures are fatal before skip/suppression and roll back only invocation additions. Verification creates remote monitoring pools and is exercised only through injected offline transport.",
+      "native_files": ["src/detectors/ethplorer.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_ethplorer.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager Reader/buffering/release timing", "Native POST redirects remain fail-closed; complete private SANE clients, mixed HTTP stages, regexp and global engine/output parity remain unproven"]
+    },
+    "eventbrite/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/eventbrite/eventbrite.go",
+      "scope_notes": "Eventbrite962/v0/default enabled/all hints absent. Keyword-CI prefix plus word-bounded20 uppercase-alphanumeric original-byte unique captures. Raw key only and always an owned empty ExtraData map before verification. Complete bounded users/me token-query URL before construction; nil-context errors retain findings. SANE5s bodyless GET/common UA only. HTTP200 decodes first-document generic map: syntax/read then non-null root type then every original float64 number, including nested/unknown/overwritten values, then exact case/length/NUL-aware last name assignment. Empty/Unicode/NUL strings survive in user name metadata. Successful decode followed by missing/null/non-string name, including root null, fails explicitly unsupported for the upstream unchecked assertion. Consumed map documents with invalid UTF8 also fail explicitly unsupported after root-type checks. Complete objects can win terminal read errors; tails are ignored.401/403 reject without body parsing; other statuses retain unexpected status code: N. Whole mixed send causes retained without classification or redaction. Independently owned pending metadata/causes preserve Verified then zero-secret setter then ExtraData replacement ordering; ordinary failures replace the initial map with nil. Owned nonzero failures precede ordinary outcomes and preserve caller findings through invocation rollback.",
+      "native_files": ["src/detectors/eventbrite.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_eventbrite.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Full upstream panic recovery and randomized map traversal", "Complete Go generic JSON/invalid-UTF8 replacement, Reader/drain, private-client and typed-error-chain semantics", "Complete native SANE, regexp and global engine/output parity"]
+    },
+    "everhour/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/everhour/everhour.go",
+      "scope_notes": "Everhour284/v0/default enabled/all hints absent. Keyword-only CI prefix then exact word-bounded4-4-6-6-8 shape: [0-9Aa-f] in first group, lowercase hex elsewhere. Uppercase A is allowed only in first group; uppercase B-F never allowed. This is not UUID validation or a globally CI regex. Preserve original occurrences/duplicates/Raw key only, no RawV2/Extra/Redacted/primary/cache/filter. Finding precedes nil-context constructor skipping. SANE5s GET https://api.everhour.com/clients; Content-Type JSON then borrowed X-Api-Key/common UA after constructor, no Auth/Accept/dedup. Capture and NUL remain live through send and release without a header copy/formatter seam. Every2xx verifies, bodies/read errors ignored. Whole mixed shared send domain suppressed without diagnostic classification. Provider-owned nonzero failures abort before skips/suppression and roll back invocation additions only.",
+      "native_files": ["src/detectors/everhour.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_everhour.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager Reader/buffering/release timing", "Complete native/private SANE clients, mixed HTTP stages, regexp and global engine/output parity"]
+    },
+    "exchangerateapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/exchangerateapi/exchangerateapi.go",
+      "scope_notes": "ExchangeRateAPI360/v0/default enabled/all hints absent. Separate exchangerate and exchange-rate hints/extraction prefixes with keyword-only CI; word-bounded24 lowercase-hex original occurrences/duplicates. Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding before constructor; nil context retains bare cause through token-only setter. Bounded Bearer31 plus NUL follows construction and remains live through send/release. SANE5s bodyless GET https://v6.exchangerate-api.com/v6/latest/USD: preserve keyless source URL, Authorization/common UA only, no Type/Accept/dedup/invented logical Content-Length.200 verifies/403 rejects; all other statuses including401 retain unexpected status code: N. Bodies/read/drain errors ignored. Whole mixed shared setup/allocation/Do domain instead suppresses errors and retains false with NULL cause; do not classify diagnostic text. Final setter redacts only token, NULL is no-op and any nonzero failure is fatal before release. Owned capture/finding/cause/setter/push failures roll back only invocation additions before ordinary suppression.",
+      "native_files": ["src/detectors/exchangerateapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_exchangerateapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["ABI1 cannot express http.NoBody identity or Reader/drain timing", "Complete eager-buffering/private-client/SANE, mixed HTTP stages, regexp and global engine/output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

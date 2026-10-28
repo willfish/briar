@@ -525,6 +525,13 @@ def fixtures():
     endorlabs_key = endorlabs_key[:10] + b"-" + endorlabs_key[11:]
     enigma_key, envoy_key = alnum("enigma-key", 40), alnum("envoy-key", 220)
     eraser_key, etherscan_key = alnum("eraser-key", 20), alnum("etherscan-key", 34).upper()
+    ethplorer_key = alnum("ethplorer-key", 22)
+    ethplorer_key = ethplorer_key[:11] + b"-" + ethplorer_key[12:]
+    eventbrite_key = alnum("eventbrite-key", 20).upper()
+    everhour_hex = synthetic("everhour-key", 28)
+    everhour_key = b"-".join((everhour_hex[:4], everhour_hex[4:8], everhour_hex[8:14], everhour_hex[14:20], everhour_hex[20:]))
+    everhour_key = b"A" + everhour_key[1:]
+    exchangerate_key = synthetic("exchangerateapi-key", 24)
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1016,6 +1023,12 @@ def fixtures():
         ("envoyapikey", 923, b"ENVOY " + envoy_key),
         ("eraser", 990, b"Eraser " + eraser_key),
         ("etherscan", 905, b"EtHeRsCaN " + etherscan_key),
+        ("ethplorer", 283, b"ETHPLORER " + ethplorer_key),
+        ("eventbrite", 962, b"EvEnTbRiTe " + eventbrite_key),
+        ("everhour", 284, b"EvErHoUr " + everhour_key),
+        ("everhour_bad_upper", 284, b"everhour B" + everhour_key[1:]),
+        ("exchangerateapi", 360, b"EXCHANGERATE " + exchangerate_key),
+        ("exchangerateapi_alias", 360, b"exchange-rate " + exchangerate_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1223,7 +1236,10 @@ def compare(native, reference, case):
                 "elevenlabs_v1_stdin", "elevenlabs_v1_filesystem", "elevenlabs_v2_stdin", "elevenlabs_v2_filesystem",
                 "enablex_stdin", "enablex_filesystem",
                 "enigma_stdin", "enigma_filesystem", "envoyapikey_stdin", "envoyapikey_filesystem",
-                "eraser_stdin", "eraser_filesystem", "etherscan_stdin", "etherscan_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "eraser_stdin", "eraser_filesystem", "etherscan_stdin", "etherscan_filesystem",
+                "ethplorer_stdin", "ethplorer_filesystem", "eventbrite_stdin", "eventbrite_filesystem",
+                "everhour_stdin", "everhour_filesystem", "exchangerateapi_stdin", "exchangerateapi_filesystem",
+                "exchangerateapi_alias_stdin", "exchangerateapi_alias_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1312,6 +1328,8 @@ def compare(native, reference, case):
         raise AssertionError(name + ": Enablex must not expose its hidden ID through RawV2")
     if name.startswith("eraser_") and any(row.get("ExtraData") != {"rotation_guide": "https://howtorotate.com/docs/tutorials/eraser/"} for row in actual + expected):
         raise AssertionError(name + ": Eraser retains its rotation guide without verification")
+    if name in ("everhour_bad_upper_stdin", "everhour_bad_upper_filesystem") and (actual or expected):
+        raise AssertionError(name + ": Everhour allows uppercase A, not uppercase B through F, in the first group")
     if name in ("denodeploy_stdin", "denodeploy_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": both direct Deno token prefixes must dispatch without a provider name")
     if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):
