@@ -515,6 +515,14 @@ def fixtures():
     eightxeight_key, eightxeight_other_key = alnum("eightxeight-key", 43), alnum("eightxeight-other-key", 43)
     eightxeight_id, eightxeight_other_id = alnum("eightxeight-id", 30), alnum("eightxeight-other-id", 18)
     eightxeight_id = eightxeight_id[:9] + b"_" + eightxeight_id[10:]
+    elasticemail_key = alnum("elasticemail-key", 96)
+    elasticemail_key = elasticemail_key[:20] + b"_" + elasticemail_key[21:70] + b"-" + elasticemail_key[71:]
+    elevenlabs_v1, elevenlabs_v2 = synthetic("elevenlabs-v1", 32), b"sk_" + synthetic("elevenlabs-v2", 48)
+    elevenlabs_v1_input = b"xi-api-key = '" + elevenlabs_v1.upper() + b"'"
+    enablex_key, enablex_other_key = alnum("enablex-key", 36), alnum("enablex-other-key", 36)
+    enablex_id, enablex_other_id = alnum("enablex-id", 24).lower(), alnum("enablex-other-id", 24).lower()
+    endorlabs_key, endorlabs_secret = b"endr+" + alnum("endorlabs-key", 16), b"endr+" + alnum("endorlabs-secret", 16)
+    endorlabs_key = endorlabs_key[:10] + b"-" + endorlabs_key[11:]
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -990,6 +998,18 @@ def fixtures():
         ("eightxeight", 727, b"8X8 " + eightxeight_key + b" 8x8 " + eightxeight_id),
         ("eightxeight_products", 727, b"8x8 " + eightxeight_key + b" 8x8 " + eightxeight_other_key + b" 8x8 " + eightxeight_id + b" 8x8 " + eightxeight_other_id),
         ("eightxeight_no_id", 727, b"8x8 " + eightxeight_key),
+        ("elasticemail", 112, b"ELASTICEMAIL " + elasticemail_key),
+        ("elasticemail_prefix", 112, b"elasticemail" + b"." * 60 + b"\nelastic " + elasticemail_key),
+        ("elevenlabs_v1", "994.v1", elevenlabs_v1_input),
+        ("elevenlabs_v1_case", "994.v1", b"xi-api-key = '" + elevenlabs_v1 + b"'\n" + elevenlabs_v1_input),
+        ("elevenlabs_v1_one_separator", "994.v1", b"xi-api-key=" + elevenlabs_v1),
+        ("elevenlabs_v2", "994.v2", b"xi_api_key " + elevenlabs_v2),
+        ("elevenlabs_both", 994, elevenlabs_v1_input + b"\nelevenlabs " + elevenlabs_v2),
+        ("enablex", 652, b"enablex " + enablex_key + b" enablex " + enablex_id),
+        ("enablex_products", 652, b"enablex " + enablex_key + b" enablex " + enablex_other_key + b" enablex " + enablex_id + b" enablex " + enablex_other_id),
+        ("enablex_no_id", 652, b"enablex " + enablex_key),
+        ("endorlabs", 993, endorlabs_key + b" " + endorlabs_secret + b" " + endorlabs_key),
+        ("endorlabs_equal", 993, endorlabs_key + b" " + endorlabs_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1192,7 +1212,10 @@ def compare(native, reference, case):
                 "easyinsight_roles_stdin", "easyinsight_roles_filesystem",
                 "ecostruxureit_stdin", "ecostruxureit_filesystem", "ecostruxureit_boundary_stdin", "ecostruxureit_boundary_filesystem",
                 "edamam_stdin", "edamam_filesystem", "edenai_stdin", "edenai_filesystem",
-                "edenai_bytes_stdin", "edenai_bytes_filesystem", "eightxeight_stdin", "eightxeight_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "edenai_bytes_stdin", "edenai_bytes_filesystem", "eightxeight_stdin", "eightxeight_filesystem",
+                "elasticemail_stdin", "elasticemail_filesystem", "elasticemail_prefix_stdin", "elasticemail_prefix_filesystem",
+                "elevenlabs_v1_stdin", "elevenlabs_v1_filesystem", "elevenlabs_v2_stdin", "elevenlabs_v2_filesystem",
+                "enablex_stdin", "enablex_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1272,6 +1295,13 @@ def compare(native, reference, case):
         raise AssertionError(name + ": an application/subaccount ID remains required")
     if name in ("edenai_no_lf_stdin", "edenai_no_lf_filesystem") and (actual or expected):
         raise AssertionError(name + ": EdenAI wildcard dots exclude LF, unlike its prefix gap")
+    if name in ("elevenlabs_v1_case_stdin", "elevenlabs_v1_case_filesystem", "elevenlabs_both_stdin", "elevenlabs_both_filesystem",
+                "enablex_products_stdin", "enablex_products_filesystem", "endorlabs_stdin", "endorlabs_filesystem") and (len(actual) != 2 or len(expected) != 2):
+        raise AssertionError(name + ": original case/version identities, hidden-ID products or unequal directed pairs must not collapse early")
+    if name in ("elevenlabs_v1_one_separator_stdin", "elevenlabs_v1_one_separator_filesystem", "enablex_no_id_stdin", "enablex_no_id_filesystem", "endorlabs_equal_stdin", "endorlabs_equal_filesystem") and (actual or expected):
+        raise AssertionError(name + ": preserve mandatory ElevenLabs syntax, required Enablex IDs and EndorLabs equality skips")
+    if name.startswith("enablex_") and any(row["RawV2"] for row in actual + expected):
+        raise AssertionError(name + ": Enablex must not expose its hidden ID through RawV2")
     if name in ("denodeploy_stdin", "denodeploy_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": both direct Deno token prefixes must dispatch without a provider name")
     if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):
