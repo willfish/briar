@@ -330,5 +330,8 @@ int br_freshdesk_init(const br_detector **out, char **error);
 int br_front_init(const br_detector **out, char **error);
 int br_ftp_init(const br_detector **out, char **error);
 int br_fulcrum_init(const br_detector **out, char **error);
+int br_fullstory_v1_init(const br_detector **out, char **error);
+int br_fullstory_v2_init(const br_detector **out, char **error);
+int br_fxmarket_init(const br_detector **out, char **error);
 
 #endif
