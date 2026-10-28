@@ -31,8 +31,8 @@ ASCII 403 response diagnostics follow selected strconv quoting behavior.
 Freshbooks request guards and Geocodio's constrained query/fragment projection
 follow selected net/url and net/http constructor behavior.
 Google credential string projection and ordered marshaling follow selected
-encoding/json string behavior. Google OAuth form encoding, limited response reads
-and selected error formatting follow golang.org/x/oauth2 v0.34.0, commit
+encoding/json string behavior. Google and GitHub OAuth form encoding, limited
+response reads and selected error handling follow golang.org/x/oauth2 v0.34.0, commit
 acc38155b7f6f36aefcb58faff6f36d314dd915c, under the same BSD-3-Clause text.
 Owned HTTP singleflight ordering follows golang.org/x/sync v0.21.0, commit
 5071ed6a9f1617117556b66384f765c934de3698, under that same BSD text.

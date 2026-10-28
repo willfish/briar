@@ -357,12 +357,30 @@ static const registration expected[] = {
     {633, 0, "GetSandbox", "getsandbox", 40, true, 1024},
     {8, 1, "Github", "github", 40, true, -1},
     {8, 2, "Github", "ghp_", 40, true, -1},
+    {924, 0, "GitHubOauth2", "github", 20, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 924) {
+        const char *id = "A1b2C3d4E5f6G7h8I9j0", *secret = "b7c9d2e5f6b8c3d4e1f0a2c4e6b8f1d3a5c7e9b2";
+        char input[100], raw_v2[61]; snprintf(input, sizeof(input), "github %s\ngithub %s", id, secret);
+        snprintf(raw_v2, sizeof(raw_v2), "%s%s", id, secret);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 924 && result->raw.len == 20 && !memcmp(result->raw.data, id, 20));
+        CHECK(result->raw_v2.len == 60 && !memcmp(result->raw_v2.data, raw_v2, 60));
+        CHECK(!result->verified && !result->verification_error && !result->redacted && !result->structured_data && !result->primary_secret.data && !result->verification_from_cache);
+        br_json *field = NULL; CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(result->secret_parts, "id", &field) && !strcmp(json_object_get_string(field), id));
+        CHECK(json_object_object_get_ex(result->secret_parts, "secret", &field) && !strcmp(json_object_get_string(field), secret));
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
+        CHECK(json_object_object_get_ex(result->extra_data, "rotation_guide", &field) && !strcmp(json_object_get_string(field), "https://howtorotate.com/docs/tutorials/github/"));
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 8) {
         const char *key = entry->version == 1 ? "0123456789abcdef0123456789abcdef01234567" : "ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         char input[100]; snprintf(input, sizeof(input), entry->version == 1 ? "github_token %s" : "%s", key);
