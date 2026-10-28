@@ -353,19 +353,20 @@ static const registration expected[] = {
     {327, 0, "GetEmails", "getemails", 26, false, 1024},
     {383, 0, "GetGeoAPI", "getgeoapi", 40, true, -1},
     {861, 0, "Getresponse", "getresponse", 32, true, -1},
+    {633, 0, "GetSandbox", "getsandbox", 40, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
-    if (entry->type == 327) {
-        char key[27], id[19], input[120]; test_secret(key, 26, 0); test_secret(id, 18, 7);
-        snprintf(input, sizeof(input), "getemails %s\ngetemails %s\ngetemails %s", key, id, id);
+    if (entry->type == 327 || entry->type == 633) {
+        char key[41], id[19], input[160]; test_secret(key, entry->key_len, 0); test_secret(id, 18, 7);
+        snprintf(input, sizeof(input), "%s %s\n%s %s\n%s %s", entry->keyword, key, entry->keyword, id, entry->keyword, id);
         br_results results = test_scan(detector, NULL, false, input, strlen(input));
         CHECK(results.len == 2); /* Hidden ID occurrences remain a full product. */
         for (size_t i = 0; i < 2; ++i) {
-            test_key_result(&results.items[i], 327, key, "key");
+            test_key_result(&results.items[i], entry->type, key, "key");
             CHECK(!results.items[i].verified && !results.items[i].verification_error);
         }
         CHECK(results.items[0].raw.data != results.items[1].raw.data &&
