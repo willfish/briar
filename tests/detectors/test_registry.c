@@ -319,6 +319,7 @@ static const registration expected[] = {
     {848, 0, "FlightLabs", "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9", 127, true, -1},
     {642, 0, "Flightstats", "flightstats", 32, true, 1024},
     {249, 0, "Float", "float", 60, true, -1},
+    {265, 0, "FlowFlu", "flowflu", 51, true, 1024},
     {173, 0, "Flutterwave", "FLWSECK-", 42, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -652,6 +653,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
     case 639: secondary = "u7b9r@m4c8p.k2"; secondary_name = "email"; break;
     case 424: case 642: secondary = "z7m9q2r4"; secondary_name = "id"; break;
+    case 265: secondary = "WorkONE"; secondary_name = "account"; break;
     case 652:
         test_secret(secondary_buffer, 24, 11);
         secondary = secondary_buffer; secondary_name = "id";
@@ -1109,7 +1111,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821 || entry->type == 639 || entry->type == 652 || entry->type == 771 || entry->type == 808 || entry->type == 642) {
+    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821 || entry->type == 639 || entry->type == 652 || entry->type == 771 || entry->type == 808 || entry->type == 642 || entry->type == 265) {
         test_key_result(result, entry->type, key, "key"); /* Required counterpart stays hidden. */
         br_results_clear(&results);
         return;
