@@ -499,6 +499,11 @@ def fixtures():
     duo_ikey = b"DI" + alnum("duo-ikey", 18).upper()
     duo_other_ikey = b"DI" + alnum("duo-other-ikey", 18).upper()
     duo_skey, duo_other_skey = alnum("duo-skey", 40), alnum("duo-other-skey", 40)
+    dynalist_key = alnum("dynalist-key", 128)
+    dynalist_key = dynalist_key[:40] + b"-_" + dynalist_key[42:]
+    eagleeye_key, eagleeye_other_key = alnum("eagleeye-key", 15), alnum("eagleeye-other-key", 15)
+    eagleeye_email, eagleeye_other_email = b"u7b9r@m4c8p.k2", b"v8d2s@n5g9q.h3"
+    easyinsight_key, easyinsight_id = alnum("easyinsight-key", 20), alnum("easyinsight-id", 20)
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -954,6 +959,15 @@ def fixtures():
         ("duo", 1063, duo_host + b" duo " + duo_ikey + b" duo " + duo_skey),
         ("duo_products", 1063, duo_host + b" " + duo_other_host + b" duo " + duo_ikey + b" duo " + duo_other_ikey + b" duo " + duo_skey + b" duo " + duo_other_skey),
         ("duo_no_host", 1063, b"duosecurity duo " + duo_ikey + b" duo " + duo_skey),
+        ("dynalist", 359, b"DYNALIST " + dynalist_key),
+        ("dyspatch", 258, b"DySpAtCh " + alnum("dyspatch-key", 52).upper()),
+        ("eagleeyenetworks", 639, b"eagleeyenetworks " + eagleeye_key + b" eagleeyenetworks " + eagleeye_email),
+        ("eagleeyenetworks_products", 639, b"eagleeyenetworks " + eagleeye_key + b" eagleeyenetworks " + eagleeye_other_key + b" eagleeyenetworks " + eagleeye_email + b" eagleeyenetworks " + eagleeye_other_email),
+        ("eagleeyenetworks_bytes", 639, b"eagleeyenetworks " + eagleeye_key + b" eagleeyenetworks " + eagleeye_email.replace(b".", b"\x00")),
+        ("eagleeyenetworks_no_email", 639, b"eagleeyenetworks " + eagleeye_key),
+        ("easyinsight", 282, b"easyinsight " + easyinsight_key + b" easyinsight " + easyinsight_id),
+        ("easyinsight_roles", 282, b"easy-insight" + b"." * 60 + b"\nkey " + easyinsight_key + b" id " + easyinsight_id),
+        ("easyinsight_equal", 282, b"easyinsight " + easyinsight_key + b" easyinsight " + easyinsight_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1149,7 +1163,11 @@ def compare(native, reference, case):
                 "dronahq_stdin", "dronahq_filesystem", "droneci_stdin", "droneci_filesystem",
                 "dropbox_stdin", "dropbox_filesystem", "dropbox_retained_scoped_stdin", "dropbox_retained_scoped_filesystem",
                 "duply_stdin", "duply_filesystem", "duffeltoken_filtered_stdin", "duffeltoken_filtered_filesystem",
-                "duo_stdin", "duo_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "duo_stdin", "duo_filesystem",
+                "dynalist_stdin", "dynalist_filesystem", "dyspatch_stdin", "dyspatch_filesystem",
+                "eagleeyenetworks_stdin", "eagleeyenetworks_filesystem",
+                "eagleeyenetworks_bytes_stdin", "eagleeyenetworks_bytes_filesystem",
+                "easyinsight_roles_stdin", "easyinsight_roles_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1213,6 +1231,16 @@ def compare(native, reference, case):
         raise AssertionError(name + ": all eight visible Duo host/integration-key/secret-key products must survive")
     if name in ("duo_no_host_stdin", "duo_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": a Duo host remains required despite a separate duosecurity dispatch hint")
+    if name in ("eagleeyenetworks_products_stdin", "eagleeyenetworks_products_filesystem") and (len(actual) != 2 or len(expected) != 2):
+        raise AssertionError(name + ": hidden EagleEye emails collapse only after native products are constructed")
+    if name in ("eagleeyenetworks_no_email_stdin", "eagleeyenetworks_no_email_filesystem") and (actual or expected):
+        raise AssertionError(name + ": an EagleEye email remains required despite its omission from findings")
+    if name.startswith("eagleeyenetworks_") and any(row["RawV2"] for row in actual + expected):
+        raise AssertionError(name + ": EagleEye must not invent RawV2 for hidden emails")
+    if name in ("easyinsight_stdin", "easyinsight_filesystem") and (len(actual) != 2 or len(expected) != 2):
+        raise AssertionError(name + ": common provider prefixes must retain both unequal EasyInsight products")
+    if name in ("easyinsight_equal_stdin", "easyinsight_equal_filesystem") and (actual or expected):
+        raise AssertionError(name + ": equal EasyInsight key/ID pairs must remain excluded")
     if name in ("denodeploy_stdin", "denodeploy_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": both direct Deno token prefixes must dispatch without a provider name")
     if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):
