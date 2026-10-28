@@ -354,12 +354,31 @@ static const registration expected[] = {
     {383, 0, "GetGeoAPI", "getgeoapi", 40, true, -1},
     {861, 0, "Getresponse", "getresponse", 32, true, -1},
     {633, 0, "GetSandbox", "getsandbox", 40, true, 1024},
+    {8, 1, "Github", "github", 40, true, -1},
+    {8, 2, "Github", "ghp_", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 8) {
+        const char *key = entry->version == 1 ? "0123456789abcdef0123456789abcdef01234567" : "ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        char input[100]; snprintf(input, sizeof(input), entry->version == 1 ? "github_token %s" : "%s", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 8 && result->raw.len == 40 && !memcmp(result->raw.data, key, 40));
+        CHECK(!result->raw_v2.data && !result->raw_v2.len && !result->verified && !result->verification_error);
+        CHECK(!result->redacted && !result->structured_data && !result->primary_secret.data && !result->verification_from_cache);
+        CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 1);
+        br_json *field = NULL; CHECK(json_object_object_get_ex(result->secret_parts, "key", &field) && !strcmp(json_object_get_string(field), key));
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == (entry->version == 1 ? 2 : 3));
+        CHECK(json_object_object_get_ex(result->extra_data, "version", &field) && !strcmp(json_object_get_string(field), entry->version == 1 ? "1" : "2"));
+        CHECK(json_object_object_get_ex(result->extra_data, "rotation_guide", &field) && !strcmp(json_object_get_string(field), "https://howtorotate.com/docs/tutorials/github/"));
+        if (entry->version == 2) CHECK(json_object_object_get_ex(result->extra_data, "token_type", &field) && !strcmp(json_object_get_string(field), "Personal Access Token (classic)"));
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 327 || entry->type == 633) {
         char key[41], id[19], input[160]; test_secret(key, entry->key_len, 0); test_secret(id, 18, 7);
         snprintf(input, sizeof(input), "%s %s\n%s %s\n%s %s", entry->keyword, key, entry->keyword, id, entry->keyword, id);
@@ -1477,9 +1496,9 @@ int main(void)
         CHECK(!strcmp(br_detector_type_name(detector->type), entry->name));
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
-        CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : entry->type == 196 || (entry->type == 3 && entry->version == 1) ? 6u :
+        CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
@@ -1514,6 +1533,13 @@ int main(void)
             CHECK(!strcmp(detector->keywords[1], "xi-api-key") && !strcmp(detector->keywords[2], "xi_api_key"));
             br_detector versionless = *detector; versionless.version = 0;
             CHECK(!br_detector_is_default(&versionless, NULL));
+        }
+        if (entry->type == 8) {
+            if (entry->version == 1) CHECK(!strcmp(detector->keywords[1], "gh"));
+            else {
+                const char *const prefixes[] = {"ghp_", "gho_", "ghu_", "ghs_", "ghr_", "github_pat_"};
+                for (size_t k = 0; k < 6; ++k) CHECK(!strcmp(detector->keywords[k], prefixes[k]));
+            }
         }
         if (entry->type == 876) CHECK(!strcmp(detector->keywords[1], "account-"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
@@ -1590,6 +1616,8 @@ int main(void)
         } else if (entry->type == 39 || entry->type == 1043) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);
             CHECK(!strcmp(detector->cloud_endpoint, "https://api.datadoghq.com"));
+        } else if (entry->type == 8) {
+            CHECK(detector->validate_endpoints && detector->cloud_endpoint && !strcmp(detector->cloud_endpoint, "https://api.github.com"));
         } else if (entry->type == 1045 || entry->type == 1046) {
             CHECK(detector->validate_endpoints && !detector->cloud_endpoint);
         } else CHECK(!detector->validate_endpoints && !detector->cloud_endpoint);
