@@ -608,6 +608,10 @@ def fixtures():
     geoapify_key, geocode_key = synthetic("geoapify-key", 32), synthetic("geocode-key", 28)
     geocodify_key, geocodio_key = synthetic("geocodify-key", 40), synthetic("geocodio-key", 39)
     geocodio_prefix = b"GeOcOd " + geocodio_key + b"\ngeocod"
+    geoipifi_key = b"Q" + synthetic("geoipifi-key", 30) + b"_"
+    geoipifi_underscores = b"_" + synthetic("geoipifi-boundary", 30) + b"_"
+    getgeoapi_key = synthetic("getgeoapi-key", 40)
+    getgeoapi_nonhex = b"g" + synthetic("getgeoapi-nonhex", 38) + b"z"
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1190,6 +1194,10 @@ def fixtures():
         ("geocodio_fragment_nul", 407, geocodio_prefix + b" Ab#c\0deF"),
         ("geocodio_empty_trim", 407, geocodio_prefix + b"\v" * 30 + b"Z"),
         ("geocodio_utf8", 407, geocodio_prefix + " Y2éR7p9q".encode()),
+        ("geoipifi", 286, b"iPiFi " + geoipifi_key),
+        ("geoipifi_underscore_edges", 286, b"ipifi " + geoipifi_underscores),
+        ("getgeoapi", 383, b"GeTgEoApI " + getgeoapi_key),
+        ("getgeoapi_nonhex", 383, b"getgeoapi " + getgeoapi_nonhex),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1443,7 +1451,7 @@ def compare(native, reference, case):
         raise AssertionError(name + ": the selected provider must retain one full finding")
     if name.startswith(("gemini_master_default_filtered_", "gemini_account_default_filtered_")) and (actual or expected):
         raise AssertionError(name + ": upstream wordlists filter the credential prefix by default")
-    if name.startswith(("geoapify_", "geocode_", "geocodify_", "geocodio_")) and (len(actual) != 1 or len(expected) != 1):
+    if name.startswith(("geoapify_", "geocode_", "geocodify_", "geocodio_", "geoipifi_", "getgeoapi_")) and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": the selected geographic provider must retain one complete finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
