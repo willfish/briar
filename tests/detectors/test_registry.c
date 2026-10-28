@@ -279,6 +279,7 @@ static const registration expected[] = {
     {424, 0, "Edamam", "edamam", 32, true, 1024},
     {568, 0, "EdenAI", "edenai", 173, true, -1},
     {727, 0, "EightxEight", "8x8", 43, true, 1024},
+    {652, 0, "Enablex", "enablex", 36, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -568,6 +569,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
     case 639: secondary = "u7b9r@m4c8p.k2"; secondary_name = "email"; break;
     case 424: secondary = "z7m9q2r4"; secondary_name = "id"; break;
+    case 652:
+        test_secret(secondary_buffer, 24, 11);
+        secondary = secondary_buffer; secondary_name = "id";
+        break;
     case 727:
         test_secret(secondary_buffer, 30, 11); secondary_buffer[8] = '_';
         secondary = secondary_buffer; secondary_name = "id";
@@ -1013,7 +1018,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821 || entry->type == 639) {
+    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821 || entry->type == 639 || entry->type == 652) {
         test_key_result(result, entry->type, key, "key"); /* Required counterpart stays hidden. */
         br_results_clear(&results);
         return;
