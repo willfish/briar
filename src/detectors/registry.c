@@ -281,6 +281,7 @@ static const detector_factory named_factories[] = {
     br_elevenlabs_v2_init,
     br_enablex_init,
     br_endorlabs_init,
+    br_envoyapikey_init,
     br_jiradatacenterpat_init,
 };
 
@@ -387,7 +388,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         }
         case 3: case 4: case 142: case 190: case 303: case 333: case 430: case 708: case 921: case 994: return detector->version == 1 || detector->version == 2;
         case 0: case 5: case 18: case 39: case 138: case 192: case 196: case 150: case 158: case 237: case 239: case 254: case 255: case 256: case 258: case 521: case 390: case 431: case 432: case 433: case 434: case 683: case 684: case 685: case 692: case 334: case 335: case 343: case 693: case 197: case 802: case 805:
-        case 125: case 126: case 130: case 135: case 277: case 1014: case 1015: case 498: case 499: case 506: case 910: case 917: case 919: case 920: case 907:
+        case 125: case 126: case 130: case 135: case 277: case 1014: case 1015: case 498: case 499: case 506: case 910: case 917: case 919: case 920: case 923: case 907:
         case 302: case 565: case 566: case 567: case 568: case 707: case 709: case 710: case 711: case 721: case 723: case 726: case 727: case 756: case 762: case 828: case 829: case 831: case 833: case 834: case 838: case 863: case 844: case 845: case 354: case 358: case 359: case 366: case 375: case 380: case 382: case 522: case 523: case 524: case 525: case 526: case 170: case 163: case 399: case 473: case 474: case 477: case 453:
         case 448: case 456: case 457: case 42: case 43: case 44: case 933: case 179: case 1032: case 632: case 209: case 211: case 212: case 214: case 215: case 225: case 226: case 458:
         case 1002: case 1003: case 401: case 402: case 403: case 404: case 418: case 424: case 391: case 393: case 484: case 485: case 783: case 788: case 789: case 637: case 639: case 647: case 648: case 649: case 650: case 651: case 652: case 664: case 665: case 666: case 643: case 208: case 1004: case 768: case 769: case 770: case 588: case 598:
@@ -626,6 +627,7 @@ const char *br_detector_type_name(int32_t type)
     case 919: return "Docusign";
     case 920: return "Couchbase";
     case 921: return "Dockerhub";
+    case 923: return "EnvoyApiKey";
     case 931: return "AzureStorage";
     case 933: return "Anthropic";
     case 947: return "BetterStack";

@@ -284,6 +284,7 @@ static const registration expected[] = {
     {994, 2, "ElevenLabs", "elevenlabs", 51, true, -1},
     {652, 0, "Enablex", "enablex", 36, true, 1024},
     {993, 0, "EndorLabs", "endr+", 21, true, -1},
+    {923, 0, "EnvoyApiKey", "envoy", 220, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
