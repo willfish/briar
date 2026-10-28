@@ -285,6 +285,7 @@ static const registration expected[] = {
     {652, 0, "Enablex", "enablex", 36, true, 1024},
     {993, 0, "EndorLabs", "endr+", 21, true, -1},
     {923, 0, "EnvoyApiKey", "envoy", 220, true, -1},
+    {990, 0, "Eraser", "eraser", 20, true, -1},
     {905, 0, "Etherscan", "etherscan", 34, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -1068,6 +1069,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
         CHECK(json_object_object_get_ex(result->extra_data, entry->type == 4 ? "Version" : "version", &part));
         CHECK(!strcmp(json_object_get_string(part), entry->version == 1 ? "1" : "2"));
+    }
+    if (entry->type == 990) {
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
+        CHECK(json_object_object_get_ex(result->extra_data, "rotation_guide", &part));
+        CHECK(!strcmp(json_object_get_string(part), "https://howtorotate.com/docs/tutorials/eraser/"));
+        CHECK(!result->redacted);
     }
     if (entry->type == 994) {
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == (entry->version == 1 ? 2 : 1));
