@@ -358,6 +358,7 @@ static const registration expected[] = {
     {8, 1, "Github", "github", 40, true, -1},
     {8, 2, "Github", "ghp_", 40, true, -1},
     {924, 0, "GitHubOauth2", "github", 20, true, 1024},
+    {36, 0, "GitHubApp", "github", sizeof("-----BEGIN RSA PRIVATE KEY-----\nQ7r2T9\n-----END RSA PRIVATE KEY-----") - 1, true, 1024},
     {1050, 0, "GitLabOauth2", "gloas-", 70, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -365,6 +366,24 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 36) {
+        const char *key = "-----BEGIN RSA PRIVATE KEY-----\nQ7r2T9\n-----END RSA PRIVATE KEY-----";
+        char input[160]; snprintf(input, sizeof(input), "github 012345\ngithub 654321\ngithub %s", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 2);
+        for (size_t i = 0; i < results.len; ++i) {
+            const br_result *result = &results.items[i];
+            CHECK(result->detector_type == 36 && result->raw.len == strlen(key) && !memcmp(result->raw.data, key, result->raw.len));
+            CHECK(!result->raw_v2.data && !result->raw_v2.len && !result->verified && !result->verification_error);
+            CHECK(!result->redacted && !result->structured_data && !result->primary_secret.data && !result->verification_from_cache);
+            br_json *field = NULL; CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 1);
+            CHECK(json_object_object_get_ex(result->secret_parts, "key", &field) && !strcmp(json_object_get_string(field), key));
+            CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
+            CHECK(json_object_object_get_ex(result->extra_data, "rotation_guide", &field) && !strcmp(json_object_get_string(field), "https://howtorotate.com/docs/tutorials/github/"));
+        }
+        CHECK(results.items[0].raw.data != results.items[1].raw.data && results.items[0].secret_parts != results.items[1].secret_parts);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 1050) {
         char id[65], secret[71], input[180], raw_v2[153];
         const char *hex = "0123456789abcdef", *cloud = "https://gitlab.com";
