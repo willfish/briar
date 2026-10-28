@@ -284,5 +284,9 @@ int br_enigma_init(const br_detector **out, char **error);
 int br_envoyapikey_init(const br_detector **out, char **error);
 int br_eraser_init(const br_detector **out, char **error);
 int br_etherscan_init(const br_detector **out, char **error);
+int br_ethplorer_init(const br_detector **out, char **error);
+int br_eventbrite_init(const br_detector **out, char **error);
+int br_everhour_init(const br_detector **out, char **error);
+int br_exchangerateapi_init(const br_detector **out, char **error);
 
 #endif
