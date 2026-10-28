@@ -364,6 +364,7 @@ static const registration expected[] = {
     {9, 3, "Gitlab", "glpat-", 46, true, -1},
     {1050, 0, "GitLabOauth2", "gloas-", 70, true, 1024},
     {555, 0, "Gitter", "gitter", 40, true, -1},
+    {569, 0, "Glassnode", "glassnode", 27, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
