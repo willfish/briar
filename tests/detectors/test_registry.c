@@ -273,6 +273,7 @@ static const registration expected[] = {
     {180, 0, "Dwolla", "dwolla", 50, true, 1024},
     {359, 0, "Dynalist", "dynalist", 128, true, -1},
     {258, 0, "Dyspatch", "dyspatch", 52, true, -1},
+    {639, 0, "EagleEyeNetworks", "eagleeyenetworks", 15, true, 1024},
     {282, 0, "EasyInsight", "easyinsight", 20, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -559,6 +560,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 281: secondary = "G7h9K2m4-N6p8-Q1r3-S5t7-U9v1W3x5Y7z9"; secondary_name = "id"; break;
     case 921: secondary = "briar7"; secondary_name = "username"; break;
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
+    case 639: secondary = "u7b9r@m4c8p.k2"; secondary_name = "email"; break;
     case 821: secondary = "AB7CD9E-F2G4H6J-K8L1M3N-P5Q7R9S"; secondary_name = "id"; break;
     case 282:
         memcpy(secondary_buffer, key, entry->key_len + 1);
@@ -1000,7 +1002,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821) {
+    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821 || entry->type == 639) {
         test_key_result(result, entry->type, key, "key"); /* Required counterpart stays hidden. */
         br_results_clear(&results);
         return;
