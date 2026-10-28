@@ -2592,6 +2592,42 @@
       "evidence": ["tests/detectors/test_fileio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete Go json.Valid/invalid-UTF8 behavior and native JSON limits", "Reader/deferred-close/eager-buffering/private-client fidelity", "Complete native SANE, regexp and global engine/output parity"]
     },
+    "finage/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/finage/finage.go",
+      "scope_notes": "Finage423/v0/default enabled/all hints absent. Dispatch finage but DIRECT case-sensitive word-bounded API_KEY plus32uppercase-alnum39, no extraction prefix. Original occurrences/duplicates/TrimSpace no-op/Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding plus complete90-byte symbol-list/crypto apikey query URL+NUL91 BEFORE nil-context constructor skip. SANE5s GET/Content-Type JSON after constructor/common UA. Mandatory complete43-byte 423:TOKEN dedup slice+storageNUL44 reaches the unchanged real shared coalescing guard; zero injected/native send callbacks. Never strip key, substitute persistent cache, bypass adapter or manufacture fake success. Whole mixed shared send domain suppressed false retained/no setter/classifier, including guard diagnostic allocation failure. Complete stack URL/dedup borrowed through send AND release/no formatter/heap-copy/cap/failure seam. Own captures/finding/push failures fatal before skip/suppression, caller-preserving invocation rollback. Source all2xx success and singleflight's ReadAll-before-Do-success remain UNPROVEN behind the mandatory guard; source replay body would otherwise be ignored.",
+      "native_files": ["src/detectors/finage.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_finage.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Mandatory request coalescing/singleflight/replay/cancellation/deadline/buffering semantics remain unsupported", "Source status-success branch, complete native/private SANE and Reader/deferred-close timing", "Complete regexp and global engine/output parity"]
+    },
+    "financialmodelingprep/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/financialmodelingprep/financialmodelingprep.go",
+      "scope_notes": "FinancialModelingPrep406/v0/default enabled/all hints absent. Keyword-only CI financialmodelingprep prefix then word-bounded32mixed-alnum original occurrences/duplicates, not hex validation/unique sets. Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding plus complete113-byte financial-statement-symbol-lists apikey query URL+NUL114 BEFORE constructor; nil context skips. SANE5s GET/common UA ONLY/no Type/Accept/Auth/dedup. Successful Do ReadAll BEFORE every status; ANY nonnull read error including empty retains false/no diagnostic, not candidate drop. Successful read exact binary THREE-byte left-bracket/SPACE/double-quote marker then only all2xx verifies. Compact arrays/additional whitespace/JSON parsing are not substitutes; marker past NUL/invalidUTF8/in unrelated malformed text still counts. Other statuses false even with marker. Whole mixed shared send domain suppressed false retained/no setter/classifier. Complete stack URL through send AND release/no formatter/encoder/heap-copy/cap/failure seam. Own capture/finding/push nonzero failures fatal before constructor skipping/ordinary suppression, invocation rollback preserves caller findings.",
+      "native_files": ["src/detectors/financialmodelingprep.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_financialmodelingprep.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source conditional deferred Close/no-Close-on-read-error differs from eager owned release", "Complete native/private SANE/Reader fidelity", "Complete regexp and global engine/output parity"]
+    },
+    "findl/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/findl/findl.go",
+      "scope_notes": "Findl667/v0/default enabled/all hints absent. Keyword-only CI findl prefix then word-bounded lower-ALNUM8-4-4-4-12 UUID-shape36, NOT hex/UUID validation/global capture folding. Original occurrences/duplicates/TrimSpace no-op/Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding BEFORE nil-context constructor skip. SANE explicit request5000ms GET literal api.findl.com/v1.0/query?limit=6. Borrow full capture+NUL as canonical X-Api-Key after constructor/common UA ONLY/no Type/Accept/Auth/dedup. Go Header.Add canonical spelling preserved rather than input spelling X-API-Key. Header storage lives through send AND release/no formatter/heap-copy/cap/failure seam. All2xx verifies, body/read/drain ignored. Whole mixed shared send domain suppressed false retained/no setter/classifier. Own capture/finding/push nonzero failures fatal before skip/suppression, caller-preserving invocation rollback. Explicit request timeout does NOT establish source package-client timeout mutation/persistence/races, including mutation before constructor skips.",
+      "native_files": ["src/detectors/findl.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_findl.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Shared-client timeout mutation/persistence/races and mutation-before-constructor timing", "Complete native/private SANE, Reader/scan-deferred-close fidelity", "Complete regexp and global engine/output parity"]
+    },
+    "finnhub/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/finnhub/finnhub.go",
+      "scope_notes": "Finnhub420/v0/default enabled/all hints absent. Keyword-only CI finnhub prefix then word-bounded20lower-alnum original occurrences/duplicates, NOT hex/global capture folding. Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding plus complete70-byte calendar/economic token query URL+NUL71 BEFORE nil-context constructor skip. SANE5s GET/Content-Type JSON after constructor/common UA ONLY/no Accept/Auth/dedup. All2xx verifies/body/read/drain ignored. Whole mixed shared send domain suppressed false retained/no setter/classifier, even credential echoes/empty/NULL diagnostic causes. Complete bounded stack URL lives through send AND release/no formatter/encoder/heap-copy/cap/failure seam. Own capture/finding/push nonzero failures fatal before constructor skip/suppression with invocation-only rollback preserving caller-owned findings.",
+      "native_files": ["src/detectors/finnhub.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_finnhub.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Reader/scan-deferred-close versus eager owned buffering/release", "Complete native/private SANE fidelity", "Complete regexp and global engine/output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

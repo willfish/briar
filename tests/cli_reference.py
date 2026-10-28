@@ -557,6 +557,11 @@ def fixtures():
     figma_v3 = b"figp_" + alnum("figma-v3-key", 52) + b"=="
     fileio_key = alnum("fileio-key", 39).upper()
     fileio_key = fileio_key[:8] + b"." + fileio_key[9:21] + b"-" + fileio_key[22:]
+    finage_key = b"API_KEY" + alnum("finage-key", 32).upper()
+    financialmodelingprep_key = alnum("financialmodelingprep-key", 32)
+    findl_payload = alnum("findl-key", 32).lower()
+    findl_key = b"-".join((findl_payload[:8], findl_payload[8:12], findl_payload[12:16], findl_payload[16:20], findl_payload[20:]))
+    finnhub_key = alnum("finnhub-key", 20).lower()
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1068,6 +1073,10 @@ def fixtures():
         ("figma_v2", "113.v2", b"figma " + figma_v2),
         ("figma_v3", "113.v3", figma_v3),
         ("fileio", 527, b"FiLeIo " + fileio_key),
+        ("finage", 423, b"FiNaGe " + finage_key),
+        ("financialmodelingprep", 406, b"FINANCIALMODELINGPREP " + financialmodelingprep_key),
+        ("findl", 667, b"FiNdL " + findl_key),
+        ("finnhub", 420, b"FINNHUB " + finnhub_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1285,7 +1294,9 @@ def compare(native, reference, case):
                 "feedier_stdin", "feedier_filesystem", "fetchrss_stdin", "fetchrss_filesystem",
                 "fibery_stdin", "fibery_filesystem", "figma_v1_stdin", "figma_v1_filesystem",
                 "figma_v2_stdin", "figma_v2_filesystem", "figma_v3_stdin", "figma_v3_filesystem",
-                "fileio_stdin", "fileio_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "fileio_stdin", "fileio_filesystem", "finage_stdin", "finage_filesystem",
+                "financialmodelingprep_stdin", "financialmodelingprep_filesystem", "findl_stdin", "findl_filesystem",
+                "finnhub_stdin", "finnhub_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
