@@ -716,6 +716,14 @@ for selector in ("Guru", "570"):
                         b"guru AbC@de.fg\nguru ghijklmn-opqr-stuv-wxyz-0123456789ab", code=1)
     check(not rows and b"no enabled implemented detectors selected" in proc.stderr, "Guru stays absent from source defaults despite explicit selection")
 
+happyscribe_key = key32[:23] + "Z"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Happyscribe"], ("HaPpYsCrIbE " + happyscribe_key).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 507, "Happyscribe selector dispatches its enabled scanner")
+check(rows[0]["Raw"] == happyscribe_key and rows[0]["SecretParts"] == {"key": happyscribe_key}, "Happyscribe preserves its mixed-alphanumeric key")
+check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Happyscribe NoV does not fetch transcriptions or add metadata")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Happyscribe"], ("happyscribe " + happyscribe_key[:23]).encode())
+check(not rows, "Happyscribe requires all 24 token bytes")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

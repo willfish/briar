@@ -383,6 +383,7 @@ static const registration expected[] = {
     {792, 0, "Gumroad", "gumroad", 43, true, -1},
     {570, 0, "Guru", "guru", 9, false, 1024},
     {467, 0, "Gyazo", "gyazo", 43, true, -1},
+    {507, 0, "Happyscribe", "happyscribe", 24, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
