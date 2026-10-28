@@ -296,6 +296,7 @@ static const registration expected[] = {
     {771, 0, "ExportSDK", "exportsdk", 46, true, 1024},
     {784, 0, "ExtractorAPI", "extractorapi", 40, true, -1},
     {40, 0, "FacebookOAuth", "facebook", 32, true, 1024},
+    {636, 0, "FastForex", "fastforex", 28, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -428,6 +429,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 379) key[9] = 'z';
     if (entry->type == 784) key[14] = '-';
     if (entry->type == 771) { key[9] = '_'; key[18] = '-'; }
+    if (entry->type == 636) { key[8] = '-'; key[9] = 'z'; }
     if (entry->type == 994) {
         if (entry->version == 1)
             for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789ABCDEF"[i % 16];
