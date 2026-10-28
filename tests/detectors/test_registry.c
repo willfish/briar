@@ -295,6 +295,7 @@ static const registration expected[] = {
     {379, 0, "ExchangeRatesAPI", "exchangerates", 32, true, -1},
     {771, 0, "ExportSDK", "exportsdk", 46, true, 1024},
     {784, 0, "ExtractorAPI", "extractorapi", 40, true, -1},
+    {40, 0, "FacebookOAuth", "facebook", 32, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -593,7 +594,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         secondary_name = "client_id";
         break;
     case 110: secondary = "fixture-tenant.us.auth0.com"; secondary_name = "domain"; break;
-    case 65: secondary = "12345678901234567"; secondary_name = "id"; break;
+    case 40: case 65: secondary = "12345678901234567"; secondary_name = "id"; break;
     case 771:
         test_secret(secondary_buffer, 36, 11); secondary_buffer[12] = '-';
         secondary = secondary_buffer; secondary_name = "id"; break;
@@ -1074,7 +1075,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         return;
     }
     if (entry->type == 307 || entry->type == 196 || entry->type == 962) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
-    if (entry->type == 58 || entry->type == 65) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, secondary));
+    if (entry->type == 40 || entry->type == 58 || entry->type == 65) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, secondary));
     if (entry->type == 919) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, key));
     if (entry->type == 100) CHECK(!result->extra_data && !result->redacted); /* No invented version metadata. */
     if (entry->type == 142) {
@@ -1119,7 +1120,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->redacted && strlen(result->redacted) == 11);
         CHECK(!memcmp(result->redacted, key, 8) && !strcmp(result->redacted + 8, "..."));
     }
-    const char *key_name = entry->type == 919 || entry->type == 180 ? "id" : entry->type == 325 ? "email" : entry->type == 921 ? "pat" : entry->type == 39 ? "app_key" : (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 919 || entry->type == 180 ? "id" : entry->type == 325 ? "email" : entry->type == 921 ? "pat" : entry->type == 39 ? "app_key" : (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : (entry->type == 40 || entry->type == 512) ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
@@ -1161,7 +1162,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         else if (session) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", key, secondary, session);
         else if (entry->type == 931) snprintf(raw_v2, sizeof(raw_v2), "{\"accountName\":\"%s\",\"accountKey\":\"%s\"}", secondary, key);
         else if (entry->type == 971) snprintf(raw_v2, sizeof(raw_v2), "key: %s account_url: %s", key, secondary);
-        else if (entry->type == 55 || entry->type == 1018 || entry->type == 512 || entry->type == 708 || entry->type == 739) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
+        else if (entry->type == 40 || entry->type == 55 || entry->type == 1018 || entry->type == 512 || entry->type == 708 || entry->type == 739) snprintf(raw_v2, sizeof(raw_v2), "%s%s", secondary, key);
         else if (entry->type == 170 || entry->type == 1032 || entry->type == 1052 || entry->type == 921) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else snprintf(raw_v2, sizeof(raw_v2), entry->type == 1019 || entry->type == 1024 || entry->type == 2 || entry->type == 307 || entry->type == 375 || entry->type == 1045 ||
                       entry->type == 1047 || entry->type == 1046 ? "%s:%s" : "%s%s", key, secondary);
