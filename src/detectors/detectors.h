@@ -364,5 +364,10 @@ int br_gitter_init(const br_detector **out, char **error);
 int br_glassnode_init(const br_detector **out, char **error);
 int br_gocanvas_init(const br_detector **out, char **error);
 int br_gocardless_init(const br_detector **out, char **error);
+int br_godaddy_v1_init(const br_detector **out, char **error);
+int br_godaddy_v2_init(const br_detector **out, char **error);
+int br_goodday_init(const br_detector **out, char **error);
+int br_googlegemini_init(const br_detector **out, char **error);
+int br_googleoauth2_init(const br_detector **out, char **error);
 
 #endif
