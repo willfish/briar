@@ -573,6 +573,12 @@ def fixtures():
     flightlabs_key = flightlabs_key[:60] + b"_" + flightlabs_key[61:100] + b"-" + flightlabs_key[101:]
     flightstats_key = alnum("flightstats-key", 32).lower()
     flightstats_id = alnum("flightstats-id", 8).lower()
+    float_key = synthetic("float-key", 16) + alnum("float-payload", 43) + b"="
+    float_key = float_key[:20] + b"+" + float_key[21:45] + b"/" + float_key[46:]
+    flowflu_key = alnum("flowflu-key", 51)
+    flutterwave_key = b"FLWSECK-" + alnum("flutterwave-key", 32).lower() + b"-X"
+    flyio_bypass = b"FlyV1 fm123_exampleAAAAAA+/,=_-" + alnum("flyio-payload", 581)
+    flyio_filtered = flyio_bypass.replace(b"AAAAAA", b"aaaaaa", 1)
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1096,6 +1102,12 @@ def fixtures():
         ("flightapi", 528, b"FlIgHtApI " + flightapi_key),
         ("flightlabs", 848, flightlabs_key),
         ("flightstats", 642, b"FLIGHTSTATS " + flightstats_key + b"\nflightstats " + flightstats_id),
+        ("float", 249, b"FLOAT " + float_key),
+        ("flowflu", 265, b"FLOWFLU " + flowflu_key + b"\naccount Briar83"),
+        ("flutterwave", 173, flutterwave_key),
+        ("flyio_bypass", 980, flyio_bypass),
+        ("flyio_filtered", 980, flyio_filtered),
+        ("flyio_retained", 980, flyio_filtered),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1212,7 +1224,7 @@ def compare(native, reference, case):
     # Retained fixtures match pinned false-positive terms, including check in
     # the long scoped Dropbox payload. Use an ALREADY supported flag in BOTH
     # CLIs, not normalization/filter changes. Keep default-zero guards.
-    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_", "duffeltoken_retained_")) else None
+    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_", "duffeltoken_retained_", "flyio_retained_")) else None
     with tempfile.TemporaryDirectory(prefix="briar-reference-", dir=ROOT / "state") as tmp:
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True, result_types=result_types)
@@ -1319,7 +1331,9 @@ def compare(native, reference, case):
                 "flatio_stdin", "flatio_filesystem", "fleetbase_stdin", "fleetbase_filesystem",
                 "flexport_stdin", "flexport_filesystem", "flickr_stdin", "flickr_filesystem",
                 "flightapi_stdin", "flightapi_filesystem", "flightlabs_stdin", "flightlabs_filesystem",
-                "flightstats_stdin", "flightstats_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "flightstats_stdin", "flightstats_filesystem", "float_stdin", "float_filesystem",
+                "flowflu_stdin", "flowflu_filesystem", "flutterwave_stdin", "flutterwave_filesystem",
+                "flyio_bypass_stdin", "flyio_bypass_filesystem", "flyio_retained_stdin", "flyio_retained_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1410,6 +1424,10 @@ def compare(native, reference, case):
         raise AssertionError(name + ": ExportSDK must not expose its hidden template ID through RawV2")
     if name.startswith("faceplusplus_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": FacePlusPlus preserves all four directed products, including both self-pairs")
+    if name.startswith("flyio_filtered_") and (actual or expected):
+        raise AssertionError(name + ": lowercase aaaaaa does not bypass FlyIO's default false-positive fallback")
+    if name.startswith("flowflu_") and any(row["RawV2"] for row in actual + expected):
+        raise AssertionError(name + ": FlowFlu keeps its required account hidden from RawV2")
     if name.startswith("flightstats_") and any(row["RawV2"] for row in actual + expected):
         raise AssertionError(name + ": Flightstats keeps its required application ID hidden from RawV2")
     if name.startswith("fibery_") and any(row["RawV2"] for row in actual + expected):
