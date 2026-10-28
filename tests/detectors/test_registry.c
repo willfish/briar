@@ -306,6 +306,7 @@ static const registration expected[] = {
     {113, 2, "FigmaPersonalAccessToken", "figma", 45, true, -1},
     {113, 3, "FigmaPersonalAccessToken", "figp_", 59, true, -1},
     {527, 0, "FileIO", "fileio", 39, true, -1},
+    {667, 0, "Findl", "findl", 36, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -443,6 +444,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 68) { key[7] = '_'; key[19] = '-'; }
     if (entry->type == 527) { key[8] = '.'; key[21] = '-'; }
     if (entry->type == 592) key[15] = '.';
+    if (entry->type == 667) key[8] = key[13] = key[18] = key[23] = '-';
     if (entry->type == 808) {
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         key[8] = '.';
