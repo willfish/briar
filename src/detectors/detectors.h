@@ -275,5 +275,10 @@ int br_ecostruxureit_init(const br_detector **out, char **error);
 int br_edamam_init(const br_detector **out, char **error);
 int br_edenai_init(const br_detector **out, char **error);
 int br_eightxeight_init(const br_detector **out, char **error);
+int br_elasticemail_init(const br_detector **out, char **error);
+int br_elevenlabs_v1_init(const br_detector **out, char **error);
+int br_elevenlabs_v2_init(const br_detector **out, char **error);
+int br_enablex_init(const br_detector **out, char **error);
+int br_endorlabs_init(const br_detector **out, char **error);
 
 #endif
