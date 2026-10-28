@@ -704,6 +704,13 @@ for raw, following in ((gyazo_key, ""), (gyazo_key[:42] + "-", "x")):
     check(rows[0]["Raw"] == raw and rows[0]["SecretParts"] == {"key": raw}, "Gyazo preserves the complete capture and trailing-hyphen boundary")
     check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Gyazo NoV does not fetch images or add metadata")
 
+gumroad_key = key40 + "Ab7"
+for raw, following in ((gumroad_key, ""), (gumroad_key[:42] + "-", "x")):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Gumroad"], ("GuMrOaD " + raw + following).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == 792, "Gumroad selector dispatches its enabled scanner")
+    check(rows[0]["Raw"] == raw and rows[0]["SecretParts"] == {"key": raw}, "Gumroad preserves the full mixed-alphanumeric and hyphen capture")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Gumroad NoV does not send its nonempty GET or add metadata")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
