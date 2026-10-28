@@ -377,5 +377,9 @@ int br_groovehq_init(const br_detector **out, char **error);
 int br_groq_init(const br_detector **out, char **error);
 int br_gtmetrix_init(const br_detector **out, char **error);
 int br_guardianapi_init(const br_detector **out, char **error);
+int br_gumroad_init(const br_detector **out, char **error);
+int br_guru_init(const br_detector **out, char **error);
+int br_gyazo_init(const br_detector **out, char **error);
+int br_happyscribe_init(const br_detector **out, char **error);
 
 #endif
