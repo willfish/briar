@@ -291,6 +291,7 @@ static const registration expected[] = {
     {283, 0, "Ethplorer", "ethplorer", 22, true, -1},
     {962, 0, "Eventbrite", "eventbrite", 20, true, -1},
     {284, 0, "Everhour", "everhour", 32, true, -1},
+    {360, 0, "ExchangeRateAPI", "exchangerate", 24, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -441,7 +442,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         char secret[69]; test_secret(secret, 68, 11);
         snprintf(key, sizeof(key), "https://discord.com/api/webhooks/123456789012345678/%s", secret);
     }
-    if (entry->type == 838)
+    if (entry->type == 838 || entry->type == 360)
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
     if (entry->type == 897) {
         memcpy(key, "dop_v1_", 7);
@@ -1258,7 +1259,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 196 || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 282 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
@@ -1276,6 +1277,7 @@ int main(void)
         if (entry->type == 18) CHECK(!strcmp(detector->keywords[1], "sl."));
         if (entry->type == 1059) CHECK(!strcmp(detector->keywords[1], "duffel_live_"));
         if (entry->type == 282) CHECK(!strcmp(detector->keywords[1], "easy-insight"));
+        if (entry->type == 360) CHECK(!strcmp(detector->keywords[1], "exchange-rate"));
         if (entry->type == 994) {
             CHECK(!strcmp(detector->keywords[1], "xi-api-key") && !strcmp(detector->keywords[2], "xi_api_key"));
             br_detector versionless = *detector; versionless.version = 0;
