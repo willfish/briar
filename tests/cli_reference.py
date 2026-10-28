@@ -562,6 +562,11 @@ def fixtures():
     findl_payload = alnum("findl-key", 32).lower()
     findl_key = b"-".join((findl_payload[:8], findl_payload[8:12], findl_payload[12:16], findl_payload[16:20], findl_payload[20:]))
     finnhub_key = alnum("finnhub-key", 20).lower()
+    fixerio_key = alnum("fixerio-key", 32)
+    flatio_key = alnum("flatio-key", 128).lower()
+    fleetbase_key = b"flb_live_" + alnum("fleetbase-key", 20)
+    flexport_key = b"shltm_" + alnum("flexport-key", 40)
+    flexport_key = flexport_key[:13] + b"_" + flexport_key[14:31] + b"-" + flexport_key[32:]
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1077,6 +1082,10 @@ def fixtures():
         ("financialmodelingprep", 406, b"FINANCIALMODELINGPREP " + financialmodelingprep_key),
         ("findl", 667, b"FiNdL " + findl_key),
         ("finnhub", 420, b"FINNHUB " + finnhub_key),
+        ("fixerio", 149, b"FiXeR " + fixerio_key),
+        ("flatio", 501, b"FLAT " + flatio_key),
+        ("fleetbase", 428, b"fleetbase " + fleetbase_key),
+        ("flexport", 1009, flexport_key + b"Q"),  # No source end boundary: capture the first 46 bytes.
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1296,7 +1305,9 @@ def compare(native, reference, case):
                 "figma_v2_stdin", "figma_v2_filesystem", "figma_v3_stdin", "figma_v3_filesystem",
                 "fileio_stdin", "fileio_filesystem", "finage_stdin", "finage_filesystem",
                 "financialmodelingprep_stdin", "financialmodelingprep_filesystem", "findl_stdin", "findl_filesystem",
-                "finnhub_stdin", "finnhub_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "finnhub_stdin", "finnhub_filesystem", "fixerio_stdin", "fixerio_filesystem",
+                "flatio_stdin", "flatio_filesystem", "fleetbase_stdin", "fleetbase_filesystem",
+                "flexport_stdin", "flexport_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1391,6 +1402,8 @@ def compare(native, reference, case):
         raise AssertionError(name + ": Fibery keeps its required domain hidden from RawV2")
     if name.startswith("figma_v") and any(row.get("ExtraData") != {"version": name.split("_")[1][1:]} for row in actual + expected):
         raise AssertionError(name + ": Figma retains its version metadata without verification")
+    if name.startswith("flexport_") and any(row.get("ExtraData") != {"rotation_guide": "https://howtorotate.com/docs/tutorials/flexport/"} for row in actual + expected):
+        raise AssertionError(name + ": Flexport retains its rotation guide without verification")
     if name.startswith("eraser_") and any(row.get("ExtraData") != {"rotation_guide": "https://howtorotate.com/docs/tutorials/eraser/"} for row in actual + expected):
         raise AssertionError(name + ": Eraser retains its rotation guide without verification")
     if name in ("everhour_bad_upper_stdin", "everhour_bad_upper_filesystem") and (actual or expected):

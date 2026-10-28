@@ -2628,6 +2628,42 @@
       "evidence": ["tests/detectors/test_finnhub.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Reader/scan-deferred-close versus eager owned buffering/release", "Complete native/private SANE fidelity", "Complete regexp and global engine/output parity"]
     },
+    "fixerio/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/fixerio/fixerio.go",
+      "scope_notes": "FixerIO149/v0/default enabled/all hints absent. Keyword-only CI fixer prefix, NOT fixerio required, then word-bounded32mixed-alnum original occurrences/duplicates. Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding plus complete76-byte latest access_key query URL+NUL77 BEFORE nil-context constructor skip. SANE5s GET/common UA ONLY/no Type/Accept/Auth/dedup. Successful Do ReadAll BEFORE every status; ANY nonnull read error including empty DROPS the candidate, not retained false or invocation rollback. Successful read exact binary success-with-one-space marker OR complete HTTPS-subscription-restriction info marker, AND all2xx. No JSON parsing/whitespace/case/UTF8/NUL normalization; trueish suffix/unrelated malformed bytes can satisfy the source substring. Other statuses reject even accepted markers. Whole mixed shared send domain suppresses false KEPT, even populated read errors on failed send/no setter/classifier. Full bounded stack URL through send AND release/no formatter/encoder/heap-copy/cap/failure seam. Own captures/finding/push nonzero failures fatal before skips/DROPs/suppression; caller-preserving invocation rollback. Source duplicate deferred Close registrations are not reproduced; owned ABI responses release once, even errors/drop.",
+      "native_files": ["src/detectors/fixerio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fixerio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source deferred/duplicate Close versus eager owned release and Reader timing", "Complete native/private SANE fidelity", "Complete regexp and global engine/output parity"]
+    },
+    "flatio/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/flatio/flatio.go",
+      "scope_notes": "FlatIO501/v0/default enabled/all hints absent. Keyword-only CI flat prefix, NOT flatio required, then word-bounded128lower-alnum original occurrences/duplicates, NOT hex validation/global folding. Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding BEFORE nil-context constructor skip. SANE5s GET api.flat.io/v2/me. After constructor Accept JSON THEN complete135-byte Bearer plusNUL136/common UA/no Type/dedup. Complete bounded stack authorization survives send AND release/no formatter/heap-copy/cap/failure seam. All2xx verifies/body/read/drain ignored. Whole mixed shared setup/allocation/Do domain suppresses false retained/no setter/classifier. Own capture/finding/push nonzero failures fatal before ordinary skip/suppression with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/flatio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_flatio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager buffering/owned release/Reader timing", "Complete native/private SANE fidelity", "Complete regexp and global engine/output parity"]
+    },
+    "fleetbase/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/fleetbase/fleetbase.go",
+      "scope_notes": "Fleetbase428/v0/default enabled/all hints absent. fleetbase DISPATCH ONLY; DIRECT case-sensitive word-bounded flb_live_ plus20mixed-alnum29, no extraction keyword prefix or local validation. Original occurrences/duplicates/Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding BEFORE nil-context constructor skip. SANE5s GET api.fleetbase.io/v1/contacts/ preserving trailing slash. Complete36-byte Bearer plusNUL37 after constructor/common UA ONLY/no Type/Accept/dedup. Full bounded stack authorization through send AND release/no formatter/heap-copy/cap/failure seam. All2xx verifies/body/read/drain ignored. Whole mixed shared send domain suppresses false retained/no setter/classifier, including credential echoes or memory-like injected text. Own capture/finding/push nonzero failures fatal before skip/suppression with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/fleetbase.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fleetbase.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager buffering/owned release/Reader timing", "Complete native/private SANE fidelity", "Complete regexp and global engine/output parity"]
+    },
+    "flexport/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/flexport/flexport.go",
+      "scope_notes": "Flexport1009/v0/default enabled/all hints absent. DIRECT case-sensitive leading word boundary shltm_ plus40mixed-alnum/underscore/hyphen46; NO END boundary/EOF assertion/delimiter consumption. Preserve accepted prefixes of longer payloads/adjacent matches after nonword final payload bytes. Dispatch shltm_, NOT provider name. Original-byte UNIQUE captures/Raw key only/no RawV2/Redacted/primary/cache/filter. Always own Extra rotation_guide before verification and retain on EVERY ordinary outcome, unlike Eraser. Guide allocation/insertion failures fatal before nil-context handling. SANE5s bodyless GET logistics-api.flexport.com/logistics/api/2024-04/webhooks; complete53-byte Bearer plusNUL54 after constructor/common UA ONLY/no Type/Accept/dedup. Nil context RETAINS token-redacted bare cause and guide.200 OR403true/401false/other statuses unexpected HTTP response status N; body/read/drain ignored. Whole mixed shared send domain retained with token-only setter/NULL no-op/nonzero including+1 fatal/cause copy BEFORE release. Own capture/finding/guide/cause/setter/push failures fatal before ordinary outcomes with caller-preserving rollback. Bounded stack authorization survives synchronous send AND release/no formatter/heap-copy/cap/failure seam. NoV oracle guards46-byte captured prefix of47-byte input and retained guide.",
+      "native_files": ["src/detectors/flexport.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_flexport.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Source private override/default client and Reader/drain/deferred-close fidelity", "Complete native SANE/RE2 and randomized map ordering", "Global engine/output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
