@@ -360,5 +360,9 @@ int br_gitlab_v1_init(const br_detector **out, char **error);
 int br_gitlab_v2_init(const br_detector **out, char **error);
 int br_gitlab_v3_init(const br_detector **out, char **error);
 int br_gitlaboauth2_init(const br_detector **out, char **error);
+int br_gitter_init(const br_detector **out, char **error);
+int br_glassnode_init(const br_detector **out, char **error);
+int br_gocanvas_init(const br_detector **out, char **error);
+int br_gocardless_init(const br_detector **out, char **error);
 
 #endif
