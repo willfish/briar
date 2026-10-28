@@ -2,9 +2,11 @@
 #include "../../src/detectors/detectors.h"
 #include "../../src/detectors/captures.h"
 #include "../../src/detectors/findings.h"
+#include "../../src/http_internal.h"
 #include "../support/detector_test.h"
 
 #include <openssl/evp.h>
+#include <time.h>
 
 static const char key1[] = "g7h9j2k5m6n8p3q4r1s0t";
 static const char key2[] = "z9y8x7w6v5u4t3s2r1q0p";
@@ -237,8 +239,8 @@ static void occurrences_and_skips(const br_detector *detector)
     CHECK(results.len == 3 && encoder_calls == before + 3);
     for (size_t i = 0; i < 3; ++i) check_result(&results.items[i], keys[i]);
     br_results_clear(&results);
-    /* Encoding precedes nil-context skips. Prepared 2xx/body values above are
-     * NEVER consumed. The source's 2xx/body-ignored path is UNEXERCISED. */
+    /* Encoding precedes nil-context skips. This borrowed transport never
+     * consumes the prepared response; owned-client coverage is separate. */
 }
 
 static bool cancelled(void *user) { ++*(size_t *)user; return true; }
@@ -349,10 +351,129 @@ static void resources_and_rollback(const br_detector *detector)
     br_results_clear(&results);
 }
 
+/* Fake bytes only: the real Databox POST mutates remote metrics. This block
+ * exercises the private owned client, not a borrowed-transport key bypass. */
+typedef struct {
+    test_http http;
+    const br_http_request *pending;
+    br_http_response *raw;
+    size_t which;
+    int64_t deadline;
+    bool destroyed;
+} databox_backend;
+
+static int64_t databox_now_ms(void)
+{
+    struct timespec now;
+    CHECK(clock_gettime(CLOCK_MONOTONIC, &now) == 0);
+    return (int64_t)now.tv_sec * 1000 + now.tv_nsec / 1000000;
+}
+
+static void databox_owned_request(const databox_backend *fake, const br_http_request *request)
+{
+    static const unsigned char payload[] =
+        "{\n"
+        "\t\t\t\t\"data\":[\n"
+        "\t\t\t\t  {\n"
+        "\t\t\t\t\t\"$sales\": 420,\n"
+        "\t\t\t\t\t\"$visitors\": 123000\n"
+        "\t\t\t\t  }\n"
+        "\t\t\t\t]\n"
+        "\t\t\t  }";
+    const char *key = fake->which ? key2 : key1;
+    CHECK(!fake->destroyed && request == fake->pending);
+    CHECK(!strcmp(request->method, "POST") && !strcmp(request->url, "https://push.databox.com"));
+    CHECK(request->profile == BR_HTTP_SANE && request->detector_type == 834);
+    /* The detached winner retains a five-second entry deadline; preparation
+     * can reduce the remaining timeout by scheduling elapsed time. */
+    CHECK(request->timeout_ms > 0 && request->timeout_ms <= 5000);
+    CHECK(request->dedup_key.len == 25 && !memcmp(request->dedup_key.data, "834:", 4));
+    CHECK(!memcmp(request->dedup_key.data + 4, key, 21));
+    CHECK(request->body.len == sizeof(payload) - 1 && !memcmp(request->body.data, payload, sizeof(payload) - 1));
+    CHECK(request->nheaders == 4);
+    CHECK(!strcmp(request->headers[0].name, "Content-Type") && !strcmp(request->headers[0].value, "application/json"));
+    CHECK(!strcmp(request->headers[1].name, "Accept") && !strcmp(request->headers[1].value, "application/vnd.databox.v2+json"));
+    CHECK(!strcmp(request->headers[2].name, "Authorization") && !strcmp(request->headers[2].value, goldens[fake->which]));
+    CHECK(!strcmp(request->headers[3].name, "User-Agent") && !strcmp(request->headers[3].value, "TruffleHog databox-offline"));
+}
+
+static int databox_owned_send(void *user, const br_scan_ctx *ctx, const br_http_request *request,
+                              br_http_response *response, char **error)
+{
+    databox_backend *fake = user;
+    CHECK(!fake->pending && !fake->raw);
+    fake->pending = request; fake->raw = response;
+    fake->deadline = ctx->deadline_monotonic_ms;
+    CHECK(!ctx->cancelled && !ctx->cancel_user && !strcmp(ctx->user_agent, "databox-offline"));
+    databox_owned_request(fake, request);
+    return test_http_send(&fake->http, ctx, request, response, error);
+}
+
+static void databox_owned_release(void *user, br_http_response *response)
+{
+    databox_backend *fake = user;
+    CHECK(response == fake->raw && fake->http.calls == 1 && !fake->http.releases);
+    databox_owned_request(fake, fake->pending); /* Exact request stays live through raw release. */
+    test_http_release(&fake->http, response);
+    fake->pending = NULL; fake->raw = NULL;
+}
+
+static void databox_owned_destroy(void *user)
+{
+    databox_backend *fake = user;
+    CHECK(!fake->destroyed && !fake->pending && !fake->raw);
+    CHECK(fake->http.calls == 1 && fake->http.releases == 1);
+    fake->destroyed = true;
+}
+
+static void owned_client_verification(const br_detector *detector)
+{
+    static const struct { int status, send_rc; const char *body_error; bool verified; } cases[] = {
+        {200, 0, NULL, true}, {204, 0, NULL, true}, {299, 0, NULL, true},
+        {401, 0, NULL, false}, {500, 0, NULL, false},
+        {204, 1, NULL, false}, {201, 0, "synthetic body read failure", false},
+    };
+    static const unsigned char body[] = {'o', 'k', 0, 0xff};
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        databox_backend fake = {
+            .http = {.response = {.status = cases[i].status, .body = {body, sizeof(body)},
+                                 .body_error = cases[i].body_error},
+                     .send_rc = cases[i].send_rc,
+                     .send_error = cases[i].send_rc ? "synthetic send failure" : NULL},
+            .which = i % 2,
+        };
+        br_http_owned_backend backend = {
+            .transport = {&fake, databox_owned_send, databox_owned_release},
+            .destroy = databox_owned_destroy,
+        };
+        br_http_client *client = NULL; char *error = NULL;
+        CHECK(br_http_client_init(&client, backend, BR_HTTP_SANE, &error) == 0 && client && !error);
+        const br_transport *transport = br_http_client_transport(client);
+        CHECK(br_http_client_is_owned(transport));
+        br_scan_ctx ctx = {.transport = transport, .user_agent = "databox-offline"};
+        const char *key = fake.which ? key2 : key1;
+        char input[64]; snprintf(input, sizeof(input), "databox %s", key);
+        size_t guards = guard_rejections, encoders = encoder_calls;
+        int64_t before = databox_now_ms();
+        br_results results = test_scan(detector, &ctx, true, input, strlen(input));
+        int64_t after = databox_now_ms();
+        CHECK(br_http_client_drain(client, &error) == 0 && !error);
+        CHECK(!fake.destroyed && !fake.pending && !fake.raw && fake.http.calls == 1 && fake.http.releases == 1);
+        CHECK(fake.deadline >= before + 5000 && fake.deadline <= after + 5000);
+        CHECK(guard_rejections == guards && encoder_calls == encoders + 1);
+        CHECK(results.len == 1 && results.items[0].verified == cases[i].verified && !results.items[0].verification_error);
+        test_key_result(&results.items[0], 834, key, "key");
+        br_results_clear(&results);
+        br_http_client_destroy(client);
+        CHECK(fake.destroyed); /* Stack backend state outlives drain and destruction. */
+    }
+}
+
 int main(void)
 {
     const br_detector *detector = descriptor();
     extraction(detector); unchanged_shared_guard(); occurrences_and_skips(detector);
     suppressed_send_domain(detector); resources_and_rollback(detector);
-    return test_finish("Databox extraction/encoding/rollback + unchanged coalescing guard (verification unsupported)");
+    owned_client_verification(detector);
+    return test_finish("Databox extraction/encoding/rollback + borrowed guard + owned-client verification");
 }
