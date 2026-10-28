@@ -30,7 +30,9 @@ mime/multipart writer behavior. Enigma's ASCII Content-Type diagnostics and Figm
 ASCII 403 response diagnostics follow selected strconv quoting behavior.
 Freshbooks request guards follow selected net/url and net/http constructor behavior.
 Google credential string projection and ordered marshaling follow selected
-encoding/json string behavior.
+encoding/json string behavior. Google OAuth form encoding, limited response reads
+and selected error formatting follow golang.org/x/oauth2 v0.34.0, commit
+acc38155b7f6f36aefcb58faff6f36d314dd915c, under the same BSD-3-Clause text.
 FTP URL projection and control replies follow selected net/url, net/textproto
 and bufio behavior, including the generated URL escaping table.
 Selected Unicode 15.0 category, whitespace and lowercase ranges derive from
@@ -41,6 +43,8 @@ Copyright 2010 The Go Authors. All rights reserved.
 Copyright 2011 The Go Authors. All rights reserved.
 Copyright 2012 The Go Authors. All rights reserved.
 Copyright 2013 The Go Authors. All rights reserved.
+Copyright 2014 The Go Authors. All rights reserved.
+Copyright 2022 The Go Authors. All rights reserved.
 Copyright 2025 The Go Authors. All rights reserved.
 See LICENSES/BSD-3-Clause-Go.txt.
 
