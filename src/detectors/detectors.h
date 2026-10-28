@@ -292,5 +292,9 @@ int br_exchangeratesapi_init(const br_detector **out, char **error);
 int br_exportsdk_init(const br_detector **out, char **error);
 int br_extractorapi_init(const br_detector **out, char **error);
 int br_facebookoauth_init(const br_detector **out, char **error);
+int br_faceplusplus_init(const br_detector **out, char **error);
+int br_fastforex_init(const br_detector **out, char **error);
+int br_fastlypersonaltoken_init(const br_detector **out, char **error);
+int br_feedier_init(const br_detector **out, char **error);
 
 #endif
