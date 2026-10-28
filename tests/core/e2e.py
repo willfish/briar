@@ -523,6 +523,25 @@ check(b"no enabled implemented detectors selected" in proc.stderr, "GetEmail rem
 proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=327"], b"getemails", code=1)
 check(b"no enabled implemented detectors selected" in proc.stderr, "GetEmails remains source-disabled despite explicit selection")
 
+github_old = "b7c9d2e5f6b8c3d4e1f0a2c4e6b8f1d3a5c7e9b2"
+github_new = "ghp_" + key40[:36]
+for selector, number, raw, payload, version in (
+    ("Getgist", 210, key80[:68], "getgist " + key80[:68] + "XYZ", None),
+    ("Getresponse", 861, key32, "getresponse " + key32, None),
+    ("GetSandbox", 633, key40, "getsandbox " + key40 + "\ngetsandbox " + key32[:18], None),
+    ("Github.v1", 8, github_old, "github_token " + github_old, "1"),
+    ("Github.v2", 8, github_new, github_new, "2"),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], payload.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "enabled named provider selection dispatches its scanner")
+    check(rows[0]["Raw"] == raw and rows[0]["SecretParts"] == {"key": raw}, "only the original visible key is projected")
+    check(not rows[0]["Verified"] and not rows[0]["RawV2"] and not rows[0]["Redacted"], "NoV preserves the provider's absent fields")
+    if version:
+        check(rows[0]["ExtraData"]["version"] == version, "GitHub selector retains exact version metadata")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Github.v0"],
+                 ("github_token " + github_old + "\n" + github_new).encode())
+check(len(rows) == 2 and {row["ExtraData"]["version"] for row in rows} == {"1", "2"}, "version-zero selector includes both enabled GitHub identities")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

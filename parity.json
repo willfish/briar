@@ -2997,6 +2997,51 @@
       "evidence": ["tests/detectors/test_getgeoapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete RE2/arbitrary-byte and source-engine behavior", "Full native/private SANE, Reader/deferred-close timing and global engine/output parity"]
     },
+    "getgist/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/getgist/getgist.go",
+      "scope_notes": "Getgist210/v0/default enabled/no hints. Keyword-only-CI prefix and leading word boundary capture68 mixed-alphanumeric/plus/equals bytes WITHOUT an ending boundary, retaining a prefix of longer tokens. Original occurrences/duplicates, no Base64/entropy validation. Raw/key only/no RawV2/Extra/Redacted/primary/cache. Finding precedes nil-context constructor skip; literal Bearer authorization follows construction. Exact SANE5s bodyless GET https://api.getgist.com/contacts/ retains its trailing slash and common UA only. Every2xx verifies ignoring body/read failures; the whole mixed shared setup/Do domain is false-kept without a setter. Own nonzero resources are fatal before ordinary outcomes with invocation-only rollback preserving caller findings; original header/capture storage survives release, ordinary synthesized request/UA does not gain that guarantee.",
+      "native_files": ["src/detectors/getgist.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_getgist.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and global engine behavior", "Full native SANE, Reader/deferred-close timing and ordinary synthesized-request lifetime parity"]
+    },
+    "getresponse/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/getresponse/getresponse.go",
+      "scope_notes": "Getresponse861/v0/default enabled/no hints. Keyword-only-CI getresponse prefix and word-bounded32 LOWERalphanumeric original occurrences, not hex alone. Raw/key only/no RawV2/Extra/Redacted/primary/unique/cache. Finding precedes nil-context constructor skip and literal api-key TOKEN preparation. Exact SANE5s bodyless GET https://api.getresponse.com/v3/accounts uses X-Auth-Token and common UA, no Authorization/Type/Accept/dedup. Every2xx verifies, body/read failures ignored, whole mixed shared setup/Do domain false-kept without a verification-error setter. Own nonzero resources fatal before skips/suppression with caller-preserving invocation rollback; provider auth/capture storage survives release without retaining expired ordinary synthesized request/UA.",
+      "native_files": ["src/detectors/getresponse.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_getresponse.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and global engine behavior", "Full native SANE, Reader/deferred-close timing and ordinary synthesized-request lifetime parity"]
+    },
+    "getsandbox/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/getsandbox/getsandbox.go",
+      "scope_notes": "GetSandbox633/v0/default enabled/inherited1024 multipart engine hint, not detector cap. Independent keyword-only-CI prefixes capture40-byte keys and15..30-byte IDs from lowercase alphanumeric/hyphen classes with original word-boundary/backtracking behavior. Preserve key-major full occurrence products and duplicates, REQUIRED HIDDEN ID, Raw/key only; no ID part/RawV2/Extra/Redacted/primary/unique/cache. Finding and complete literal https://getsandbox.com/api/1/sandboxes/ID precede nil-context constructor skip. SANE5s bodyless GET uses canonical Api-Key plus common UA, no Auth/Type/Accept/dedup. Every2xx verifies ignoring body/read failures; whole mixed setup/Do domain false-kept without setter. Own nonzero resources fatal before ordinary outcomes with invocation-only caller-preserving rollback. Capture/URL/header storage survives release, unlike ordinary synthesized-request storage.",
+      "native_files": ["src/detectors/getsandbox.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_getsandbox.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte, multipart engine and global output behavior", "Full native SANE, Reader/deferred-close timing and ordinary synthesized-request lifetime parity"]
+    },
+    "github/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/github/v1/github_old.go",
+      "scope_notes": "Github8/v1/default enabled/no hints. Preserve20 exact keyword-CI extraction prefixes versus github/gh dispatch, word-bounded40 LOWERhex occurrences, nine CASE-SENSITIVE benign substrings in match0 before custom-only false-positive checking and entropy<3.5; do not apply global wordlists early. Raw/key only plus rotation_guide and version1 on all outcomes. Cohesive github.c shares the source verifier with v2, not extraction/filtering. NULL endpoint settings model engine cloud defaults; explicit zeroed settings model a source scanner with no endpoints. Each reached endpoint clears pending Do error, allocates full literal endpoint+/user, skips nil context, then lazily enforces the documented canonical HTTP ASCII subset; unsupported forms fail fatally before callbacks, never defeating an earlier success. SANE5s GET/Authorization token TOKEN/JSON charset Content-Type/common UA/no body/dedup. Only2xx plus first typed user document verifies; eight strings and site_admin bool preserve ordered duplicates/null merges/sticky known-field type errors, unknown huge numbers ignored, complete document can beat later read error. Empty object/null success retains mandatory username/url/account_type even empty; optional strings/bool and first case-insensitive scope/expiry headers are copied before release. Endpoint status/decode/constructor outcomes may erase earlier Do errors; apply final token-redacting setter only once after verifier completion. Owned capture/JSON/projection/metadata/setter/push failures fatal before continue/break with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/github.c", "src/detectors/endpoints.c", "src/detectors/json.c", "src/detectors/findings.c", "src/falsepositives.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_github.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md", "docs/ARCHITECTURE.md"],
+      "remaining": ["Full Go URL constructor/Do classification outside the explicit lazy canonical subset", "Complete typed JSON, Reader/read-error and header behavior", "Complete shared RE2/entropy/false-positive, native HTTP/deferred-close, ordinary synthesized-request lifetime and global engine/output/concurrency parity"]
+    },
+    "github/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/github/v2/github.go",
+      "scope_notes": "Github8/v2/default enabled/no hints, source embeds and delegates verification to v1. Preserve six CASE-SENSITIVE direct prefixes and word-bounded36..255 mixed-alphanumeric/underscore tail occurrences; no v1 benign-prefix or entropy filter. Raw/key only, exact six token_type labels plus version2 and rotation_guide retained on every outcome. Shared verifier, mandatory/optional typed user metadata, endpoint construction defaults/zero configuration, lazy canonical subset and fatal unsupported boundary, pending-error reset/final redaction, response-header ownership and invocation rollback are recorded for v1 in the same named module. Earlier success must win over later unsupported endpoints; NoV and zero endpoints avoid construction. Maximum266-byte fine-grained tokens remain complete through extraction, auth and output.",
+      "native_files": ["src/detectors/github.c", "src/detectors/endpoints.c", "src/detectors/json.c", "src/detectors/findings.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_github.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md", "docs/ARCHITECTURE.md"],
+      "remaining": ["Full Go URL constructor/Do classification outside the explicit lazy canonical subset", "Complete typed JSON, Reader/read-error and header behavior", "Complete shared regexp, native HTTP/deferred-close, ordinary synthesized-request lifetime and global engine/output/concurrency parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

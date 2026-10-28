@@ -612,6 +612,12 @@ def fixtures():
     geoipifi_underscores = b"_" + synthetic("geoipifi-boundary", 30) + b"_"
     getgeoapi_key = synthetic("getgeoapi-key", 40)
     getgeoapi_nonhex = b"g" + synthetic("getgeoapi-nonhex", 38) + b"z"
+    getgist_key = alnum("getgist-key", 68)
+    getgist_key = getgist_key[:11] + b"+=" + getgist_key[13:]
+    getresponse_key = b"g" + synthetic("getresponse-key", 30) + b"z"
+    getsandbox_key, getsandbox_id = synthetic("getsandbox-key", 40), synthetic("getsandbox-id", 18)
+    github_v1_key = synthetic("github-v1-key", 40)
+    github_v2_tail = alnum("github-v2-tail", 255)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1198,6 +1204,17 @@ def fixtures():
         ("geoipifi_underscore_edges", 286, b"ipifi " + geoipifi_underscores),
         ("getgeoapi", 383, b"GeTgEoApI " + getgeoapi_key),
         ("getgeoapi_nonhex", 383, b"getgeoapi " + getgeoapi_nonhex),
+        ("getgist", 210, b"GeTgIsT " + getgist_key),
+        ("getgist_no_end_boundary", 210, b"getgist " + getgist_key + b"XYZ"),
+        ("getresponse_nonhex", 861, b"GeTrEsPoNsE " + getresponse_key),
+        ("getsandbox", 633, b"GetSandbox " + getsandbox_key + b"\ngetsandbox " + getsandbox_id),
+        ("getsandbox_missing_id", 633, b"getsandbox " + getsandbox_key),
+        ("github_v1", "8.v1", b"github_token " + github_v1_key),
+        ("github_v1_benign", "8.v1", b"github_token sha256:" + github_v1_key),
+        ("github_v1_uppercase_benign", "8.v1", b"github_token SHA256:" + github_v1_key),
+        ("github_v2_classic", "8.v2", b"ghp_" + github_v2_tail[:36]),
+        ("github_v2_finegrained", "8.v2", b"github_pat_" + github_v2_tail),
+        ("github_v2_uppercase_prefix", "8.v2", b"GHP_" + github_v2_tail[:36]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1453,6 +1470,11 @@ def compare(native, reference, case):
         raise AssertionError(name + ": upstream wordlists filter the credential prefix by default")
     if name.startswith(("geoapify_", "geocode_", "geocodify_", "geocodio_", "geoipifi_", "getgeoapi_")) and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": the selected geographic provider must retain one complete finding")
+    if name.startswith(("getgist_", "getresponse_", "getsandbox_", "github_")):
+        empty = name.startswith(("getsandbox_missing_id_", "github_v1_benign_", "github_v2_uppercase_prefix_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": provider grammar, hidden ID and GitHub filtering must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):
