@@ -602,6 +602,9 @@ def fixtures():
     fullstory_v1 = alnum("fullstory-v1", 88)
     fullstory_v2 = b"na1." + alnum("fullstory-v2", 100)
     fxmarket_key = alnum("fxmarket-key", 20)
+    geckoboard_key = alnum("geckoboard-key", 44)
+    gemini_id, gemini_secret = alnum("gemini-id", 20), alnum("gemini-secret", 27)
+    gengo_key, gengo_secret = alnum("gengo-key", 64), alnum("gengo-secret", 64)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1169,6 +1172,13 @@ def fixtures():
         ("gcpadc", 983, gcpadc_payloads[0]),
         ("gcpadc_middle_nul", 983, gcpadc_payloads[1]),
         ("gcpadc_unicode", 983, gcpadc_payloads[2]),
+        ("geckoboard", 696, b"GeCkObOaRd " + geckoboard_key),
+        ("gemini_master_default_filtered", 876, b"master-" + gemini_id + b"\n" + gemini_secret),
+        ("gemini_account_default_filtered", 876, b"account-" + gemini_id + b"\n" + gemini_secret),
+        ("gemini_master_retained", 876, b"master-" + gemini_id + b"\n" + gemini_secret),
+        ("gemini_account_retained", 876, b"account-" + gemini_id + b"\n" + gemini_secret),
+        ("gengo_self", 426, b"GeNgO " + gengo_key + b"\n"),
+        ("gengo_products", 426, b"gengo " + gengo_key + b"\ngengo " + gengo_secret + b"\n"),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1189,6 +1199,9 @@ def fixtures():
         ("aws_canary_metadata", 2, aws_canary_id + b"\n" + aws_secret),
         ("aws_old_account_format", 2, b"AKIAI2BCDEFGHLMNPQR5\n" + aws_secret),
     )
+    # Keep EOF genuinely suffix-free: the common filesystem wrapper adds LF.
+    for kind in ("stdin", "filesystem"):
+        cases.append(("gengo_no_suffix_" + kind, b"gengo " + gengo_key, "426", kind, False))
     for label, number, payload in provider_cases:
         cases.append((label + "_stdin", payload, str(number), "stdin", False))
         cases.append((label + "_filesystem", b"heading\n" + payload + b"\n", str(number), "filesystem", False))
@@ -1291,7 +1304,7 @@ def compare(native, reference, case):
     # Retained fixtures match pinned false-positive terms, including check in
     # the long scoped Dropbox payload. Use an ALREADY supported flag in BOTH
     # CLIs, not normalization/filter changes. Keep default-zero guards.
-    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_", "duffeltoken_retained_", "flyio_retained_", "ftp_retained_")) else None
+    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_", "duffeltoken_retained_", "flyio_retained_", "ftp_retained_", "gemini_master_retained_", "gemini_account_retained_")) else None
     with tempfile.TemporaryDirectory(prefix="briar-reference-", dir=ROOT / "state") as tmp:
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True, result_types=result_types)
@@ -1415,6 +1428,14 @@ def compare(native, reference, case):
         raise AssertionError(name + ": the projected Google credential must retain one complete finding")
     if name.startswith("gcp_public_") and (actual or expected):
         raise AssertionError(name + ": the source's exact public Kubernetes account skip must remain empty")
+    if name.startswith(("geckoboard_", "gemini_master_retained_", "gemini_account_retained_", "gengo_self_")) and (len(actual) != 1 or len(expected) != 1):
+        raise AssertionError(name + ": the selected provider must retain one full finding")
+    if name.startswith(("gemini_master_default_filtered_", "gemini_account_default_filtered_")) and (actual or expected):
+        raise AssertionError(name + ": upstream wordlists filter the credential prefix by default")
+    if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
+        raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
+    if name.startswith("gengo_no_suffix_") and (actual or expected):
+        raise AssertionError(name + ": Gengo requires an immediate space/CR/LF suffix, not EOF")
     if name.startswith("fullstory_v2_no_dispatch_") and (actual or expected):
         raise AssertionError(name + ": direct Fullstory v2 extraction must not bypass its dispatch keyword")
     if name.startswith(("ftp_skipped_", "ftp_filtered_")) and (actual or expected):

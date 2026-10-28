@@ -2889,6 +2889,42 @@
       "evidence": ["tests/detectors/test_gcpapplicationdefaultcredentials.c", "tests/detectors/test_gcp_json.c", "tests/detectors/test_gcp_oauth.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Native SDK HTTP is unsupported; no live OAuth issuance or IAM acceptance", "Full MIME/query/expiry, constructor/sentinel and later-refresh/failure behavior is not comprehensively verified", "Nondefault GODEBUG urlmaxqueryparams configuration is not represented; other-platform integer/time behavior remains unproven", "Custom wrapped authentication-error panic shapes, typed chains, NoBody, Reader/allocator timing, shared timeout mutation/races and native wire behavior", "Non-ASCII quoted diagnostics and final NUL Redacted/errors use explicit unsupported boundaries", "HTML decoding, escaped-decoder scheduling and complete regexp/source/output behavior"]
     },
+    "geckoboard/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/geckoboard/geckoboard.go",
+      "scope_notes": "Geckoboard696/v0/default enabled. Keyword-only case-insensitive prefix and word-bounded44-byte mixed-alnum occurrences; Raw/key part only. Finding precedes nil-context constructor skip. Literal Basic TOKEN, not Base64 or key-colon encoding, follows construction for the fixed SANE GET. Complete bounded auth survives send and release. All2xx verify; body/read errors ignored and whole mixed send errors retain false findings without a setter. Own failures are fatal before ordinary outcomes with invocation-only rollback.",
+      "native_files": ["src/detectors/geckoboard.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_geckoboard.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete RE2/arbitrary-byte and source-engine behavior", "Native/private SANE, Reader and cleanup timing fidelity"]
+    },
+    "gemini/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/gemini/gemini.go",
+      "scope_notes": "Gemini876/v0/default enabled; inherited1024-byte span is an engine hint. Case-sensitive word-bounded master/account IDs cross independent27..28-byte alnum secret occurrences in key-major order, preserving duplicates. Raw is ID; RawV2 is ID plus secret. Empty POST constructor precedes clock/signing. Signed UnixNano and sorted nonce/request JSON include account=primary only for master IDs; standard Base64 then actual C HMAC-SHA384, with independent Python goldens. Literal uppercase X-GEMINI header map keys, empty body, all2xx verification, ignored read errors and whole mixed send-error suppression. Stack request values survive release. Own capture/finding/clock/encoding/signing/push failures roll back invocation additions before ordinary suppression. Default wordlists filter master/account prefixes; retained fixtures use the existing filtered_unverified option in both CLIs without changing filters.",
+      "native_files": ["src/detectors/gemini.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_gemini.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Out-of-int64 UnixNano clocks use an explicit unsupported boundary; other-platform time behavior remains unproven", "Go NoBody, native POST redirects/wire and deferred-close timing", "Complete regexp, global filtering and engine/output parity"]
+    },
+    "generic/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/generic/generic.go",
+      "scope_notes": "Generic7/v0 is default disabled. Separate zero-value and New factories preserve empty exclusions versus14 source exclusion regexes; only zero-value construction is registered, not a second detector identity. Preserve original occurrence matching and New exclusions before exact cutset trimming. Any successful standard Base64 decode suppresses the trimmed value, including empty output and source-accepted nonzero pad bits; validation does not allocate unused decoded bytes. Raw/key part only, no metadata or hints. Verify is ignored with zero I/O. Own regex/capture/finding/push failures are fatal and preserve caller findings. Explicit selection cannot enable the disabled detector; positive evidence is direct named C construction/scan tests, not fabricated default CLI findings.",
+      "native_files": ["src/detectors/generic.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "verified", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_generic.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete source regexp/exclusion and global engine/filter/output parity", "Positive pinned-runtime constructor differential evidence; default CLI membership remains disabled", "Initialization/concurrency and other-platform behavior"]
+    },
+    "gengo/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/gengo/gengo.go",
+      "scope_notes": "Gengo426/v0/default enabled; inherited1024-byte engine span is not a capture cap. Identical key/secret grammars require a consumed trailing space/CR/LF, not tab or EOF. Preserve key-major occurrence N-squared products, self-pairs and duplicates. Raw is secret, RawV2 key plus secret. Unix-seconds decimal, actual C HMAC-SHA1 and the complete literal unescaped query URL precede nil-context constructor handling. Send or read errors retain false findings; otherwise whole-document typed JSON syntax/type errors drop the pair for every status. Only2xx and exact typed opstat=ok verify. Owned JSON/resource failures are fatal before ordinary drop and roll back invocation additions. Independent Python signing goldens cover signed timestamp values.",
+      "native_files": ["src/detectors/gengo.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_gengo.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete Go typed JSON/diagnostic, time and other-platform behavior", "Native/private SANE, Reader and cleanup timing fidelity", "Complete regexp and global engine/output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

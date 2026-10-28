@@ -174,6 +174,10 @@ For all three, other statuses produce `unexpected HTTP response status N`; trans
 
 After implementing, test extraction, prefix distance 40/41, CR/LF separation, boundaries, case, multiple findings and exact result fields. With verification disabled assert zero transport calls. With a fake, assert the complete requests and cover success, rejection, unexpected status, timeout/cancellation and secret redaction. Cover AbuseIPDB's missing substring, malformed-but-containing-substring body and body-read failure; cover ignored body-read errors for the other two. Exercise default selection separately from direct disabled-detector calls. Finish with one synthetic filesystem/stdin-to-JSON run with verification disabled and assertions for engine false positives, cleaning and duplicate line placement. This batch can be accepted entirely offline; it does not establish parity for any other detector or source.
 
+### Construction policies and identity
+
+Different constructors do not necessarily define different detector identities. Generic's zero-value scanner has an empty exclusion set; New() installs 14 source regexes. Separate C factories preserve both states, but registry membership follows the actual disabled zero-value constructor. Do not silently substitute New(), register a duplicate identity or let explicit selection override upstream disabled membership. Provider-local exclusion and Base64-suppression logic stays in its named module.
+
 ### Google credential boundary
 
 `gcp_json` supplies only the string codecs shared by the two closed credential structs: retain callback JSON values while borrowing their text, repair invalid UTF8 on typed decoding, and marshal fixed field order with Go's HTML/separator escaping. GCP-only cleanup and Go literal unquoting stay provider-local. Do not replace those distinct codecs with one JSON unquote or generic map serializer.
