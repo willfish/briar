@@ -347,12 +347,27 @@ static const registration expected[] = {
     {529, 0, "Geoapify", "geoapify", 32, true, -1},
     {486, 0, "Geocode", "geocode", 28, true, -1},
     {542, 0, "Geocodify", "geocodify", 40, true, -1},
+    {407, 0, "Geocodio", "geocod", 39, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 407) {
+        char key[40], input[80]; test_secret(key, 39, 0);
+        snprintf(input, sizeof(input), "geocod %s\ngeocod AbCdEfG", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 407 && result->raw.len == 39 && !memcmp(result->raw.data, key, 39));
+        CHECK(result->raw_v2.len == 46 && !memcmp(result->raw_v2.data, key, 39) && !memcmp(result->raw_v2.data + 39, "AbCdEfG", 7));
+        CHECK(!result->verified && !result->verification_error && !result->redacted && !result->extra_data && !result->structured_data && !result->verification_from_cache);
+        CHECK(!result->primary_secret.data && !result->primary_secret.len && !result->primary_line && !result->chunk_offset_set);
+        br_json *part = NULL; CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(result->secret_parts, "key", &part) && !strcmp(json_object_get_string(part), key));
+        CHECK(json_object_object_get_ex(result->secret_parts, "search_engine", &part) && !strcmp(json_object_get_string(part), "AbCdEfG"));
+        br_results_clear(&results); return;
+    }
     if (entry->type == 876) {
         char key[28] = "master-", secret[28], input[70]; test_secret(key + 7, 20, 0); test_secret(secret, 27, 9);
         snprintf(input, sizeof(input), "%s %s", key, secret);

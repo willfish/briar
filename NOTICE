@@ -28,7 +28,8 @@ Datadog token response projection follows selected encoding/json pointer and
 slice-reuse mechanics. DeepAI's fixed multipart form follows selected
 mime/multipart writer behavior. Enigma's ASCII Content-Type diagnostics and Figma's
 ASCII 403 response diagnostics follow selected strconv quoting behavior.
-Freshbooks request guards follow selected net/url and net/http constructor behavior.
+Freshbooks request guards and Geocodio's constrained query/fragment projection
+follow selected net/url and net/http constructor behavior.
 Google credential string projection and ordered marshaling follow selected
 encoding/json string behavior. Google OAuth form encoding, limited response reads
 and selected error formatting follow golang.org/x/oauth2 v0.34.0, commit
