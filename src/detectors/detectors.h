@@ -314,5 +314,9 @@ int br_flickr_init(const br_detector **out, char **error);
 int br_flightapi_init(const br_detector **out, char **error);
 int br_flightlabs_init(const br_detector **out, char **error);
 int br_flightstats_init(const br_detector **out, char **error);
+int br_float_init(const br_detector **out, char **error);
+int br_flowflu_init(const br_detector **out, char **error);
+int br_flutterwave_init(const br_detector **out, char **error);
+int br_flyio_init(const br_detector **out, char **error);
 
 #endif
