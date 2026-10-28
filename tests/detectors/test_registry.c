@@ -368,12 +368,24 @@ static const registration expected[] = {
     {714, 0, "GoCanvas", "gocanvas", 44, true, 1024},
     {184, 0, "GoCardless", "gocardless", 45, true, -1},
     {654, 0, "GoodDay", "goodday", 32, true, -1},
+    {1041, 0, "GoogleGeminiAPIKey", "aizasy", 39, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 1041) {
+        char key[40] = "AIzaSy"; test_secret(key + 6, 33, 0); key[38] = '-';
+        br_results results = test_scan(detector, NULL, false, key, 39); CHECK(results.len == 1);
+        br_result plain = results.items[0]; plain.redacted = NULL;
+        test_key_result(&plain, 1041, key, "key");
+        CHECK(results.items[0].redacted && strlen(results.items[0].redacted) == 11 &&
+              !memcmp(results.items[0].redacted, key, 8) && !strcmp(results.items[0].redacted + 8, "..."));
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 714) {
         char key[45], input[120]; test_secret(key, 43, 0); key[43] = '='; key[44] = '\0';
         snprintf(input, sizeof(input), "gocanvas Mailbox@fixture.invalid\ngocanvas %s \n", key);
