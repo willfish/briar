@@ -310,5 +310,9 @@ int br_fixerio_init(const br_detector **out, char **error);
 int br_flatio_init(const br_detector **out, char **error);
 int br_fleetbase_init(const br_detector **out, char **error);
 int br_flexport_init(const br_detector **out, char **error);
+int br_flickr_init(const br_detector **out, char **error);
+int br_flightapi_init(const br_detector **out, char **error);
+int br_flightlabs_init(const br_detector **out, char **error);
+int br_flightstats_init(const br_detector **out, char **error);
 
 #endif
