@@ -334,6 +334,7 @@ static const registration expected[] = {
     {427, 0, "Front", "front", 281, true, -1},
     {899, 0, "FTP", "ftp://", 38, true, -1},
     {285, 0, "Fulcrum", "fulcrum", 80, true, -1},
+    {381, 0, "FXMarket", "fxmarket", 20, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -489,6 +490,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 68) { key[7] = '_'; key[19] = '-'; }
     if (entry->type == 527) { key[8] = '.'; key[21] = '-'; }
     if (entry->type == 592) key[15] = '.';
+    if (entry->type == 381) { key[4] = '_'; key[8] = '-'; key[15] = '='; }
     if (entry->type == 428) memcpy(key, "flb_live_", 9);
     if (entry->type == 427) { key[36] = '!'; key[80] = '.'; key[120] = '_'; key[190] = '-'; }
     if (entry->type == 199) memcpy(key, "fio-u-", 6);
