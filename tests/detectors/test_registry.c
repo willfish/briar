@@ -268,6 +268,7 @@ static const registration expected[] = {
     {135, 0, "DroneCI", "droneci", 32, true, -1},
     {18, 0, "Dropbox", "dropbox", 133, true, -1},
     {1059, 0, "DuffelToken", "duffel_test_", 55, true, -1},
+    {1063, 0, "Duo", "duosecurity", 20, true, 1024},
     {821, 0, "Duply", "duply", 36, true, 1024},
     {180, 0, "Dwolla", "dwolla", 50, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -276,6 +277,32 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 1063) {
+        static const char host[] = "api-offline.duosecurity.com", ikey[] = "DI0123456789ABCDEFGH";
+        static const char skey[] = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTt";
+        static const char input[] = "api-offline.duosecurity.com\nduo DI0123456789ABCDEFGH\nduo AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTt";
+        static const char raw_v2[] = "api-offline.duosecurity.com:DI0123456789ABCDEFGH:AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTt";
+        br_results results = test_scan(detector, NULL, false, input, sizeof(input) - 1);
+        CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 1063 && result->raw.len == entry->key_len);
+        CHECK(result->raw.len == sizeof(ikey) - 1 && !memcmp(result->raw.data, ikey, sizeof(ikey) - 1));
+        CHECK(result->raw_v2.len == sizeof(raw_v2) - 1 && !memcmp(result->raw_v2.data, raw_v2, sizeof(raw_v2) - 1));
+        CHECK(!result->verified && !result->verification_error && !result->redacted && !result->structured_data && !result->verification_from_cache);
+        CHECK(!result->primary_secret.data && !result->primary_secret.len && !result->primary_line && !result->chunk_offset_set);
+        CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 4);
+        const char *names[] = {"host", "ikey", "skey", "application"};
+        const char *values[] = {host, ikey, skey, "Admin API"};
+        br_json *part = NULL;
+        for (size_t i = 0; i < 4; ++i) {
+            CHECK(json_object_object_get_ex(result->secret_parts, names[i], &part));
+            CHECK(json_object_is_type(part, json_type_string) && !strcmp(json_object_get_string(part), values[i]));
+        }
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
+        CHECK(json_object_object_get_ex(result->extra_data, "application", &part) && !strcmp(json_object_get_string(part), "Admin API"));
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 343) {
         static const char input[] = "{\"auths\":{\"reg.invalid\":{\"auth\":\"dTo=\"}}}";
         static const char raw_v2[] = "{\"registry\":\"reg.invalid\",\"auth\":\"dTo=\"}";
@@ -1131,6 +1158,7 @@ int main(void)
     CHECK(BR_ABI_REVISION == 1);
     feature_gate_tests(1053, "BraintrustDetectorEnabled");
     feature_gate_tests(1059, "DuffelTokenDetectorEnabled");
+    feature_gate_tests(1063, "DuoDetectorEnabled");
     feature_gate_tests(1048, "CloudinaryDetectorEnabled");
     feature_gate_tests(1043, "DatadogApiKeyDetectorEnabled");
     cloudflare_feature_gate_tests(100, "CloudflareApiTokenV2DetectorEnabled");

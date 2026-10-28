@@ -265,6 +265,7 @@ static const detector_factory named_factories[] = {
     br_droneci_init,
     br_dropbox_init,
     br_duffeltoken_init,
+    br_duo_init,
     br_duply_init,
     br_dwolla_init,
     br_jiradatacenterpat_init,
@@ -341,6 +342,15 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_is_type(feature_flags, json_type_object)) return false;
             br_json *enabled = NULL;
             if (!json_object_object_get_ex(feature_flags, "DatadogApiKeyDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1063: {
+            if (detector->version != 0) return false;
+            /* OSS main enables Duo; package atomic-zero remains false. */
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "DuoDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
         case 1059: {
@@ -631,6 +641,7 @@ const char *br_detector_type_name(int32_t type)
     case 1052: return "AWSAppSync";
     case 1053: return "BrainTrustApiKey";
     case 1059: return "DuffelToken";
+    case 1063: return "Duo";
     default: return NULL;
     }
 }
