@@ -596,6 +596,11 @@ def fixtures():
     frameio_key = b"fio-u-" + alnum("frameio-key", 64)
     frameio_key = frameio_key[:17] + b"_" + frameio_key[18:39] + b"-" + frameio_key[40:]
     freshbooks_key = alnum("freshbooks-key", 64).lower()
+    freshdesk_key = alnum("freshdesk-key", 20)
+    front_first, front_payload = alnum("front-first", 36), alnum("front-payload", 188)
+    fulcrum_key = alnum("fulcrum-key", 80).lower()
+    ftp_fragment = b"ftp://Briar86:B7r9P2@fixture.invalid/#x:abc"
+    ftp_freebsd = b"ftp://Briar86:V7pQ9r2@ftp.FreeBSD.org/path"
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1134,6 +1139,16 @@ def fixtures():
         ("frameio", 199, frameio_key),
         ("frameio_uppercase", 199, b"FIO-U-" + frameio_key[6:]),
         ("freshbooks", 681, b"FRESHBOOKS " + freshbooks_key + b"\nfreshbooks https://www#Briar85\0com"),
+        ("freshdesk", 678, b"FrEsHdEsK " + freshdesk_key + b"\nbriar86-" + alnum("freshdesk-host", 72).lower() + b".freshdesk.com"),
+        ("front_wildcard", 427, b"FrOnT " + front_first + b"\xc3\xa9" + front_payload),
+        ("front_nul", 427, b"front " + front_first + b"\0" + front_payload),
+        ("ftp", 899, b"ftp://ExampleUser:sam%70le@fixture.invalid/path"),
+        ("ftp_fragment_vt", 899, ftp_fragment + b"\x0bdef@tail"),
+        ("ftp_fragment_nul", 899, ftp_fragment + b"\0def@tail"),
+        ("ftp_skipped", 899, b"ftp://anonymous:V7pQ9r2@fixture.invalid/path\nftp://Briar86:****@fixture.invalid/path\nftp://Briar86:$BRIAR86@fixture.invalid/path"),
+        ("ftp_filtered", 899, ftp_freebsd),
+        ("ftp_retained", 899, ftp_freebsd),
+        ("fulcrum", 285, b"FuLcRuM " + fulcrum_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1256,7 +1271,7 @@ def compare(native, reference, case):
     # Retained fixtures match pinned false-positive terms, including check in
     # the long scoped Dropbox payload. Use an ALREADY supported flag in BOTH
     # CLIs, not normalization/filter changes. Keep default-zero guards.
-    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_", "duffeltoken_retained_", "flyio_retained_")) else None
+    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_", "duffeltoken_retained_", "flyio_retained_", "ftp_retained_")) else None
     with tempfile.TemporaryDirectory(prefix="briar-reference-", dir=ROOT / "state") as tmp:
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True, result_types=result_types)
@@ -1368,8 +1383,14 @@ def compare(native, reference, case):
                 "flyio_bypass_stdin", "flyio_bypass_filesystem", "flyio_retained_stdin", "flyio_retained_filesystem",
                 "formbucket_stdin", "formbucket_filesystem", "formcraft_stdin", "formcraft_filesystem",
                 "formio_stdin", "formio_filesystem", "formsite_stdin", "formsite_filesystem",
-                "frameio_stdin", "frameio_filesystem", "freshbooks_stdin", "freshbooks_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "frameio_stdin", "frameio_filesystem", "freshbooks_stdin", "freshbooks_filesystem",
+                "freshdesk_stdin", "freshdesk_filesystem", "front_wildcard_stdin", "front_wildcard_filesystem",
+                "front_nul_stdin", "front_nul_filesystem", "fulcrum_stdin", "fulcrum_filesystem",
+                "ftp_stdin", "ftp_filesystem", "ftp_fragment_vt_stdin", "ftp_fragment_vt_filesystem",
+                "ftp_fragment_nul_stdin", "ftp_fragment_nul_filesystem", "ftp_retained_stdin", "ftp_retained_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
+    if name.startswith(("ftp_skipped_", "ftp_filtered_")) and (actual or expected):
+        raise AssertionError(name + ": FTP credential skips and private false-positive filtering must remain empty")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
     if name in ("dfuse_no_dispatch_stdin", "dfuse_no_dispatch_filesystem") and (actual or expected):
