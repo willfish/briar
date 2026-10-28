@@ -590,6 +590,12 @@ def fixtures():
     formio_signature = alnum("formio-signature", 43)
     formio_signature = formio_signature[:8] + b"_" + formio_signature[9:20] + b"-" + formio_signature[21:]
     formio_key = b"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." + alnum("formio-payload", 250) + b"." + formio_signature
+    formsite_key = alnum("formsite-key", 32)
+    foursquare_key = alnum("foursquare-key", 48).upper()
+    foursquare_secret = alnum("foursquare-secret", 48).upper()
+    frameio_key = b"fio-u-" + alnum("frameio-key", 64)
+    frameio_key = frameio_key[:17] + b"_" + frameio_key[18:39] + b"-" + frameio_key[40:]
+    freshbooks_key = alnum("freshbooks-key", 64).lower()
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1123,6 +1129,11 @@ def fixtures():
         ("formbucket", 713, b"FoRmBuCkEt " + formbucket_key),
         ("formcraft", 812, b"FoRmCrAfT " + formcraft_key),
         ("formio", 712, b"FoRmIo " + formio_key + b" "),
+        ("formsite", 839, b"FoRmSiTe " + formsite_key + b"\nformsite fs1234"),
+        ("foursquare", 454, b"FOURSQUARE " + foursquare_key + b"\nfoursquare " + foursquare_secret),
+        ("frameio", 199, frameio_key),
+        ("frameio_uppercase", 199, b"FIO-U-" + frameio_key[6:]),
+        ("freshbooks", 681, b"FRESHBOOKS " + freshbooks_key + b"\nfreshbooks https://www#Briar85\0com"),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1356,7 +1367,8 @@ def compare(native, reference, case):
                 "flowflu_stdin", "flowflu_filesystem", "flutterwave_stdin", "flutterwave_filesystem",
                 "flyio_bypass_stdin", "flyio_bypass_filesystem", "flyio_retained_stdin", "flyio_retained_filesystem",
                 "formbucket_stdin", "formbucket_filesystem", "formcraft_stdin", "formcraft_filesystem",
-                "formio_stdin", "formio_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "formio_stdin", "formio_filesystem", "formsite_stdin", "formsite_filesystem",
+                "frameio_stdin", "frameio_filesystem", "freshbooks_stdin", "freshbooks_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1447,6 +1459,12 @@ def compare(native, reference, case):
         raise AssertionError(name + ": ExportSDK must not expose its hidden template ID through RawV2")
     if name.startswith("faceplusplus_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": FacePlusPlus preserves all four directed products, including both self-pairs")
+    if name.startswith("foursquare_") and (len(actual) != 4 or len(expected) != 4):
+        raise AssertionError(name + ": FourSquare preserves four directed products, including both self-pairs")
+    if name.startswith("frameio_uppercase_") and (actual or expected):
+        raise AssertionError(name + ": FrameIO's direct fio-u- token prefix remains case-sensitive")
+    if name.startswith(("formsite_", "freshbooks_")) and any(row["RawV2"] for row in actual + expected):
+        raise AssertionError(name + ": required secondary Formsite and Freshbooks credentials remain hidden")
     if name.startswith("fmfw_") and (len(actual) != 2 or len(expected) != 2 or any(row["RawV2"] for row in actual + expected)):
         raise AssertionError(name + ": independent FMFW grammars produce two keys with one hidden required ID, including its self-pair")
     if name.startswith("formbucket_") and any("\0" not in row["Raw"] for row in actual + expected):
