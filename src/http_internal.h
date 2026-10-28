@@ -47,6 +47,16 @@ void br_native_http_destroy(br_native_http *runtime);
 /* Legacy raw users must balance a successful initialization with curl cleanup. */
 const br_transport *br_curl_transport_init(char **error);
 
+/* Bounded byte-injection boundary for common.SaneHttpClientTimeOut(5s), whose
+ * source wraps Go DefaultTransport rather than saneTransport. SANE/5000 here
+ * projects request preparation ONLY, not transport-policy equivalence. Require
+ * an explicitly installed backend that knowingly serves this contract. Reject
+ * known native curl and all owned SANE/LOCAL clients before I/O, even copies.
+ * Arbitrary forwarding wrappers cannot be detected/certified. No coalescing;
+ * ordinary prepared storage still lasts only through send return. */
+int br_http_default_transport_5s_send(const br_scan_ctx *ctx, const br_http_request *request,
+                                     br_http_response *response, char **error);
+
 /* Zero-initialize. Own only the synthesized array/UA; other pointers borrow
  * the caller's stable request snapshot. Keep this exact request address and
  * storage alive through raw backend send AND release, then clear it. */

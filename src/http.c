@@ -476,3 +476,22 @@ const br_transport *br_curl_transport_init(char **error)
     }
     return &transport;
 }
+
+int br_http_default_transport_5s_send(const br_scan_ctx *ctx, const br_http_request *request,
+                                     br_http_response *response, char **error)
+{
+    if (error) *error = NULL;
+    if (response) memset(response, 0, sizeof(*response));
+    if (!ctx || !request || !response) return fail(error, "invalid HTTP arguments");
+    const br_transport *transport = ctx->transport;
+    if (!transport || !transport->send || !transport->release)
+        return fail(error, "HTTP transport not installed");
+    /* A copied descriptor is still curl. Existing owned clients declare only
+     * SANE/LOCAL policy, so none represents this source DefaultTransport. */
+    if (transport->send == curl_send || br_http_client_is_owned(transport))
+        return fail(error, "unsupported: default-transport HTTP client policy");
+    if (request->dedup_key.len) return fail(error, "unsupported HTTP request coalescing");
+    if (request->profile != BR_HTTP_SANE || request->timeout_ms != 5000)
+        return fail(error, "unsupported: default-transport request projection");
+    return br_http_send(ctx, request, response, error);
+}
