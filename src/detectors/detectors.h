@@ -341,5 +341,9 @@ int br_generic_init(const br_detector **out, char **error);
 /* Source New() configures exclusions; registry's disabled scanner is zero-value. */
 int br_generic_new_init(const br_detector **out, char **error);
 int br_gengo_init(const br_detector **out, char **error);
+int br_geoapify_init(const br_detector **out, char **error);
+int br_geocode_init(const br_detector **out, char **error);
+int br_geocodify_init(const br_detector **out, char **error);
+int br_geocodio_init(const br_detector **out, char **error);
 
 #endif
