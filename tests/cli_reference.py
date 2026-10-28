@@ -628,6 +628,12 @@ def fixtures():
     gitlab_v3_max = b"glpat-" + alnum("gitlab-v3-max", 300) + "😀7q😀".encode() + synthetic("gitlab-v3-suffix-max", 9)
     gitlab_oauth_id, gitlab_oauth_secret = synthetic("gitlab-oauth-id", 64), b"gloas-" + synthetic("gitlab-oauth-secret", 64)
     gitlab_oauth_pair = b"application_id " + gitlab_oauth_id + b"\n" + gitlab_oauth_secret
+    gitter_key = synthetic("gitter-key", 40)
+    gitter_key = gitter_key[:17] + b"-" + gitter_key[18:]
+    glassnode_key = alnum("glassnode-key", 27)
+    gocanvas_key = alnum("gocanvas-key", 43) + b"="
+    gocanvas_prefix = b"gocanvas Mailbox95@fixture.invalid\ngocanvas "
+    gocardless_key = b"live_" + b"b7c9d2e5f6g8h3j4k1m0n2p4q6r8s1t3u5v7w9x2"[:39] + b"-"
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1238,6 +1244,14 @@ def fixtures():
         ("gitlab_v3_max_unicode", "9.v3", gitlab_v3_max),
         ("gitlaboauth2", 1050, gitlab_oauth_pair),
         ("gitlaboauth2_unique", 1050, gitlab_oauth_pair + b"\n" + gitlab_oauth_pair),
+        ("gitter", 555, b"GiTtEr " + gitter_key),
+        ("glassnode", 569, b"GlAsSnOdE " + glassnode_key),
+        ("gocanvas", 714, gocanvas_prefix + gocanvas_key + b" "),
+        ("gocanvas_no_email", 714, b"gocanvas " + gocanvas_key + b" "),
+        ("gocanvas_tab_suffix", 714, gocanvas_prefix + gocanvas_key + b"\t"),
+        ("gocardless_space", 184, b"GoCardless " + gocardless_key + b" "),
+        ("gocardless_quote", 184, b"gocardless " + gocardless_key + b'"'),
+        ("gocardless_no_dispatch", 184, gocardless_key + b" "),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1503,6 +1517,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": app-key filtering and GitLab version/endpoint projection must preserve the expected findings")
+    if name.startswith(("gitter_", "glassnode_", "gocanvas_", "gocardless_")):
+        empty = name.startswith(("gocanvas_no_email_", "gocanvas_tab_suffix_", "gocardless_no_dispatch_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": required hidden email, consumed suffix and dispatch grammar must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

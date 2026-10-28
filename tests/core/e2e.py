@@ -573,6 +573,29 @@ check(len(rows) == 1 and rows[0]["Raw"] == gitlab_oauth_secret, "OSS defaults en
 check(rows[0]["RawV2"] == gitlab_oauth_id + gitlab_oauth_secret + "https://gitlab.com", "GitLab OAuth identity includes the endpoint")
 check(rows[0]["SecretParts"] == {"client_id": gitlab_oauth_id, "client_secret": gitlab_oauth_secret, "endpoint": "https://gitlab.com"} and rows[0]["ExtraData"] is None, "GitLab OAuth metadata does not inherit GitHub fields")
 
+canvas_key = key80[:43] + "="
+canvas_prefix = "gocanvas Mailbox@fixture.invalid\ngocanvas "
+cardless_key = "live_" + key40[:39] + "-"
+for selector, number, raw, payload in (
+    ("Gitter", 555, key40, "GiTtEr " + key40),
+    ("Glassnode", 569, "Z" + key32[1:27], "GlAsSnOdE Z" + key32[1:27]),
+    ("GoCanvas", 714, canvas_key, canvas_prefix + canvas_key + " "),
+    ("GoCardless", 184, cardless_key, "gocardless " + cardless_key + " "),
+    ("GoCardless", 184, cardless_key + '"', "gocardless " + cardless_key + '"'),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], payload.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "enabled named selector dispatches the provider")
+    check(rows[0]["Raw"] == raw and rows[0]["SecretParts"] == {"key": raw}, "only the visible key is projected, including a consumed quote")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None, "required hidden email does not become invented metadata")
+    check(not rows[0]["Verified"] and not rows[0]["VerificationFromCache"], "NoV does not invoke the provider")
+for selector, payload in (
+    ("GoCanvas", "gocanvas " + canvas_key + " "),
+    ("GoCanvas", canvas_prefix + canvas_key + "\t"),
+    ("GoCardless", cardless_key + " "),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], payload.encode())
+    check(not rows, "required hidden email, consumed delimiter and dispatch keyword are not optional")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
