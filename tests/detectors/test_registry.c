@@ -352,6 +352,7 @@ static const registration expected[] = {
     {326, 0, "GetEmail", "getemail", 20, false, -1},
     {327, 0, "GetEmails", "getemails", 26, false, 1024},
     {383, 0, "GetGeoAPI", "getgeoapi", 40, true, -1},
+    {210, 0, "Getgist", "getgist", 68, true, -1},
     {861, 0, "Getresponse", "getresponse", 32, true, -1},
     {633, 0, "GetSandbox", "getsandbox", 40, true, 1024},
     {8, 1, "Github", "github", 40, true, -1},
