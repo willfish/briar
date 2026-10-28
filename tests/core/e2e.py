@@ -681,6 +681,15 @@ check(len(rows) == 1 and rows[0]["DetectorType"] == 763, "GTMetrix selector disp
 check(rows[0]["Raw"] == gtmetrix_key and rows[0]["SecretParts"] == {"key": gtmetrix_key}, "GTMetrix publishes its lowercase-hex key")
 check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "GTMetrix NoV does not send Basic credentials")
 
+guardian_key = "A7z9w2y5-g6h8-j3k4-m1n0-p2q4r6s8t1u3"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Guardianapi"], ("GuArDiAnApI " + guardian_key).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 259, "Guardianapi selector dispatches its enabled scanner")
+check(rows[0]["Raw"] == guardian_key and rows[0]["SecretParts"] == {"key": guardian_key}, "Guardianapi preserves first-block uppercase A and nonhex lower-alphanumeric blocks")
+check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Guardianapi NoV does not search content or add metadata")
+for payload in ("guardianapi B" + guardian_key[1:], "guardianapi " + guardian_key[:9] + "A" + guardian_key[10:], "guardian " + guardian_key):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Guardianapi"], payload.encode())
+    check(not rows, "Guardianapi keeps its asymmetric alphabet and longer dispatch keyword")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
