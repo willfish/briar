@@ -312,6 +312,7 @@ static const registration expected[] = {
     {420, 0, "Finnhub", "finnhub", 20, true, -1},
     {149, 0, "FixerIO", "fixer", 32, true, -1},
     {501, 0, "FlatIO", "flat", 128, true, -1},
+    {428, 0, "Fleetbase", "fleetbase", 29, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -449,6 +450,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 68) { key[7] = '_'; key[19] = '-'; }
     if (entry->type == 527) { key[8] = '.'; key[21] = '-'; }
     if (entry->type == 592) key[15] = '.';
+    if (entry->type == 428) memcpy(key, "flb_live_", 9);
     if (entry->type == 667) key[8] = key[13] = key[18] = key[23] = '-';
     if (entry->type == 423) {
         memcpy(key, "API_KEY", 7);
