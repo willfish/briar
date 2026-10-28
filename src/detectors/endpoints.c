@@ -72,6 +72,80 @@ int br_endpoints_collect(const br_endpoints *settings, const char *default_cloud
     return rc;
 }
 
+int br_byte_endpoints_push(br_byte_endpoints *list, br_slice item, bool unique, char **error)
+{
+    if (error) *error = NULL;
+    if (!list || (!item.data && item.len) || item.len == SIZE_MAX)
+        return fail(error, "invalid endpoint bytes");
+    if (unique) {
+        for (size_t i = 0; i < list->len; ++i)
+            if (list->items[i].len == item.len &&
+                (!item.len || !memcmp(list->items[i].data, item.data, item.len))) return 0;
+    }
+    unsigned char *copy = malloc(item.len + 1);
+    if (!copy) return fail(error, "out of memory copying byte endpoint");
+    if (item.len) memcpy(copy, item.data, item.len);
+    copy[item.len] = 0;
+    if (list->len == list->cap) {
+        size_t next = list->cap ? list->cap * 2 : 8;
+        if (next < list->cap || next > SIZE_MAX / sizeof(*list->items)) {
+            free(copy);
+            return fail(error, "too many byte endpoints");
+        }
+        br_bytes *items = realloc(list->items, next * sizeof(*items));
+        if (!items) {
+            free(copy);
+            return fail(error, "out of memory collecting byte endpoints");
+        }
+        list->items = items;
+        list->cap = next;
+    }
+    list->items[list->len++] = (br_bytes){copy, item.len};
+    return 0;
+}
+
+void br_byte_endpoints_clear(br_byte_endpoints *list)
+{
+    if (!list) return;
+    for (size_t i = 0; i < list->len; ++i) free(list->items[i].data);
+    free(list->items);
+    memset(list, 0, sizeof(*list));
+}
+
+br_slice br_byte_endpoints_at(const br_byte_endpoints *list, size_t index)
+{
+    if (!list || index >= list->len) return (br_slice){0};
+    return (br_slice){list->items[index].data, list->items[index].len};
+}
+
+int br_endpoints_collect_bytes(const br_endpoints *settings, const char *default_cloud,
+                              const br_captures *found, br_byte_endpoints *out, char **error)
+{
+    if (error) *error = NULL;
+    if (!out) return fail(error, "invalid endpoint output");
+    if (settings && settings->nconfigured && !settings->configured) {
+        br_byte_endpoints_clear(out);
+        return fail(error, "invalid configured endpoints");
+    }
+    int rc = 0;
+    if (settings) {
+        for (size_t i = 0; !rc && i < settings->nconfigured; ++i) {
+            const char *item = settings->configured[i];
+            rc = !item ? fail(error, "invalid endpoint string") :
+                br_byte_endpoints_push(out, (br_slice){(const unsigned char *)item, strlen(item)}, true, error);
+        }
+    }
+    const char *cloud = settings && settings->cloud ? settings->cloud : default_cloud;
+    if (!rc && (!settings || settings->use_cloud) && cloud && *cloud)
+        rc = br_byte_endpoints_push(out, (br_slice){(const unsigned char *)cloud, strlen(cloud)}, false, error);
+    if (!rc && (!settings || settings->use_found) && found) {
+        for (size_t i = 0; !rc && i < found->len; ++i)
+            rc = br_byte_endpoints_push(out, br_captures_at(found, i), false, error);
+    }
+    if (rc) br_byte_endpoints_clear(out);
+    return rc;
+}
+
 int br_endpoints_validate_configured(const br_endpoints *settings, char **error)
 {
     if (error) *error = NULL;
