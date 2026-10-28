@@ -690,6 +690,13 @@ for payload in ("guardianapi B" + guardian_key[1:], "guardianapi " + guardian_ke
     _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Guardianapi"], payload.encode())
     check(not rows, "Guardianapi keeps its asymmetric alphabet and longer dispatch keyword")
 
+groq_key = "gsk_" + key40 + key32[:12]
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Groq"], (groq_key + "\n" + groq_key).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 988, "Groq selector preserves exact-token uniqueness")
+check(rows[0]["Raw"] == groq_key and rows[0]["SecretParts"] == {"key": groq_key}, "Groq publishes its complete direct token")
+check(rows[0]["ExtraData"] == {"rotation_guide": "https://howtorotate.com/docs/tutorials/groq/"}, "Groq retains rotation metadata without verification")
+check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and not rows[0]["Verified"], "Groq NoV does not list models or invent token metadata")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

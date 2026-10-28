@@ -377,6 +377,7 @@ static const registration expected[] = {
     {223, 0, "GraphCMS", "graphcms", 1127, true, 1024},
     {436, 0, "Graphhopper", "graphhopper", 36, true, -1},
     {206, 0, "Groovehq", "groovehq", 64, true, -1},
+    {988, 0, "Groq", "gsk_", 56, true, -1},
     {763, 0, "GTMetrix", "gtmetrix", 32, true, -1},
     {259, 0, "Guardianapi", "guardianapi", 36, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -385,6 +386,19 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 988) {
+        char key[57] = "gsk_"; test_secret(key + 4, 52, 0);
+        br_results results = test_scan(detector, NULL, false, key, 56); CHECK(results.len == 1);
+        br_result plain = results.items[0]; plain.extra_data = NULL;
+        test_key_result(&plain, 988, key, "key");
+        br_json *guide = NULL;
+        CHECK(results.items[0].extra_data && json_object_object_length(results.items[0].extra_data) == 1);
+        CHECK(json_object_object_get_ex(results.items[0].extra_data, "rotation_guide", &guide) &&
+              !strcmp(json_object_get_string(guide), "https://howtorotate.com/docs/tutorials/groq/"));
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 223) {
         char key[1128] = "ey", id[26], input[1200];
         test_secret(key + 2, 73, 0); key[75] = '!'; memcpy(key + 76, "ey", 2);
