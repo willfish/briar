@@ -369,6 +369,7 @@ static const registration expected[] = {
     {184, 0, "GoCardless", "gocardless", 45, true, -1},
     {654, 0, "GoodDay", "goodday", 32, true, -1},
     {1041, 0, "GoogleGeminiAPIKey", "aizasy", 39, true, -1},
+    {69, 0, "GoogleOauth2", "ya29.", 15, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -805,6 +806,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     }
     const char *secondary = NULL, *secondary_name = NULL, *session = NULL;
     switch (entry->type) {
+    case 69:
+        memcpy(key, "ya29.", 5);
+        break;
     case 959:
         strcpy(key, "ASIAQWERTYUIOPASDFGH");
         secondary = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN";
