@@ -484,6 +484,21 @@ def fixtures():
     dovico_user = alnum("dovico-user", 32).lower() + b"." + alnum("dovico-user-tail", 9).lower()
     dropbox_token = b"sl." + alnum("dropbox-key", 130)
     dropbox_scoped_token = b"sl.u." + alnum("dropbox-scoped-key", 1500)
+    duffel_test = b"duffel_test_" + alnum("duffel-test", 43)
+    duffel_live = b"duffel_live_" + alnum("duffel-live", 43)
+    duply_keys = []
+    for label in ("key", "other-key"):
+        value = synthetic("duply-" + label, 32)
+        duply_keys.append(b"-".join((value[:8], value[8:12], value[12:16], value[16:20], value[20:])))
+    duply_id = b"-".join(alnum("duply-id-" + str(i), 7).upper() for i in range(4))
+    duply_other_id = b"-".join(alnum("duply-other-id-" + str(i), 7).upper() for i in range(4))
+    dwolla_id = alnum("dwolla-id", 50)
+    dwolla_id = dwolla_id[:17] + b"-" + dwolla_id[18:]
+    dwolla_secret = alnum("dwolla-secret", 50)
+    duo_host, duo_other_host = b"api-g7k9m2.duosecurity.com", b"api-h8n4p6.duosecurity.com"
+    duo_ikey = b"DI" + alnum("duo-ikey", 18).upper()
+    duo_other_ikey = b"DI" + alnum("duo-other-ikey", 18).upper()
+    duo_skey, duo_other_skey = alnum("duo-skey", 40), alnum("duo-other-skey", 40)
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -928,6 +943,17 @@ def fixtures():
         ("dropbox_scoped_filtered", 18, b"dropbox " + dropbox_scoped_token),
         ("dropbox_retained_scoped", 18, b"dropbox " + dropbox_scoped_token),
         ("dropbox_no_prefix", 18, dropbox_token),
+        ("duffeltoken_filtered", 1059, duffel_test + b" " + duffel_live + b" " + duffel_live),
+        ("duffeltoken_retained", 1059, duffel_test + b" " + duffel_live + b" " + duffel_live),
+        ("duffeltoken_suffix", 1059, duffel_live + b"A"),
+        ("duply", 821, b"duply " + duply_keys[0] + b" duply " + duply_id),
+        ("duply_products", 821, b"duply " + duply_keys[0] + b" duply " + duply_keys[1] + b" duply " + duply_id + b" duply " + duply_other_id),
+        ("duply_no_id", 821, b"duply " + duply_keys[0]),
+        ("dwolla", 180, b"dwolla " + dwolla_id + b" dwolla " + dwolla_secret),
+        ("dwolla_equal", 180, b"dwolla " + dwolla_id + b" dwolla " + dwolla_id),
+        ("duo", 1063, duo_host + b" duo " + duo_ikey + b" duo " + duo_skey),
+        ("duo_products", 1063, duo_host + b" " + duo_other_host + b" duo " + duo_ikey + b" duo " + duo_other_ikey + b" duo " + duo_skey + b" duo " + duo_other_skey),
+        ("duo_no_host", 1063, b"duosecurity duo " + duo_ikey + b" duo " + duo_skey),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1044,7 +1070,7 @@ def compare(native, reference, case):
     # Retained fixtures match pinned false-positive terms, including check in
     # the long scoped Dropbox payload. Use an ALREADY supported flag in BOTH
     # CLIs, not normalization/filter changes. Keep default-zero guards.
-    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_")) else None
+    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_", "duffeltoken_retained_")) else None
     with tempfile.TemporaryDirectory(prefix="briar-reference-", dir=ROOT / "state") as tmp:
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True, result_types=result_types)
@@ -1121,7 +1147,9 @@ def compare(native, reference, case):
                 "dotdigital_retained_wildcard_stdin", "dotdigital_retained_wildcard_filesystem",
                 "docusign_stdin", "docusign_filesystem",
                 "dronahq_stdin", "dronahq_filesystem", "droneci_stdin", "droneci_filesystem",
-                "dropbox_stdin", "dropbox_filesystem", "dropbox_retained_scoped_stdin", "dropbox_retained_scoped_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "dropbox_stdin", "dropbox_filesystem", "dropbox_retained_scoped_stdin", "dropbox_retained_scoped_filesystem",
+                "duply_stdin", "duply_filesystem", "duffeltoken_filtered_stdin", "duffeltoken_filtered_filesystem",
+                "duo_stdin", "duo_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1165,6 +1193,26 @@ def compare(native, reference, case):
         raise AssertionError(name + ": pinned badlist check in the long scoped fixture remains filtered by default")
     if name in ("dropbox_no_prefix_stdin", "dropbox_no_prefix_filesystem") and (actual or expected):
         raise AssertionError(name + ": Dropbox sl. dispatch must not bypass the required dropbox extraction prefix")
+    if name in ("duffeltoken_retained_stdin", "duffeltoken_retained_filesystem") and (len(actual) != 2 or len(expected) != 2):
+        raise AssertionError(name + ": both unique Duffel prefixes must survive explicit retained-results selection")
+    if name in ("duffeltoken_filtered_stdin", "duffeltoken_filtered_filesystem") and any(not row["Raw"].startswith("duffel_live_") for row in actual + expected):
+        raise AssertionError(name + ": pinned test wordlist filtering must suppress only the test-token fixture")
+    if name in ("duffeltoken_suffix_stdin", "duffeltoken_suffix_filesystem") and (actual or expected):
+        raise AssertionError(name + ": Duffel must consume a nonalphabet delimiter or end at EOF, not capture an overlong prefix")
+    if name in ("duply_products_stdin", "duply_products_filesystem") and (len(actual) != 2 or len(expected) != 2):
+        raise AssertionError(name + ": hidden Duply IDs collapse only after constructing native products for both keys")
+    if name in ("duply_no_id_stdin", "duply_no_id_filesystem") and (actual or expected):
+        raise AssertionError(name + ": a Duply ID remains required despite its omission from findings")
+    if name.startswith("duply_") and any(row["RawV2"] for row in actual + expected):
+        raise AssertionError(name + ": Duply must not invent RawV2 for hidden IDs")
+    if name in ("dwolla_stdin", "dwolla_filesystem") and (len(actual) != 2 or len(expected) != 2):
+        raise AssertionError(name + ": both unequal directed Dwolla products must remain visible")
+    if name in ("dwolla_equal_stdin", "dwolla_equal_filesystem") and (actual or expected):
+        raise AssertionError(name + ": unique Dwolla candidates must not produce an equal self-pair")
+    if name in ("duo_products_stdin", "duo_products_filesystem") and (len(actual) != 8 or len(expected) != 8):
+        raise AssertionError(name + ": all eight visible Duo host/integration-key/secret-key products must survive")
+    if name in ("duo_no_host_stdin", "duo_no_host_filesystem") and (actual or expected):
+        raise AssertionError(name + ": a Duo host remains required despite a separate duosecurity dispatch hint")
     if name in ("denodeploy_stdin", "denodeploy_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": both direct Deno token prefixes must dispatch without a provider name")
     if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):
