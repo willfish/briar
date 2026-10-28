@@ -330,6 +330,7 @@ static const registration expected[] = {
     {454, 0, "FourSquare", "foursquare", 48, true, 1024},
     {199, 0, "FrameIO", "fio-u-", 70, true, -1},
     {681, 0, "Freshbooks", "freshbooks", 64, true, 1024},
+    {285, 0, "Fulcrum", "fulcrum", 80, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
