@@ -288,5 +288,9 @@ int br_ethplorer_init(const br_detector **out, char **error);
 int br_eventbrite_init(const br_detector **out, char **error);
 int br_everhour_init(const br_detector **out, char **error);
 int br_exchangerateapi_init(const br_detector **out, char **error);
+int br_exchangeratesapi_init(const br_detector **out, char **error);
+int br_exportsdk_init(const br_detector **out, char **error);
+int br_extractorapi_init(const br_detector **out, char **error);
+int br_facebookoauth_init(const br_detector **out, char **error);
 
 #endif
