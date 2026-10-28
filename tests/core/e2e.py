@@ -666,6 +666,15 @@ for raw, following in ((graphhopper_key, ""), (graphhopper_key[:35] + "-", "x"))
     check(rows[0]["Raw"] == raw and rows[0]["SecretParts"] == {"key": raw}, "Graphhopper preserves context-dependent hyphen captures without UUID validation")
     check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Graphhopper NoV does not geocode or add metadata")
 
+groovehq_key = key32 * 2
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Groovehq"],
+                 ("GrOoVeHq " + groovehq_key + "EXTRA").encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 206, "Groovehq selector dispatches its enabled scanner")
+check(rows[0]["Raw"] == groovehq_key and rows[0]["SecretParts"] == {"key": groovehq_key}, "Groovehq retains the bounded prefix without an ending boundary")
+check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Groovehq NoV adds no metadata or requests")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Groovehq"], ("groove " + groovehq_key).encode())
+check(not rows, "Groovehq dispatch still requires the longer provider keyword")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
