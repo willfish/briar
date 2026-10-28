@@ -504,6 +504,17 @@ def fixtures():
     eagleeye_key, eagleeye_other_key = alnum("eagleeye-key", 15), alnum("eagleeye-other-key", 15)
     eagleeye_email, eagleeye_other_email = b"u7b9r@m4c8p.k2", b"v8d2s@n5g9q.h3"
     easyinsight_key, easyinsight_id = alnum("easyinsight-key", 20), alnum("easyinsight-id", 20)
+    ecostruxureit_key = b"AK1" + alnum("ecostruxureit-key", 55)
+    ecostruxureit_key = ecostruxureit_key[:20] + b"/" + ecostruxureit_key[21:]
+    edamam_key, edamam_other_key = alnum("edamam-key", 32).lower(), alnum("edamam-other-key", 32).lower()
+    edamam_id, edamam_other_id = alnum("edamam-id", 8).lower(), alnum("edamam-other-id", 8).lower()
+    edenai_first, edenai_second = alnum("edenai-first", 36), alnum("edenai-second", 92)
+    edenai_last = alnum("edenai-last", 42) + b"_"
+    edenai_key = edenai_first + b"." + edenai_second + b"." + edenai_last
+    edenai_bytes = edenai_first + b"\x00" + edenai_second + "🧪".encode() + edenai_last
+    eightxeight_key, eightxeight_other_key = alnum("eightxeight-key", 43), alnum("eightxeight-other-key", 43)
+    eightxeight_id, eightxeight_other_id = alnum("eightxeight-id", 30), alnum("eightxeight-other-id", 18)
+    eightxeight_id = eightxeight_id[:9] + b"_" + eightxeight_id[10:]
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -968,6 +979,17 @@ def fixtures():
         ("easyinsight", 282, b"easyinsight " + easyinsight_key + b" easyinsight " + easyinsight_id),
         ("easyinsight_roles", 282, b"easy-insight" + b"." * 60 + b"\nkey " + easyinsight_key + b" id " + easyinsight_id),
         ("easyinsight_equal", 282, b"easyinsight " + easyinsight_key + b" easyinsight " + easyinsight_key),
+        ("ecostruxureit", 801, b"ECOSTRUXUREIT " + ecostruxureit_key),
+        ("ecostruxureit_boundary", 801, b"ecostruxureit " + ecostruxureit_key[:-1] + b"/Q"),
+        ("edamam", 424, b"edamam " + edamam_key + b" edamam " + edamam_id),
+        ("edamam_products", 424, b"edamam " + edamam_key + b" edamam " + edamam_other_key + b" edamam " + edamam_id + b" edamam " + edamam_other_id),
+        ("edamam_no_id", 424, b"edamam " + edamam_key),
+        ("edenai", 568, b"EdEnAi " + edenai_key),
+        ("edenai_bytes", 568, b"edenai " + edenai_bytes),
+        ("edenai_no_lf", 568, b"edenai " + edenai_first + b"\n" + edenai_second + b"." + edenai_last),
+        ("eightxeight", 727, b"8X8 " + eightxeight_key + b" 8x8 " + eightxeight_id),
+        ("eightxeight_products", 727, b"8x8 " + eightxeight_key + b" 8x8 " + eightxeight_other_key + b" 8x8 " + eightxeight_id + b" 8x8 " + eightxeight_other_id),
+        ("eightxeight_no_id", 727, b"8x8 " + eightxeight_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1167,7 +1189,10 @@ def compare(native, reference, case):
                 "dynalist_stdin", "dynalist_filesystem", "dyspatch_stdin", "dyspatch_filesystem",
                 "eagleeyenetworks_stdin", "eagleeyenetworks_filesystem",
                 "eagleeyenetworks_bytes_stdin", "eagleeyenetworks_bytes_filesystem",
-                "easyinsight_roles_stdin", "easyinsight_roles_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "easyinsight_roles_stdin", "easyinsight_roles_filesystem",
+                "ecostruxureit_stdin", "ecostruxureit_filesystem", "ecostruxureit_boundary_stdin", "ecostruxureit_boundary_filesystem",
+                "edamam_stdin", "edamam_filesystem", "edenai_stdin", "edenai_filesystem",
+                "edenai_bytes_stdin", "edenai_bytes_filesystem", "eightxeight_stdin", "eightxeight_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1241,6 +1266,12 @@ def compare(native, reference, case):
         raise AssertionError(name + ": common provider prefixes must retain both unequal EasyInsight products")
     if name in ("easyinsight_equal_stdin", "easyinsight_equal_filesystem") and (actual or expected):
         raise AssertionError(name + ": equal EasyInsight key/ID pairs must remain excluded")
+    if name in ("edamam_products_stdin", "edamam_products_filesystem", "eightxeight_products_stdin", "eightxeight_products_filesystem") and (len(actual) != 4 or len(expected) != 4):
+        raise AssertionError(name + ": all four visible key/ID products must survive notifier deduplication")
+    if name in ("edamam_no_id_stdin", "edamam_no_id_filesystem", "eightxeight_no_id_stdin", "eightxeight_no_id_filesystem") and (actual or expected):
+        raise AssertionError(name + ": an application/subaccount ID remains required")
+    if name in ("edenai_no_lf_stdin", "edenai_no_lf_filesystem") and (actual or expected):
+        raise AssertionError(name + ": EdenAI wildcard dots exclude LF, unlike its prefix gap")
     if name in ("denodeploy_stdin", "denodeploy_filesystem") and (len(actual) != 2 or len(expected) != 2):
         raise AssertionError(name + ": both direct Deno token prefixes must dispatch without a provider name")
     if name in ("databrickstoken_products_stdin", "databrickstoken_products_filesystem") and (len(actual) != 6 or len(expected) != 6):
