@@ -365,6 +365,7 @@ static const registration expected[] = {
     {1050, 0, "GitLabOauth2", "gloas-", 70, true, 1024},
     {555, 0, "Gitter", "gitter", 40, true, -1},
     {569, 0, "Glassnode", "glassnode", 27, true, -1},
+    {714, 0, "GoCanvas", "gocanvas", 44, true, 1024},
     {184, 0, "GoCardless", "gocardless", 45, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -372,6 +373,15 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 714) {
+        char key[45], input[120]; test_secret(key, 43, 0); key[43] = '='; key[44] = '\0';
+        snprintf(input, sizeof(input), "gocanvas Mailbox@fixture.invalid\ngocanvas %s \n", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 714, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 9) {
         const char *key = entry->version == 1 ? "Ab3dE5fGh7Jk9LmNoP2q" : entry->version == 2 ? "glpat-Ab3dE5fGh7Jk9LmNoP2q" : "glpat-ABCDEFGHIJKLMNOPQRSTUVWXYZ0.a2.abcdefgh9";
         const char *cloud = "https://gitlab.com";

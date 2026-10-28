@@ -38,6 +38,8 @@ Owned HTTP singleflight ordering follows golang.org/x/sync v0.21.0, commit
 5071ed6a9f1617117556b66384f765c934de3698, under that same BSD text.
 FTP URL projection and control replies follow selected net/url, net/textproto
 and bufio behavior, including the generated URL escaping table.
+GoCanvas XML response projection follows selected encoding/xml struct, direct-text
+and integer-decoding behavior, with a narrower explicit supported subset.
 Selected Unicode 15.0 category, whitespace and lowercase ranges derive from
 Go 1.26.7 src/unicode/tables.go; regenerate them with tools/generate_go_unicode.py.
 Original copyright and BSD license:
