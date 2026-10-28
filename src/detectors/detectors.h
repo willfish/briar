@@ -322,5 +322,9 @@ int br_fmfw_init(const br_detector **out, char **error);
 int br_formbucket_init(const br_detector **out, char **error);
 int br_formcraft_init(const br_detector **out, char **error);
 int br_formio_init(const br_detector **out, char **error);
+int br_formsite_init(const br_detector **out, char **error);
+int br_foursquare_init(const br_detector **out, char **error);
+int br_frameio_init(const br_detector **out, char **error);
+int br_freshbooks_init(const br_detector **out, char **error);
 
 #endif
