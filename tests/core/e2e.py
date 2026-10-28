@@ -516,4 +516,15 @@ invoke(["stdin", *base], b"x" * (64 * 1024 + 1), code=1)
 _, rows = invoke(["stdin", *base], b"")
 check(not rows, "empty supported input")
 
+# ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
+# Preserve C result bytes, but repair the outer JSON string like Go's encoder.
+adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
+                  "refresh_token": "abé", "type": "authorized_user"}).encode()
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=983"], adc)
+check(len(rows) == 1, "ADC byte-sliced redaction still emits one valid JSON finding")
+check(rows[0]["Raw"] == key32, "ADC keeps the first-dot identifier")
+check(rows[0]["RawV2"] == key32 + "abé", "outer repair does not alter original credential bytes")
+check(rows[0]["Redacted"] == "ab\ufffd...\ufffd", "outer JSON replaces each invalid redaction byte like Go")
+check(rows[0]["SecretParts"]["refresh_token"] == "abé", "hidden token remains intact")
+
 print(f"end-to-end: {checks} assertions, 0 failures (synthetic stdin/filesystem, verification disabled)")

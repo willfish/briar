@@ -2,11 +2,13 @@
 #include "briar.h"
 #include "briar_decoders.h"
 #include "overlap.h"
+#include "utf8.h"
 
 #include <curl/curl.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <json-c/json.h>
+#include <limits.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
@@ -278,6 +280,32 @@ failed:
     return NULL;
 }
 
+/* A provider may deliberately byte-slice a Go string (ADC Redacted). Keep
+ * those original bytes in the C result; Go's outer JSON encoder replaces EACH
+ * invalid byte with RuneError. json-c otherwise emits invalid UTF8 verbatim. */
+static br_json *json_redacted(const char *value)
+{
+    br_slice text = {(const unsigned char *)(value ? value : ""), value ? strlen(value) : 0};
+    if (br_utf8_valid(text)) return json_object_new_string(value ? value : "");
+    size_t size = 0;
+    for (size_t i = 0; i < text.len;) {
+        uint32_t rune; size_t n = br_utf8_rune((br_slice){text.data + i, text.len - i}, &rune);
+        size_t add = n ? n : 3;
+        if (size > INT_MAX - add) return NULL;
+        size += add; i += n ? n : 1;
+    }
+    unsigned char *repaired = malloc(size);
+    if (!repaired) return NULL;
+    size_t at = 0;
+    for (size_t i = 0; i < text.len;) {
+        uint32_t rune; size_t n = br_utf8_rune((br_slice){text.data + i, text.len - i}, &rune);
+        if (n) { memcpy(repaired + at, text.data + i, n); at += n; i += n; }
+        else { memcpy(repaired + at, "\xef\xbf\xbd", 3); at += 3; ++i; }
+    }
+    br_json *result = json_object_new_string_len((const char *)repaired, (int)size);
+    free(repaired); return result;
+}
+
 static br_json *json_result(const result_frame *f)
 {
     const br_result *r = f->result;
@@ -300,7 +328,7 @@ static br_json *json_result(const result_frame *f)
     ADD("VerificationFromCache", json_object_new_boolean(r->verification_from_cache));
     ADD("Raw", json_object_new_string_len(r->raw.data ? (const char *)r->raw.data : "", (int)r->raw.len));
     ADD("RawV2", json_object_new_string_len(r->raw_v2.data ? (const char *)r->raw_v2.data : "", (int)r->raw_v2.len));
-    ADD("Redacted", json_object_new_string(r->redacted ? r->redacted : ""));
+    ADD("Redacted", json_redacted(r->redacted));
     if (jadd(object, "ExtraData", json_object_get(r->extra_data)) ||
         jadd(object, "StructuredData", json_object_get(r->structured_data)) ||
         jadd(object, "SecretParts", json_object_get(r->secret_parts))) goto failed;

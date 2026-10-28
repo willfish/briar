@@ -338,12 +338,27 @@ static const registration expected[] = {
     {394, 2, "Fullstory", "fullstory", 104, true, -1},
     {381, 0, "FXMarket", "fxmarket", 20, true, -1},
     {6, 0, "GCP", "provider_x509", sizeof("briar87@offline.invalid") - 1, true, -1},
+    {983, 0, "GCPApplicationDefaultCredentials", ".apps.googleusercontent.com", 2, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 983) {
+        static const char input[] = "{\"client_id\":\"42.hidden.apps.googleusercontent.com\",\"client_secret\":\"offline\",\"refresh_token\":\"abcdef\",\"type\":\"authorized_user\"}";
+        br_results results = test_scan(detector, NULL, false, input, sizeof(input) - 1); CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 983 && result->raw.len == entry->key_len && !memcmp(result->raw.data, "42", 2));
+        CHECK(result->raw_v2.len == 8 && !memcmp(result->raw_v2.data, "42abcdef", 8));
+        CHECK(result->redacted && !strcmp(result->redacted, "abc...f") && !result->extra_data && !result->structured_data);
+        CHECK(!result->verified && !result->verification_error && !result->verification_from_cache);
+        CHECK(!result->primary_secret.data && !result->primary_secret.len && !result->primary_line && !result->chunk_offset_set);
+        br_json *part = NULL; CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(result->secret_parts, "client_id", &part) && !strcmp(json_object_get_string(part), "42"));
+        CHECK(json_object_object_get_ex(result->secret_parts, "refresh_token", &part) && !strcmp(json_object_get_string(part), "abcdef"));
+        br_results_clear(&results); return;
+    }
     if (entry->type == 6) {
         static const char input[] = "{\"client_email\":\"briar87@offline.invalid\",\"auth_provider_x509_cert_url\":\"unused\"}";
         br_results results = test_scan(detector, NULL, false, input, sizeof(input) - 1);
@@ -1455,8 +1470,8 @@ int main(void)
             CHECK(!strcmp(detector->keywords[1], "jfrog.io"));
             CHECK(!strcmp(detector->keywords[2], "AKCp"));
         }
-        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 343 || entry->type == 18 ? 4096 : entry->type == 1013 || entry->type == 6 ? 2048 : entry->type == 829 ? 1300 : -1) &&
-              detector->start_offset == (entry->type == 1013 || entry->type == 6 ? 4096 : -1) &&
+        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 343 || entry->type == 18 ? 4096 : entry->type == 1013 || entry->type == 6 ? 2048 : entry->type == 983 ? 1024 : entry->type == 829 ? 1300 : -1) &&
+              detector->start_offset == (entry->type == 1013 || entry->type == 6 ? 4096 : entry->type == 983 ? 1024 : -1) &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
         if (entry->type == 957 || entry->type == 1019 || entry->type == 958 || entry->type == 1024 || entry->type == 975) {
