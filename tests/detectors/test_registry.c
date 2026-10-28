@@ -313,6 +313,7 @@ static const registration expected[] = {
     {149, 0, "FixerIO", "fixer", 32, true, -1},
     {501, 0, "FlatIO", "flat", 128, true, -1},
     {428, 0, "Fleetbase", "fleetbase", 29, true, -1},
+    {1009, 0, "Flexport", "shltm_", 46, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -451,6 +452,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 527) { key[8] = '.'; key[21] = '-'; }
     if (entry->type == 592) key[15] = '.';
     if (entry->type == 428) memcpy(key, "flb_live_", 9);
+    if (entry->type == 1009) { memcpy(key, "shltm_", 6); key[16] = '_'; key[30] = key[45] = '-'; }
     if (entry->type == 667) key[8] = key[13] = key[18] = key[23] = '-';
     if (entry->type == 423) {
         memcpy(key, "API_KEY", 7);
@@ -1127,6 +1129,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->extra_data, entry->type == 4 ? "Version" : "version", &part));
         CHECK(json_object_is_type(part, json_type_string));
         CHECK(!strcmp(json_object_get_string(part), entry->version == 1 ? "1" : entry->version == 2 ? "2" : "3"));
+    }
+    if (entry->type == 1009) {
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
+        CHECK(json_object_object_get_ex(result->extra_data, "rotation_guide", &part));
+        CHECK(!strcmp(json_object_get_string(part), "https://howtorotate.com/docs/tutorials/flexport/"));
+        CHECK(!result->redacted);
     }
     if (entry->type == 990) {
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
