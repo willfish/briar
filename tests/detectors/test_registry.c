@@ -297,6 +297,7 @@ static const registration expected[] = {
     {784, 0, "ExtractorAPI", "extractorapi", 40, true, -1},
     {40, 0, "FacebookOAuth", "facebook", 32, true, 1024},
     {636, 0, "FastForex", "fastforex", 28, true, -1},
+    {238, 0, "Feedier", "feedier", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
