@@ -329,6 +329,7 @@ static const registration expected[] = {
     {839, 0, "Formsite", "formsite", 32, true, 1024},
     {454, 0, "FourSquare", "foursquare", 48, true, 1024},
     {199, 0, "FrameIO", "fio-u-", 70, true, -1},
+    {681, 0, "Freshbooks", "freshbooks", 64, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -1105,6 +1106,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else if (entry->type == 113 && entry->version == 3) snprintf(input, sizeof(input), "%s", key);
     else if (entry->type == 808) snprintf(input, sizeof(input), "fibery %s\nhttps://Briar79.fibery.io/", key);
     else if (entry->type == 839) snprintf(input, sizeof(input), "formsite %s\nformsite fs1\nformsite AbC123", key); /* Both required fields stay hidden. */
+    else if (entry->type == 681) snprintf(input, sizeof(input), "freshbooks %s\nfreshbooks https://www.Briar85.com", key); /* Required URI stays hidden. */
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);
     else if (entry->type == 712) snprintf(input, sizeof(input), "%s %s\n", entry->keyword, key); /* Required consumed suffix, absent from Raw. */
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
