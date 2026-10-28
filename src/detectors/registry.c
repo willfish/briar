@@ -355,6 +355,9 @@ static const detector_factory named_factories[] = {
     br_github_v2_init,
     br_github_oauth2_init,
     br_githubapp_init,
+    br_gitlab_v1_init,
+    br_gitlab_v2_init,
+    br_gitlab_v3_init,
     br_gitlaboauth2_init,
     br_jiradatacenterpat_init,
 };
@@ -478,7 +481,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_object_get_ex(feature_flags, "BraintrustDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
-        case 113: return detector->version >= 1 && detector->version <= 3;
+        case 9: case 113: return detector->version >= 1 && detector->version <= 3;
         case 3: case 4: case 8: case 142: case 190: case 303: case 333: case 394: case 430: case 708: case 921: case 994: return detector->version == 1 || detector->version == 2;
         case 0: case 5: case 6: case 983: case 696: case 876: case 529: case 486: case 542: case 18: case 36: case 39: case 40: case 138: case 192: case 196: case 149: case 150: case 158: case 237: case 238: case 239: case 249: case 254: case 255: case 256: case 258: case 265: case 521: case 390: case 431: case 432: case 433: case 434: case 678: case 681: case 683: case 684: case 685: case 692: case 334: case 335: case 343: case 693: case 197: case 199: case 802: case 805: case 808:
         case 125: case 126: case 130: case 135: case 277: case 1014: case 1015: case 498: case 499: case 501: case 506: case 910: case 917: case 919: case 920: case 923: case 924: case 905: case 907:
@@ -506,6 +509,7 @@ const char *br_detector_type_name(int32_t type)
     case 6: return "GCP";
     case 7: return "Generic";
     case 8: return "Github";
+    case 9: return "Gitlab";
     case 18: return "Dropbox";
     case 36: return "GitHubApp";
     case 39: return "DatadogToken";

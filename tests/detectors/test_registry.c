@@ -359,6 +359,9 @@ static const registration expected[] = {
     {8, 2, "Github", "ghp_", 40, true, -1},
     {924, 0, "GitHubOauth2", "github", 20, true, 1024},
     {36, 0, "GitHubApp", "github", sizeof("-----BEGIN RSA PRIVATE KEY-----\nQ7r2T9\n-----END RSA PRIVATE KEY-----") - 1, true, 1024},
+    {9, 1, "Gitlab", "gitlab", 20, true, -1},
+    {9, 2, "Gitlab", "glpat-", 26, true, -1},
+    {9, 3, "Gitlab", "glpat-", 46, true, -1},
     {1050, 0, "GitLabOauth2", "gloas-", 70, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -366,6 +369,25 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 9) {
+        const char *key = entry->version == 1 ? "Ab3dE5fGh7Jk9LmNoP2q" : entry->version == 2 ? "glpat-Ab3dE5fGh7Jk9LmNoP2q" : "glpat-ABCDEFGHIJKLMNOPQRSTUVWXYZ0.a2.abcdefgh9";
+        const char *cloud = "https://gitlab.com";
+        char input[100], raw_v2[100]; snprintf(input, sizeof(input), entry->version == 1 ? "gitlab %s" : "%s", key);
+        snprintf(raw_v2, sizeof(raw_v2), "%s%s", key, cloud);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 9 && result->raw.len == strlen(key) && !memcmp(result->raw.data, key, result->raw.len));
+        CHECK(result->raw_v2.len == strlen(raw_v2) && !memcmp(result->raw_v2.data, raw_v2, result->raw_v2.len));
+        CHECK(!result->verified && !result->verification_error && !result->redacted && !result->structured_data && !result->primary_secret.data && !result->verification_from_cache);
+        br_json *field = NULL; CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(result->secret_parts, "key", &field) && !strcmp(json_object_get_string(field), key));
+        CHECK(json_object_object_get_ex(result->secret_parts, "host", &field) && !strcmp(json_object_get_string(field), cloud));
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == 2);
+        CHECK(json_object_object_get_ex(result->extra_data, "version", &field) && !strcmp(json_object_get_string(field), entry->version == 1 ? "1" : entry->version == 2 ? "2" : "3"));
+        CHECK(json_object_object_get_ex(result->extra_data, "rotation_guide", &field) && !strcmp(json_object_get_string(field), "https://howtorotate.com/docs/tutorials/gitlab/"));
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 36) {
         const char *key = "-----BEGIN RSA PRIVATE KEY-----\nQ7r2T9\n-----END RSA PRIVATE KEY-----";
         char input[160]; snprintf(input, sizeof(input), "github 012345\ngithub 654321\ngithub %s", key);
@@ -1675,7 +1697,7 @@ int main(void)
         } else if (entry->type == 39 || entry->type == 1043) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);
             CHECK(!strcmp(detector->cloud_endpoint, "https://api.datadoghq.com"));
-        } else if (entry->type == 1050) {
+        } else if (entry->type == 9 || entry->type == 1050) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint && !strcmp(detector->cloud_endpoint, "https://gitlab.com"));
         } else if (entry->type == 8) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint && !strcmp(detector->cloud_endpoint, "https://api.github.com"));
