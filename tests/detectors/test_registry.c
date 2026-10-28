@@ -344,6 +344,7 @@ static const registration expected[] = {
     {876, 0, "Gemini", "master-", 27, true, 1024},
     {7, 0, "Generic", "pass", 17, false, -1},
     {426, 0, "Gengo", "gengo", 64, true, 1024},
+    {529, 0, "Geoapify", "geoapify", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
