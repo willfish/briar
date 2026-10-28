@@ -306,5 +306,9 @@ int br_finage_init(const br_detector **out, char **error);
 int br_financialmodelingprep_init(const br_detector **out, char **error);
 int br_findl_init(const br_detector **out, char **error);
 int br_finnhub_init(const br_detector **out, char **error);
+int br_fixerio_init(const br_detector **out, char **error);
+int br_flatio_init(const br_detector **out, char **error);
+int br_fleetbase_init(const br_detector **out, char **error);
+int br_flexport_init(const br_detector **out, char **error);
 
 #endif
