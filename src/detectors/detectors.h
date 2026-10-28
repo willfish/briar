@@ -345,5 +345,9 @@ int br_geoapify_init(const br_detector **out, char **error);
 int br_geocode_init(const br_detector **out, char **error);
 int br_geocodify_init(const br_detector **out, char **error);
 int br_geocodio_init(const br_detector **out, char **error);
+int br_geoipifi_init(const br_detector **out, char **error);
+int br_getemail_init(const br_detector **out, char **error);
+int br_getemails_init(const br_detector **out, char **error);
+int br_getgeoapi_init(const br_detector **out, char **error);
 
 #endif
