@@ -322,6 +322,7 @@ static const registration expected[] = {
     {265, 0, "FlowFlu", "flowflu", 51, true, 1024},
     {173, 0, "Flutterwave", "FLWSECK-", 42, true, -1},
     {980, 0, "FlyIO", "FlyV1", 510, true, -1},
+    {812, 0, "Formcraft", "formcraft", 16, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
