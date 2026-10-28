@@ -272,6 +272,7 @@ static const registration expected[] = {
     {821, 0, "Duply", "duply", 36, true, 1024},
     {180, 0, "Dwolla", "dwolla", 50, true, 1024},
     {359, 0, "Dynalist", "dynalist", 128, true, -1},
+    {258, 0, "Dyspatch", "dyspatch", 52, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -396,6 +397,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 1059) memcpy(key, "duffel_test_", 12);
     if (entry->type == 386) key[32] = '.';
     if (entry->type == 359) { key[45] = '-'; key[88] = '_'; }
+    if (entry->type == 258)
+        for (size_t i = 0; i < entry->key_len; ++i)
+            if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
     if (entry->type == 919 || entry->type == 821) {
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
