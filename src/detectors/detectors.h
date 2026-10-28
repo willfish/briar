@@ -326,5 +326,9 @@ int br_formsite_init(const br_detector **out, char **error);
 int br_foursquare_init(const br_detector **out, char **error);
 int br_frameio_init(const br_detector **out, char **error);
 int br_freshbooks_init(const br_detector **out, char **error);
+int br_freshdesk_init(const br_detector **out, char **error);
+int br_front_init(const br_detector **out, char **error);
+int br_ftp_init(const br_detector **out, char **error);
+int br_fulcrum_init(const br_detector **out, char **error);
 
 #endif

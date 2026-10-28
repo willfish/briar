@@ -51,3 +51,8 @@ Docusign send-error prefixing follows selected github.com/go-errors/errors
 v1.5.1 Error() behavior, reimplemented in C. Original MIT copyright and license:
 Copyright (c) 2015 Conrad Irwin <conrad@bugsnag.com>
 See LICENSES/MIT-go-errors.txt.
+
+FTP control-channel behavior derives from github.com/jlaffaye/ftp v0.2.0,
+licensed under the ISC license. Original copyright and license:
+Copyright (c) 2011-2013, Julien Laffaye <jlaffaye@FreeBSD.org>
+See LICENSES/ISC-jlaffaye-ftp.txt.
