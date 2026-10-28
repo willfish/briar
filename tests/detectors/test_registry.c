@@ -267,6 +267,7 @@ static const registration expected[] = {
     {651, 0, "DronaHQ", "dronahq", 50, true, -1},
     {135, 0, "DroneCI", "droneci", 32, true, -1},
     {18, 0, "Dropbox", "dropbox", 133, true, -1},
+    {1059, 0, "DuffelToken", "duffel_test_", 55, true, -1},
     {821, 0, "Duply", "duply", 36, true, 1024},
     {180, 0, "Dwolla", "dwolla", 50, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -364,6 +365,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 567) memcpy(key, "web_", 4);
     if (entry->type == 196) memcpy(key, "dp.ct.", 6);
     if (entry->type == 18) memcpy(key, "sl.", 3);
+    if (entry->type == 1059) memcpy(key, "duffel_test_", 12);
     if (entry->type == 386) key[32] = '.';
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
     if (entry->type == 919 || entry->type == 821) {
@@ -997,6 +999,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->extra_data, "Type", &part));
         CHECK(!strcmp(json_object_get_string(part), "Application+APIKey"));
     }
+    if (entry->type == 1059) {
+        CHECK(result->redacted && strlen(result->redacted) == 18);
+        CHECK(!memcmp(result->redacted, key, 15) && !strcmp(result->redacted + 15, "..."));
+    }
     if (entry->type == 1053) {
         CHECK(result->redacted && strlen(result->redacted) == 11);
         CHECK(!memcmp(result->redacted, key, 8) && !strcmp(result->redacted + 8, "..."));
@@ -1005,7 +1011,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
-                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 || entry->type == 62 || entry->type == 18 ? "token" : "key";
+                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 || entry->type == 62 || entry->type == 18 || entry->type == 1059 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     CHECK(!strcmp(json_object_get_string(part), key));
     CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 || entry->type == 648 || entry->type == 739 || entry->type == 1048 ? 3 : secondary ? 2 : 1));
@@ -1124,6 +1130,7 @@ int main(void)
     char *error = NULL;
     CHECK(BR_ABI_REVISION == 1);
     feature_gate_tests(1053, "BraintrustDetectorEnabled");
+    feature_gate_tests(1059, "DuffelTokenDetectorEnabled");
     feature_gate_tests(1048, "CloudinaryDetectorEnabled");
     feature_gate_tests(1043, "DatadogApiKeyDetectorEnabled");
     cloudflare_feature_gate_tests(100, "CloudflareApiTokenV2DetectorEnabled");
@@ -1147,7 +1154,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 196 || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
@@ -1163,6 +1170,7 @@ int main(void)
         if (entry->type == 954) CHECK(!strcmp(detector->keywords[1], "ddw_"));
         if (entry->type == 343) CHECK(!strcmp(detector->keywords[1], "\\\"auths\\"));
         if (entry->type == 18) CHECK(!strcmp(detector->keywords[1], "sl."));
+        if (entry->type == 1059) CHECK(!strcmp(detector->keywords[1], "duffel_live_"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
         if (entry->type == 189) CHECK(!strcmp(detector->keywords[1], "textanywhere"));
