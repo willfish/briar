@@ -375,6 +375,7 @@ static const registration expected[] = {
     {830, 0, "Grafana", "glc_eyJ", 67, true, -1},
     {963, 0, "GrafanaServiceAccount", "glsa_", 46, true, 1024},
     {223, 0, "GraphCMS", "graphcms", 1127, true, 1024},
+    {436, 0, "Graphhopper", "graphhopper", 36, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 

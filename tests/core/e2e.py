@@ -658,6 +658,14 @@ for raw in (graphcms_key, graphcms_key[:75] + "\0" + graphcms_key[76:]):
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GraphCMS"], graphcms_key.encode())
 check(not rows, "GraphCMS requires its hidden ID")
 
+graphhopper_key = key32[:18] + "-" + key32[:17]
+for raw, following in ((graphhopper_key, ""), (graphhopper_key[:35] + "-", "x")):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Graphhopper"],
+                     ("GrApHhOpPeR " + raw + following).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == 436, "Graphhopper selector dispatches its enabled scanner")
+    check(rows[0]["Raw"] == raw and rows[0]["SecretParts"] == {"key": raw}, "Graphhopper preserves context-dependent hyphen captures without UUID validation")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Graphhopper NoV does not geocode or add metadata")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
