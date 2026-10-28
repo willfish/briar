@@ -268,6 +268,7 @@ static const registration expected[] = {
     {135, 0, "DroneCI", "droneci", 32, true, -1},
     {18, 0, "Dropbox", "dropbox", 133, true, -1},
     {821, 0, "Duply", "duply", 36, true, 1024},
+    {180, 0, "Dwolla", "dwolla", 50, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -523,6 +524,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 921: secondary = "briar7"; secondary_name = "username"; break;
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
     case 821: secondary = "AB7CD9E-F2G4H6J-K8L1M3N-P5Q7R9S"; secondary_name = "id"; break;
+    case 180:
+        memcpy(secondary_buffer, key, entry->key_len + 1);
+        secondary_buffer[0] = key[0] == 'Z' ? 'Y' : 'Z';
+        secondary = secondary_buffer; secondary_name = "secret";
+        break;
     case 386:
         memcpy(secondary_buffer, key, entry->key_len + 1);
         secondary_buffer[33] = key[33] == 'q' ? 'z' : 'q';
@@ -935,7 +941,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
-    CHECK(results.len == (entry->type == 42 || entry->type == 56 || entry->type == 386 ? 2u : 1u));
+    CHECK(results.len == (entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 ? 2u : 1u));
     const br_result *result = &results.items[0];
     CHECK(result->detector_type == entry->type);
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
@@ -995,7 +1001,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->redacted && strlen(result->redacted) == 11);
         CHECK(!memcmp(result->redacted, key, 8) && !strcmp(result->redacted + 8, "..."));
     }
-    const char *key_name = entry->type == 919 ? "id" : entry->type == 325 ? "email" : entry->type == 921 ? "pat" : entry->type == 39 ? "app_key" : (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
+    const char *key_name = entry->type == 919 || entry->type == 180 ? "id" : entry->type == 325 ? "email" : entry->type == 921 ? "pat" : entry->type == 39 ? "app_key" : (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : entry->type == 512 ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
