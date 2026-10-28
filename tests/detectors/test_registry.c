@@ -314,6 +314,7 @@ static const registration expected[] = {
     {501, 0, "FlatIO", "flat", 128, true, -1},
     {428, 0, "Fleetbase", "fleetbase", 29, true, -1},
     {1009, 0, "Flexport", "shltm_", 46, true, -1},
+    {528, 0, "FlightApi", "flightapi", 24, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
