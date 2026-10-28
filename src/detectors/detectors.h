@@ -271,5 +271,9 @@ int br_dynalist_init(const br_detector **out, char **error);
 int br_dyspatch_init(const br_detector **out, char **error);
 int br_eagleeyenetworks_init(const br_detector **out, char **error);
 int br_easyinsight_init(const br_detector **out, char **error);
+int br_ecostruxureit_init(const br_detector **out, char **error);
+int br_edamam_init(const br_detector **out, char **error);
+int br_edenai_init(const br_detector **out, char **error);
+int br_eightxeight_init(const br_detector **out, char **error);
 
 #endif
