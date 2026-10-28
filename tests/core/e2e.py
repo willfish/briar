@@ -518,6 +518,8 @@ check(not rows, "empty supported input")
 
 proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=7"], b"key A!bcdefghijklmnop", code=1)
 check(b"no enabled implemented detectors selected" in proc.stderr, "Generic remains source-disabled despite explicit selection")
+proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=326"], b"getemail", code=1)
+check(b"no enabled implemented detectors selected" in proc.stderr, "GetEmail remains source-disabled despite explicit selection")
 proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=327"], b"getemails", code=1)
 check(b"no enabled implemented detectors selected" in proc.stderr, "GetEmails remains source-disabled despite explicit selection")
 
