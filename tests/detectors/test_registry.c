@@ -332,6 +332,7 @@ static const registration expected[] = {
     {681, 0, "Freshbooks", "freshbooks", 64, true, 1024},
     {678, 0, "Freshdesk", "freshdesk", 20, true, 1024},
     {427, 0, "Front", "front", 281, true, -1},
+    {899, 0, "FTP", "ftp://", 38, true, -1},
     {285, 0, "Fulcrum", "fulcrum", 80, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -339,6 +340,24 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 899) {
+        static const char input[] = "ftp://Briar86:Z8k2Q7s9@fixture.invalid/path";
+        static const char raw[] = "ftp://Briar86:Z8k2Q7s9@fixture.invalid";
+        br_results results = test_scan(detector, NULL, false, input, sizeof(input) - 1);
+        CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 899 && result->raw.len == entry->key_len);
+        CHECK(result->raw.len == sizeof(raw) - 1 && !memcmp(result->raw.data, raw, sizeof(raw) - 1));
+        CHECK(result->redacted && !strcmp(result->redacted, "ftp://Briar86:********@fixture.invalid"));
+        CHECK(!result->raw_v2.data && !result->raw_v2.len && !result->extra_data && !result->structured_data);
+        CHECK(!result->verified && !result->verification_error && !result->verification_from_cache);
+        CHECK(!result->primary_secret.data && !result->primary_secret.len && !result->primary_line && !result->chunk_offset_set);
+        br_json *part = NULL;
+        CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 1);
+        CHECK(json_object_object_get_ex(result->secret_parts, "key", &part) && !strcmp(json_object_get_string(part), raw));
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 1063) {
         static const char host[] = "api-offline.duosecurity.com", ikey[] = "DI0123456789ABCDEFGH";
         static const char skey[] = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTt";
@@ -1432,6 +1451,16 @@ int main(void)
             candidate.raw.data = (unsigned char *)"sample"; candidate.raw.len = 6;
             CHECK(detector->false_positive(detector, &candidate, &reason));
             CHECK(reason && !strcmp(reason, "matches term: sample"));
+            free(reason);
+        } else if (entry->type == 899) {
+            static const unsigned char allowed[] = "ftp://example:sample@fixture.invalid";
+            static const unsigned char filtered[] = "ftp://user:pass@FTP.FreeBSD.ORG";
+            br_result candidate = {.detector_type = 899, .raw = {(unsigned char *)allowed, sizeof(allowed) - 1}};
+            char *reason = NULL;
+            CHECK(detector->false_positive && !detector->false_positive(detector, &candidate, &reason) && !reason);
+            candidate.raw.data = (unsigned char *)filtered; candidate.raw.len = sizeof(filtered) - 1;
+            CHECK(detector->false_positive(detector, &candidate, &reason));
+            CHECK(reason && !strcmp(reason, "contains term: @ftp.freebsd.org"));
             free(reason);
         } else CHECK(!detector->false_positive);
         if (entry->type == 2 || entry->type == 959) CHECK(detector->clean && detector->clean_always);
