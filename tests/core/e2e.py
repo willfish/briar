@@ -675,6 +675,12 @@ check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] 
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Groovehq"], ("groove " + groovehq_key).encode())
 check(not rows, "Groovehq dispatch still requires the longer provider keyword")
 
+gtmetrix_key = "b7c9d2e5f6a8b3c4d1e0f2a4b6c8d1e3"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GTMetrix"], ("GtMeTrIx " + gtmetrix_key).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 763, "GTMetrix selector dispatches its enabled scanner")
+check(rows[0]["Raw"] == gtmetrix_key and rows[0]["SecretParts"] == {"key": gtmetrix_key}, "GTMetrix publishes its lowercase-hex key")
+check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "GTMetrix NoV does not send Basic credentials")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
