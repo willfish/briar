@@ -280,6 +280,8 @@ static const registration expected[] = {
     {568, 0, "EdenAI", "edenai", 173, true, -1},
     {727, 0, "EightxEight", "8x8", 43, true, 1024},
     {112, 0, "ElasticEmail", "elasticemail", 96, true, -1},
+    {994, 1, "ElevenLabs", "elevenlabs", 32, true, -1},
+    {994, 2, "ElevenLabs", "elevenlabs", 51, true, -1},
     {652, 0, "Enablex", "enablex", 36, true, 1024},
     {993, 0, "EndorLabs", "endr+", 21, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -409,6 +411,14 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 801) { memcpy(key, "AK1", 3); key[20] = '/'; }
     if (entry->type == 568) { key[36] = key[129] = '.'; key[172] = '_'; }
     if (entry->type == 112) { key[35] = '-'; key[66] = '_'; }
+    if (entry->type == 994) {
+        if (entry->version == 1)
+            for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789ABCDEF"[i % 16];
+        else {
+            memcpy(key, "sk_", 3);
+            for (size_t i = 3; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[(i - 3) % 16];
+        }
+    }
     if (entry->type == 993) { memcpy(key, "endr+", 5); key[11] = '-'; }
     if (entry->type == 258)
         for (size_t i = 0; i < entry->key_len; ++i)
@@ -1002,6 +1012,8 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "%s\npass %s", key, secondary);
     else if (entry->type == 919)
         snprintf(input, sizeof(input), "docusign\nintegration %s\nsecret %s", key, secondary);
+    else if (entry->type == 994 && entry->version == 1)
+        snprintf(input, sizeof(input), "elevenlabs = '%s'", key);
     else if (secondary)
         snprintf(input, sizeof(input), "%s %s\n%s %s", entry->keyword, key, entry->keyword, secondary);
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);
@@ -1054,6 +1066,16 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
         CHECK(json_object_object_get_ex(result->extra_data, entry->type == 4 ? "Version" : "version", &part));
         CHECK(!strcmp(json_object_get_string(part), entry->version == 1 ? "1" : "2"));
+    }
+    if (entry->type == 994) {
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == (entry->version == 1 ? 2 : 1));
+        CHECK(json_object_object_get_ex(result->extra_data, "version", &part));
+        CHECK(!strcmp(json_object_get_string(part), entry->version == 1 ? "1" : "2"));
+        if (entry->version == 1) {
+            CHECK(json_object_object_get_ex(result->extra_data, "rotation_guide", &part));
+            CHECK(!strcmp(json_object_get_string(part), "https://howtorotate.com/docs/tutorials/elevenlabs/"));
+        } else CHECK(!json_object_object_get_ex(result->extra_data, "rotation_guide", &part));
+        CHECK(!result->redacted);
     }
     if (entry->type == 103) {
         CHECK(result->redacted && strlen(result->redacted) == 7);
@@ -1219,7 +1241,7 @@ int main(void)
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 196 || (entry->type == 3 && entry->version == 1) ? 6u :
-              entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
+              entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
               entry->type == 282 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
@@ -1238,6 +1260,11 @@ int main(void)
         if (entry->type == 18) CHECK(!strcmp(detector->keywords[1], "sl."));
         if (entry->type == 1059) CHECK(!strcmp(detector->keywords[1], "duffel_live_"));
         if (entry->type == 282) CHECK(!strcmp(detector->keywords[1], "easy-insight"));
+        if (entry->type == 994) {
+            CHECK(!strcmp(detector->keywords[1], "xi-api-key") && !strcmp(detector->keywords[2], "xi_api_key"));
+            br_detector versionless = *detector; versionless.version = 0;
+            CHECK(!br_detector_is_default(&versionless, NULL));
+        }
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
         if (entry->type == 189) CHECK(!strcmp(detector->keywords[1], "textanywhere"));
