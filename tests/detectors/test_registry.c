@@ -346,6 +346,7 @@ static const registration expected[] = {
     {426, 0, "Gengo", "gengo", 64, true, 1024},
     {529, 0, "Geoapify", "geoapify", 32, true, -1},
     {486, 0, "Geocode", "geocode", 28, true, -1},
+    {542, 0, "Geocodify", "geocodify", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
