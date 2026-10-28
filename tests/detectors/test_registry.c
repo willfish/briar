@@ -307,6 +307,7 @@ static const registration expected[] = {
     {113, 3, "FigmaPersonalAccessToken", "figp_", 59, true, -1},
     {527, 0, "FileIO", "fileio", 39, true, -1},
     {423, 0, "Finage", "finage", 39, true, -1},
+    {406, 0, "FinancialModelingPrep", "financialmodelingprep", 32, true, -1},
     {667, 0, "Findl", "findl", 36, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
