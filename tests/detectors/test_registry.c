@@ -302,6 +302,9 @@ static const registration expected[] = {
     {238, 0, "Feedier", "feedier", 32, true, -1},
     {592, 0, "Fetchrss", "fetchrss", 40, true, -1},
     {808, 0, "Fibery", ".fibery.io", 44, true, 1024},
+    {113, 1, "FigmaPersonalAccessToken", "figma", 43, true, -1},
+    {113, 2, "FigmaPersonalAccessToken", "figma", 45, true, -1},
+    {113, 3, "FigmaPersonalAccessToken", "figp_", 59, true, -1},
     {527, 0, "FileIO", "fileio", 39, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -443,6 +446,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 808) {
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         key[8] = '.';
+    }
+    if (entry->type == 113) {
+        if (entry->version == 1) strcpy(key, "730194-ghijklmn-opqr-stuv-wxyz-0123456789az");
+        else if (entry->version == 2) { memcpy(key, "fig|_", 5); key[17] = '_'; key[30] = '-'; }
+        else { memcpy(key, "figp_", 5); key[20] = '-'; key[57] = key[58] = '='; }
     }
     if (entry->type == 994) {
         if (entry->version == 1)
@@ -1053,6 +1061,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         snprintf(input, sizeof(input), "elevenlabs = '%s'", key);
     else if (secondary)
         snprintf(input, sizeof(input), "%s %s\n%s %s", entry->keyword, key, entry->keyword, secondary);
+    else if (entry->type == 113 && entry->version == 3) snprintf(input, sizeof(input), "%s", key);
     else if (entry->type == 808) snprintf(input, sizeof(input), "fibery %s\nhttps://Briar79.fibery.io/", key);
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
@@ -1100,10 +1109,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         if (entry->version == 1) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
         else CHECK(!result->extra_data);
     }
-    if (entry->type == 4 || entry->type == 430 || entry->type == 333) {
+    if (entry->type == 4 || entry->type == 113 || entry->type == 430 || entry->type == 333) {
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
         CHECK(json_object_object_get_ex(result->extra_data, entry->type == 4 ? "Version" : "version", &part));
-        CHECK(!strcmp(json_object_get_string(part), entry->version == 1 ? "1" : "2"));
+        CHECK(json_object_is_type(part, json_type_string));
+        CHECK(!strcmp(json_object_get_string(part), entry->version == 1 ? "1" : entry->version == 2 ? "2" : "3"));
     }
     if (entry->type == 990) {
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
@@ -1140,7 +1150,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     }
     const char *key_name = entry->type == 919 || entry->type == 180 ? "id" : entry->type == 325 ? "email" : entry->type == 921 ? "pat" : entry->type == 39 ? "app_key" : (entry->type == 1048 || entry->type == 1043) ? "api_key" : entry->type == 456 ? "url" : entry->type == 1003 ? "client_id" : (entry->type == 40 || entry->type == 512) ? "secret" : entry->type == 1025 ? "id" : (entry->type == 1018 || entry->type == 958) ? "password" : entry->type == 931 ? "account_key" : (entry->type == 957 || entry->type == 1019 || entry->type == 1024 || entry->type == 975) ? "url" : (entry->type == 2 || entry->type == 959) ? "access_key_id" : entry->type == 1045 ? "secret" :
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
-                           entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
+                           entry->type == 113 || entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
                            entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 || entry->type == 62 || entry->type == 18 || entry->type == 1059 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
@@ -1306,6 +1316,11 @@ int main(void)
         if (entry->type == 1059) CHECK(!strcmp(detector->keywords[1], "duffel_live_"));
         if (entry->type == 282) CHECK(!strcmp(detector->keywords[1], "easy-insight"));
         if (entry->type == 360) CHECK(!strcmp(detector->keywords[1], "exchange-rate"));
+        if (entry->type == 113) {
+            br_detector invalid = *detector; invalid.version = 0;
+            CHECK(!br_detector_is_default(&invalid, NULL));
+            invalid.version = 4; CHECK(!br_detector_is_default(&invalid, NULL));
+        }
         if (entry->type == 994) {
             CHECK(!strcmp(detector->keywords[1], "xi-api-key") && !strcmp(detector->keywords[2], "xi_api_key"));
             br_detector versionless = *detector; versionless.version = 0;

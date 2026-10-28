@@ -299,6 +299,9 @@ static const detector_factory named_factories[] = {
     br_feedier_init,
     br_fetchrss_init,
     br_fibery_init,
+    br_figmapersonalaccesstoken_v1_init,
+    br_figmapersonalaccesstoken_v2_init,
+    br_figmapersonalaccesstoken_v3_init,
     br_fileio_init,
     br_jiradatacenterpat_init,
 };
@@ -413,6 +416,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_object_get_ex(feature_flags, "BraintrustDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
+        case 113: return detector->version >= 1 && detector->version <= 3;
         case 3: case 4: case 142: case 190: case 303: case 333: case 430: case 708: case 921: case 994: return detector->version == 1 || detector->version == 2;
         case 0: case 5: case 18: case 39: case 40: case 138: case 192: case 196: case 150: case 158: case 237: case 238: case 239: case 254: case 255: case 256: case 258: case 521: case 390: case 431: case 432: case 433: case 434: case 683: case 684: case 685: case 692: case 334: case 335: case 343: case 693: case 197: case 802: case 805: case 808:
         case 125: case 126: case 130: case 135: case 277: case 1014: case 1015: case 498: case 499: case 506: case 910: case 917: case 919: case 920: case 923: case 905: case 907:
@@ -460,6 +464,7 @@ const char *br_detector_type_name(int32_t type)
     case 103: return "ContentfulPersonalAccessToken";
     case 110: return "Auth0ManagementApiToken";
     case 112: return "ElasticEmail";
+    case 113: return "FigmaPersonalAccessToken";
     case 125: return "AirbrakeProjectKey";
     case 126: return "AirbrakeUserKey";
     case 130: return "Calendarific";
