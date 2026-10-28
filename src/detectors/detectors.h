@@ -263,5 +263,9 @@ int br_dovico_init(const br_detector **out, char **error);
 int br_dronahq_init(const br_detector **out, char **error);
 int br_droneci_init(const br_detector **out, char **error);
 int br_dropbox_init(const br_detector **out, char **error);
+int br_duffeltoken_init(const br_detector **out, char **error);
+int br_duo_init(const br_detector **out, char **error);
+int br_duply_init(const br_detector **out, char **error);
+int br_dwolla_init(const br_detector **out, char **error);
 
 #endif
