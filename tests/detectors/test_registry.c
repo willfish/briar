@@ -289,6 +289,7 @@ static const registration expected[] = {
     {990, 0, "Eraser", "eraser", 20, true, -1},
     {905, 0, "Etherscan", "etherscan", 34, true, -1},
     {283, 0, "Ethplorer", "ethplorer", 22, true, -1},
+    {962, 0, "Eventbrite", "eventbrite", 20, true, -1},
     {284, 0, "Everhour", "everhour", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -428,7 +429,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         }
     }
     if (entry->type == 993) { memcpy(key, "endr+", 5); key[11] = '-'; }
-    if (entry->type == 258 || entry->type == 905)
+    if (entry->type == 258 || entry->type == 905 || entry->type == 962)
         for (size_t i = 0; i < entry->key_len; ++i)
             if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
@@ -1062,7 +1063,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 307 || entry->type == 196) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
+    if (entry->type == 307 || entry->type == 196 || entry->type == 962) CHECK(result->extra_data && json_object_object_length(result->extra_data) == 0);
     if (entry->type == 58 || entry->type == 65) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, secondary));
     if (entry->type == 919) CHECK(!result->extra_data && result->redacted && !strcmp(result->redacted, key));
     if (entry->type == 100) CHECK(!result->extra_data && !result->redacted); /* No invented version metadata. */
