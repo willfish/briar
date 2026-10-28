@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "../../src/detectors/detectors.h"
 #include "../../src/detectors/findings.h"
+#include "../../src/http_internal.h"
 #include "../support/detector_test.h"
 
 static const char key1[] = "01234567-89ab-0def-0123-456789abcdef";
@@ -133,6 +134,109 @@ static void unchanged_guard_with_unkeyed_control(void)
     /* Direct unkeyed HTTP control is NOT a Cliengo verification success. */
 }
 
+typedef struct {
+    int status;
+    bool send_error, verified;
+    const char *body_error;
+} owned_case;
+
+typedef struct {
+    const owned_case *script;
+    size_t calls, releases;
+    const br_http_request *held;
+    bool *destroyed;
+} owned_http;
+
+static const char owned_url[] = "https://api.cliengo.com/1.0/account?api_key=01234567-89ab-0def-0123-456789abcdef";
+static const unsigned char owned_key[] = "710:01234567-89ab-0def-0123-456789abcdef";
+static const unsigned char owned_body[] = {'r', 0, 'p'};
+
+static void inspect_owned_request(const br_http_request *request)
+{
+    CHECK(!strcmp(request->method, "GET") && !strcmp(request->url, owned_url));
+    CHECK(request->detector_type == 710 && request->dedup_key.len == 40);
+    CHECK(!memcmp(request->dedup_key.data, owned_key, sizeof(owned_key) - 1));
+    /* The five-second profile budget includes snapshot/worker scheduling. */
+    CHECK(request->profile == BR_HTTP_SANE && request->timeout_ms > 0 && request->timeout_ms <= 5000);
+    CHECK(!request->body.data && !request->body.len);
+    CHECK(request->nheaders == 1 && !strcmp(request->headers[0].name, "User-Agent"));
+    CHECK(!strcmp(request->headers[0].value, "TruffleHog cliengo-offline"));
+}
+
+static int owned_send(void *user, const br_scan_ctx *ctx, const br_http_request *request,
+                      br_http_response *response, char **error)
+{
+    owned_http *http = user;
+    CHECK(ctx && ctx->transport && ctx->transport->user == http);
+    CHECK(ctx->deadline_monotonic_ms > 0 && !ctx->cancelled && !ctx->cancel_user);
+    CHECK(!http->held && http->calls == http->releases);
+    inspect_owned_request(request);
+    http->held = request; ++http->calls;
+    *response = (br_http_response){.status = http->script->status,
+        .body = {owned_body, sizeof(owned_body)}, .body_error = http->script->body_error};
+    *error = http->script->send_error ? strdup("synthetic send failure") : NULL;
+    CHECK(!http->script->send_error || *error);
+    return http->script->send_error ? 1 : 0;
+}
+
+static void owned_release(void *user, br_http_response *response)
+{
+    owned_http *http = user;
+    CHECK(http->held && http->calls == http->releases + 1);
+    inspect_owned_request(http->held); /* Prepared request remains valid through raw release. */
+    CHECK(response->status == http->script->status && response->body_error == http->script->body_error);
+    CHECK(response->body.len == sizeof(owned_body) && !memcmp(response->body.data, owned_body, sizeof(owned_body)));
+    *response = (br_http_response){0}; http->held = NULL; ++http->releases;
+}
+
+static void owned_destroy(void *user)
+{
+    owned_http *http = user;
+    CHECK(!http->held && http->calls == http->releases && !*http->destroyed);
+    *http->destroyed = true;
+    free(http);
+}
+
+static void owned_client_verification(const br_detector *detector)
+{
+    const owned_case cases[] = {
+        {200, false, true, NULL}, {204, false, true, NULL}, {299, false, true, NULL},
+        {401, false, false, NULL}, {500, false, false, NULL},
+        {200, true, false, NULL}, {200, false, false, "synthetic body-read failure"},
+        {200, false, false, ""},
+    };
+    char input[96]; snprintf(input, sizeof(input), "cliengo %s", key1);
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        bool destroyed = false;
+        owned_http *http = calloc(1, sizeof(*http)); CHECK(http);
+        http->script = &cases[i]; http->destroyed = &destroyed;
+        br_http_owned_backend backend = {{http, owned_send, owned_release}, owned_destroy};
+        br_http_client *client = NULL; char *error = NULL;
+        CHECK(br_http_client_init(&client, backend, BR_HTTP_SANE, &error) == 0 && client && !error);
+        br_scan_ctx ctx = {.transport = br_http_client_transport(client), .user_agent = "cliengo-offline"};
+        CHECK(br_http_client_is_owned(ctx.transport));
+        br_results results = test_scan(detector, &ctx, true, input, strlen(input));
+        CHECK(results.len == 1);
+        test_key_result(&results.items[0], 710, key1, "key");
+        CHECK(results.items[0].verified == cases[i].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        if (cases[i].body_error) {
+            /* Observe Do failure itself, not just the provider's false result.
+             * This probe retains the full key and uses the same owned dispatch. */
+            br_http_request request = {.method = "GET", .url = owned_url, .profile = BR_HTTP_SANE,
+                .detector_type = 710, .dedup_key = {owned_key, sizeof(owned_key) - 1}};
+            br_http_response response = {0};
+            CHECK(br_http_send(&ctx, &request, &response, &error) != 0);
+            CHECK(error && !strcmp(error, cases[i].body_error));
+            CHECK(!response.status && !response.body.data && !response.body.len && !response.body_error);
+            br_http_release(&ctx, &response); free(error); error = NULL;
+        }
+        CHECK(br_http_client_drain(client, &error) == 0 && !error);
+        CHECK(http->calls == (cases[i].body_error ? 2u : 1u) && http->releases == http->calls && !http->held);
+        br_http_client_destroy(client); CHECK(destroyed);
+    }
+}
+
 static void occurrences_and_blocked_verification(const br_detector *detector)
 {
     char input[192]; snprintf(input, sizeof(input), "cliengo %s\nCLIENGO %s\ncliengo %s", key1, key2, key1);
@@ -205,6 +309,6 @@ int main(void)
     CHECK(strlen(key1) == 36 && strlen(key2) == 36);
     const br_detector *detector = descriptor();
     extraction(detector); unchanged_guard_with_unkeyed_control(); occurrences_and_blocked_verification(detector);
-    rejected_context_paths(detector); resource_rollback(detector);
-    return test_finish("Cliengo extraction + unchanged coalescing guard (verification unsupported)");
+    rejected_context_paths(detector); resource_rollback(detector); owned_client_verification(detector);
+    return test_finish("Cliengo extraction + borrowed guard + owned keyed verification");
 }
