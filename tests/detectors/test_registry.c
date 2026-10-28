@@ -337,12 +337,28 @@ static const registration expected[] = {
     {394, 1, "Fullstory", "fullstory", 88, true, -1},
     {394, 2, "Fullstory", "fullstory", 104, true, -1},
     {381, 0, "FXMarket", "fxmarket", 20, true, -1},
+    {6, 0, "GCP", "provider_x509", sizeof("briar87@offline.invalid") - 1, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 6) {
+        static const char input[] = "{\"client_email\":\"briar87@offline.invalid\",\"auth_provider_x509_cert_url\":\"unused\"}";
+        br_results results = test_scan(detector, NULL, false, input, sizeof(input) - 1);
+        CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 6 && result->raw.len == entry->key_len && !memcmp(result->raw.data, "briar87@offline.invalid", result->raw.len));
+        CHECK(result->redacted && !strcmp(result->redacted, "briar87@offline.invalid") && result->raw_v2.len);
+        CHECK(!result->verified && !result->verification_error && !result->verification_from_cache && !result->structured_data);
+        CHECK(!result->primary_secret.data && !result->primary_secret.len && !result->primary_line && !result->chunk_offset_set);
+        br_json *part = NULL;
+        CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 1);
+        CHECK(json_object_object_get_ex(result->secret_parts, "key", &part) && (size_t)json_object_get_string_len(part) == result->raw_v2.len && !memcmp(json_object_get_string(part), result->raw_v2.data, result->raw_v2.len));
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == 2);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 899) {
         static const char input[] = "ftp://Briar86:Z8k2Q7s9@fixture.invalid/path";
         static const char raw[] = "ftp://Briar86:Z8k2Q7s9@fixture.invalid";
@@ -1439,8 +1455,8 @@ int main(void)
             CHECK(!strcmp(detector->keywords[1], "jfrog.io"));
             CHECK(!strcmp(detector->keywords[2], "AKCp"));
         }
-        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 343 || entry->type == 18 ? 4096 : entry->type == 1013 ? 2048 : entry->type == 829 ? 1300 : -1) &&
-              detector->start_offset == (entry->type == 1013 ? 4096 : -1) &&
+        CHECK(detector->max_secret_size == (entry->type == 110 ? 5000 : entry->type == 343 || entry->type == 18 ? 4096 : entry->type == 1013 || entry->type == 6 ? 2048 : entry->type == 829 ? 1300 : -1) &&
+              detector->start_offset == (entry->type == 1013 || entry->type == 6 ? 4096 : -1) &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
         if (entry->type == 957 || entry->type == 1019 || entry->type == 958 || entry->type == 1024 || entry->type == 975) {
@@ -1448,6 +1464,10 @@ int main(void)
             CHECK(detector->false_positive && !detector->false_positive(detector, NULL, &reason));
             CHECK(reason && !strcmp(reason, ""));
             free(reason);
+        } else if (entry->type == 6) {
+            char *reason = NULL; br_result candidate = {0};
+            CHECK(detector->false_positive && !detector->false_positive(detector, NULL, &reason) && !reason);
+            CHECK(!detector->false_positive(detector, &candidate, &reason) && !reason);
         } else if (entry->type == 980) {
             br_result candidate = {.raw = {(unsigned char *)"AAAAAAexample", 13}};
             char *reason = NULL;
