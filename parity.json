@@ -3132,6 +3132,51 @@
       "evidence": ["tests/detectors/test_gocardless.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
     },
+    "godaddy/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/godaddy/v1/godaddy.go",
+      "scope_notes": "GoDaddy 1008/v1 is enabled without hints. Keyword-only folding captures word-bounded 37-byte mixed-alphanumeric/underscore keys and independent 22-byte mixed-alphanumeric secrets. Original-byte unique sets form full key-major products; required secrets remain hidden. Raw/key only, no RawV2/redaction/version metadata; NoV ExtraData is an empty map. Literal sso-key authorization precedes construction of the fixed OTE domain-availability GET. Only 200/403 verify, 401 rejects, and other statuses retain causes; read errors are ignored. Release precedes Verified and the checked secret-only setter, then Environment=OTE. Nil context retains its constructor cause. Provider-owned failures are fatal with caller-preserving invocation rollback; no local filtering or cleaner exists.",
+      "native_files": ["src/detectors/godaddy.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_godaddy.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Go map iteration and complete shared regexp/arbitrary-byte and engine/output behavior", "Full native source-client/custom-client and HTTP drain/lifecycle behavior"]
+    },
+    "godaddy/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/godaddy/v2/godaddy.go",
+      "scope_notes": "GoDaddy 1008/v2 is enabled without hints. Its 35-byte production key grammar is distinct from v1; independent unique 22-byte secrets remain required and hidden. Source v2 delegates authorization and verification to v1, represented by one cohesive provider module without merging the separate source clients. NoV keeps empty ExtraData and no version/RawV2; verification uses api.godaddy.com and adds Environment=Prod after release and the checked secret-only setter. Status, read/error, ownership and invocation-rollback policies follow v1.",
+      "native_files": ["src/detectors/godaddy.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_godaddy.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Go map iteration and complete shared regexp/arbitrary-byte and engine/output behavior", "Full native source-client/custom-client and HTTP drain/lifecycle behavior"]
+    },
+    "goodday/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/goodday/goodday.go",
+      "scope_notes": "GoodDay 654/v0 is enabled without hints. Preserve keyword-only folding and word-bounded 32-byte lowercase-alphanumeric occurrences, not hex-only or unique tokens. Raw/key only; finding resources precede nil-context constructor skip. SANE bodyless GET /2.0/users uses canonical Gd-Api-Token and common UA, without invented Content-Type/Authorization/Accept. Every 2xx verifies despite body/read errors. The whole shared setup/Do error domain retains false without a setter; module-owned failures remain fatal with invocation-only rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/goodday.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_goodday.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
+    "googlegemini/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/googlegemini/googlegemini.go",
+      "scope_notes": "GoogleGeminiAPIKey 1041/v0 is enabled without hints, separate from cryptocurrency Gemini. Direct case-sensitive word-start AIzaSy plus 33 mixed-alphanumeric/underscore/hyphen bytes has no ending boundary; preserve 39-byte occurrences and duplicates. Raw/key and first-eight-byte plus ellipsis Redacted survive every outcome. SANE bodyless models GET uses JSON Content-Type and canonical X-Goog-Api-Key. Only 200 verifies with active_google_key string true; 403 retains that metadata without verifying, 400 rejects with nil metadata, and other statuses retain unredacted causes. Ignore body/read errors. Nil constructor and mixed Do causes use zero-redaction setters after source-envelope unwrapping, not diagnostic classifiers. Owned failures are fatal with invocation-only rollback; no local filtering/cleaner/Version method exists.",
+      "native_files": ["src/detectors/googlegemini.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_googlegemini.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native source-client/custom-client and HTTP drain/lifecycle behavior"]
+    },
+    "googleoauth2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/googleoauth2/googleoauth2_access_token.go",
+      "scope_notes": "GoogleOauth2 69/v0 is enabled without hints. Direct case-sensitive ya29. plus a scoped-case-insensitive unbounded tail consumes one case-sensitive non-lower-alphanumeric/underscore/hyphen delimiter or absolute EOF. Preserve original-byte unique tokens, Unicode fold partners, greedy/backtracking behavior and Raw/key only. Construct the complete literal token-info URL before nil-context handling; ordinary SANE bodyless HTTP is not the credential SDK. Only 200/400 decode first typed documents, preserving ordered duplicates/null merges/sticky type errors, ignored huge unknown numbers, selected Go string repair and complete-object-before-later-read-error policy. Successful 200 always publishes four strings; invalid signed-decimal int64 exp only omits expiry. Valid expiry reaches a private explicit-stable-UTC/year0001..9999 checked formatter; other Local/time representations fail unsupported, never silently become UTC or omitted metadata. Exact 400 Invalid Value rejects; other descriptions retain complete unredacted URL causes, with final decoded NUL unsupported only after typed success. Known wrapped decode envelopes disappear through source unwrapping; arbitrary injected text is never stripped. Zero-redaction setters and all owned failures are checked before ordinary outcomes with invocation-only rollback. No local filtering/cleaner/Version method exists.",
+      "native_files": ["src/detectors/googleoauth2.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/gcp_json.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_googleoauth2.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md", "docs/ARCHITECTURE.md"],
+      "remaining": ["Full Go Local/timezone data, selection, initialization, transitions and calendar behavior outside the explicit stable UTC subset", "Complete JSON/Reader/type-diagnostic and shared regexp/arbitrary-byte behavior", "Native URL-wire/client/close-before-drain, map ordering and global engine/output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

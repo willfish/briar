@@ -596,6 +596,37 @@ for selector, payload in (
     _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], payload.encode())
     check(not rows, "required hidden email, consumed delimiter and dispatch keyword are not optional")
 
+godaddy_secret = key32[:22]
+google_gemini_key = "AIzaSy" + key40[:32] + "-"
+google_oauth_token = "ya29." + key32
+for selector, number, raw, payload, extra in (
+    ("GoDaddy.v1", 1008, key40[:37], "godaddy " + key40[:37] + "\ngodaddy " + godaddy_secret, {}),
+    ("GoDaddy.v2", 1008, key40[:35], "godaddy " + key40[:35] + "\ngodaddy " + godaddy_secret, {}),
+    ("GoodDay", 654, key32, "GoOdDaY " + key32, None),
+    ("GoogleGeminiAPIKey", 1041, google_gemini_key, google_gemini_key + "EXTRA", None),
+    ("GoogleOauth2", 69, google_oauth_token, google_oauth_token, None),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], payload.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "named selector dispatches its enabled version")
+    check(rows[0]["Raw"] == raw and rows[0]["SecretParts"] == {"key": raw}, "hidden GoDaddy secret is required but never projected")
+    check(rows[0]["ExtraData"] == extra and not rows[0]["RawV2"], "NoV keeps the source's empty map distinct from nil and adds no version metadata")
+    check(rows[0]["Redacted"] == (raw[:8] + "..." if number == 1041 else ""), "Google Gemini retains redaction without verification")
+    check(not rows[0]["Verified"] and not rows[0]["VerificationFromCache"], "NoV does not reach HTTP or expiry formatting")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GoDaddy.v0"],
+                 ("godaddy " + key40[:37] + "\ngodaddy " + key40[:35] + "\ngodaddy " + godaddy_secret).encode())
+check(len(rows) == 2 and {row["Raw"] for row in rows} == {key40[:37], key40[:35]}, "version-zero selector includes both GoDaddy grammars")
+check(all(row["ExtraData"] == {} and not row["RawV2"] for row in rows), "NoV does not add Environment or reveal hidden secrets")
+for selector, payload in (
+    ("GoDaddy.v1", "godaddy " + key40[:37]),
+    ("GoogleGeminiAPIKey", "AIZASY" + google_gemini_key[6:]),
+    ("GoogleOauth2", "YA29." + google_oauth_token[5:]),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], payload.encode())
+    check(not rows, "required counterpart and direct case-sensitive token prefixes remain observable")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GoogleOauth2"],
+                 (google_oauth_token + "\n" + google_oauth_token).encode())
+check(len(rows) == 1 and rows[0]["Raw"] == google_oauth_token, "Google OAuth token identity preserves original bytes and uniqueness")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

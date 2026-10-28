@@ -634,6 +634,14 @@ def fixtures():
     gocanvas_key = alnum("gocanvas-key", 43) + b"="
     gocanvas_prefix = b"gocanvas Mailbox95@fixture.invalid\ngocanvas "
     gocardless_key = b"live_" + b"b7c9d2e5f6g8h3j4k1m0n2p4q6r8s1t3u5v7w9x2"[:39] + b"-"
+    godaddy_ote = b"Z" + synthetic("godaddy-ote", 16) + b"_" + synthetic("godaddy-ote-end", 19)
+    godaddy_prod = b"Q" + synthetic("godaddy-prod", 15) + b"_" + synthetic("godaddy-prod-end", 18)
+    godaddy_secret = alnum("godaddy-secret", 22)
+    godaddy_ote_input = b"godaddy " + godaddy_ote + b"\ngodaddy " + godaddy_secret
+    godaddy_prod_input = b"godaddy " + godaddy_prod + b"\ngodaddy " + godaddy_secret
+    goodday_key = b"z" + synthetic("goodday-key", 31)
+    google_gemini_key = b"AIzaSy" + synthetic("google-gemini-key", 32) + b"-"
+    google_oauth_token = b"ya29." + alnum("google-oauth-token", 45)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1252,6 +1260,18 @@ def fixtures():
         ("gocardless_space", 184, b"GoCardless " + gocardless_key + b" "),
         ("gocardless_quote", 184, b"gocardless " + gocardless_key + b'"'),
         ("gocardless_no_dispatch", 184, gocardless_key + b" "),
+        ("godaddy_v1", "1008.v1", godaddy_ote_input),
+        ("godaddy_v2", "1008.v2", godaddy_prod_input),
+        ("godaddy_v1_missing_secret", "1008.v1", b"godaddy " + godaddy_ote),
+        ("godaddy_v2_hidden_secrets", "1008.v2", godaddy_prod_input + b"\ngodaddy " + alnum("godaddy-other-secret", 22)),
+        ("goodday", 654, b"GoOdDaY " + goodday_key),
+        ("googlegemini", 1041, google_gemini_key),
+        ("googlegemini_long_suffix", 1041, google_gemini_key + b"ABC"),
+        ("googlegemini_upper_prefix", 1041, b"AIZASY" + google_gemini_key[6:]),
+        ("googleoauth2", 69, google_oauth_token),
+        ("googleoauth2_space", 69, google_oauth_token + b" "),
+        ("googleoauth2_unique", 69, google_oauth_token + b"\n" + google_oauth_token),
+        ("googleoauth2_uppercase_prefix", 69, b"YA29." + google_oauth_token[5:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1522,6 +1542,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": required hidden email, consumed suffix and dispatch grammar must retain the expected findings")
+    if name.startswith(("godaddy_", "goodday_", "googlegemini_", "googleoauth2_")):
+        empty = name.startswith(("godaddy_v1_missing_secret_", "googlegemini_upper_prefix_", "googleoauth2_uppercase_prefix_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": hidden secret, direct prefix case and complete token grammar must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):
