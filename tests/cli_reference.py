@@ -653,6 +653,10 @@ def fixtures():
     graphcms_id = b"\ngraph " + synthetic("graphcms-id", 25)
     graphhopper_key = synthetic("graphhopper-key", 18) + b"-" + synthetic("graphhopper-end", 17)
     graphhopper_end_hyphen = graphhopper_key[:35] + b"-"
+    groovehq_key = alnum("groovehq-key", 64)
+    groq_key = b"gsk_" + alnum("groq-key", 52)
+    gtmetrix_key = synthetic("gtmetrix-key", 32)
+    guardian_key = b"A" + alnum("guardian-first", 7).lower() + b"-" + synthetic("guardian-second", 4) + b"-" + synthetic("guardian-third", 4) + b"-" + synthetic("guardian-fourth", 4) + b"-" + alnum("guardian-last", 12).lower()
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1296,6 +1300,17 @@ def fixtures():
         ("graphcms_no_dispatch", 223, graphcms_plain + graphcms_id),
         ("graphhopper", 436, b"GrApHhOpPeR " + graphhopper_key),
         ("graphhopper_end_hyphen", 436, b"graphhopper " + graphhopper_end_hyphen + b"x"),
+        ("groovehq", 206, b"GrOoVeHq " + groovehq_key),
+        ("groovehq_overlong", 206, b"groovehq " + groovehq_key + b"EXTRA"),
+        ("groovehq_no_dispatch", 206, b"groove " + groovehq_key),
+        ("groq", 988, groq_key),
+        ("groq_unique", 988, groq_key + b"\n" + groq_key),
+        ("groq_upper_prefix", 988, b"GSK_" + groq_key[4:]),
+        ("gtmetrix", 763, b"GtMeTrIx " + gtmetrix_key),
+        ("gtmetrix_upper_key", 763, b"gtmetrix A" + gtmetrix_key[1:]),
+        ("guardianapi", 259, b"GuArDiAnApI " + guardian_key),
+        ("guardianapi_first_upper_other", 259, b"guardianapi B" + guardian_key[1:]),
+        ("guardianapi_later_upper", 259, b"guardianapi " + guardian_key[:9] + b"A" + guardian_key[10:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1576,6 +1591,11 @@ def compare(native, reference, case):
         count = 0 if empty else 2 if name.startswith("grafanaserviceaccount_domains_") else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": domain products, hidden IDs, direct prefix case and keyword windows must retain the expected findings")
+    if name.startswith(("groovehq_", "groq_", "gtmetrix_", "guardianapi_")):
+        empty = name.startswith(("groovehq_no_dispatch_", "groq_upper_prefix_", "gtmetrix_upper_key_", "guardianapi_first_upper_other_", "guardianapi_later_upper_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": dispatch, uniqueness and provider-specific alphabets must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

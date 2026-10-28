@@ -3213,6 +3213,42 @@
       "evidence": ["tests/detectors/test_graphhopper.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
     },
+    "groovehq/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/groovehq/groovehq.go",
+      "scope_notes": "Enabled Groovehq 206/v0 has no hints. Keyword-only folding applies to extraction prefix groove, distinct from dispatch groovehq; the hq suffix consumes two gap runes. Preserve original 64-byte mixed-alphanumeric occurrences without an ending boundary, uniqueness or token validation. Raw/key only. Finding precedes nil-context constructor skip and complete bounded Bearer assembly. SANE bodyless /v1/me GET verifies every successful 2xx, ignores body/read errors and suppresses the whole mixed shared setup/Do domain without a setter. Original provider values survive release without extending synthesized storage. Module-owned failures are fatal before ordinary outcomes with invocation-only rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/groovehq.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_groovehq.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
+    "groq/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/groq/groq.go",
+      "scope_notes": "Enabled Groq 988/v0 has no hints. Direct case-sensitive gsk_ plus 52 mixed-alphanumeric bytes is word-bounded; retain original-byte unique keys. Raw/key and initial rotation_guide metadata are constructed even when verification replaces the map. SANE bodyless models GET uses bounded complete Bearer authorization. Nil construction retains its cause; only exact 200 verifies, 401 rejects and every other status retains a cause, including other 2xx. Ignore body/read errors. Helper release precedes caller Verified, replacement of ExtraData with nil on every verification outcome, and checked full-token error redaction. Whole shared setup/Do causes are retained without classifiers. Initial metadata, cause, setter and all other owned failures are fatal with invocation-only rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/groq.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_groq.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Go map iteration and complete shared regexp/arbitrary-byte and engine/output behavior", "Full native source-client/custom-client, Reader and drain/close behavior"]
+    },
+    "gtmetrix/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/gtmetrix/gtmetrix.go",
+      "scope_notes": "Enabled GTMetrix 763/v0 has no hints. Keyword-only folding captures word-bounded 32-byte lowercase-hex occurrences, preserving duplicates. Raw/key only. Finding precedes nil-context constructor skip, then true Basic(KEY,empty) encodes KEY plus colon; it is not Column's key-alone authorization. Checked bounded native Base64 assembly precedes send, with no redundant heap staging. SANE bodyless /api/2.0/status GET verifies every successful 2xx, ignores body/read errors and suppresses the whole shared setup/Do domain without a setter. Owned encoder/capture/finding/push failures are fatal with invocation-only caller-preserving rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/gtmetrix.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_gtmetrix.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
+    "guardianapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/guardianapi/guardianapi.go",
+      "scope_notes": "Enabled Guardianapi 259/v0 has no hints. Keyword-only folding applies to extraction guardian, distinct from dispatch guardianapi. Preserve word-bounded UUID-shaped occurrences: the first eight-byte block admits uppercase A only alongside lowercase alphanumeric, and later blocks admit lowercase alphanumeric only, not hex-only or general uppercase UUIDs. Raw/key only. Complete literal search?api-key=KEY URL precedes nil-context constructor skip. SANE bodyless GET adds only common User-Agent, no Authorization/Content-Type/Accept. Every successful 2xx verifies despite read errors; whole shared setup/Do failures retain false without a setter. Owned failures are fatal before ordinary outcomes with invocation-only rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/guardianapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_guardianapi.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
