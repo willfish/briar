@@ -335,5 +335,11 @@ int br_fullstory_v2_init(const br_detector **out, char **error);
 int br_fxmarket_init(const br_detector **out, char **error);
 int br_gcp_init(const br_detector **out, char **error);
 int br_gcpapplicationdefaultcredentials_init(const br_detector **out, char **error);
+int br_geckoboard_init(const br_detector **out, char **error);
+int br_gemini_init(const br_detector **out, char **error);
+int br_generic_init(const br_detector **out, char **error);
+/* Source New() configures exclusions; registry's disabled scanner is zero-value. */
+int br_generic_new_init(const br_detector **out, char **error);
+int br_gengo_init(const br_detector **out, char **error);
 
 #endif
