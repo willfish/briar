@@ -567,6 +567,12 @@ def fixtures():
     fleetbase_key = b"flb_live_" + alnum("fleetbase-key", 20)
     flexport_key = b"shltm_" + alnum("flexport-key", 40)
     flexport_key = flexport_key[:13] + b"_" + flexport_key[14:31] + b"-" + flexport_key[32:]
+    flickr_key = alnum("flickr-key", 32).lower()
+    flightapi_key = alnum("flightapi-key", 24).lower()
+    flightlabs_key = b"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.ey" + alnum("flightlabs-payload", 160) + b"." + alnum("flightlabs-signature", 86)
+    flightlabs_key = flightlabs_key[:60] + b"_" + flightlabs_key[61:100] + b"-" + flightlabs_key[101:]
+    flightstats_key = alnum("flightstats-key", 32).lower()
+    flightstats_id = alnum("flightstats-id", 8).lower()
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1086,6 +1092,10 @@ def fixtures():
         ("flatio", 501, b"FLAT " + flatio_key),
         ("fleetbase", 428, b"fleetbase " + fleetbase_key),
         ("flexport", 1009, flexport_key + b"Q"),  # No source end boundary: capture the first 46 bytes.
+        ("flickr", 455, b"FLICKR " + flickr_key),
+        ("flightapi", 528, b"FlIgHtApI " + flightapi_key),
+        ("flightlabs", 848, flightlabs_key),
+        ("flightstats", 642, b"FLIGHTSTATS " + flightstats_key + b"\nflightstats " + flightstats_id),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1307,7 +1317,9 @@ def compare(native, reference, case):
                 "financialmodelingprep_stdin", "financialmodelingprep_filesystem", "findl_stdin", "findl_filesystem",
                 "finnhub_stdin", "finnhub_filesystem", "fixerio_stdin", "fixerio_filesystem",
                 "flatio_stdin", "flatio_filesystem", "fleetbase_stdin", "fleetbase_filesystem",
-                "flexport_stdin", "flexport_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "flexport_stdin", "flexport_filesystem", "flickr_stdin", "flickr_filesystem",
+                "flightapi_stdin", "flightapi_filesystem", "flightlabs_stdin", "flightlabs_filesystem",
+                "flightstats_stdin", "flightstats_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1398,6 +1410,8 @@ def compare(native, reference, case):
         raise AssertionError(name + ": ExportSDK must not expose its hidden template ID through RawV2")
     if name.startswith("faceplusplus_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": FacePlusPlus preserves all four directed products, including both self-pairs")
+    if name.startswith("flightstats_") and any(row["RawV2"] for row in actual + expected):
+        raise AssertionError(name + ": Flightstats keeps its required application ID hidden from RawV2")
     if name.startswith("fibery_") and any(row["RawV2"] for row in actual + expected):
         raise AssertionError(name + ": Fibery keeps its required domain hidden from RawV2")
     if name.startswith("figma_v") and any(row.get("ExtraData") != {"version": name.split("_")[1][1:]} for row in actual + expected):
