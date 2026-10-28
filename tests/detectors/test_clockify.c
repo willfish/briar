@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "../../src/detectors/detectors.h"
 #include "../../src/detectors/findings.h"
+#include "../../src/http_internal.h"
 #include "../support/detector_test.h"
 
 static char key1[49], key2[49];
@@ -198,11 +199,114 @@ static void resource_rollback(const br_detector *detector)
     br_results_clear(&results);
 }
 
+/* Owned-client verification uses the provider's unchanged keyed request, not
+ * the borrowed transport's unkeyed control. Backend storage survives drain. */
+typedef struct {
+    test_http http;
+    const br_http_request *retained;
+    bool destroyed;
+} clockify_owned_http;
+
+static void check_owned_request(const br_http_request *request)
+{
+    CHECK(request && !strcmp(request->method, "GET"));
+    CHECK(!strcmp(request->url, "https://api.clockify.me/api/v1/user"));
+    CHECK(request->detector_type == 280 && request->dedup_key.len == 52);
+    CHECK(request->dedup_key.data && !memcmp(request->dedup_key.data, "280:", 4));
+    CHECK(!memcmp(request->dedup_key.data + 4, key1, 48));
+    /* The owned client retains the entry-time five-second deadline. */
+    CHECK(request->profile == BR_HTTP_SANE && request->timeout_ms > 0 && request->timeout_ms <= 5000);
+    CHECK(!request->body.data && !request->body.len && request->nheaders == 3);
+    CHECK(!strcmp(request->headers[0].name, "Content-Type") &&
+          !strcmp(request->headers[0].value, "application/json"));
+    CHECK(!strcmp(request->headers[1].name, "X-Api-Key") &&
+          strlen(request->headers[1].value) == 48 && !memcmp(request->headers[1].value, key1, 48));
+    CHECK(!strcmp(request->headers[2].name, "User-Agent") &&
+          !strcmp(request->headers[2].value, "TruffleHog clockify-owned-test"));
+}
+
+static void inspect_owned_clockify(test_http *http, const br_scan_ctx *ctx,
+                                   const br_http_request *request)
+{
+    clockify_owned_http *owned = http->user;
+    CHECK(ctx && ctx->transport && !owned->destroyed && http->calls == http->releases + 1);
+    check_owned_request(request);
+    owned->retained = request;
+}
+
+static void release_owned_clockify(void *user, br_http_response *response)
+{
+    test_http *http = user;
+    clockify_owned_http *owned = http->user;
+    CHECK(!owned->destroyed && owned->retained && http->calls == http->releases + 1);
+    check_owned_request(owned->retained); /* Includes synthesized header/UA lifetime. */
+    CHECK(response->status == http->response.status && response->body.data == http->response.body.data);
+    CHECK(response->body.len == http->response.body.len && response->body_error == http->response.body_error);
+    owned->retained = NULL;
+    test_http_release(user, response);
+}
+
+static void destroy_owned_clockify(void *user)
+{
+    test_http *http = user;
+    clockify_owned_http *owned = http->user;
+    CHECK(!owned->destroyed && !owned->retained && http->calls && http->releases == http->calls);
+    owned->destroyed = true;
+}
+
+static void owned_client_verification(const br_detector *detector)
+{
+    static const unsigned char body[] = {'o', 'k', 0, 0xff};
+    const struct { int status, send_rc; const char *body_error; bool verified; } cases[] = {
+        {200, 0, NULL, true}, {299, 0, NULL, true},
+        {401, 0, NULL, false}, {500, 0, NULL, false},
+        {200, -1, NULL, false}, {200, 0, "synthetic body read error", false},
+        {200, 0, "", false},
+    };
+    char input[96]; snprintf(input, sizeof(input), "clockify %s", key1);
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        clockify_owned_http owned = {0};
+        owned.http = (test_http){.response = {.status = cases[i].status,
+            .body = {body, sizeof(body)}, .body_error = cases[i].body_error},
+            .send_rc = cases[i].send_rc, .send_error = cases[i].send_rc ? "synthetic send error" : NULL,
+            .inspect = inspect_owned_clockify, .user = &owned};
+        br_http_owned_backend backend = {.transport = test_transport(&owned.http), .destroy = destroy_owned_clockify};
+        backend.transport.release = release_owned_clockify;
+        br_http_client *client = NULL; char *error = NULL;
+        CHECK(br_http_client_init(&client, backend, BR_HTTP_SANE, &error) == 0 && client && !error);
+        br_scan_ctx ctx = {.transport = br_http_client_transport(client), .user_agent = "clockify-owned-test"};
+        CHECK(br_http_client_is_owned(ctx.transport));
+        br_results results = test_scan(detector, &ctx, true, input, strlen(input));
+        CHECK(results.len == 1);
+        test_key_result(&results.items[0], 280, key1, "key");
+        CHECK(results.items[0].verified == cases[i].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        if (cases[i].body_error) {
+            unsigned char keyed[52]; memcpy(keyed, "280:", 4); memcpy(keyed + 4, key1, 48);
+            const br_header headers[] = {{"Content-Type", "application/json"}, {"X-Api-Key", key1}};
+            br_http_request request = {.method = "GET", .url = "https://api.clockify.me/api/v1/user",
+                .headers = headers, .nheaders = 2, .profile = BR_HTTP_SANE, .detector_type = 280,
+                .dedup_key = {keyed, sizeof(keyed)}};
+            br_http_response response = {0};
+            /* ReadAll failure is a Do failure, not a successful 200 with body_error. */
+            CHECK(br_http_send(&ctx, &request, &response, &error) != 0);
+            CHECK(error && !strcmp(error, cases[i].body_error));
+            CHECK(!response.status && !response.body.data && !response.body.len && !response.body_error);
+            br_http_release(&ctx, &response); free(error); error = NULL;
+        }
+        CHECK(br_http_client_drain(client, &error) == 0 && !error);
+        size_t sends = cases[i].body_error ? 2 : 1;
+        CHECK(owned.http.calls == sends && owned.http.releases == sends && !owned.destroyed && !owned.retained);
+        br_http_client_destroy(client);
+        CHECK(owned.destroyed);
+    }
+}
+
 int main(void)
 {
     test_secret(key1, 48, 0); test_secret(key2, 48, 17); key1[0] = 'A'; key1[47] = 'Z'; key2[24] = 'Q';
     const br_detector *detector = descriptor();
     extraction(detector); unchanged_guard_with_unkeyed_control(); occurrences_and_blocked_verification(detector);
-    rejected_context_paths(detector); resource_rollback(detector);
-    return test_finish("Clockify extraction + unchanged coalescing guard (verification unsupported)");
+    rejected_context_paths(detector); resource_rollback(detector); owned_client_verification(detector);
+    return test_finish("Clockify extraction + borrowed guard + owned-client verification");
 }
