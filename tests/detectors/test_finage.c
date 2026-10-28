@@ -40,6 +40,8 @@ int json_object_object_add(struct json_object *object, const char *name, struct 
 
 int br_http_send(const br_scan_ctx *ctx, const br_http_request *request, br_http_response *response, char **error)
 {
+    if (ctx && br_http_client_is_owned(ctx->transport))
+        return finage_real_http_send(ctx, request, response, error);
     CHECK(ctx && ctx == expected_context && inspected < expected_count);
     const char *key = expected_keys[inspected++]; CHECK(strlen(key) == 39);
     CHECK(request && !strcmp(request->method, "GET") && strlen(request->url) == 90 && !memcmp(request->url, base_url, 51));
@@ -235,10 +237,52 @@ static void resources_and_rollback(const br_detector *detector)
     CHECK(results.len == 2 && inspected == 2 && !http.calls && http.releases == 2); check_result(&results.items[0], key1); check_result(&results.items[1], key2); br_results_clear(&results);
 }
 
+static void inspect_owned(test_http *http, const br_scan_ctx *ctx, const br_http_request *request)
+{
+    (void)http;
+    CHECK(!ctx->cancelled && !ctx->cancel_user && ctx->deadline_monotonic_ms > 0);
+    CHECK(!strcmp(request->method, "GET") && request->profile == BR_HTTP_SANE && request->detector_type == 423);
+    CHECK(request->timeout_ms > 0 && request->timeout_ms <= 5000);
+    CHECK(strlen(request->url) == 90 && !memcmp(request->url, base_url, 51) && !memcmp(request->url + 51, key1, 40));
+    CHECK(request->dedup_key.len == 43 && !memcmp(request->dedup_key.data, "423:", 4) && !memcmp(request->dedup_key.data + 4, key1, 39));
+    CHECK(!request->body.data && !request->body.len && request->nheaders == 2);
+    CHECK(!strcmp(request->headers[0].name, "Content-Type") && !strcmp(request->headers[0].value, "application/json"));
+    CHECK(!strcmp(request->headers[1].name, "User-Agent") && !strcmp(request->headers[1].value, "TruffleHog owned-finage"));
+}
+
+static void owned_verification(const br_detector *detector)
+{
+    const struct { int status, send_rc; bool read_error, verified; } cases[] = {
+        {204, 0, false, true}, {299, 0, false, true},
+        {401, 0, false, false}, {503, 0, false, false},
+        {200, 1, false, false}, {200, 0, true, false},
+    };
+    static const unsigned char body[] = "ignored\0body";
+    test_http *http = calloc(1, sizeof(*http)); CHECK(http); http->inspect = inspect_owned;
+    br_http_owned_backend backend = {.transport = test_transport(http), .destroy = free};
+    br_http_client *client = NULL; char *error = NULL;
+    CHECK(!br_http_client_init(&client, backend, BR_HTTP_SANE, &error) && client && !error);
+    br_scan_ctx ctx = {.transport = br_http_client_transport(client), .user_agent = "owned-finage"};
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        http->response = (br_http_response){.status = cases[i].status,
+            .body = {body, sizeof(body) - 1}, .body_error = cases[i].read_error ? "" : NULL};
+        http->send_rc = cases[i].send_rc;
+        http->send_error = cases[i].send_rc ? "synthetic owned send failure" : NULL;
+        br_results results = test_scan(detector, &ctx, true, key1, 39);
+        CHECK(results.len == 1 && http->calls == i + 1 && http->releases == i + 1);
+        test_key_result(&results.items[0], 423, key1, "key");
+        CHECK(results.items[0].verified == cases[i].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+    }
+    CHECK(!br_http_client_drain(client, &error) && !error);
+    br_http_client_destroy(client);
+}
+
 int main(void)
 {
     make_key(key1, 0); make_key(key2, 7); const br_detector *detector = descriptor();
     extraction(detector); occurrences_and_actual_guard(detector); suppressed_shared_failures(detector); resources_and_rollback(detector);
-    CHECK(!send_callbacks);
-    return test_finish("Finage extraction/request/rollback + real coalescing guard; zero send callbacks; verification unsupported");
+    CHECK(!send_callbacks); /* The ordinary transport's guard still blocks callbacks. */
+    owned_verification(detector);
+    return test_finish("Finage ordinary guard + owned singleflight request/status verification");
 }
