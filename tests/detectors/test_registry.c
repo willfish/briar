@@ -341,6 +341,7 @@ static const registration expected[] = {
     {6, 0, "GCP", "provider_x509", sizeof("briar87@offline.invalid") - 1, true, -1},
     {983, 0, "GCPApplicationDefaultCredentials", ".apps.googleusercontent.com", 2, true, -1},
     {696, 0, "Geckoboard", "geckoboard", 44, true, -1},
+    {876, 0, "Gemini", "master-", 27, true, 1024},
     {7, 0, "Generic", "pass", 17, false, -1},
     {426, 0, "Gengo", "gengo", 64, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
@@ -349,6 +350,20 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 876) {
+        char key[28] = "master-", secret[28], input[70]; test_secret(key + 7, 20, 0); test_secret(secret, 27, 9);
+        snprintf(input, sizeof(input), "%s %s", key, secret);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 876 && result->raw.len == 27 && !memcmp(result->raw.data, key, 27));
+        CHECK(result->raw_v2.len == 54 && !memcmp(result->raw_v2.data, key, 27) && !memcmp(result->raw_v2.data + 27, secret, 27));
+        CHECK(!result->verified && !result->verification_error && !result->redacted && !result->extra_data && !result->structured_data && !result->verification_from_cache);
+        CHECK(!result->primary_secret.data && !result->primary_secret.len && !result->primary_line && !result->chunk_offset_set);
+        br_json *part = NULL; CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(result->secret_parts, "key", &part) && !strcmp(json_object_get_string(part), key));
+        CHECK(json_object_object_get_ex(result->secret_parts, "secret", &part) && !strcmp(json_object_get_string(part), secret));
+        br_results_clear(&results); return;
+    }
     if (entry->type == 426) {
         char key[65], input[80]; test_secret(key, 64, 0);
         snprintf(input, sizeof(input), "gengo%s\n", key);
@@ -1426,7 +1441,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : entry->type == 196 || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
@@ -1462,6 +1477,7 @@ int main(void)
             br_detector versionless = *detector; versionless.version = 0;
             CHECK(!br_detector_is_default(&versionless, NULL));
         }
+        if (entry->type == 876) CHECK(!strcmp(detector->keywords[1], "account-"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
         if (entry->type == 189) CHECK(!strcmp(detector->keywords[1], "textanywhere"));
