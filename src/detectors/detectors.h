@@ -373,5 +373,9 @@ int br_grafana_init(const br_detector **out, char **error);
 int br_grafanaserviceaccount_init(const br_detector **out, char **error);
 int br_graphcms_init(const br_detector **out, char **error);
 int br_graphhopper_init(const br_detector **out, char **error);
+int br_groovehq_init(const br_detector **out, char **error);
+int br_groq_init(const br_detector **out, char **error);
+int br_gtmetrix_init(const br_detector **out, char **error);
+int br_guardianapi_init(const br_detector **out, char **error);
 
 #endif
