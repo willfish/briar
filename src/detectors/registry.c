@@ -345,6 +345,7 @@ static const detector_factory named_factories[] = {
     br_geocodify_init,
     br_geocodio_init,
     br_geoipifi_init,
+    br_getemails_init,
     br_getgeoapi_init,
     br_jiradatacenterpat_init,
 };
@@ -577,6 +578,7 @@ const char *br_detector_type_name(int32_t type)
     case 323: return "Autoklose";
     case 324: return "Cloudplan";
     case 325: return "Dotdigital";
+    case 327: return "GetEmails";
     case 333: return "Brandfetch";
     case 334: return "Clearbit";
     case 335: return "Crowdin";

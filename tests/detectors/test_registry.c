@@ -349,6 +349,7 @@ static const registration expected[] = {
     {542, 0, "Geocodify", "geocodify", 40, true, -1},
     {407, 0, "Geocodio", "geocod", 39, true, 1024},
     {286, 0, "GeoIpifi", "ipifi", 32, true, -1},
+    {327, 0, "GetEmails", "getemails", 26, false, 1024},
     {383, 0, "GetGeoAPI", "getgeoapi", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -356,6 +357,20 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 327) {
+        char key[27], id[19], input[120]; test_secret(key, 26, 0); test_secret(id, 18, 7);
+        snprintf(input, sizeof(input), "getemails %s\ngetemails %s\ngetemails %s", key, id, id);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input));
+        CHECK(results.len == 2); /* Hidden ID occurrences remain a full product. */
+        for (size_t i = 0; i < 2; ++i) {
+            test_key_result(&results.items[i], 327, key, "key");
+            CHECK(!results.items[i].verified && !results.items[i].verification_error);
+        }
+        CHECK(results.items[0].raw.data != results.items[1].raw.data &&
+              results.items[0].secret_parts != results.items[1].secret_parts);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 407) {
         char key[40], input[80]; test_secret(key, 39, 0);
         snprintf(input, sizeof(input), "geocod %s\ngeocod AbCdEfG", key);
