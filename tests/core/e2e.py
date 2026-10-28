@@ -645,6 +645,19 @@ check(not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GrafanaServiceAccount"], grafana_service_key.encode())
 check(not rows, "a service-account key alone is not a complete credential")
 
+graphcms_plain = "ey" + (key32 * 3)[:73] + "!ey" + (key32 * 12)[:365] + "?" + (key32 * 22)[:683]
+# Center the dispatch window on the long token; the span hint is not a token cap.
+graphcms_key = graphcms_plain[:200] + "graphcms" + graphcms_plain[208:]
+graphcms_id = key32[:25]
+for raw in (graphcms_key, graphcms_key[:75] + "\0" + graphcms_key[76:]):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GraphCMS"],
+                     (raw + "\ngraph " + graphcms_id).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == 223, "GraphCMS selector reaches its long wildcard token")
+    check(rows[0]["Raw"] == raw and rows[0]["SecretParts"] == {"key": raw}, "GraphCMS preserves original wildcard bytes and hides its required ID")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "GraphCMS NoV does not add metadata or send a query")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GraphCMS"], graphcms_key.encode())
+check(not rows, "GraphCMS requires its hidden ID")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

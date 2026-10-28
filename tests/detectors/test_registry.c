@@ -374,12 +374,24 @@ static const registration expected[] = {
     {69, 0, "GoogleOauth2", "ya29.", 15, true, -1},
     {830, 0, "Grafana", "glc_eyJ", 67, true, -1},
     {963, 0, "GrafanaServiceAccount", "glsa_", 46, true, 1024},
+    {223, 0, "GraphCMS", "graphcms", 1127, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 223) {
+        char key[1128] = "ey", id[26], input[1200];
+        test_secret(key + 2, 73, 0); key[75] = '!'; memcpy(key + 76, "ey", 2);
+        test_secret(key + 78, 365, 7); key[443] = '?'; test_secret(key + 444, 683, 11);
+        test_secret(id, 25, 3); snprintf(input, sizeof(input), "%s\ngraph %s", key, id);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 223, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 963) {
         char key[47] = "glsa_", input[100], raw_v2[100];
         const char *domain = "Tenant97.grafana.net";
