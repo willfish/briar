@@ -349,5 +349,10 @@ int br_geoipifi_init(const br_detector **out, char **error);
 int br_getemail_init(const br_detector **out, char **error);
 int br_getemails_init(const br_detector **out, char **error);
 int br_getgeoapi_init(const br_detector **out, char **error);
+int br_getgist_init(const br_detector **out, char **error);
+int br_getresponse_init(const br_detector **out, char **error);
+int br_getsandbox_init(const br_detector **out, char **error);
+int br_github_v1_init(const br_detector **out, char **error);
+int br_github_v2_init(const br_detector **out, char **error);
 
 #endif
