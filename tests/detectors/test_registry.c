@@ -310,6 +310,7 @@ static const registration expected[] = {
     {406, 0, "FinancialModelingPrep", "financialmodelingprep", 32, true, -1},
     {667, 0, "Findl", "findl", 36, true, -1},
     {420, 0, "Finnhub", "finnhub", 20, true, -1},
+    {149, 0, "FixerIO", "fixer", 32, true, -1},
     {501, 0, "FlatIO", "flat", 128, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
