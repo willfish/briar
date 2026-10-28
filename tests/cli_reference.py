@@ -541,6 +541,14 @@ def fixtures():
     extractor_key = alnum("extractorapi-key", 40)
     extractor_key = extractor_key[:14] + b"-" + extractor_key[15:]
     facebook_id, facebook_secret = b"75019382640198752", alnum("facebookoauth-secret", 32)
+    faceplusplus_key, faceplusplus_secret = alnum("faceplusplus-key", 32), alnum("faceplusplus-secret", 32)
+    faceplusplus_key = faceplusplus_key[:6] + b"_" + faceplusplus_key[7:]
+    faceplusplus_secret = faceplusplus_secret[:17] + b"-" + faceplusplus_secret[18:]
+    fastforex_key = alnum("fastforex-key", 28).lower()
+    fastforex_key = fastforex_key[:8] + b"-z" + fastforex_key[10:]
+    fastly_key = alnum("fastly-key", 32)
+    fastly_key = fastly_key[:7] + b"_" + fastly_key[8:19] + b"-" + fastly_key[20:]
+    feedier_key = alnum("feedier-key", 32)
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1042,6 +1050,10 @@ def fixtures():
         ("exportsdk", 771, b"exportsdk " + exportsdk_key + b"\nEXPORTSDK " + exportsdk_id),
         ("extractorapi", 784, b"ExTrAcToRaPi " + extractor_key),
         ("facebookoauth", 40, b"facebook " + facebook_id + b"\nFACEBOOK " + facebook_secret),
+        ("faceplusplus", 416, b"faceplusplus " + faceplusplus_key + b"\nFACEPLUSPLUS " + faceplusplus_secret),
+        ("fastforex", 636, b"FASTFOREX " + fastforex_key),
+        ("fastlypersonaltoken", 68, b"FaStLy " + fastly_key),
+        ("feedier", 238, b"FEEDIER " + feedier_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1254,7 +1266,9 @@ def compare(native, reference, case):
                 "everhour_stdin", "everhour_filesystem", "exchangerateapi_stdin", "exchangerateapi_filesystem",
                 "exchangerateapi_alias_stdin", "exchangerateapi_alias_filesystem",
                 "exchangeratesapi_stdin", "exchangeratesapi_filesystem", "exportsdk_stdin", "exportsdk_filesystem",
-                "extractorapi_stdin", "extractorapi_filesystem", "facebookoauth_stdin", "facebookoauth_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "extractorapi_stdin", "extractorapi_filesystem", "facebookoauth_stdin", "facebookoauth_filesystem",
+                "fastforex_stdin", "fastforex_filesystem", "fastlypersonaltoken_stdin", "fastlypersonaltoken_filesystem",
+                "feedier_stdin", "feedier_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1343,6 +1357,8 @@ def compare(native, reference, case):
         raise AssertionError(name + ": Enablex must not expose its hidden ID through RawV2")
     if name.startswith("exportsdk_") and any(row["RawV2"] for row in actual + expected):
         raise AssertionError(name + ": ExportSDK must not expose its hidden template ID through RawV2")
+    if name.startswith("faceplusplus_") and (len(actual) != 4 or len(expected) != 4):
+        raise AssertionError(name + ": FacePlusPlus preserves all four directed products, including both self-pairs")
     if name.startswith("eraser_") and any(row.get("ExtraData") != {"rotation_guide": "https://howtorotate.com/docs/tutorials/eraser/"} for row in actual + expected):
         raise AssertionError(name + ": Eraser retains its rotation guide without verification")
     if name in ("everhour_bad_upper_stdin", "everhour_bad_upper_filesystem") and (actual or expected):

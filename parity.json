@@ -2502,6 +2502,42 @@
       "evidence": ["tests/detectors/test_facebookoauth.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Scan-deferred Close versus eager Reader/buffering/release timing", "Complete native/private SANE, mixed HTTP stages, regexp and global engine/output parity"]
     },
+    "faceplusplus/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/faceplusplus/faceplusplus.go",
+      "scope_notes": "FacePlusPlus416/v0/default enabled/span1024 engine hint, not a local cap. Identical keyword-CI faceplusplus-prefixed word-bounded32 mixed-alphanumeric/underscore/hyphen role grammars share one original OCCURRENCE collection, not a unique set. Preserve all key-major N-squared products, self-pairs and duplicates/no equality skip/verified break. RawKEY/parts key,secret/RawV2KEYSECRET64/noExtra/Redacted/primary/cache/filter. Finding/parts/RawV2 then complete146-byte literal faceset/getfacesets?api_key=KEY&api_secret=SECRET URL plus NUL147 before nil-context constructor skipping. SANE5s bodyless POST; Content-Type JSON/common UA after constructor, no Auth/Accept/dedup/invented logical Content-Length/encoder/formatter/heap-copy/cap seam. Stack URL survives send and release. Every2xx verifies/body-read ignored. Whole mixed shared send domain suppressed false retained/no setter/classifier. Own nonzero resources fatal before ordinary outcomes with invocation-only rollback preserving caller findings. Biometrics/faceset verification remains injected offline, native POST redirect guard unchanged.",
+      "native_files": ["src/detectors/faceplusplus.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_faceplusplus.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager Reader/buffering/release timing", "Native POST redirects remain fail-closed; complete private SANE, regexp and global engine/output parity"]
+    },
+    "fastforex/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/fastforex/fastforex.go",
+      "scope_notes": "FastForex636/v0/default enabled/all hints absent. Keyword-only CI fastforex prefix plus word-bounded28 lowercase-alphanumeric/hyphen original occurrences/duplicates. Preserve hyphen boundary/backtracking, not UUID/hex/global CI/full-token validation. Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding then complete71-byte literal fetch-all?api_key=KEY URL plus NUL72 before nil-context constructor skipping. SANE5s GET/common UA only/no Auth/Type/Accept/dedup/encoder/formatter/heap-copy/cap seam; complete stack URL survives send and release. Every2xx verifies/body-read ignored; whole mixed shared send domain suppressed false retained/no setter/classifier. Own nonzero resources fatal before skips/suppression and invocation-only rollback preserves caller findings. Synthetic injected HTTP only.",
+      "native_files": ["src/detectors/fastforex.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fastforex.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager Reader/buffering/release timing", "Complete native/private SANE, mixed HTTP stages, regexp and global engine/output parity"]
+    },
+    "fastlypersonaltoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/fastlypersonaltoken/fastlypersonaltoken.go",
+      "scope_notes": "FastlyPersonalToken68/v0/default enabled/all hints absent. Keyword-only CI fastly prefix plus word-bounded32 mixed-alphanumeric/underscore/hyphen original-byte unique captures, preserving case and word boundaries. Raw key only/Extra initially nil/no RawV2/Redacted/primary/cache/filter. Nil-context constructor errors retain findings. SANE5s GET api.fastly.com/tokens/self; borrowed Fastly-Key/common UA after constructor, capture+NUL alive through send/release, no Auth/Type/Accept/dedup/copy seam. HTTP200 only first-document typed fastlypersonaltoken.token validates all four tagged string fields id/user_id/expires_at/scope. Typed folding/null-no-op/duplicate overwrite/first type error sticky/unknown huge numbers ignored, never generic-map float64 conversion. Successful null/{} publishes all four token_id/user_id/token_expires_at/token_scope strings. Empty expires uses lowercase never; byte length preserves nonempty NUL-bearing values, not strlen fallback. Empty/Unicode/NUL metadata retained. Complete first objects can win terminal read errors; tails ignored. Ordinary decode/read/type errors false/nilExtra/owned token-redacted cause, no partial metadata.401/403 false/no cause/body ignored; other statuses unexpected status code: N. Whole mixed shared send cause retained/no classifier; caller order Verified then Extra replacement then token-only setter, NULL no-op/nonzero fatal. Owned metadata/cause/decoder/setter/push failures precede ordinary outcomes and preserve caller findings via invocation rollback. Consumed-map invalid UTF8 explicitly unsupported after root checks; full JSON/Reader/native/private-client/error-chain/map-order/global parity remains partial.",
+      "native_files": ["src/detectors/fastlypersonaltoken.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fastlypersonaltoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Full Go JSON/unquoting/invalid-UTF8 replacement and diagnostics", "Reader/drain/native/private-client/typed-error-chain and randomized map traversal", "Complete native SANE, regexp and global engine/output parity"]
+    },
+    "feedier/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/feedier/feedier.go",
+      "scope_notes": "Feedier238/v0/default enabled/all hints absent. Keyword-only CI feedier prefix plus word-bounded32 mixed-alphanumeric original occurrences/duplicates/TrimSpace no-op. Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding before nil-context constructor skipping. SANE5s GET api.feedier.com/v1/carriers; Accept JSON then complete bounded Bearer39 plus NUL40/common UA after constructor, no Type/dedup/formatter/heap-copy/cap seam. Complete stack Authorization survives send and release. Every2xx verifies/body-read ignored; whole mixed shared send domain suppressed false retained/no setter/classifier. Own nonzero resources fatal before skips/suppression with invocation-only rollback preserving caller findings. Synthetic injected HTTP only, no feedback/provider actions.",
+      "native_files": ["src/detectors/feedier.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_feedier.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager Reader/buffering/release timing", "Complete native/private SANE, mixed HTTP stages, regexp and global engine/output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
