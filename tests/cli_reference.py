@@ -532,6 +532,15 @@ def fixtures():
     everhour_key = b"-".join((everhour_hex[:4], everhour_hex[4:8], everhour_hex[8:14], everhour_hex[14:20], everhour_hex[20:]))
     everhour_key = b"A" + everhour_key[1:]
     exchangerate_key = synthetic("exchangerateapi-key", 24)
+    exchangerates_key = alnum("exchangeratesapi-key", 32).lower()
+    exchangerates_key = exchangerates_key[:9] + b"z" + exchangerates_key[10:]
+    exportsdk_tail = alnum("exportsdk-key", 36).lower()
+    exportsdk_key = synthetic("exportsdk-prefix", 9) + b"_" + exportsdk_tail[:8] + b"-" + exportsdk_tail[9:]
+    exportsdk_id = alnum("exportsdk-id", 36).lower()
+    exportsdk_id = exportsdk_id[:12] + b"-" + exportsdk_id[13:]
+    extractor_key = alnum("extractorapi-key", 40)
+    extractor_key = extractor_key[:14] + b"-" + extractor_key[15:]
+    facebook_id, facebook_secret = b"75019382640198752", alnum("facebookoauth-secret", 32)
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1029,6 +1038,10 @@ def fixtures():
         ("everhour_bad_upper", 284, b"everhour B" + everhour_key[1:]),
         ("exchangerateapi", 360, b"EXCHANGERATE " + exchangerate_key),
         ("exchangerateapi_alias", 360, b"exchange-rate " + exchangerate_key),
+        ("exchangeratesapi", 379, b"EXCHANGERATES " + exchangerates_key),
+        ("exportsdk", 771, b"exportsdk " + exportsdk_key + b"\nEXPORTSDK " + exportsdk_id),
+        ("extractorapi", 784, b"ExTrAcToRaPi " + extractor_key),
+        ("facebookoauth", 40, b"facebook " + facebook_id + b"\nFACEBOOK " + facebook_secret),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1239,7 +1252,9 @@ def compare(native, reference, case):
                 "eraser_stdin", "eraser_filesystem", "etherscan_stdin", "etherscan_filesystem",
                 "ethplorer_stdin", "ethplorer_filesystem", "eventbrite_stdin", "eventbrite_filesystem",
                 "everhour_stdin", "everhour_filesystem", "exchangerateapi_stdin", "exchangerateapi_filesystem",
-                "exchangerateapi_alias_stdin", "exchangerateapi_alias_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "exchangerateapi_alias_stdin", "exchangerateapi_alias_filesystem",
+                "exchangeratesapi_stdin", "exchangeratesapi_filesystem", "exportsdk_stdin", "exportsdk_filesystem",
+                "extractorapi_stdin", "extractorapi_filesystem", "facebookoauth_stdin", "facebookoauth_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1326,6 +1341,8 @@ def compare(native, reference, case):
         raise AssertionError(name + ": preserve mandatory ElevenLabs syntax, required Enablex IDs and EndorLabs equality skips")
     if name.startswith("enablex_") and any(row["RawV2"] for row in actual + expected):
         raise AssertionError(name + ": Enablex must not expose its hidden ID through RawV2")
+    if name.startswith("exportsdk_") and any(row["RawV2"] for row in actual + expected):
+        raise AssertionError(name + ": ExportSDK must not expose its hidden template ID through RawV2")
     if name.startswith("eraser_") and any(row.get("ExtraData") != {"rotation_guide": "https://howtorotate.com/docs/tutorials/eraser/"} for row in actual + expected):
         raise AssertionError(name + ": Eraser retains its rotation guide without verification")
     if name in ("everhour_bad_upper_stdin", "everhour_bad_upper_filesystem") and (actual or expected):

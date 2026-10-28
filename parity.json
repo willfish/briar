@@ -2466,6 +2466,42 @@
       "evidence": ["tests/detectors/test_exchangerateapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["ABI1 cannot express http.NoBody identity or Reader/drain timing", "Complete eager-buffering/private-client/SANE, mixed HTTP stages, regexp and global engine/output parity"]
     },
+    "exchangeratesapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/exchangeratesapi/exchangeratesapi.go",
+      "scope_notes": "Plural ExchangeRatesAPI379/v0/default enabled/all hints absent, not singular360. Keyword-only CI exchangerates prefix with word-bounded32 lowercase-alphanumeric original occurrences/duplicates, not hex validation. Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding and complete85-byte literal v1/latest?access_key=KEY URL plus NUL86 precede nil-context constructor skipping. SANE5s GET/common UA only/no Auth/Type/Accept/dedup/encoder/heap-copy/formatter seam; stack URL survives send and release. Every2xx verifies; bodies/read errors ignored. Whole mixed shared setup/allocation/Do error domain suppressed, false finding retained, no setter/classifier. Own nonzero resources are fatal before skips/suppression and invocation rollback preserves caller findings.",
+      "native_files": ["src/detectors/exchangeratesapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_exchangeratesapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager Reader/buffering/release timing", "Complete native/private SANE, mixed HTTP stages, regexp and global engine/output parity"]
+    },
+    "exportsdk/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/exportsdk/exportsdk.go",
+      "scope_notes": "ExportSDK771/v0/default enabled/span1024 engine hint, not a local cap. Independent keyword-CI exportsdk-prefixed key5..15loweralnum_36loweralnum-hyphen and ID36loweralnum-hyphen grammars, not UUIDs. Key-major occurrence products/duplicates/no uniqueness/equality skip/verified break. Preserve hyphen word boundaries, including template IDs captured from key fragments. ID required but hidden even verified; Raw/key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding then exact56-byte literal templateId JSON plus NUL57 before nil-context constructor skipping: two spaces after opening brace and one after colon. SANE5s POST api.exportsdk.com/v1/pdf; Content-Type JSON then borrowed canonical X-Api-Key/common UA after constructor. Complete bounded body and capture+NUL live through send and release; no serializer/encoder/heap copy/formatter/dedup/invented logical Content-Length. Every2xx verifies/body-read ignored; whole mixed shared send domain suppressed false retained/no setter/classifier. Own nonzero resources fatal before ordinary outcomes, invocation-only rollback. Generates PDFs/consumes remote resources: injected offline verification only, POST redirect guard unchanged.",
+      "native_files": ["src/detectors/exportsdk.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_exportsdk.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager Reader/buffering/release timing", "Native POST redirects remain fail-closed; complete private SANE, regexp and global engine/output parity"]
+    },
+    "extractorapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/extractorapi/extractorapi.go",
+      "scope_notes": "ExtractorAPI784/v0/default enabled/all hints absent. Keyword-only CI extractorapi prefix with exact word-bounded40 mixed-alphanumeric/hyphen grammar [a-zA-Z-0-9], original occurrences/duplicates/TrimSpace no-op. Preserve hyphen boundaries/backtracking, not invented full-token delimiters or hex validation. Raw key only/no RawV2/Extra/Redacted/primary/cache/filter. Finding and complete105-byte literal extractor?apikey=KEY&url=example.com URL plus NUL106 before nil-context constructor skipping; exact query order/target without an added scheme/encoder/heap-copy/formatter seam. SANE5s GET/common UA only/no Auth/Type/Accept/dedup; complete URL survives send and release. Every2xx verifies/body-read ignored. Whole mixed shared send domain suppressed false retained/no setter/classifier. Own nonzero resources fatal before skip/suppression and invocation-only rollback preserves caller findings. Remote extraction/fetch can consume service resources, so verification remains injected/offline only.",
+      "native_files": ["src/detectors/extractorapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_extractorapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager Reader/buffering/release timing", "Complete native/private SANE, mixed HTTP stages, regexp and global engine/output parity"]
+    },
+    "facebookoauth/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/facebookoauth/facebookoauth.go",
+      "scope_notes": "FacebookOAuth40/v0/default enabled/span1024 engine hint, not a local cap. Independent keyword-only CI facebook prefixes with word-bounded15..18digit IDs and32mixed-alphanumeric secrets. ID-major original occurrence products/duplicates/no uniqueness/equality skip/verified break. Raw SECRET, Redacted ID, parts id/secret, RawV2 ID+SECRET47..50; no key part/Extra/primary/cache/filter. Finding/RawV2/Redacted resources then complete bounded max94-byte graph.facebook.com/me?access_token=ID|SECRET URL plus NUL95 before nil-context constructor skipping. Actual URL length follows ID length; literal pipe remains unencoded/no formatter/heap-copy/cap seam. SANE5s GET/common UA only/no Auth/Type/Accept/dedup; complete URL lives through send and release. Every2xx verifies/body-read ignored. Whole mixed shared send domain suppressed false retained/no setter/classifier. Own nonzero capture/finding/RawV2/Redacted/push failures fatal before ordinary outcomes; invocation-only rollback preserves caller findings. Synthetic injected HTTP only, no live OAuth/Graph/provider actions.",
+      "native_files": ["src/detectors/facebookoauth.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_facebookoauth.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Scan-deferred Close versus eager Reader/buffering/release timing", "Complete native/private SANE, mixed HTTP stages, regexp and global engine/output parity"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
