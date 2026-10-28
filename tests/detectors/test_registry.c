@@ -273,6 +273,7 @@ static const registration expected[] = {
     {180, 0, "Dwolla", "dwolla", 50, true, 1024},
     {359, 0, "Dynalist", "dynalist", 128, true, -1},
     {258, 0, "Dyspatch", "dyspatch", 52, true, -1},
+    {282, 0, "EasyInsight", "easyinsight", 20, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -559,6 +560,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 921: secondary = "briar7"; secondary_name = "username"; break;
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
     case 821: secondary = "AB7CD9E-F2G4H6J-K8L1M3N-P5Q7R9S"; secondary_name = "id"; break;
+    case 282:
+        memcpy(secondary_buffer, key, entry->key_len + 1);
+        secondary_buffer[0] = key[0] == 'Z' ? 'Y' : 'Z';
+        secondary = secondary_buffer; secondary_name = "id";
+        break;
     case 180:
         memcpy(secondary_buffer, key, entry->key_len + 1);
         secondary_buffer[0] = key[0] == 'Z' ? 'Y' : 'Z';
@@ -976,7 +982,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
-    CHECK(results.len == (entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 ? 2u : 1u));
+    CHECK(results.len == (entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 || entry->type == 282 ? 2u : 1u));
     const br_result *result = &results.items[0];
     CHECK(result->detector_type == entry->type);
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
@@ -1188,7 +1194,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 196 || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 282 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 3 && entry->version == 1) {
             const char *aliases[] = {"az", "entra", "msal", "login.microsoftonline.com", ".onmicrosoft.com"};
@@ -1205,6 +1211,7 @@ int main(void)
         if (entry->type == 343) CHECK(!strcmp(detector->keywords[1], "\\\"auths\\"));
         if (entry->type == 18) CHECK(!strcmp(detector->keywords[1], "sl."));
         if (entry->type == 1059) CHECK(!strcmp(detector->keywords[1], "duffel_live_"));
+        if (entry->type == 282) CHECK(!strcmp(detector->keywords[1], "easy-insight"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
         if (entry->type == 189) CHECK(!strcmp(detector->keywords[1], "textanywhere"));
