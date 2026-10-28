@@ -381,6 +381,7 @@ static const registration expected[] = {
     {763, 0, "GTMetrix", "gtmetrix", 32, true, -1},
     {259, 0, "Guardianapi", "guardianapi", 36, true, -1},
     {792, 0, "Gumroad", "gumroad", 43, true, -1},
+    {570, 0, "Guru", "guru", 9, false, 1024},
     {467, 0, "Gyazo", "gyazo", 43, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -388,6 +389,15 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 570) {
+        const char *username = "AbC@de.fg";
+        const char *input = "guru AbC@de.fg\nguru ghijklmn-opqr-stuv-wxyz-0123456789ab";
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 570, username, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 988) {
         char key[57] = "gsk_"; test_secret(key + 4, 52, 0);
         br_results results = test_scan(detector, NULL, false, key, 56); CHECK(results.len == 1);

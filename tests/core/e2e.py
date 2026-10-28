@@ -711,6 +711,11 @@ for raw, following in ((gumroad_key, ""), (gumroad_key[:42] + "-", "x")):
     check(rows[0]["Raw"] == raw and rows[0]["SecretParts"] == {"key": raw}, "Gumroad preserves the full mixed-alphanumeric and hyphen capture")
     check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Gumroad NoV does not send its nonempty GET or add metadata")
 
+for selector in ("Guru", "570"):
+    proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector],
+                        b"guru AbC@de.fg\nguru ghijklmn-opqr-stuv-wxyz-0123456789ab", code=1)
+    check(not rows and b"no enabled implemented detectors selected" in proc.stderr, "Guru stays absent from source defaults despite explicit selection")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

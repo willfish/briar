@@ -377,6 +377,7 @@ static const detector_factory named_factories[] = {
     br_gtmetrix_init,
     br_guardianapi_init,
     br_gumroad_init,
+    br_guru_init,
     br_gyazo_init,
     br_jiradatacenterpat_init,
 };
@@ -718,6 +719,7 @@ const char *br_detector_type_name(int32_t type)
     case 567: return "Dfuse";
     case 568: return "EdenAI";
     case 569: return "Glassnode";
+    case 570: return "Guru";
     case 578: return "CarbonInterface";
     case 585: return "DailyCO";
     case 588: return "Appfollow";
