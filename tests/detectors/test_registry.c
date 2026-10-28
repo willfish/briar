@@ -293,6 +293,7 @@ static const registration expected[] = {
     {284, 0, "Everhour", "everhour", 32, true, -1},
     {360, 0, "ExchangeRateAPI", "exchangerate", 24, true, -1},
     {379, 0, "ExchangeRatesAPI", "exchangerates", 32, true, -1},
+    {771, 0, "ExportSDK", "exportsdk", 46, true, 1024},
     {784, 0, "ExtractorAPI", "extractorapi", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -425,6 +426,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 284) strcpy(key, "Aa0f-b1c2-d3e4f5-a6b7c8-d9e0f1a2");
     if (entry->type == 379) key[9] = 'z';
     if (entry->type == 784) key[14] = '-';
+    if (entry->type == 771) { key[9] = '_'; key[18] = '-'; }
     if (entry->type == 994) {
         if (entry->version == 1)
             for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789ABCDEF"[i % 16];
@@ -592,6 +594,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         break;
     case 110: secondary = "fixture-tenant.us.auth0.com"; secondary_name = "domain"; break;
     case 65: secondary = "12345678901234567"; secondary_name = "id"; break;
+    case 771:
+        test_secret(secondary_buffer, 36, 11); secondary_buffer[12] = '-';
+        secondary = secondary_buffer; secondary_name = "id"; break;
     case 281: secondary = "G7h9K2m4-N6p8-Q1r3-S5t7-U9v1W3x5Y7z9"; secondary_name = "id"; break;
     case 921: secondary = "briar7"; secondary_name = "username"; break;
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
@@ -1052,7 +1057,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821 || entry->type == 639 || entry->type == 652) {
+    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821 || entry->type == 639 || entry->type == 652 || entry->type == 771) {
         test_key_result(result, entry->type, key, "key"); /* Required counterpart stays hidden. */
         br_results_clear(&results);
         return;
