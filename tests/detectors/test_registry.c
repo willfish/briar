@@ -326,6 +326,7 @@ static const registration expected[] = {
     {713, 0, "FormBucket", "formbucket", 77, true, -1},
     {812, 0, "Formcraft", "formcraft", 16, true, -1},
     {712, 0, "FormIO", "formio", 331, true, -1},
+    {199, 0, "FrameIO", "fio-u-", 70, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -464,6 +465,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 527) { key[8] = '.'; key[21] = '-'; }
     if (entry->type == 592) key[15] = '.';
     if (entry->type == 428) memcpy(key, "flb_live_", 9);
+    if (entry->type == 199) memcpy(key, "fio-u-", 6);
     if (entry->type == 1009) { memcpy(key, "shltm_", 6); key[16] = '_'; key[30] = key[45] = '-'; }
     if (entry->type == 848) { memcpy(key, entry->keyword, 36); memcpy(key + 36, ".ey", 3); key[40] = '.'; }
     if (entry->type == 173) { memcpy(key, "FLWSECK-", 8); memcpy(key + 40, "-X", 2); }
