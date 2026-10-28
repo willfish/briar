@@ -302,5 +302,9 @@ int br_figmapersonalaccesstoken_v1_init(const br_detector **out, char **error);
 int br_figmapersonalaccesstoken_v2_init(const br_detector **out, char **error);
 int br_figmapersonalaccesstoken_v3_init(const br_detector **out, char **error);
 int br_fileio_init(const br_detector **out, char **error);
+int br_finage_init(const br_detector **out, char **error);
+int br_financialmodelingprep_init(const br_detector **out, char **error);
+int br_findl_init(const br_detector **out, char **error);
+int br_finnhub_init(const br_detector **out, char **error);
 
 #endif
