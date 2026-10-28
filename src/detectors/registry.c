@@ -354,6 +354,7 @@ static const detector_factory named_factories[] = {
     br_github_v1_init,
     br_github_v2_init,
     br_github_oauth2_init,
+    br_gitlaboauth2_init,
     br_jiradatacenterpat_init,
 };
 
@@ -455,6 +456,15 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_is_type(feature_flags, json_type_object)) return false;
             br_json *enabled = NULL;
             if (!json_object_object_get_ex(feature_flags, "DuffelTokenDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1050: {
+            if (detector->version != 0) return false;
+            /* OSS main enables GitLab OAuth; explicit false models package zero. */
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "GitLabOAuthDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
         case 1053: {
@@ -815,6 +825,7 @@ const char *br_detector_type_name(int32_t type)
     case 1046: return "JiraDataCenterPAT";
     case 1047: return "ConfluenceDataCenter";
     case 1048: return "Cloudinary";
+    case 1050: return "GitLabOauth2";
     case 1052: return "AWSAppSync";
     case 1053: return "BrainTrustApiKey";
     case 1059: return "DuffelToken";

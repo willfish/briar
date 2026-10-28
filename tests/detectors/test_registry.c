@@ -358,12 +358,32 @@ static const registration expected[] = {
     {8, 1, "Github", "github", 40, true, -1},
     {8, 2, "Github", "ghp_", 40, true, -1},
     {924, 0, "GitHubOauth2", "github", 20, true, 1024},
+    {1050, 0, "GitLabOauth2", "gloas-", 70, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 1050) {
+        char id[65], secret[71], input[180], raw_v2[153];
+        const char *hex = "0123456789abcdef", *cloud = "https://gitlab.com";
+        snprintf(id, sizeof(id), "%s%s%s%s", hex, hex, hex, hex);
+        snprintf(secret, sizeof(secret), "gloas-%s%s%s%s", hex, hex, hex, hex);
+        snprintf(input, sizeof(input), "client_id %s\n%s", id, secret);
+        snprintf(raw_v2, sizeof(raw_v2), "%s%s%s", id, secret, cloud);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 1050 && result->raw.len == 70 && !memcmp(result->raw.data, secret, 70));
+        CHECK(result->raw_v2.len == 152 && !memcmp(result->raw_v2.data, raw_v2, 152));
+        CHECK(!result->verified && !result->verification_error && !result->redacted && !result->extra_data && !result->structured_data && !result->primary_secret.data && !result->verification_from_cache);
+        br_json *field = NULL; CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 3);
+        CHECK(json_object_object_get_ex(result->secret_parts, "client_id", &field) && !strcmp(json_object_get_string(field), id));
+        CHECK(json_object_object_get_ex(result->secret_parts, "client_secret", &field) && !strcmp(json_object_get_string(field), secret));
+        CHECK(json_object_object_get_ex(result->secret_parts, "endpoint", &field) && !strcmp(json_object_get_string(field), cloud));
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 924) {
         const char *id = "A1b2C3d4E5f6G7h8I9j0", *secret = "b7c9d2e5f6b8c3d4e1f0a2c4e6b8f1d3a5c7e9b2";
         char input[100], raw_v2[61]; snprintf(input, sizeof(input), "github %s\ngithub %s", id, secret);
@@ -1492,6 +1512,7 @@ int main(void)
     CHECK(BR_ABI_REVISION == 1);
     feature_gate_tests(405, "EnigmaDetectorEnabled");
     feature_gate_tests(1053, "BraintrustDetectorEnabled");
+    feature_gate_tests(1050, "GitLabOAuthDetectorEnabled");
     feature_gate_tests(1059, "DuffelTokenDetectorEnabled");
     feature_gate_tests(1063, "DuoDetectorEnabled");
     feature_gate_tests(1048, "CloudinaryDetectorEnabled");
@@ -1635,6 +1656,8 @@ int main(void)
         } else if (entry->type == 39 || entry->type == 1043) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);
             CHECK(!strcmp(detector->cloud_endpoint, "https://api.datadoghq.com"));
+        } else if (entry->type == 1050) {
+            CHECK(detector->validate_endpoints && detector->cloud_endpoint && !strcmp(detector->cloud_endpoint, "https://gitlab.com"));
         } else if (entry->type == 8) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint && !strcmp(detector->cloud_endpoint, "https://api.github.com"));
         } else if (entry->type == 1045 || entry->type == 1046) {
