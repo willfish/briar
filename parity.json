@@ -2925,6 +2925,42 @@
       "evidence": ["tests/detectors/test_gengo.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete Go typed JSON/diagnostic, time and other-platform behavior", "Native/private SANE, Reader and cleanup timing fidelity", "Complete regexp and global engine/output parity"]
     },
+    "geoapify/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/geoapify/geoapify.go",
+      "scope_notes": "Geoapify529/v0/default enabled/no hints. Keyword-only prefix folding and word-bounded32lower-alnum original occurrences, Raw/key part only. Finding and complete literal California query URL precede nil-context constructor skip. SANE5s GET/common User-Agent only/all2xx, body/read ignored and whole mixed send-error suppression. Complete bounded URL survives send and release. Own failures are fatal before ordinary outcomes, with invocation-only rollback. Exact plain and encoded filesystem projections preserve full findings.",
+      "native_files": ["src/detectors/geoapify.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_geoapify.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete RE2/arbitrary-byte and source-engine behavior", "Native/private SANE, Reader and cleanup timing fidelity"]
+    },
+    "geocode/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/geocode/geocode.go",
+      "scope_notes": "Geocode486/v0/default enabled/no hints. Keyword-only prefix folding and word-bounded28lower-alnum original occurrences, Raw/key part only. Finding and complete literal URL precede nil-context constructor skip. Preserve mandatory complete486:credential coalescing key; current shared guard rejects before every transport callback. Do/read errors retain false findings; implemented successful-read policy requires all2xx and exact binary quoted remaining_credits followed by SPACE colon, not JSON parsing. That body policy and effective shared header/timeout setup remain unexercised behind the guard. Own failures are fatal before skip/suppression with invocation-only rollback. Plain and encoded NoV projections do not establish verification or singleflight acceptance.",
+      "native_files": ["src/detectors/geocode.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_geocode.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Mandatory singleflight buffering/replay, independent cancellation/deadlines and owned backend lifetime are unsupported", "Successful body/status and effective request setup cannot be accepted while the guard prevents I/O", "Complete native/private HTTP, regexp and global engine/output parity"]
+    },
+    "geocodify/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/geocodify/geocodify.go",
+      "scope_notes": "Geocodify542/v0/default enabled/no hints. Keyword-only prefix folding and word-bounded40lower-alnum original occurrences, Raw/key part only. Finding and complete literal URL precede nil-context constructor skip. Fixed prefix/key copying needs no formatter or unused heap staging. SANE5s GET/common User-Agent only/all2xx, ignored body/read and whole mixed send-error suppression. Complete stack URL survives release. Owned failures are fatal before ordinary outcomes with caller-preserving invocation rollback. Plain and encoded filesystem comparisons retain complete findings.",
+      "native_files": ["src/detectors/geocodify.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_geocodify.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete RE2/arbitrary-byte and source-engine behavior", "Native/private SANE, Reader and cleanup timing fidelity"]
+    },
+    "geocodio/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/geocodio/geocodio.go",
+      "scope_notes": "Geocodio407/v0/default enabled; inherited1024-byte span is an engine hint. Independent geocod-prefixed39lower-alnum key occurrences cross7..30-rune RE2 nonwhitespace search occurrences, preserving key-major products and duplicates. Nonwhitespace includes VT/Unicode/NUL. Apply source Go TrimSpace separately, including empty trimmed searches; RawKEY, parts key/search_engine and RawV2KEYSEARCH. Complete literal URL precedes constructor. Provider-local fixed-authority projection splits first hash before C0 checks, preserves raw query and valid encoded fragments, rejects invalid fragment percent escapes and otherwise unescapes then canonicalizes the whole fragment. Accepted fragment NUL is represented as percent00, never truncated or blanket rejected. Proof-derived complete stack storage survives send/release. SANE5s GET/common User-Agent only/all2xx/body ignored/mixed send errors false-kept; own failures fatal with invocation rollback. Exact plain rows preserve original NUL, VT, empty trim and literal UTF8; a separate encoded-filesystem comparison preserves the standard paired finding without normalization.",
+      "native_files": ["src/detectors/geocodio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/go_unicode.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_geocodio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Constrained URL.String projection is not full native Go/curl wire, redirect or client-policy parity", "Go1.26.7 source equality with local1.26.8 constructor observations is not pinned-runtime execution", "Complete regexp/Unicode, Reader/cleanup timing and global engine/output/platform behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

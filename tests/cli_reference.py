@@ -605,6 +605,9 @@ def fixtures():
     geckoboard_key = alnum("geckoboard-key", 44)
     gemini_id, gemini_secret = alnum("gemini-id", 20), alnum("gemini-secret", 27)
     gengo_key, gengo_secret = alnum("gengo-key", 64), alnum("gengo-secret", 64)
+    geoapify_key, geocode_key = synthetic("geoapify-key", 32), synthetic("geocode-key", 28)
+    geocodify_key, geocodio_key = synthetic("geocodify-key", 40), synthetic("geocodio-key", 39)
+    geocodio_prefix = b"GeOcOd " + geocodio_key + b"\ngeocod"
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1179,6 +1182,14 @@ def fixtures():
         ("gemini_account_retained", 876, b"account-" + gemini_id + b"\n" + gemini_secret),
         ("gengo_self", 426, b"GeNgO " + gengo_key + b"\n"),
         ("gengo_products", 426, b"gengo " + gengo_key + b"\ngengo " + gengo_secret + b"\n"),
+        ("geoapify", 529, b"GeOaPiFy " + geoapify_key),
+        ("geocode", 486, b"GeOcOdE " + geocode_key),
+        ("geocodify", 542, b"GeOcOdIfY " + geocodify_key),
+        ("geocodio", 407, geocodio_prefix + b" " + alnum("geocodio-search", 12)),
+        ("geocodio_fragment_vt", 407, geocodio_prefix + b" Ab#c\vdeF"),
+        ("geocodio_fragment_nul", 407, geocodio_prefix + b" Ab#c\0deF"),
+        ("geocodio_empty_trim", 407, geocodio_prefix + b"\v" * 30 + b"Z"),
+        ("geocodio_utf8", 407, geocodio_prefix + " Y2éR7p9q".encode()),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1432,6 +1443,8 @@ def compare(native, reference, case):
         raise AssertionError(name + ": the selected provider must retain one full finding")
     if name.startswith(("gemini_master_default_filtered_", "gemini_account_default_filtered_")) and (actual or expected):
         raise AssertionError(name + ": upstream wordlists filter the credential prefix by default")
+    if name.startswith(("geoapify_", "geocode_", "geocodify_", "geocodio_")) and (len(actual) != 1 or len(expected) != 1):
+        raise AssertionError(name + ": the selected geographic provider must retain one complete finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):
