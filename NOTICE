@@ -29,6 +29,8 @@ slice-reuse mechanics. DeepAI's fixed multipart form follows selected
 mime/multipart writer behavior. Enigma's ASCII Content-Type diagnostics and Figma's
 ASCII 403 response diagnostics follow selected strconv quoting behavior.
 Freshbooks request guards follow selected net/url and net/http constructor behavior.
+Google credential string projection and ordered marshaling follow selected
+encoding/json string behavior.
 FTP URL projection and control replies follow selected net/url, net/textproto
 and bufio behavior, including the generated URL escaping table.
 Selected Unicode 15.0 category, whitespace and lowercase ranges derive from
