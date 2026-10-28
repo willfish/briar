@@ -316,6 +316,7 @@ static const registration expected[] = {
     {1009, 0, "Flexport", "shltm_", 46, true, -1},
     {455, 0, "Flickr", "flickr", 32, true, -1},
     {528, 0, "FlightApi", "flightapi", 24, true, -1},
+    {642, 0, "Flightstats", "flightstats", 32, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -644,7 +645,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 921: secondary = "briar7"; secondary_name = "username"; break;
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
     case 639: secondary = "u7b9r@m4c8p.k2"; secondary_name = "email"; break;
-    case 424: secondary = "z7m9q2r4"; secondary_name = "id"; break;
+    case 424: case 642: secondary = "z7m9q2r4"; secondary_name = "id"; break;
     case 652:
         test_secret(secondary_buffer, 24, 11);
         secondary = secondary_buffer; secondary_name = "id";
@@ -1102,7 +1103,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821 || entry->type == 639 || entry->type == 652 || entry->type == 771 || entry->type == 808) {
+    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821 || entry->type == 639 || entry->type == 652 || entry->type == 771 || entry->type == 808 || entry->type == 642) {
         test_key_result(result, entry->type, key, "key"); /* Required counterpart stays hidden. */
         br_results_clear(&results);
         return;
