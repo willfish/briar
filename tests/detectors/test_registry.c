@@ -279,6 +279,7 @@ static const registration expected[] = {
     {424, 0, "Edamam", "edamam", 32, true, 1024},
     {568, 0, "EdenAI", "edenai", 173, true, -1},
     {727, 0, "EightxEight", "8x8", 43, true, 1024},
+    {112, 0, "ElasticEmail", "elasticemail", 96, true, -1},
     {652, 0, "Enablex", "enablex", 36, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -406,6 +407,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 359) { key[45] = '-'; key[88] = '_'; }
     if (entry->type == 801) { memcpy(key, "AK1", 3); key[20] = '/'; }
     if (entry->type == 568) { key[36] = key[129] = '.'; key[172] = '_'; }
+    if (entry->type == 112) { key[35] = '-'; key[66] = '_'; }
     if (entry->type == 258)
         for (size_t i = 0; i < entry->key_len; ++i)
             if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
