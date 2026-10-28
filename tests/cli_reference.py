@@ -642,6 +642,17 @@ def fixtures():
     goodday_key = b"z" + synthetic("goodday-key", 31)
     google_gemini_key = b"AIzaSy" + synthetic("google-gemini-key", 32) + b"-"
     google_oauth_token = b"ya29." + alnum("google-oauth-token", 45)
+    grafana_key = b"glc_eyJ" + synthetic("grafana-key", 60)
+    grafana_max = b"glc_eyJ" + synthetic("grafana-max", 160)
+    grafana_service_key = b"glsa_" + alnum("grafana-service-key", 41)
+    grafana_domain = b"Tenant97.grafana.net"
+    graphcms_plain = b"ey" + synthetic("graphcms-header", 73) + b"." + b"ey" + synthetic("graphcms-payload", 365) + b"." + alnum("graphcms-signature", 683)
+    # A keyword inside the allowed token alphabet centers its 1024-radius window.
+    graphcms_key = graphcms_plain[:200] + b"graphcms" + graphcms_plain[208:]
+    graphcms_nul = graphcms_key[:75] + b"\0" + graphcms_key[76:]
+    graphcms_id = b"\ngraph " + synthetic("graphcms-id", 25)
+    graphhopper_key = synthetic("graphhopper-key", 18) + b"-" + synthetic("graphhopper-end", 17)
+    graphhopper_end_hyphen = graphhopper_key[:35] + b"-"
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1272,6 +1283,19 @@ def fixtures():
         ("googleoauth2_space", 69, google_oauth_token + b" "),
         ("googleoauth2_unique", 69, google_oauth_token + b"\n" + google_oauth_token),
         ("googleoauth2_uppercase_prefix", 69, b"YA29." + google_oauth_token[5:]),
+        ("grafana", 830, grafana_key),
+        ("grafana_overlong", 830, grafana_max + b"EXTRA"),
+        ("grafana_upper_prefix", 830, b"GLC_eyJ" + grafana_key[7:]),
+        ("grafanaserviceaccount", 963, grafana_service_key + b"\n" + grafana_domain),
+        ("grafanaserviceaccount_domains", 963, grafana_service_key + b"\n" + grafana_domain + b"\nsecond97.grafana.net"),
+        ("grafanaserviceaccount_missing_domain", 963, grafana_service_key),
+        ("graphcms", 223, graphcms_key + graphcms_id),
+        ("graphcms_nul", 223, graphcms_nul + graphcms_id),
+        ("graphcms_clipped", 223, b"graphcms " + graphcms_plain + graphcms_id),
+        ("graphcms_no_id", 223, graphcms_key),
+        ("graphcms_no_dispatch", 223, graphcms_plain + graphcms_id),
+        ("graphhopper", 436, b"GrApHhOpPeR " + graphhopper_key),
+        ("graphhopper_end_hyphen", 436, b"graphhopper " + graphhopper_end_hyphen + b"x"),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1547,6 +1571,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": hidden secret, direct prefix case and complete token grammar must retain the expected findings")
+    if name.startswith(("grafana_", "grafanaserviceaccount_", "graphcms_", "graphhopper_")):
+        empty = name.startswith(("grafana_upper_prefix_", "grafanaserviceaccount_missing_domain_", "graphcms_clipped_", "graphcms_no_id_", "graphcms_no_dispatch_"))
+        count = 0 if empty else 2 if name.startswith("grafanaserviceaccount_domains_") else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": domain products, hidden IDs, direct prefix case and keyword windows must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

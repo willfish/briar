@@ -3177,6 +3177,42 @@
       "evidence": ["tests/detectors/test_googleoauth2.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md", "docs/ARCHITECTURE.md"],
       "remaining": ["Full Go Local/timezone data, selection, initialization, transitions and calendar behavior outside the explicit stable UTC subset", "Complete JSON/Reader/type-diagnostic and shared regexp/arbitrary-byte behavior", "Native URL-wire/client/close-before-drain, map ordering and global engine/output parity"]
     },
+    "grafana/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/grafana/grafana.go",
+      "scope_notes": "Enabled Grafana 830/v0 has no hints. Preserve direct case-sensitive glc_eyJ captures with 60..160 mixed-alphanumeric/plus/slash/equals bytes, no ending boundary or JWT/Base64 validation, and original occurrences. Raw/key only. Nil construction retains its cause. SANE bodyless tokens GET uses complete Bearer authorization. Only 200/403 verify unconditionally; 401 read errors, including empty causes, precede exact binary invalid permission or required scope markers. Other statuses and the whole shared setup/Do domain retain causes. Copy borrowed read causes before release; release precedes Verified and the checked full-key-redacting setter. All owned failures are fatal with caller-preserving invocation rollback. No detector-local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/grafana.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_grafana.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native source-client/custom-client, Reader and drain/close behavior"]
+    },
+    "grafanaserviceaccount/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/grafanaserviceaccount/grafanaserviceaccount.go",
+      "scope_notes": "Enabled GrafanaServiceAccount 963/v0 has a 1024 engine span hint, not a direct-scanner cap. Direct case-sensitive 46-byte keys cross independent unbounded grafana.net sublabel occurrences in key-major order, including duplicates and source hyphen boundaries. Raw is key; RawV2 is domain:KEY and both domain/key parts are visible. Complete literal permissions URL precedes nil-context constructor skip. Preserve PUBLIC ten-second/no-redirect/no-local-address policy, not SANE; native PUBLIC remains guarded. Every 2xx verifies, 401 rejects, and other statuses retain causes; body/read errors are ignored. Whole setup/Do causes use checked key-only redaction. Provider-owned failures precede ordinary outcomes with invocation-only rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/grafanaserviceaccount.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_grafanaserviceaccount.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native PUBLIC all-answer DNS/SSRF, proxy, redirect and cancellation policy", "Complete custom-client/deferred-close, shared regexp/arbitrary-byte and engine/output behavior"]
+    },
+    "graphcms/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/graphcms/graphcms.go",
+      "scope_notes": "Enabled GraphCMS 223/v0 has a 1024 engine span hint, not a token/product cap. Preserve the 1127-byte ASCII token grammar's two non-LF wildcard runes, up to 1133 UTF8 bytes, without JWT validation. Independent graph-prefixed 25-byte lowercase-alphanumeric IDs are required but hidden; dispatch instead uses graphcms. Original key-major occurrence products publish Raw/key only. Complete literal URL and GraphQL body precede nil-context skip, then full Bearer assembly. NUL authorization follows the existing Front boundary: false-kept/no setter/zero I/O after construction, never truncation. SANE POST verifies every successful 2xx, ignores body/read errors and suppresses the whole shared setup/Do domain. Ordinary provider values survive release without extending synthesized request storage. Owned failures are fatal with invocation-only rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/graphcms.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_graphcms.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Full native POST redirect/client/Reader/deferred-close behavior", "Complete shared regexp/arbitrary-byte, multipart-window and engine/output behavior"]
+    },
+    "graphhopper/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/graphhopper/graphhopper.go",
+      "scope_notes": "Enabled Graphhopper 436/v0 has no hints. Keyword-only folding and word-bounded 36-byte lowercase-alphanumeric/hyphen occurrences preserve duplicate and leading/trailing-hyphen context, without UUID/hex validation. Raw/key only. The complete Philippines geocode query precedes nil-context constructor skip. SANE bodyless GET adds only common User-Agent, not Content-Type, Authorization or Accept despite type=json in the query. Every successful 2xx verifies; body/read errors are ignored and the whole shared setup/Do domain retains false without a setter. Provider-owned failures are fatal with invocation-only caller-preserving rollback. No local filtering, cleaner or Version method exists.",
+      "native_files": ["src/detectors/graphhopper.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/regex.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_graphhopper.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
