@@ -366,7 +366,8 @@ int br_http_client_init(br_http_client **out, br_http_owned_backend backend,
     if (out) *out = NULL;
     if (!out || !backend.transport.send || !backend.transport.release ||
         br_http_client_is_owned(&backend.transport) ||
-        (profile != BR_HTTP_SANE && profile != BR_HTTP_DETECTOR_LOCAL))
+        (profile != BR_HTTP_SANE && profile != BR_HTTP_DETECTOR_LOCAL &&
+         profile != BR_HTTP_DETECTOR_PUBLIC))
         return fail(error, "invalid owned HTTP backend or profile");
     br_http_client *c = calloc(1, sizeof(*c));
     if (!c) return fail(error, "out of memory creating HTTP client");

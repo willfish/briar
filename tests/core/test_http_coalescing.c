@@ -59,6 +59,7 @@ typedef struct {
     const char *body_error;
     int64_t deadline;
     uint32_t timeout;
+    br_http_profile profile;
     br_bytes last_key;
     const br_transport *reenter;
     atomic_uint *destroyed;
@@ -128,6 +129,7 @@ static int backend_send(void *user, const br_scan_ctx *ctx, const br_http_reques
     ++b->calls;
     b->deadline = ctx->deadline_monotonic_ms;
     b->timeout = r->timeout_ms;
+    b->profile = r->profile;
     free(b->last_key.data);
     b->last_key = (br_bytes){0};
     if (r->dedup_key.len) {
@@ -554,8 +556,53 @@ static void drain_and_guards(void)
     CHECK(b->releases == 1); b->releases = 0; backend_destroy(b);
 }
 
+static void public_owned_policy(void)
+{
+    backend *b = new_backend(), *other = new_backend();
+    br_http_client *c = new_client(b, BR_HTTP_DETECTOR_PUBLIC);
+    br_http_client *d = new_client(other, BR_HTTP_DETECTOR_PUBLIC);
+    probe p[3] = {0}; br_scan_ctx ctx[3]; br_http_request req[3]; call calls[3] = {0};
+    int64_t start = now_ms();
+    for (size_t i = 0; i < 3; ++i) {
+        ctx[i] = (br_scan_ctx){.transport = br_http_client_transport(i == 2 ? d : c),
+                              .cancelled = cancelled, .cancel_user = &p[i]};
+        req[i] = request(key()); req[i].profile = BR_HTTP_DETECTOR_PUBLIC;
+        calls[i].ctx = &ctx[i]; calls[i].request = &req[i];
+    }
+    launch(&calls[0]); started(b, 1);
+    launch(&calls[1]); seen(&p[1]);
+    launch(&calls[2]); started(other, 1);
+    CHECK(count(b) == 1 && count(other) == 1);
+    CHECK(b->profile == BR_HTTP_DETECTOR_PUBLIC && other->profile == BR_HTTP_DETECTOR_PUBLIC);
+    CHECK(b->timeout == 10000 && other->timeout == 10000);
+    CHECK(b->deadline >= start + 10000 && b->deadline <= now_ms() + 10000);
+    CHECK(b->last_key.len == key().len && !memcmp(b->last_key.data, key().data, key().len));
+    atomic_store(&p[0].cancelled, true); join(&calls[0]);
+    CHECK(calls[0].rc && calls[0].error && strstr(calls[0].error, "canceled"));
+    CHECK(!calls[0].response.body.data && b->releases == 0);
+    release_call(ctx[0].transport, &calls[0]);
+    open_backend(b); open_backend(other);
+    join(&calls[1]); join(&calls[2]);
+    CHECK(!calls[1].rc && !calls[1].error && !calls[2].rc && !calls[2].error);
+    CHECK(calls[1].response.status == 201 && calls[2].response.status == 201);
+    CHECK(calls[1].response.body.len == 3 && !memcmp(calls[1].response.body.data, "r\0p", 3));
+    release_call(ctx[1].transport, &calls[1]); release_call(ctx[2].transport, &calls[2]);
+
+    br_http_response response = {0}; char *error = NULL;
+    br_http_request wrong = request(key());
+    CHECK(br_http_send(&ctx[1], &wrong, &response, &error) != 0 && error && strstr(error, "profile mismatch"));
+    CHECK(count(b) == 1); free(error); error = NULL; br_http_release(&ctx[1], &response);
+    /* An owned PUBLIC client is still not the source's DefaultTransport. */
+    wrong.dedup_key = (br_slice){0}; wrong.timeout_ms = 5000; wrong.detector_type = 326;
+    CHECK(br_http_default_transport_5s_send(&ctx[1], &wrong, &response, &error) != 0);
+    CHECK(error && !strcmp(error, "unsupported: default-transport HTTP client policy") && count(b) == 1);
+    free(error); br_http_release(&ctx[1], &response);
+    br_http_client_destroy(c); br_http_client_destroy(d);
+}
+
 int main(void)
 {
+    public_owned_policy();
     replay_and_namespaces();
     cancellation_and_owned_snapshot();
     deadlines();

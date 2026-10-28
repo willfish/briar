@@ -486,8 +486,8 @@ int br_http_default_transport_5s_send(const br_scan_ctx *ctx, const br_http_requ
     const br_transport *transport = ctx->transport;
     if (!transport || !transport->send || !transport->release)
         return fail(error, "HTTP transport not installed");
-    /* A copied descriptor is still curl. Existing owned clients declare only
-     * SANE/LOCAL policy, so none represents this source DefaultTransport. */
+    /* A copied descriptor is still curl. Owned clients declare SANE/LOCAL/PUBLIC
+     * policy, so none represents this source DefaultTransport. */
     if (transport->send == curl_send || br_http_client_is_owned(transport))
         return fail(error, "unsupported: default-transport HTTP client policy");
     if (request->dedup_key.len) return fail(error, "unsupported HTTP request coalescing");

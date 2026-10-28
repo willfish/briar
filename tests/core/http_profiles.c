@@ -127,6 +127,19 @@ int main(int argc, char **argv)
     free(error);
     br_http_release(&ctx, &response);
     CHECK(response.status == 0 && response.body.data == NULL && response.body_error == NULL);
+    if (public) {
+        /* Owned coalescing must preserve PUBLIC, not turn its native rejection
+         * into either a borrowed-key guard or an accidental SANE request. */
+        br_http_owned_backend backend = {.transport = *transport};
+        error = NULL;
+        CHECK(!br_http_client_init(&client, backend, BR_HTTP_DETECTOR_PUBLIC, &error) && client && !error);
+        br_scan_ctx owned = ctx; owned.transport = br_http_client_transport(client);
+        request.dedup_key = (br_slice){(const unsigned char *)"1061:PUBLIC:token", sizeof("1061:PUBLIC:token") - 1};
+        CHECK(br_http_send(&owned, &request, &response, &error) != 0);
+        CHECK(error && !strcmp(error, "unsupported: native curl HTTP client profile"));
+        CHECK(!response.status && !response.body.data && !response.body_error);
+        free(error); br_http_release(&owned, &response);
+    }
     br_http_client_destroy(client); /* Drain workers before the curl lifetime ends. */
     br_native_http_destroy(runtime);
     if (!runtime_mode) curl_global_cleanup();

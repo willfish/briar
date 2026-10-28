@@ -17,7 +17,8 @@ typedef struct {
 /* Success transfers backend ownership; failure leaves it with the caller.
  * The backend must be thread-safe, honor deadlines, and never synchronously
  * re-enter an owned client. Ordinary borrowed ABI1 transports do not qualify.
- * Initially support only the represented SANE/LOCAL client policies. */
+ * Support SANE/LOCAL/PUBLIC with their declared profile and timeout; the backend
+ * must serve that policy. Native curl still rejects PUBLIC before I/O. */
 int br_http_client_init(br_http_client **out, br_http_owned_backend backend,
                         br_http_profile profile, char **error);
 const br_transport *br_http_client_transport(br_http_client *client);
@@ -51,7 +52,7 @@ const br_transport *br_curl_transport_init(char **error);
  * source wraps Go DefaultTransport rather than saneTransport. SANE/5000 here
  * projects request preparation ONLY, not transport-policy equivalence. Require
  * an explicitly installed backend that knowingly serves this contract. Reject
- * known native curl and all owned SANE/LOCAL clients before I/O, even copies.
+ * known native curl and all owned SANE/LOCAL/PUBLIC clients before I/O, even copies.
  * Arbitrary forwarding wrappers cannot be detected/certified. No coalescing;
  * ordinary prepared storage still lasts only through send return. */
 int br_http_default_transport_5s_send(const br_scan_ctx *ctx, const br_http_request *request,
