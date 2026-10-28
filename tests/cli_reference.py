@@ -618,6 +618,16 @@ def fixtures():
     getsandbox_key, getsandbox_id = synthetic("getsandbox-key", 40), synthetic("getsandbox-id", 18)
     github_v1_key = synthetic("github-v1-key", 40)
     github_v2_tail = alnum("github-v2-tail", 255)
+    github_oauth_id, github_oauth_secret = alnum("github-oauth-id", 20), synthetic("github-oauth-secret", 40)
+    github_oauth_pair = b"github " + github_oauth_id + b"\ngithub " + github_oauth_secret
+    githubapp_pem = b"-----BEGIN RSA PRIVATE KEY-----\nQ7r2T9\n-----END RSA PRIVATE KEY-----"
+    githubapp_payload = b"github 012345\n" + githubapp_pem
+    gitlab_v1_key = alnum("gitlab-v1-key", 20)
+    gitlab_v2_key = b"glpat-" + alnum("gitlab-v2-key", 20)
+    gitlab_v3_key = b"glpat-" + alnum("gitlab-v3-key", 27) + b"X7qY" + synthetic("gitlab-v3-suffix", 9)
+    gitlab_v3_max = b"glpat-" + alnum("gitlab-v3-max", 300) + "😀7q😀".encode() + synthetic("gitlab-v3-suffix-max", 9)
+    gitlab_oauth_id, gitlab_oauth_secret = synthetic("gitlab-oauth-id", 64), b"gloas-" + synthetic("gitlab-oauth-secret", 64)
+    gitlab_oauth_pair = b"application_id " + gitlab_oauth_id + b"\n" + gitlab_oauth_secret
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1215,6 +1225,19 @@ def fixtures():
         ("github_v2_classic", "8.v2", b"ghp_" + github_v2_tail[:36]),
         ("github_v2_finegrained", "8.v2", b"github_pat_" + github_v2_tail),
         ("github_v2_uppercase_prefix", "8.v2", b"GHP_" + github_v2_tail[:36]),
+        ("github_oauth2", 924, github_oauth_pair),
+        ("github_oauth2_products", 924, github_oauth_pair + b"\ngithub " + alnum("github-oauth-id2", 20) + b"\ngithub " + synthetic("github-oauth-secret2", 40)),
+        ("githubapp_default_filtered", 36, githubapp_payload),
+        ("githubapp_retained", 36, githubapp_payload),
+        ("githubapp_retained_padded", 36, githubapp_payload.replace(b"Q7r2T9", b"Q7r2T9=")),
+        ("gitlab_v1", "9.v1", b"gitlab " + gitlab_v1_key),
+        ("gitlab_v1_prefixed_skip", "9.v1", b"gitlab glpat-: " + gitlab_v1_key),
+        ("gitlab_v1_uppercase_prefix", "9.v1", b"gitlab GLPAT-: " + gitlab_v1_key),
+        ("gitlab_v2", "9.v2", gitlab_v2_key),
+        ("gitlab_v3_wildcards", "9.v3", gitlab_v3_key),
+        ("gitlab_v3_max_unicode", "9.v3", gitlab_v3_max),
+        ("gitlaboauth2", 1050, gitlab_oauth_pair),
+        ("gitlaboauth2_unique", 1050, gitlab_oauth_pair + b"\n" + gitlab_oauth_pair),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1340,7 +1363,7 @@ def compare(native, reference, case):
     # Retained fixtures match pinned false-positive terms, including check in
     # the long scoped Dropbox payload. Use an ALREADY supported flag in BOTH
     # CLIs, not normalization/filter changes. Keep default-zero guards.
-    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_", "duffeltoken_retained_", "flyio_retained_", "ftp_retained_", "gemini_master_retained_", "gemini_account_retained_")) else None
+    result_types = "filtered_unverified" if name.startswith(("coinbase_retained_", "couchbase_retained_", "discordwebhook_retained_", "dotdigital_retained_", "dropbox_retained_", "duffeltoken_retained_", "flyio_retained_", "ftp_retained_", "gemini_master_retained_", "gemini_account_retained_", "githubapp_retained_")) else None
     with tempfile.TemporaryDirectory(prefix="briar-reference-", dir=ROOT / "state") as tmp:
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True, result_types=result_types)
@@ -1472,9 +1495,14 @@ def compare(native, reference, case):
         raise AssertionError(name + ": the selected geographic provider must retain one complete finding")
     if name.startswith(("getgist_", "getresponse_", "getsandbox_", "github_")):
         empty = name.startswith(("getsandbox_missing_id_", "github_v1_benign_", "github_v2_uppercase_prefix_"))
-        count = 0 if empty else 1
+        count = 0 if empty else 4 if name.startswith("github_oauth2_products_") else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": provider grammar, hidden ID and GitHub filtering must retain the expected findings")
+    if name.startswith(("githubapp_", "gitlab_", "gitlaboauth2_")):
+        empty = name.startswith(("githubapp_default_filtered_", "githubapp_retained_padded_", "gitlab_v1_prefixed_skip_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": app-key filtering and GitLab version/endpoint projection must preserve the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

@@ -542,6 +542,37 @@ _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=G
                  ("github_token " + github_old + "\n" + github_new).encode())
 check(len(rows) == 2 and {row["ExtraData"]["version"] for row in rows} == {"1", "2"}, "version-zero selector includes both enabled GitHub identities")
 
+githubapp_key = "-----BEGIN RSA PRIVATE KEY-----\nQ7r2T9\n-----END RSA PRIVATE KEY-----"
+githubapp_input = ("github 012345\n" + githubapp_key).encode()
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GitHubApp"], githubapp_input)
+check(not rows, "default wordlists filter the RSA private-key label")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GitHubApp", "--results=filtered_unverified"], githubapp_input)
+check(len(rows) == 1 and rows[0]["Raw"] == githubapp_key and rows[0]["SecretParts"] == {"key": githubapp_key}, "NoV retains matching PEM text without parsing and keeps app IDs hidden")
+check(rows[0]["ExtraData"] == {"rotation_guide": "https://howtorotate.com/docs/tutorials/github/"} and not rows[0]["RawV2"], "app metadata has no invented ID or version")
+github_oauth_id = key32[:20]
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GitHubOauth2"],
+                 ("github " + github_oauth_id + "\ngithub " + github_old).encode())
+check(len(rows) == 1 and rows[0]["Raw"] == github_oauth_id, "OAuth NoV dispatch does not require native SDK transport")
+check(rows[0]["RawV2"] == github_oauth_id + github_old and rows[0]["SecretParts"] == {"id": github_oauth_id, "secret": github_old}, "GitHub OAuth keeps both credential roles")
+check(rows[0]["ExtraData"] == {"rotation_guide": "https://howtorotate.com/docs/tutorials/github/"}, "GitHub OAuth rotation metadata is retained")
+gitlab_keys = (key32[:20], "glpat-" + key32[:20], "glpat-" + key40[:27] + "X7qY" + key32[:9])
+for version, raw in enumerate(gitlab_keys, 1):
+    payload = ("gitlab " + raw if version == 1 else raw).encode()
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Gitlab.v" + str(version)], payload)
+    check(len(rows) == 1 and rows[0]["Raw"] == raw, "each GitLab version dispatches its own extraction grammar")
+    check(rows[0]["RawV2"] == raw + "https://gitlab.com" and rows[0]["SecretParts"] == {"key": raw, "host": "https://gitlab.com"}, "GitLab endpoint construction is observable even in NoV")
+    check(rows[0]["ExtraData"] == {"version": str(version), "rotation_guide": "https://howtorotate.com/docs/tutorials/gitlab/"}, "GitLab version and rotation metadata remain explicit")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Gitlab.v0"],
+                 ("gitlab " + "\n".join(gitlab_keys)).encode())
+check(len(rows) == 3 and {row["ExtraData"]["version"] for row in rows} == {"1", "2", "3"}, "version-zero selector includes all three enabled GitLab identities")
+gitlab_oauth_id = (github_old * 2)[:64]
+gitlab_oauth_secret = "gloas-" + gitlab_oauth_id[::-1]
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=GitLabOauth2"],
+                 ("application_id " + gitlab_oauth_id + "\n" + gitlab_oauth_secret).encode())
+check(len(rows) == 1 and rows[0]["Raw"] == gitlab_oauth_secret, "OSS defaults enable the exact GitLab OAuth feature gate")
+check(rows[0]["RawV2"] == gitlab_oauth_id + gitlab_oauth_secret + "https://gitlab.com", "GitLab OAuth identity includes the endpoint")
+check(rows[0]["SecretParts"] == {"client_id": gitlab_oauth_id, "client_secret": gitlab_oauth_secret, "endpoint": "https://gitlab.com"} and rows[0]["ExtraData"] is None, "GitLab OAuth metadata does not inherit GitHub fields")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
