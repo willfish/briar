@@ -627,6 +627,13 @@ _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=G
                  (google_oauth_token + "\n" + google_oauth_token).encode())
 check(len(rows) == 1 and rows[0]["Raw"] == google_oauth_token, "Google OAuth token identity preserves original bytes and uniqueness")
 
+grafana_key = "glc_eyJ" + key32 + key32[:28]
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Grafana"], grafana_key.encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 830, "Grafana selector dispatches its enabled scanner")
+check(rows[0]["Raw"] == grafana_key and rows[0]["SecretParts"] == {"key": grafana_key}, "Grafana publishes the complete key without JWT interpretation")
+check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None, "Grafana adds no invented metadata")
+check(not rows[0]["Verified"] and not rows[0]["VerificationFromCache"], "Grafana NoV does not contact the provider")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

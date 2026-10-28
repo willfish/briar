@@ -372,12 +372,21 @@ static const registration expected[] = {
     {654, 0, "GoodDay", "goodday", 32, true, -1},
     {1041, 0, "GoogleGeminiAPIKey", "aizasy", 39, true, -1},
     {69, 0, "GoogleOauth2", "ya29.", 15, true, -1},
+    {830, 0, "Grafana", "glc_eyJ", 67, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 830) {
+        char key[68] = "glc_eyJ"; test_secret(key + 7, 60, 0); key[20] = '+'; key[40] = '/';
+        br_results results = test_scan(detector, NULL, false, key, 67); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 830, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 1008) {
         char key[38], secret[23], input[100];
         test_secret(key, entry->key_len, 0); key[17] = '_'; test_secret(secret, 22, 7);
