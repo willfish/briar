@@ -354,5 +354,11 @@ int br_getresponse_init(const br_detector **out, char **error);
 int br_getsandbox_init(const br_detector **out, char **error);
 int br_github_v1_init(const br_detector **out, char **error);
 int br_github_v2_init(const br_detector **out, char **error);
+int br_github_oauth2_init(const br_detector **out, char **error);
+int br_githubapp_init(const br_detector **out, char **error);
+int br_gitlab_v1_init(const br_detector **out, char **error);
+int br_gitlab_v2_init(const br_detector **out, char **error);
+int br_gitlab_v3_init(const br_detector **out, char **error);
+int br_gitlaboauth2_init(const br_detector **out, char **error);
 
 #endif
