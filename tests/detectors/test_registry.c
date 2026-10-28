@@ -267,6 +267,7 @@ static const registration expected[] = {
     {651, 0, "DronaHQ", "dronahq", 50, true, -1},
     {135, 0, "DroneCI", "droneci", 32, true, -1},
     {18, 0, "Dropbox", "dropbox", 133, true, -1},
+    {821, 0, "Duply", "duply", 36, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -364,7 +365,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 18) memcpy(key, "sl.", 3);
     if (entry->type == 386) key[32] = '.';
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
-    if (entry->type == 919) {
+    if (entry->type == 919 || entry->type == 821) {
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         key[8] = key[13] = key[18] = key[23] = '-';
     }
@@ -521,6 +522,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 281: secondary = "G7h9K2m4-N6p8-Q1r3-S5t7-U9v1W3x5Y7z9"; secondary_name = "id"; break;
     case 921: secondary = "briar7"; secondary_name = "username"; break;
     case 325: secondary = "AbCd1234"; secondary_name = "password"; break;
+    case 821: secondary = "AB7CD9E-F2G4H6J-K8L1M3N-P5Q7R9S"; secondary_name = "id"; break;
     case 386:
         memcpy(secondary_buffer, key, entry->key_len + 1);
         secondary_buffer[33] = key[33] == 'q' ? 'z' : 'q';
@@ -951,7 +953,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results_clear(&results);
         return;
     }
-    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683) {
+    if (entry->type == 828 || entry->type == 711 || entry->type == 382 || entry->type == 863 || entry->type == 683 || entry->type == 821) {
         test_key_result(result, entry->type, key, "key"); /* Required counterpart stays hidden. */
         br_results_clear(&results);
         return;
