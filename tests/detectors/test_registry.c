@@ -288,6 +288,7 @@ static const registration expected[] = {
     {923, 0, "EnvoyApiKey", "envoy", 220, true, -1},
     {990, 0, "Eraser", "eraser", 20, true, -1},
     {905, 0, "Etherscan", "etherscan", 34, true, -1},
+    {283, 0, "Ethplorer", "ethplorer", 22, true, -1},
     {284, 0, "Everhour", "everhour", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -416,6 +417,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 801) { memcpy(key, "AK1", 3); key[20] = '/'; }
     if (entry->type == 568) { key[36] = key[129] = '.'; key[172] = '_'; }
     if (entry->type == 112) { key[35] = '-'; key[66] = '_'; }
+    if (entry->type == 283) { key[3] = 'A'; key[11] = '-'; }
     if (entry->type == 284) strcpy(key, "Aa0f-b1c2-d3e4f5-a6b7c8-d9e0f1a2");
     if (entry->type == 994) {
         if (entry->version == 1)
