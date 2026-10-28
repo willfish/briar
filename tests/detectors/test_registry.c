@@ -293,6 +293,7 @@ static const registration expected[] = {
     {284, 0, "Everhour", "everhour", 32, true, -1},
     {360, 0, "ExchangeRateAPI", "exchangerate", 24, true, -1},
     {379, 0, "ExchangeRatesAPI", "exchangerates", 32, true, -1},
+    {784, 0, "ExtractorAPI", "extractorapi", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -423,6 +424,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 283) { key[3] = 'A'; key[11] = '-'; }
     if (entry->type == 284) strcpy(key, "Aa0f-b1c2-d3e4f5-a6b7c8-d9e0f1a2");
     if (entry->type == 379) key[9] = 'z';
+    if (entry->type == 784) key[14] = '-';
     if (entry->type == 994) {
         if (entry->version == 1)
             for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789ABCDEF"[i % 16];
