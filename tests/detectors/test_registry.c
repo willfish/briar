@@ -321,6 +321,7 @@ static const registration expected[] = {
     {249, 0, "Float", "float", 60, true, -1},
     {265, 0, "FlowFlu", "flowflu", 51, true, 1024},
     {173, 0, "Flutterwave", "FLWSECK-", 42, true, -1},
+    {980, 0, "FlyIO", "FlyV1", 510, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -463,6 +464,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 848) { memcpy(key, entry->keyword, 36); memcpy(key + 36, ".ey", 3); key[40] = '.'; }
     if (entry->type == 173) { memcpy(key, "FLWSECK-", 8); memcpy(key + 40, "-X", 2); }
     if (entry->type == 249) { memcpy(key, "0123456789abcdef", 16); key[24] = '+'; key[33] = '/'; key[59] = '='; }
+    if (entry->type == 980) memcpy(key, "FlyV1 fm1_", 10);
     if (entry->type == 667) key[8] = key[13] = key[18] = key[23] = '-';
     if (entry->type == 423) {
         memcpy(key, "API_KEY", 7);
@@ -1399,6 +1401,15 @@ int main(void)
             char *reason = NULL;
             CHECK(detector->false_positive && !detector->false_positive(detector, NULL, &reason));
             CHECK(reason && !strcmp(reason, ""));
+            free(reason);
+        } else if (entry->type == 980) {
+            br_result candidate = {.raw = {(unsigned char *)"AAAAAAexample", 13}};
+            char *reason = NULL;
+            CHECK(detector->false_positive && !detector->false_positive(detector, &candidate, &reason));
+            CHECK(!reason);
+            candidate.raw.data = (unsigned char *)"sample"; candidate.raw.len = 6;
+            CHECK(detector->false_positive(detector, &candidate, &reason));
+            CHECK(reason && !strcmp(reason, "matches term: sample"));
             free(reason);
         } else CHECK(!detector->false_positive);
         if (entry->type == 2 || entry->type == 959) CHECK(detector->clean && detector->clean_always);

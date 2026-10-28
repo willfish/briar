@@ -318,6 +318,7 @@ static const detector_factory named_factories[] = {
     br_float_init,
     br_flowflu_init,
     br_flutterwave_init,
+    br_flyio_init,
     br_jiradatacenterpat_init,
 };
 
@@ -440,7 +441,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 1002: case 1003: case 401: case 402: case 403: case 404: case 406: case 416: case 418: case 420: case 423: case 424: case 428: case 391: case 393: case 484: case 485: case 783: case 784: case 788: case 789: case 636: case 637: case 639: case 642: case 647: case 648: case 649: case 650: case 651: case 652: case 664: case 665: case 666: case 667: case 643: case 208: case 1004: case 768: case 769: case 770: case 771: case 588: case 592: case 598:
         case 307: case 311: case 317: case 318: case 320: case 322: case 815: case 816: case 819: case 821: case 823: case 646: case 269: case 270: case 278: case 280: case 281: case 282: case 283: case 284: case 1042: case 180: case 181: case 185: case 187: case 189: case 385: case 386: case 387: case 388: case 389: case 794: case 800: case 801: case 897:
         case 98: case 103: case 41: case 376: case 377: case 378: case 166: case 1045: case 1047: case 1046: case 1026:
-        case 578: case 602: case 603: case 604: case 619: case 621: case 110: case 112: case 55: case 56: case 57: case 59: case 60: case 62: case 64: case 65: case 66: case 68: case 323: case 324: case 325: case 554: case 564: case 511: case 512: case 513: case 733: case 739: case 749: case 2: case 1052: case 959: case 960: case 962: case 990: case 993: case 947: case 953: case 954: case 957: case 971: case 1013: case 1007: case 1009: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975:
+        case 578: case 602: case 603: case 604: case 619: case 621: case 110: case 112: case 55: case 56: case 57: case 59: case 60: case 62: case 64: case 65: case 66: case 68: case 323: case 324: case 325: case 554: case 564: case 511: case 512: case 513: case 733: case 739: case 749: case 2: case 1052: case 959: case 960: case 962: case 980: case 990: case 993: case 947: case 953: case 954: case 957: case 971: case 1013: case 1007: case 1009: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975:
             return detector->version == 0;
         default: break;
         }
@@ -721,6 +722,7 @@ const char *br_detector_type_name(int32_t type)
     case 975: return "AzureSasToken";
     case 976: return "AzureSearchAdminKey";
     case 977: return "AzureSearchQueryKey";
+    case 980: return "FlyIO";
     case 990: return "Eraser";
     case 993: return "EndorLabs";
     case 994: return "ElevenLabs";
