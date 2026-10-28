@@ -599,6 +599,13 @@ def fixtures():
     freshdesk_key = alnum("freshdesk-key", 20)
     front_first, front_payload = alnum("front-first", 36), alnum("front-payload", 188)
     fulcrum_key = alnum("fulcrum-key", 80).lower()
+    fullstory_v1 = alnum("fullstory-v1", 88)
+    fullstory_v2 = b"na1." + alnum("fullstory-v2", 100)
+    fxmarket_key = alnum("fxmarket-key", 20)
+    gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
+    gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
+    gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
+    gcpadc_payloads = tuple(json.dumps({"client_id": alnum("gcpadc-id", 24).decode() + ".hidden.apps.googleusercontent.com", "client_secret": "offline-secret", "refresh_token": refresh, "type": "authorized_user"}, separators=(",", ":"), ensure_ascii=False).encode() for refresh in ("offline_refresh_87", "abc\0xy", "abé"))
     ftp_fragment = b"ftp://Briar86:B7r9P2@fixture.invalid/#x:abc"
     ftp_freebsd = b"ftp://Briar86:V7pQ9r2@ftp.FreeBSD.org/path"
     d7network_key = alnum("d7network-key", 23) + b"="
@@ -1149,6 +1156,19 @@ def fixtures():
         ("ftp_filtered", 899, ftp_freebsd),
         ("ftp_retained", 899, ftp_freebsd),
         ("fulcrum", 285, b"FuLcRuM " + fulcrum_key),
+        ("fullstory_v1", "394.v1", b"FuLlStOrY " + fullstory_v1),
+        ("fullstory_v1_boundary", "394.v1", b"fullstory " + fullstory_v1[:-1] + b"+Q"),
+        ("fullstory_v2_key", "394.v2", b"FULLSTORY " + fullstory_v2),
+        ("fullstory_v2_no_dispatch", "394.v2", fullstory_v2),
+        ("fxmarket", 381, b"FxMaRkEt " + fxmarket_key),
+        ("fxmarket_boundary", 381, b"fxmarket " + fxmarket_key[:-1] + b"=Q"),
+        ("gcp_plain", 6, gcp_payload),
+        ("gcp_fallback", 6, gcp_fallback),
+        ("gcp_escaped", 6, gcp_payload.replace(b'"', b'\\"')),
+        ("gcp_public", 6, gcp_public),
+        ("gcpadc", 983, gcpadc_payloads[0]),
+        ("gcpadc_middle_nul", 983, gcpadc_payloads[1]),
+        ("gcpadc_unicode", 983, gcpadc_payloads[2]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1389,6 +1409,14 @@ def compare(native, reference, case):
                 "ftp_stdin", "ftp_filesystem", "ftp_fragment_vt_stdin", "ftp_fragment_vt_filesystem",
                 "ftp_fragment_nul_stdin", "ftp_fragment_nul_filesystem", "ftp_retained_stdin", "ftp_retained_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
+    if name.startswith(("fullstory_v1_", "fullstory_v2_key_", "fxmarket_")) and (len(actual) != 1 or len(expected) != 1):
+        raise AssertionError(name + ": the selected Fullstory version or FXMarket boundary must retain one finding")
+    if name.startswith(("gcp_plain_", "gcp_fallback_", "gcp_escaped_", "gcpadc_")) and (len(actual) != 1 or len(expected) != 1):
+        raise AssertionError(name + ": the projected Google credential must retain one complete finding")
+    if name.startswith("gcp_public_") and (actual or expected):
+        raise AssertionError(name + ": the source's exact public Kubernetes account skip must remain empty")
+    if name.startswith("fullstory_v2_no_dispatch_") and (actual or expected):
+        raise AssertionError(name + ": direct Fullstory v2 extraction must not bypass its dispatch keyword")
     if name.startswith(("ftp_skipped_", "ftp_filtered_")) and (actual or expected):
         raise AssertionError(name + ": FTP credential skips and private false-positive filtering must remain empty")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):

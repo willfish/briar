@@ -2844,6 +2844,51 @@
       "evidence": ["tests/detectors/test_fulcrum.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Reader/deferred-close versus eager owned response release", "Complete native/private SANE fidelity", "Complete regexp and global engine/output parity"]
     },
+    "fullstory/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/fullstory/v1/fullstory.go",
+      "scope_notes": "Fullstory394/v1/default enabled. Keyword-only case-insensitive prefix, exact word-bounded88-byte mixed-alnum/hyphen/slash/plus occurrences; owned string version1 metadata. Literal Basic TOKEN, not Base64 or key-colon encoding, follows successful construction for operations/v1 SANE GET. All2xx, ignored body/read errors, whole mixed send-error suppression; bounded complete auth survives release. Own failures are fatal before skips/suppression with invocation rollback. Cohesive v2 shares only actual common verifier mechanics.",
+      "native_files": ["src/detectors/fullstory.c", "src/detectors/captures.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fullstory.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete RE2/arbitrary-byte and source-engine behavior", "Native/private SANE, Reader and cleanup timing fidelity"]
+    },
+    "fullstory/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/fullstory/v2/fullstory_v2.go",
+      "scope_notes": "Fullstory394/v2/default enabled. Direct case-sensitive na1 literal-dot then100 mixed-alnum/plus/slash bytes, word bounded; dispatch STILL requires fullstory, not na1. Preserve occurrences/version2 string metadata and original bytes without Base64/JWT/full-token validation. Literal Basic TOKEN follows construction for v2/users SANE GET; all2xx/body ignored/mixed send suppressed. Cohesive provider module retains distinct descriptions and versions.",
+      "native_files": ["src/detectors/fullstory.c", "src/detectors/captures.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fullstory.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete RE2/arbitrary-byte and source-engine behavior", "Native/private SANE, Reader and cleanup timing fidelity"]
+    },
+    "fxmarket/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/fxmarket/fxmarket.go",
+      "scope_notes": "FXMarket381/v0/default enabled/no hints. Preserve keyword-only prefix folding, original20-byte class and word-boundary backtracking, including captured equals before a following word byte. Raw/key part only. Complete literal unencoded query URL precedes constructor skip; Content-Type JSON follows construction. SANE GET/all2xx/body ignored/mixed send suppressed, owned failures fatal before ordinary outcomes and invocation rollback.",
+      "native_files": ["src/detectors/fxmarket.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_fxmarket.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete RE2/arbitrary-byte and source-engine behavior", "Native/private SANE, Reader and cleanup timing fidelity"]
+    },
+    "gcp/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/gcp/gcp.go",
+      "scope_notes": "GCP6/v0/default enabled/maxsecret2048/start4096, hints not detector caps. Unique original matches precede ordered cleanup and conditional Go literal unquote. First-document typed ten-string projection, duplicate/null/type semantics, Slack email/single-caret transforms, exact public Kubernetes account skip, Raw email or cleaned-input fallback, fixed-order Go JSON RawV2/key part, project/guide/type metadata and always-false custom FP. RSA certificate lookup uses PUBLIC before SDK regardless Type; matched KID changes metadata only, not original JWT KID or RawV2. Actual C RSA-SHA256 JWT grant uses cloud-platform scope, now-10s/one-hour lifetime and sorted form; read oneMiB before status. Successful typed empty/null token can verify, unlike ADC. invalid_grant suppression is Token-stage only. Private cloned-state HTTP byte I/O never returns opaque SDK tokens. Source nil-context/nil-certificate panic shapes, unsupported constructors/diagnostics and unrepresentable final strings fail explicitly with invocation rollback.",
+      "native_files": ["src/detectors/gcp.c", "src/detectors/gcp_json.c", "src/detectors/gcp_oauth.c", "src/detectors/gcp_oauth.h", "src/detectors/json.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_gcp.c", "tests/detectors/test_gcp_json.c", "tests/detectors/test_gcp_oauth.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native SDK HTTP is unsupported; PUBLIC remains fail-closed", "Noncanonical SDK token URI construction is explicitly unsupported after required signing/form work", "Complete Go PEM/PKCS/ASN1/X509, expiry parsing and diagnostic parity; non-ASCII quoted diagnostics remain unsupported", "NUL Redacted/errors after transformations/redaction, custom typed chains, NoBody, Reader/allocator timing, map order and global client behavior", "HTML decoding, escaped-decoder scheduling and complete regexp/source/output/platform behavior"]
+    },
+    "gcpapplicationdefaultcredentials/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/gcpapplicationdefaultcredentials/gcpapplicationdefaultcredentials.go",
+      "scope_notes": "GCPApplicationDefaultCredentials983/v0/default enabled/maxsecret1024/start1024. Occurrence whole-document typed four-string projection; first-dot ClientID prefix becomes Raw/part, RawV2 prefix plus original refresh token. Original full ID and secret remain hidden verification inputs. Exact byte-sliced Redacted may be invalid UTF8 or omit a middle NUL; guard only final NUL, preserve C bytes and repair invalid Redacted bytes only at outer JSON output. Authorized-user refresh uses sorted byte form without scope/Basic; body read precedes status, MIME routing preserves ignored-error/duplicate-parameter semantics, form first-values and JSON expiry schema differ. Only actual RetrieveError provenance creates temporary Google authentication errors; non-Temporary first-token errors suppress before diagnostic guards. Token.Valid precedes IAM, later refresh errors retain, and exact fake-transport value sentinel alone bypasses OAuth transport replacement. Validate OAuth header controls before dispatch; IAMall2xx/401/other status and uncapped drain policy remain distinct. No global mutation/public ABI or HTTP-profile widening.",
+      "native_files": ["src/detectors/gcpapplicationdefaultcredentials.c", "src/detectors/gcp_json.c", "src/detectors/gcp_oauth.c", "src/detectors/gcp_oauth.h", "src/main.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_gcpapplicationdefaultcredentials.c", "tests/detectors/test_gcp_json.c", "tests/detectors/test_gcp_oauth.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Native SDK HTTP is unsupported; no live OAuth issuance or IAM acceptance", "Full MIME/query/expiry, constructor/sentinel and later-refresh/failure behavior is not comprehensively verified", "Nondefault GODEBUG urlmaxqueryparams configuration is not represented; other-platform integer/time behavior remains unproven", "Custom wrapped authentication-error panic shapes, typed chains, NoBody, Reader/allocator timing, shared timeout mutation/races and native wire behavior", "Non-ASCII quoted diagnostics and final NUL Redacted/errors use explicit unsupported boundaries", "HTML decoding, escaped-decoder scheduling and complete regexp/source/output behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

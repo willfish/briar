@@ -174,6 +174,12 @@ For all three, other statuses produce `unexpected HTTP response status N`; trans
 
 After implementing, test extraction, prefix distance 40/41, CR/LF separation, boundaries, case, multiple findings and exact result fields. With verification disabled assert zero transport calls. With a fake, assert the complete requests and cover success, rejection, unexpected status, timeout/cancellation and secret redaction. Cover AbuseIPDB's missing substring, malformed-but-containing-substring body and body-read failure; cover ignored body-read errors for the other two. Exercise default selection separately from direct disabled-detector calls. Finish with one synthetic filesystem/stdin-to-JSON run with verification disabled and assertions for engine false positives, cleaning and duplicate line placement. This batch can be accepted entirely offline; it does not establish parity for any other detector or source.
 
+### Google credential boundary
+
+`gcp_json` supplies only the string codecs shared by the two closed credential structs: retain callback JSON values while borrowing their text, repair invalid UTF8 on typed decoding, and marshal fixed field order with Go's HTML/separator escaping. GCP-only cleanup and Go literal unquoting stay provider-local. Do not replace those distinct codecs with one JSON unquote or generic map serializer.
+
+`gcp_oauth` defines immutable cloned-state HTTP byte I/O for JWT grants, refresh grants and IAM requests. Its roles describe genuinely different source clients without widening the public HTTP enum or borrowing HTTP userdata. Callbacks return response bytes/read errors, never SDK tokens or verification decisions; C implements signing, parsing and provider policy. Complete request values survive send through release, including failed sends. Native SDK transport remains unsupported. Typed RetrieveError provenance and source error-stage decisions stay in the provider, before diagnostic formatting. Preserve the C result's byte-sliced Redacted value; only the outer JSON string applies Go-style invalid-byte replacement.
+
 ### Disjoint build ownership
 
 - Engine/CLI builder: `include/briar.h`, top-level build rules, common result/regex/false-positive/HTTP helpers, engine/CLI/output files, and corresponding non-detector tests. Implement only needed helpers, not a Go compatibility layer.
