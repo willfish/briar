@@ -285,6 +285,7 @@ static const registration expected[] = {
     {652, 0, "Enablex", "enablex", 36, true, 1024},
     {993, 0, "EndorLabs", "endr+", 21, true, -1},
     {923, 0, "EnvoyApiKey", "envoy", 220, true, -1},
+    {905, 0, "Etherscan", "etherscan", 34, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -421,7 +422,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         }
     }
     if (entry->type == 993) { memcpy(key, "endr+", 5); key[11] = '-'; }
-    if (entry->type == 258)
+    if (entry->type == 258 || entry->type == 905)
         for (size_t i = 0; i < entry->key_len; ++i)
             if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
