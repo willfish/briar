@@ -318,6 +318,7 @@ static const registration expected[] = {
     {528, 0, "FlightApi", "flightapi", 24, true, -1},
     {848, 0, "FlightLabs", "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9", 127, true, -1},
     {642, 0, "Flightstats", "flightstats", 32, true, 1024},
+    {249, 0, "Float", "float", 60, true, -1},
     {173, 0, "Flutterwave", "FLWSECK-", 42, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -460,6 +461,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 1009) { memcpy(key, "shltm_", 6); key[16] = '_'; key[30] = key[45] = '-'; }
     if (entry->type == 848) { memcpy(key, entry->keyword, 36); memcpy(key + 36, ".ey", 3); key[40] = '.'; }
     if (entry->type == 173) { memcpy(key, "FLWSECK-", 8); memcpy(key + 40, "-X", 2); }
+    if (entry->type == 249) { memcpy(key, "0123456789abcdef", 16); key[24] = '+'; key[33] = '/'; key[59] = '='; }
     if (entry->type == 667) key[8] = key[13] = key[18] = key[23] = '-';
     if (entry->type == 423) {
         memcpy(key, "API_KEY", 7);
