@@ -33,6 +33,20 @@ void br_http_client_destroy(br_http_client *client);
  * identifies this implementation, not an arbitrary transport capability claim. */
 bool br_http_client_is_owned(const br_transport *transport);
 
+/* Private native runtime. Initialize before concurrent use, destroy after all
+ * scan callers and response releases are quiescent. Its six source clients are
+ * distinct; drain all detached work before ending the curl initialization.
+ * Binding changes only this runtime's raw context, never an injected/explicit
+ * client, and recognizes built-in descriptor identities rather than types. */
+typedef struct br_native_http br_native_http;
+int br_native_http_init(br_native_http **out, char **error);
+const br_transport *br_native_http_raw(const br_native_http *runtime);
+void br_native_http_bind(const br_native_http *runtime, const br_detector *detector,
+                         br_scan_ctx *context);
+void br_native_http_destroy(br_native_http *runtime);
+/* Legacy raw users must balance a successful initialization with curl cleanup. */
+const br_transport *br_curl_transport_init(char **error);
+
 /* Zero-initialize. Own only the synthesized array/UA; other pointers borrow
  * the caller's stable request snapshot. Keep this exact request address and
  * storage alive through raw backend send AND release, then clear it. */

@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "briar.h"
 #include "briar_decoders.h"
+#include "http_internal.h"
 #include "overlap.h"
 #include "utf8.h"
 
-#include <curl/curl.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <json-c/json.h>
@@ -17,9 +17,6 @@
 #include <strings.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-/* Private runtime setup, not part of the detector ABI. */
-extern const br_transport *br_curl_transport_init(char **error);
 
 #define INPUT_LIMIT (64 * 1024)
 #define SOURCE_CONTENT_SIZE (10 * 1024)
@@ -472,7 +469,8 @@ static bool same_detector(const br_detector *a, const br_detector *b)
 }
 
 static int probe_overlaps(const cli_options *o, const source_frame *source,
-                          const br_scan_ctx *ctx, detector_windows *matches, size_t count,
+                          const br_scan_ctx *ctx, const br_native_http *http,
+                          detector_windows *matches, size_t count,
                           br_json *output, br_json *keys, char **error)
 {
     static const char cause[] = "more than one detector has found this result; for your safety, verification has been disabled. "
@@ -485,10 +483,12 @@ static int probe_overlaps(const cli_options *o, const source_frame *source,
     for (size_t m = 0; !rc && m < count; ++m) {
         detector_windows *match = &matches[m];
         const br_detector *d = match->detector;
+        br_scan_ctx scan_ctx = *ctx;
+        br_native_http_bind(http, d, &scan_ctx);
         for (size_t w = 0; !rc && w < match->len; ++w) {
             br_span span = match->windows[w];
             br_results results = {0};
-            rc = d->scan(d, ctx, false, (br_slice){source->data.data + span.begin, span.end - span.begin}, &results, error);
+            rc = d->scan(d, &scan_ctx, false, (br_slice){source->data.data + span.begin, span.end - span.begin}, &results, error);
             if (!rc && results.len) match->pending = true; /* A later window can re-add a removed detector. */
             if (!rc) filter_results(o, d, &results);
             for (size_t r = 0; !rc && r < results.len; ++r) {
@@ -533,7 +533,8 @@ static int probe_overlaps(const cli_options *o, const source_frame *source,
 }
 
 static int scan_source(const cli_options *o, const source_frame *source,
-                        const br_scan_ctx *ctx, const br_detector *const *registry,
+                        const br_scan_ctx *ctx, const br_native_http *http,
+                        const br_detector *const *registry,
                         size_t count, const bool *selected, br_json *output,
                         br_json *keys, char **error)
 {
@@ -566,14 +567,16 @@ static int scan_source(const cli_options *o, const source_frame *source,
         if (!rc && merged.begin != SIZE_MAX) rc = add_window(match, merged, error);
         if (match->len) ++nmatch;
     }
-    if (!rc && nmatch > 1) rc = probe_overlaps(o, source, ctx, matches, nmatch, output, keys, error);
+    if (!rc && nmatch > 1) rc = probe_overlaps(o, source, ctx, http, matches, nmatch, output, keys, error);
     for (size_t m = 0; !rc && m < nmatch; ++m) {
         detector_windows *match = &matches[m];
         if (nmatch > 1 && !match->pending) continue;
+        br_scan_ctx scan_ctx = *ctx;
+        br_native_http_bind(http, match->detector, &scan_ctx);
         for (size_t w = 0; !rc && w < match->len; ++w) {
             br_span span = match->windows[w];
             br_results results = {0};
-            rc = match->detector->scan(match->detector, ctx, false,
+            rc = match->detector->scan(match->detector, &scan_ctx, false,
                 (br_slice){input.data + span.begin, span.end - span.begin}, &results, error);
             if (!rc) rc = process_results(o, source, match->detector, &results, output, keys, error);
             br_results_clear(&results);
@@ -585,7 +588,8 @@ static int scan_source(const cli_options *o, const source_frame *source,
 }
 
 static int scan_decoders(const cli_options *o, const source_frame *source,
-                          const br_scan_ctx *ctx, const br_detector *const *registry,
+                          const br_scan_ctx *ctx, const br_native_http *http,
+                          const br_detector *const *registry,
                           size_t count, const bool *selected, br_json *output,
                           br_json *keys, char **error)
 {
@@ -593,7 +597,7 @@ static int scan_decoders(const cli_options *o, const source_frame *source,
     plain.decoder_name = "PLAIN";
     br_bytes plain_storage = {0};
     int rc = br_utf8_decode(source->original, &plain.data, &plain_storage, error);
-    if (!rc && plain.data.len) rc = scan_source(o, &plain, ctx, registry, count, selected, output, keys, error);
+    if (!rc && plain.data.len) rc = scan_source(o, &plain, ctx, http, registry, count, selected, output, keys, error);
     free(plain_storage.data);
     if (rc) return rc;
 
@@ -636,7 +640,7 @@ static int scan_decoders(const cli_options *o, const source_frame *source,
                 /* Append/scan intermediate results even if their data was seen.
                  * Only scheduling is deduplicated; verification-cache flags and
                  * original chunk metadata must not be changed by decoder reuse. */
-                rc = scan_source(o, &chunk, ctx, registry, count, selected, output, keys, error);
+                rc = scan_source(o, &chunk, ctx, http, registry, count, selected, output, keys, error);
                 if (rc || depth + 1 == DECODE_MAX_DEPTH || same_bytes(chunk.data, current[i])) continue;
                 bool repeat = false;
                 for (size_t j = 0; j < nseen; ++j)
@@ -658,7 +662,8 @@ static int scan_decoders(const cli_options *o, const source_frame *source,
 }
 
 static int scan_chunks(const cli_options *o, const source_frame *source,
-                        const br_scan_ctx *ctx, const br_detector *const *registry,
+                        const br_scan_ctx *ctx, const br_native_http *http,
+                        const br_detector *const *registry,
                         size_t count, const bool *selected, br_json *output,
                         br_json *keys, char **error)
 {
@@ -672,7 +677,7 @@ static int scan_chunks(const cli_options *o, const source_frame *source,
         chunk.first_line = first_line;
         /* OriginalData is this raw content+peek view, never the decoded window. */
         chunk.original = (br_slice){ source->original.data + start, view_len };
-        int rc = scan_decoders(o, &chunk, ctx, registry, count, selected, output, keys, error);
+        int rc = scan_decoders(o, &chunk, ctx, http, registry, count, selected, output, keys, error);
         if (rc) return rc;
         /* Peek bytes are read again as content in the next chunk. Stdin has no
          * line/ignore metadata, while filesystem advances only over raw content. */
@@ -720,7 +725,7 @@ int main(int argc, char **argv)
     char *error = NULL;
     bool *included = NULL, *excluded = NULL, *selected = NULL;
     br_json *output = NULL, *keys = NULL;
-    bool curl_initialized = false;
+    br_native_http *http = NULL;
     int rc = 1;
     if (parse_cli(argc, argv, &options, &error)) goto done;
     const br_detector *const *registry = NULL;
@@ -738,9 +743,8 @@ int main(int argc, char **argv)
     }
     if (!nselected) { fail(&error, "no enabled implemented detectors selected; include selectors cannot enable disabled upstream detectors"); goto done; }
     br_scan_ctx ctx = { .cancelled = cancelled };
-    ctx.transport = br_curl_transport_init(&error);
-    if (!ctx.transport) goto done;
-    curl_initialized = true;
+    if (br_native_http_init(&http, &error)) goto done;
+    ctx.transport = br_native_http_raw(http);
     output = json_object_new_array(); keys = json_object_new_array();
     if (!output || !keys) { fail(&error, "out of memory initializing output"); goto done; }
     fprintf(stderr, "briar: limited native slice, %zu explicitly selected enabled detector(s); 10 KiB + 3 KiB source chunks, PLAIN/BASE64/UTF16/ESCAPED_UNICODE only (decode depth five), no HTML decoder or CLI verification\n", nselected);
@@ -772,7 +776,7 @@ int main(int argc, char **argv)
             .source_name = is_stdin ? "trufflehog - stdin" : "trufflehog - filesystem",
             .path = is_stdin ? NULL : options.paths[i], .original = { input.data, input.len },
         };
-        int scan_rc = scan_chunks(&options, &source, &ctx, registry, count, selected, output, keys, &error);
+        int scan_rc = scan_chunks(&options, &source, &ctx, http, registry, count, selected, output, keys, &error);
         free(input.data);
         if (scan_rc) goto done;
     }
@@ -788,6 +792,6 @@ done:
     if (rc && rc != 183) fprintf(stderr, "briar: %s\n", error ? error : "scan failed");
     free(error); free(options.paths); free(included); free(excluded); free(selected);
     json_object_put(output); json_object_put(keys);
-    if (curl_initialized) curl_global_cleanup();
+    br_native_http_destroy(http);
     return rc;
 }
