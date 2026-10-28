@@ -280,5 +280,9 @@ int br_elevenlabs_v1_init(const br_detector **out, char **error);
 int br_elevenlabs_v2_init(const br_detector **out, char **error);
 int br_enablex_init(const br_detector **out, char **error);
 int br_endorlabs_init(const br_detector **out, char **error);
+int br_enigma_init(const br_detector **out, char **error);
+int br_envoyapikey_init(const br_detector **out, char **error);
+int br_eraser_init(const br_detector **out, char **error);
+int br_etherscan_init(const br_detector **out, char **error);
 
 #endif
