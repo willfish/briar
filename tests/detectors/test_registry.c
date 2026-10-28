@@ -339,6 +339,7 @@ static const registration expected[] = {
     {381, 0, "FXMarket", "fxmarket", 20, true, -1},
     {6, 0, "GCP", "provider_x509", sizeof("briar87@offline.invalid") - 1, true, -1},
     {983, 0, "GCPApplicationDefaultCredentials", ".apps.googleusercontent.com", 2, true, -1},
+    {696, 0, "Geckoboard", "geckoboard", 44, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
