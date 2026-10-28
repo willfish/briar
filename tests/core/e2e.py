@@ -697,6 +697,13 @@ check(rows[0]["Raw"] == groq_key and rows[0]["SecretParts"] == {"key": groq_key}
 check(rows[0]["ExtraData"] == {"rotation_guide": "https://howtorotate.com/docs/tutorials/groq/"}, "Groq retains rotation metadata without verification")
 check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and not rows[0]["Verified"], "Groq NoV does not list models or invent token metadata")
 
+gyazo_key = key40 + "Z7q"
+for raw, following in ((gyazo_key, ""), (gyazo_key[:42] + "-", "x")):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Gyazo"], ("GyAzO " + raw + following).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == 467, "Gyazo selector dispatches its enabled scanner")
+    check(rows[0]["Raw"] == raw and rows[0]["SecretParts"] == {"key": raw}, "Gyazo preserves the complete capture and trailing-hyphen boundary")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Gyazo NoV does not fetch images or add metadata")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
