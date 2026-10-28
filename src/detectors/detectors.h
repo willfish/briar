@@ -318,5 +318,9 @@ int br_float_init(const br_detector **out, char **error);
 int br_flowflu_init(const br_detector **out, char **error);
 int br_flutterwave_init(const br_detector **out, char **error);
 int br_flyio_init(const br_detector **out, char **error);
+int br_fmfw_init(const br_detector **out, char **error);
+int br_formbucket_init(const br_detector **out, char **error);
+int br_formcraft_init(const br_detector **out, char **error);
+int br_formio_init(const br_detector **out, char **error);
 
 #endif
