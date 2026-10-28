@@ -367,6 +367,8 @@ static const registration expected[] = {
     {569, 0, "Glassnode", "glassnode", 27, true, -1},
     {714, 0, "GoCanvas", "gocanvas", 44, true, 1024},
     {184, 0, "GoCardless", "gocardless", 45, true, -1},
+    {1008, 1, "GoDaddy", "godaddy", 37, true, -1},
+    {1008, 2, "GoDaddy", "godaddy", 35, true, -1},
     {654, 0, "GoodDay", "goodday", 32, true, -1},
     {1041, 0, "GoogleGeminiAPIKey", "aizasy", 39, true, -1},
     {69, 0, "GoogleOauth2", "ya29.", 15, true, -1},
@@ -376,6 +378,18 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 1008) {
+        char key[38], secret[23], input[100];
+        test_secret(key, entry->key_len, 0); key[17] = '_'; test_secret(secret, 22, 7);
+        snprintf(input, sizeof(input), "godaddy %s\ngodaddy %s", key, secret);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        br_result plain = results.items[0]; plain.extra_data = NULL;
+        test_key_result(&plain, 1008, key, "key");
+        CHECK(results.items[0].extra_data && json_object_object_length(results.items[0].extra_data) == 0);
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 1041) {
         char key[40] = "AIzaSy"; test_secret(key + 6, 33, 0); key[38] = '-';
         br_results results = test_scan(detector, NULL, false, key, 39); CHECK(results.len == 1);
