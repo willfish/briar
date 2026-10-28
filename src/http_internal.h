@@ -33,11 +33,20 @@ void br_http_client_destroy(br_http_client *client);
  * identifies this implementation, not an arbitrary transport capability claim. */
 bool br_http_client_is_owned(const br_transport *transport);
 
-/* Parent-owned raw backend path: ordinary structural/header/UA/timeout setup,
- * but no singleflight admission or key stripping. Owned clients call it with a
- * retained raw backend and a fully owned cancellation-detached context/request;
- * ordinary br_http_send calls it only after rejecting unsupported keyed I/O. */
-int br_http_backend_send(const br_scan_ctx *ctx, const br_http_request *request,
+/* Zero-initialize. Own only the synthesized array/UA; other pointers borrow
+ * the caller's stable request snapshot. Keep this exact request address and
+ * storage alive through raw backend send AND release, then clear it. */
+typedef struct {
+    br_http_request request;
+    br_header *headers;
+    char *user_agent;
+} br_http_prepared_request;
+int br_http_request_prepare(const br_scan_ctx *ctx, const br_http_request *request,
+                            br_http_prepared_request *prepared, char **error);
+void br_http_request_clear(br_http_prepared_request *prepared);
+/* Send already-prepared values on the retained raw backend. No preparation,
+ * timeout restart, key stripping, response release or request cleanup here. */
+int br_http_backend_send(const br_scan_ctx *ctx, const br_http_prepared_request *prepared,
                          br_http_response *response, char **error);
 
 #endif

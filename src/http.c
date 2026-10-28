@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
-#include "briar.h"
+#include "http_internal.h"
 
 #include <curl/curl.h>
 #include <ctype.h>
@@ -94,7 +94,33 @@ int br_http_send(const br_scan_ctx *ctx, const br_http_request *request,
         request->profile != BR_HTTP_DETECTOR_PUBLIC && request->profile != BR_HTTP_AWS &&
         request->profile != BR_HTTP_BROWSERSTACK)
         return fail(error, "unsupported HTTP client profile");
+    /* An owned client registers detached work before cancellation selection.
+     * Arbitrary borrowed transports still cannot accept coalescing requests. */
+    if (br_http_client_is_owned(ctx->transport))
+        return ctx->transport->send(ctx->transport->user, ctx, request, response, error);
     if (request->dedup_key.len) return fail(error, "unsupported HTTP request coalescing");
+    br_http_prepared_request prepared = {0};
+    int rc = br_http_request_prepare(ctx, request, &prepared, error);
+    if (!rc) rc = br_http_backend_send(ctx, &prepared, response, error);
+    /* Ordinary ABI1 transport setup still ends at send return. Owned clients
+     * instead retain preparation through their raw release operation. */
+    br_http_request_clear(&prepared);
+    return rc;
+}
+
+int br_http_request_prepare(const br_scan_ctx *ctx, const br_http_request *request,
+                            br_http_prepared_request *prepared, char **error)
+{
+    if (error) *error = NULL;
+    if (!prepared) return fail(error, "invalid HTTP preparation output");
+    memset(prepared, 0, sizeof(*prepared));
+    if (!ctx || !request) return fail(error, "invalid HTTP arguments");
+    if (!ctx->transport || !ctx->transport->send || !ctx->transport->release)
+        return fail(error, "HTTP transport not installed");
+    if (request->profile != BR_HTTP_SANE && request->profile != BR_HTTP_DETECTOR_LOCAL &&
+        request->profile != BR_HTTP_DETECTOR_PUBLIC && request->profile != BR_HTTP_AWS &&
+        request->profile != BR_HTTP_BROWSERSTACK)
+        return fail(error, "unsupported HTTP client profile");
     if (!request->method || !*request->method || !request->url ||
         (request->nheaders && !request->headers) || (!request->body.data && request->body.len))
         return fail(error, "invalid HTTP request");
@@ -152,9 +178,29 @@ int br_http_send(const br_scan_ctx *ctx, const br_http_request *request,
         if (!effective.timeout_ms || remaining < effective.timeout_ms)
             effective.timeout_ms = (uint32_t)remaining;
     }
-    int rc = ctx->transport->send(ctx->transport->user, ctx, &effective, response, error);
-    free(agent);
-    free(headers);
+    prepared->request = effective;
+    prepared->headers = headers;
+    prepared->user_agent = agent;
+    return 0;
+}
+
+void br_http_request_clear(br_http_prepared_request *prepared)
+{
+    if (!prepared) return;
+    free(prepared->user_agent);
+    free(prepared->headers);
+    memset(prepared, 0, sizeof(*prepared));
+}
+
+int br_http_backend_send(const br_scan_ctx *ctx, const br_http_prepared_request *prepared,
+                         br_http_response *response, char **error)
+{
+    if (error) *error = NULL;
+    if (response) memset(response, 0, sizeof(*response));
+    if (!ctx || !prepared || !response) return fail(error, "invalid HTTP arguments");
+    if (!ctx->transport || !ctx->transport->send || !ctx->transport->release)
+        return fail(error, "HTTP transport not installed");
+    int rc = ctx->transport->send(ctx->transport->user, ctx, &prepared->request, response, error);
     if (rc && error && !*error) *error = strdup("HTTP transport failed");
     return rc;
 }
@@ -376,7 +422,8 @@ static int curl_send(void *user, const br_scan_ctx *ctx, const br_http_request *
             char *location = NULL;
             curl_easy_getinfo(easy, CURLINFO_REDIRECT_URL, &location);
             if (location) {
-                if (post) failure = "unsupported: redirects for native HTTP POST";
+                if (req->dedup_key.len) failure = "unsupported: native coalesced HTTP redirects";
+                else if (post) failure = "unsupported: redirects for native HTTP POST";
                 else if (redirects >= 9) failure = "stopped after 10 redirects";
                 else {
                     /* Go strips sensitive headers across hosts. That generic case is not ported yet. */

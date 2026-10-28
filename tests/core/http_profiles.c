@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
-#include "briar.h"
+#include "../../src/http_internal.h"
 
 #include <curl/curl.h>
 #include <stdio.h>
@@ -17,7 +17,9 @@ int main(int argc, char **argv)
     CHECK(argc == 3);
     CHECK(getenv("BRIAR_TEST_ISOLATED_NET") && !strcmp(getenv("BRIAR_TEST_ISOLATED_NET"), "1"));
     CHECK(!strncmp(argv[2], "http://127.0.0.1:", sizeof("http://127.0.0.1:") - 1));
-    bool sane = !strcmp(argv[1], "SANE"), public = !strcmp(argv[1], "PUBLIC");
+    bool owned_mode = !strcmp(argv[1], "SANE-owned") || !strcmp(argv[1], "SANE-owned-redirect");
+    bool owned_redirect = !strcmp(argv[1], "SANE-owned-redirect");
+    bool sane = !strcmp(argv[1], "SANE") || owned_mode, public = !strcmp(argv[1], "PUBLIC");
     bool short_body = !strcmp(argv[1], "LOCAL-short");
     bool length_get = !strcmp(argv[1], "SANE-length-GET");
     bool length_post = !strcmp(argv[1], "SANE-length-POST");
@@ -32,6 +34,12 @@ int main(int argc, char **argv)
     char *error = NULL;
     const br_transport *transport = br_curl_transport_init(&error);
     CHECK(transport != NULL && error == NULL);
+    br_http_client *client = NULL;
+    if (owned_mode) {
+        br_http_owned_backend backend = {.transport = *transport}; /* Null curl userdata; process lifetime. */
+        CHECK(!br_http_client_init(&client, backend, BR_HTTP_SANE, &error) && client && !error);
+        transport = br_http_client_transport(client);
+    }
     br_scan_ctx ctx = {.transport = transport, .user_agent = "native-http-fixture"};
     static const unsigned char payload[] = "synthetic\0body";
     const br_header content_type = {"Content-Type", "application/json"};
@@ -43,9 +51,13 @@ int main(int argc, char **argv)
         .body = {post ? payload : NULL, post && !post_empty ? sizeof(payload) - 1 : 0},
         .profile = public ? BR_HTTP_DETECTOR_PUBLIC : sane ? BR_HTTP_SANE : BR_HTTP_DETECTOR_LOCAL,
     };
+    if (owned_mode) request.dedup_key = (br_slice){(const unsigned char *)"486:native", sizeof("486:native") - 1};
     br_http_response response = {0};
     int rc = br_http_send(&ctx, &request, &response, &error);
-    if (post_redirect) {
+    if (owned_redirect) {
+        CHECK(rc != 0 && error && !strcmp(error, "unsupported: native coalesced HTTP redirects"));
+        CHECK(response.status == 0 && !response.body.data && !response.body_error);
+    } else if (post_redirect) {
         CHECK(rc != 0);
         CHECK(error && !strcmp(error, "unsupported: redirects for native HTTP POST"));
         CHECK(response.status == 302 && response.body_error == NULL);
@@ -69,6 +81,7 @@ int main(int argc, char **argv)
     free(error);
     br_http_release(&ctx, &response);
     CHECK(response.status == 0 && response.body.data == NULL && response.body_error == NULL);
+    br_http_client_destroy(client); /* Drain workers before the curl lifetime ends. */
     curl_global_cleanup();
     printf("Native HTTP %s: %u assertions, 0 failures\n", argv[1], assertions);
     return 0;

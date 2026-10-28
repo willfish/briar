@@ -32,6 +32,10 @@ int json_object_object_add(struct json_object *object, const char *name, struct 
 int br_http_send(const br_scan_ctx *ctx, const br_http_request *request,
                  br_http_response *response, char **error)
 {
+    /* Exercise the actual supported owned-client dispatcher without changing
+     * any credential key or the ordinary borrowed-transport rejection. */
+    if (ctx && br_http_client_is_owned(ctx->transport))
+        return geocode_real_http_send(ctx, request, response, error);
     CHECK(ctx == expected_context && inspected < expected_count);
     const char *key = expected_keys[inspected++];
     CHECK(request && !strcmp(request->method, "GET"));
@@ -219,10 +223,54 @@ static void resources_and_rollback(const br_detector *detector)
     results.cap = capacity; check_prior(&results, &prior); free(error); br_results_clear(&results);
 }
 
+static void inspect_owned(test_http *http, const br_scan_ctx *ctx, const br_http_request *r)
+{
+    (void)http;
+    CHECK(!ctx->cancelled && !ctx->cancel_user && ctx->deadline_monotonic_ms > 0);
+    CHECK(!strcmp(r->method, "GET") && r->profile == BR_HTTP_SANE && r->detector_type == 486);
+    CHECK(r->timeout_ms > 0 && r->timeout_ms <= 5000);
+    CHECK(strlen(r->url) == sizeof(base_url) - 1 + 28 && !memcmp(r->url, base_url, sizeof(base_url) - 1));
+    CHECK(!memcmp(r->url + sizeof(base_url) - 1, key1, 29));
+    CHECK(r->dedup_key.len == 32 && !memcmp(r->dedup_key.data, "486:", 4) && !memcmp(r->dedup_key.data + 4, key1, 28));
+    CHECK(!r->body.data && !r->body.len && r->nheaders == 1);
+    CHECK(!strcmp(r->headers[0].name, "User-Agent") && !strcmp(r->headers[0].value, "TruffleHog owned-geocode"));
+}
+
+static void owned_verification(const br_detector *detector)
+{
+    static const unsigned char marker[] = "junk\0\"remaining_credits\" : 4";
+    static const unsigned char compact[] = "{\"remaining_credits\":4}";
+    const struct { int status, send_rc; bool marker, read_error, verified; } cases[] = {
+        {201, 0, true, false, true}, {299, 0, true, false, true},
+        {200, 0, false, false, false}, {500, 0, true, false, false},
+        {200, 0, true, true, false}, {200, 1, true, false, false},
+    };
+    test_http *http = calloc(1, sizeof(*http)); CHECK(http);
+    http->inspect = inspect_owned;
+    br_http_owned_backend backend = {.transport = test_transport(http), .destroy = free};
+    br_http_client *client = NULL; char *error = NULL;
+    CHECK(!br_http_client_init(&client, backend, BR_HTTP_SANE, &error) && client && !error);
+    br_scan_ctx ctx = {.transport = br_http_client_transport(client), .user_agent = "owned-geocode"};
+    char input[48]; snprintf(input, sizeof(input), "geocode %s", key1);
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        http->response = (br_http_response){.status = cases[i].status,
+            .body = {cases[i].marker ? marker : compact, cases[i].marker ? sizeof(marker) - 1 : sizeof(compact) - 1},
+            .body_error = cases[i].read_error ? "" : NULL};
+        http->send_rc = cases[i].send_rc; http->send_error = cases[i].send_rc ? "synthetic owned send error" : NULL;
+        br_results results = test_scan(detector, &ctx, true, input, strlen(input));
+        CHECK(results.len == 1 && http->calls == i + 1 && http->releases == i + 1);
+        test_key_result(&results.items[0], 486, key1, "key");
+        CHECK(results.items[0].verified == cases[i].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+    }
+    CHECK(!br_http_client_drain(client, &error) && !error);
+    br_http_client_destroy(client);
+}
+
 int main(void)
 {
     test_secret(key1, 28, 0); test_secret(key2, 28, 7);
     const br_detector *detector = descriptor();
-    extraction(detector); occurrences_and_guard(detector); resources_and_rollback(detector);
-    return test_finish("Geocode grammar/occurrences/metadata/rollback + actual mandatory guard; zero send callbacks; verification unsupported");
+    extraction(detector); occurrences_and_guard(detector); resources_and_rollback(detector); owned_verification(detector);
+    return test_finish("Geocode ordinary guard + owned singleflight request/body/status verification");
 }

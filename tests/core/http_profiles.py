@@ -57,6 +57,8 @@ for profile, path, expected_paths in (
     ("LOCAL", "/redirect", ["/redirect"]),
     ("LOCAL-short", "/short-redirect", ["/short-redirect"]),
     ("SANE", "/redirect", ["/redirect", "/destination"]),
+    ("SANE-owned", "/destination", ["/destination"]),
+    ("SANE-owned-redirect", "/redirect", ["/redirect"]),
     ("PUBLIC", "/redirect", []),
     ("SANE-POST", "/post", ["/post"]),
     ("LOCAL-POST", "/post", ["/post"]),
@@ -82,4 +84,4 @@ for profile, path, expected_paths in (
         print(result.stdout, end="", flush=True)
         assert result.returncode == 0, result.stderr
         assert server.paths == expected_paths, (profile, server.paths)
-print("PASS: LOCAL/SANE redirects, binary/empty bodies and body-derived framing; PUBLIC and unported POST redirects fail closed; loopback-only namespace")
+print("PASS: LOCAL/SANE redirects, owned singleflight curl path, binary/empty bodies and body-derived framing; PUBLIC, keyed native redirects and unported POST redirects fail closed; loopback-only namespace")

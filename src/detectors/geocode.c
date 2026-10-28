@@ -35,16 +35,16 @@ static bool geocode_verify(const br_scan_ctx *ctx, br_slice key, br_result *resu
     };
     br_http_response response = {0};
     char *send_error = NULL;
-    /* DoWithDedup is mandatory. Keep the complete type:credential key and the
-     * unchanged shared unsupported-coalescing guard. Suppress the whole mixed
-     * setup/allocation/Do error domain, without text classification or setters. */
+    /* DoWithDedup is mandatory. Keep the complete type:credential key;
+     * ordinary borrowed transports remain blocked, while explicitly owned
+     * clients supply buffering/replay. Suppress the whole mixed setup/Do error
+     * domain without text classification or verification-error setters. */
     if (br_http_send(ctx, &request, &response, &send_error) == 0 && response.body_error == NULL) {
         static const unsigned char marker[] = "\"remaining_credits\" :";
         result->verified = response.status >= 200 && response.status < 300 &&
             br_slice_find(response.body, (br_slice){marker, sizeof(marker) - 1}, 0) != SIZE_MAX;
     }
-    /* Body/status success is currently unreachable behind the shared guard.
-     * Both singleflight buffering errors and subsequent read errors keep a
+    /* Both singleflight buffering errors and subsequent read errors keep a
      * false finding. Match the literal bytes, not JSON. Stack URL/key survive
      * every send through release, including failure. Source scan-defers Close;
      * replay/close timing and full coalescing remain shared-runtime gaps. */
