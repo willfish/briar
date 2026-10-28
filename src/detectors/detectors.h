@@ -296,5 +296,11 @@ int br_faceplusplus_init(const br_detector **out, char **error);
 int br_fastforex_init(const br_detector **out, char **error);
 int br_fastlypersonaltoken_init(const br_detector **out, char **error);
 int br_feedier_init(const br_detector **out, char **error);
+int br_fetchrss_init(const br_detector **out, char **error);
+int br_fibery_init(const br_detector **out, char **error);
+int br_figmapersonalaccesstoken_v1_init(const br_detector **out, char **error);
+int br_figmapersonalaccesstoken_v2_init(const br_detector **out, char **error);
+int br_figmapersonalaccesstoken_v3_init(const br_detector **out, char **error);
+int br_fileio_init(const br_detector **out, char **error);
 
 #endif
