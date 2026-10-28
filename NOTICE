@@ -26,7 +26,8 @@ selected Go 1.26.7 encoding/base64, net/url, bufio and net/http behavior in C. C
 reimplements selected encoding/pem and crypto/x509 SEC1 validation mechanics.
 Datadog token response projection follows selected encoding/json pointer and
 slice-reuse mechanics. DeepAI's fixed multipart form follows selected
-mime/multipart writer behavior. Selected Unicode 15.0 category, whitespace and
+mime/multipart writer behavior. Enigma's ASCII Content-Type diagnostics follow
+selected strconv quoting behavior. Selected Unicode 15.0 category, whitespace and
 lowercase ranges derive from Go 1.26.7 src/unicode/tables.go; regenerate them with tools/generate_go_unicode.py.
 Original copyright and BSD license:
 Copyright 2009 The Go Authors.

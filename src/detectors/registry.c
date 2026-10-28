@@ -281,6 +281,7 @@ static const detector_factory named_factories[] = {
     br_elevenlabs_v2_init,
     br_enablex_init,
     br_endorlabs_init,
+    br_enigma_init,
     br_envoyapikey_init,
     br_eraser_init,
     br_etherscan_init,
@@ -340,6 +341,15 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_is_type(feature_flags, json_type_object)) return false;
             br_json *enabled = NULL;
             if (!json_object_object_get_ex(feature_flags, "CloudflareGlobalApiKeyV2DetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 405: {
+            if (detector->version != 0) return false;
+            /* OSS main enables Enigma; explicit false retains package zero. */
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "EnigmaDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
         case 1048: {
@@ -518,6 +528,7 @@ const char *br_detector_type_name(int32_t type)
     case 402: return "Coinlayer";
     case 403: return "CurrentsAPI";
     case 404: return "DataGov";
+    case 405: return "Enigma";
     case 418: return "Deepgram";
     case 424: return "Edamam";
     case 430: return "Bannerbear";

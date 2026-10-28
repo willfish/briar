@@ -284,6 +284,7 @@ static const registration expected[] = {
     {994, 2, "ElevenLabs", "elevenlabs", 51, true, -1},
     {652, 0, "Enablex", "enablex", 36, true, 1024},
     {993, 0, "EndorLabs", "endr+", 21, true, -1},
+    {405, 0, "Enigma", "enigma", 40, true, -1},
     {923, 0, "EnvoyApiKey", "envoy", 220, true, -1},
     {990, 0, "Eraser", "eraser", 20, true, -1},
     {905, 0, "Etherscan", "etherscan", 34, true, -1},
@@ -1225,6 +1226,7 @@ int main(void)
     size_t count = 0;
     char *error = NULL;
     CHECK(BR_ABI_REVISION == 1);
+    feature_gate_tests(405, "EnigmaDetectorEnabled");
     feature_gate_tests(1053, "BraintrustDetectorEnabled");
     feature_gate_tests(1059, "DuffelTokenDetectorEnabled");
     feature_gate_tests(1063, "DuoDetectorEnabled");
