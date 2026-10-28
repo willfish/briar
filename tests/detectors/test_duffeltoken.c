@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "../../src/detectors/detectors.h"
+#include "../../src/http_internal.h"
 #include "../support/detector_test.h"
 
 /* Inspect the provider request, then forward UNCHANGED to the actual shared
@@ -19,6 +20,7 @@ static size_t expected_count, inspected;
 static const char *borrowed_auth, *borrowed_token;
 static br_slice borrowed_dedup;
 static char *borrowed_cause;
+static int owned_send_rc, owned_status;
 
 void *malloc(size_t size)
 {
@@ -60,7 +62,13 @@ int br_http_send(const br_scan_ctx *ctx, const br_http_request *request,
     inside_real_send = true;
     int rc = duffeltoken_real_http_send(ctx, request, response, error);
     inside_real_send = false;
-    CHECK(rc != 0 && error && *error); /* Forwarded real guard, never manufacture mock 200/403. */
+    if (br_http_client_is_owned(ctx->transport)) {
+        owned_send_rc = rc; owned_status = response->status;
+        CHECK(!response->body_error); /* Keyed ReadAll failures become Do errors. */
+        CHECK(rc ? error && *error : error && !*error);
+        return rc;
+    }
+    CHECK(rc != 0 && error && *error); /* Borrowed transport still hits the real guard. */
     if (ctx->transport && ctx->transport->release) {
         borrowed_auth = request->headers[0].value; borrowed_dedup = request->dedup_key;
         borrowed_token = token; borrowed_cause = *error;
@@ -205,9 +213,8 @@ static void unique_and_guarded(const br_detector *detector)
     results = test_scan(detector, NULL, true, input, strlen(input)); CHECK(results.len == 3 && inspected == before);
     for (size_t i = 0; i < results.len; ++i) check_result(&results.items[i], tokens[i], "net/http: nil Context");
     br_results_clear(&results);
-    /* Prepared 403/body values NEVER reach the verifier. 200/403 success,
-     * 401 rejection, other statuses, full singleflight and common-UA execution
-     * remain UNEXERCISED/unsupported, not fake-success verification evidence. */
+    /* This borrowed transport's prepared 403/body values NEVER reach the
+     * verifier. The distinct owned-client cases below exercise status policy. */
 }
 
 static bool cancelled(void *user) { ++*(size_t *)user; return true; }
@@ -237,6 +244,111 @@ static void retained_errors(const br_detector *detector)
     CHECK(results.len == 2 && inspected == 2 && !http.calls && http.releases == 2);
     check_result(&results.items[0], test_token, first); check_result(&results.items[1], live_token, second);
     br_results_clear(&results); echo_guard_cause = NULL; clobber_cause = false;
+}
+
+/* One provider-private default-client namespace, with a byte backend only.
+ * Source's optional custom *http.Client is not modeled by this generic route;
+ * grouping/concurrency belongs to the core tests, not this provider fixture. */
+typedef struct {
+    const char *token;
+    br_http_response response;
+    const char *send_error;
+    size_t calls, releases;
+    bool destroyed;
+    const br_http_request *pending;
+    const br_scan_ctx *pending_ctx;
+} owned_fixture;
+
+static void inspect_owned(const owned_fixture *f, const br_scan_ctx *ctx,
+                          const br_http_request *r)
+{
+    CHECK(ctx && ctx->transport && ctx->transport->user == f);
+    CHECK(!ctx->cancelled && !ctx->cancel_user && ctx->deadline_monotonic_ms > 0);
+    CHECK(ctx->user_agent && !strcmp(ctx->user_agent, "duffel-offline"));
+    CHECK(!strcmp(r->method, "GET") && !strcmp(r->url, "https://api.duffel.com/identity/customer/users?limit=1"));
+    CHECK(r->profile == BR_HTTP_SANE && r->timeout_ms > 0 && r->timeout_ms <= 5000 && r->detector_type == 1059);
+    CHECK(!r->body.data && !r->body.len && r->nheaders == 4);
+    CHECK(!strcmp(r->headers[0].name, "Authorization") && strlen(r->headers[0].value) == 62);
+    CHECK(!memcmp(r->headers[0].value, "Bearer ", 7) && !memcmp(r->headers[0].value + 7, f->token, 56));
+    CHECK(!strcmp(r->headers[1].name, "Duffel-Version") && !strcmp(r->headers[1].value, "v2"));
+    CHECK(!strcmp(r->headers[2].name, "Accept") && !strcmp(r->headers[2].value, "application/json"));
+    CHECK(!strcmp(r->headers[3].name, "User-Agent") && !strcmp(r->headers[3].value, "TruffleHog duffel-offline"));
+    CHECK(r->dedup_key.len == 60 && !memcmp(r->dedup_key.data, "1059:", 5) && !memcmp(r->dedup_key.data + 5, f->token, 55));
+}
+
+static int owned_raw_send(void *user, const br_scan_ctx *ctx,
+                          const br_http_request *request,
+                          br_http_response *response, char **error)
+{
+    owned_fixture *f = user;
+    CHECK(!f->destroyed && !f->pending && f->calls == f->releases);
+    inspect_owned(f, ctx, request);
+    ++f->calls; f->pending = request; f->pending_ctx = ctx;
+    *response = f->response;
+    *error = f->send_error ? strdup(f->send_error) : NULL;
+    CHECK(!f->send_error || *error);
+    return f->send_error ? -1 : 0;
+}
+
+static void owned_raw_release(void *user, br_http_response *response)
+{
+    owned_fixture *f = user;
+    CHECK(!f->destroyed && f->pending && f->calls == f->releases + 1);
+    inspect_owned(f, f->pending_ctx, f->pending); /* Prepared storage survives raw release. */
+    CHECK(response->status == f->response.status && response->body.data == f->response.body.data);
+    CHECK(response->body.len == f->response.body.len && response->body_error == f->response.body_error);
+    ++f->releases; f->pending = NULL; f->pending_ctx = NULL;
+    memset(response, 0, sizeof(*response));
+}
+
+static void owned_raw_destroy(void *user)
+{
+    owned_fixture *f = user;
+    CHECK(!f->destroyed && !f->pending && f->calls == f->releases);
+    f->destroyed = true;
+}
+
+static void owned_verification(const br_detector *detector)
+{
+    char send_error[128], body_error[128];
+    snprintf(send_error, sizeof(send_error), "synthetic send failure: %s", test_token);
+    snprintf(body_error, sizeof(body_error), "synthetic body read failure: %s", live_token);
+    const struct {
+        int status; bool verified; const char *send_error, *body_error, *cause;
+    } cases[] = {
+        {200, true, NULL, NULL, NULL},
+        {403, true, NULL, NULL, NULL},
+        {401, false, NULL, NULL, NULL},
+        {500, false, NULL, NULL, "unexpected HTTP response status 500"},
+        {200, false, send_error, NULL, "synthetic send failure: [REDACTED]"},
+        {403, false, NULL, body_error, "synthetic body read failure: [REDACTED]"},
+    };
+    static const unsigned char body[] = {'n', 'o', 't', 0, 'j', 's', 'o', 'n'};
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        const char *tokens[] = {i % 2 ? live_token : test_token};
+        owned_fixture f = {.token = tokens[0], .send_error = cases[i].send_error,
+            .response = {.status = cases[i].status, .body = {body, sizeof(body)}, .body_error = cases[i].body_error}};
+        br_http_owned_backend backend = {{&f, owned_raw_send, owned_raw_release}, owned_raw_destroy};
+        br_http_client *client = NULL; char *error = NULL;
+        CHECK(br_http_client_init(&client, backend, BR_HTTP_SANE, &error) == 0 && client && !error);
+        const br_transport *transport = br_http_client_transport(client);
+        CHECK(br_http_client_is_owned(transport));
+        br_scan_ctx ctx = {.transport = transport, .user_agent = "duffel-offline"};
+        expect_requests(&ctx, tokens, 1);
+        br_results results = test_scan(detector, &ctx, true, tokens[0], 55);
+        /* Scan releases its replay; drain workers before stack-backed userdata
+         * expires, including failures that supplied an otherwise usable status. */
+        CHECK(br_http_client_drain(client, &error) == 0 && !error);
+        CHECK(results.len == 1 && inspected == 1 && f.calls == 1 && f.releases == 1 && !f.pending);
+        CHECK((owned_send_rc != 0) == (cases[i].send_error || cases[i].body_error));
+        CHECK(owned_status == (owned_send_rc ? 0 : cases[i].status));
+        CHECK(results.items[0].verified == cases[i].verified);
+        br_result copy = results.items[0]; copy.verified = false;
+        check_result(&copy, tokens[0], cases[i].cause);
+        br_results_clear(&results);
+        br_http_client_destroy(client);
+        CHECK(f.destroyed && f.calls == 1 && f.releases == 1);
+    }
 }
 
 static br_results prior_results(void)
@@ -308,5 +420,6 @@ int main(void)
     live_token[12] = 'R'; live_token[20] = '_'; live_token[33] = '-';
     const br_detector *detector = descriptor();
     extraction(detector); unique_and_guarded(detector); retained_errors(detector); fatal_resources(detector);
-    return test_finish("DuffelToken extraction/request/rollback + real coalescing guard (verification unsupported)");
+    owned_verification(detector);
+    return test_finish("DuffelToken extraction/guard/rollback + owned-client verification");
 }
