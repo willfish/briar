@@ -326,6 +326,7 @@ static const registration expected[] = {
     {713, 0, "FormBucket", "formbucket", 77, true, -1},
     {812, 0, "Formcraft", "formcraft", 16, true, -1},
     {712, 0, "FormIO", "formio", 331, true, -1},
+    {454, 0, "FourSquare", "foursquare", 48, true, 1024},
     {199, 0, "FrameIO", "fio-u-", 70, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
@@ -499,7 +500,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         }
     }
     if (entry->type == 993) { memcpy(key, "endr+", 5); key[11] = '-'; }
-    if (entry->type == 258 || entry->type == 905 || entry->type == 962 || entry->type == 527)
+    if (entry->type == 258 || entry->type == 905 || entry->type == 962 || entry->type == 527 || entry->type == 454)
         for (size_t i = 0; i < entry->key_len; ++i)
             if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
@@ -657,7 +658,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         break;
     case 110: secondary = "fixture-tenant.us.auth0.com"; secondary_name = "domain"; break;
     case 40: case 65: secondary = "12345678901234567"; secondary_name = "id"; break;
-    case 416: secondary = key; secondary_name = "secret"; break;
+    case 416: case 454: secondary = key; secondary_name = "secret"; break;
     case 771:
         test_secret(secondary_buffer, 36, 11); secondary_buffer[12] = '-';
         secondary = secondary_buffer; secondary_name = "id"; break;
@@ -1107,7 +1108,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
-    CHECK(results.len == (entry->type == 416 ? 4u : entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 || entry->type == 282 || entry->type == 993 ? 2u : 1u));
+    CHECK(results.len == (entry->type == 416 || entry->type == 454 ? 4u : entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 || entry->type == 282 || entry->type == 993 ? 2u : 1u));
     const br_result *result = &results.items[0];
     CHECK(result->detector_type == entry->type);
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
