@@ -549,6 +549,14 @@ def fixtures():
     fastly_key = alnum("fastly-key", 32)
     fastly_key = fastly_key[:7] + b"_" + fastly_key[8:19] + b"-" + fastly_key[20:]
     feedier_key = alnum("feedier-key", 32)
+    fetchrss_key = alnum("fetchrss-key", 40)
+    fetchrss_key = fetchrss_key[:15] + b"." + fetchrss_key[16:]
+    fibery_key = synthetic("fibery-prefix", 8) + b"." + synthetic("fibery-key", 35)
+    figma_v1 = b"730194-" + b"-".join(alnum("figma-v1-" + str(i), length).lower() for i, length in enumerate((8, 4, 4, 4, 12)))
+    figma_v2 = b"fig|_" + alnum("figma-v2-key", 40)
+    figma_v3 = b"figp_" + alnum("figma-v3-key", 52) + b"=="
+    fileio_key = alnum("fileio-key", 39).upper()
+    fileio_key = fileio_key[:8] + b"." + fileio_key[9:21] + b"-" + fileio_key[22:]
     d7network_key = alnum("d7network-key", 23) + b"="
     d7network_nul = d7network_key[:7] + b"\0" + d7network_key[8:]
     couchbase_prefix = b"couchbase://cb.z71p8q.cloud.couchbase.com\n"
@@ -1054,6 +1062,12 @@ def fixtures():
         ("fastforex", 636, b"FASTFOREX " + fastforex_key),
         ("fastlypersonaltoken", 68, b"FaStLy " + fastly_key),
         ("feedier", 238, b"FEEDIER " + feedier_key),
+        ("fetchrss", 592, b"FETCHRSS " + fetchrss_key),
+        ("fibery", 808, b"FIBERY " + fibery_key + b"\nhttps://Briar79.fibery.io/"),
+        ("figma_v1", "113.v1", b"FIGMA " + figma_v1),
+        ("figma_v2", "113.v2", b"figma " + figma_v2),
+        ("figma_v3", "113.v3", figma_v3),
+        ("fileio", 527, b"FiLeIo " + fileio_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1268,7 +1282,10 @@ def compare(native, reference, case):
                 "exchangeratesapi_stdin", "exchangeratesapi_filesystem", "exportsdk_stdin", "exportsdk_filesystem",
                 "extractorapi_stdin", "extractorapi_filesystem", "facebookoauth_stdin", "facebookoauth_filesystem",
                 "fastforex_stdin", "fastforex_filesystem", "fastlypersonaltoken_stdin", "fastlypersonaltoken_filesystem",
-                "feedier_stdin", "feedier_filesystem") and (len(actual) != 1 or len(expected) != 1):
+                "feedier_stdin", "feedier_filesystem", "fetchrss_stdin", "fetchrss_filesystem",
+                "fibery_stdin", "fibery_filesystem", "figma_v1_stdin", "figma_v1_filesystem",
+                "figma_v2_stdin", "figma_v2_filesystem", "figma_v3_stdin", "figma_v3_filesystem",
+                "fileio_stdin", "fileio_filesystem") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": positive fixture must produce exactly one finding")
     if name in ("deputy_no_host_stdin", "deputy_no_host_filesystem") and (actual or expected):
         raise AssertionError(name + ": the hidden Deputy host is still a required credential component")
@@ -1359,6 +1376,10 @@ def compare(native, reference, case):
         raise AssertionError(name + ": ExportSDK must not expose its hidden template ID through RawV2")
     if name.startswith("faceplusplus_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": FacePlusPlus preserves all four directed products, including both self-pairs")
+    if name.startswith("fibery_") and any(row["RawV2"] for row in actual + expected):
+        raise AssertionError(name + ": Fibery keeps its required domain hidden from RawV2")
+    if name.startswith("figma_v") and any(row.get("ExtraData") != {"version": name.split("_")[1][1:]} for row in actual + expected):
+        raise AssertionError(name + ": Figma retains its version metadata without verification")
     if name.startswith("eraser_") and any(row.get("ExtraData") != {"rotation_guide": "https://howtorotate.com/docs/tutorials/eraser/"} for row in actual + expected):
         raise AssertionError(name + ": Eraser retains its rotation guide without verification")
     if name in ("everhour_bad_upper_stdin", "everhour_bad_upper_filesystem") and (actual or expected):
