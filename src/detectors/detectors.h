@@ -381,5 +381,10 @@ int br_gumroad_init(const br_detector **out, char **error);
 int br_guru_init(const br_detector **out, char **error);
 int br_gyazo_init(const br_detector **out, char **error);
 int br_happyscribe_init(const br_detector **out, char **error);
+int br_harness_init(const br_detector **out, char **error);
+int br_harvest_init(const br_detector **out, char **error);
+int br_hashicorpvaultbatchtoken_init(const br_detector **out, char **error);
+int br_hashicorpvaultauth_init(const br_detector **out, char **error);
+int br_hashicorpvaulttoken_init(const br_detector **out, char **error);
 
 #endif
