@@ -367,6 +367,7 @@ static const registration expected[] = {
     {569, 0, "Glassnode", "glassnode", 27, true, -1},
     {714, 0, "GoCanvas", "gocanvas", 44, true, 1024},
     {184, 0, "GoCardless", "gocardless", 45, true, -1},
+    {654, 0, "GoodDay", "goodday", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
