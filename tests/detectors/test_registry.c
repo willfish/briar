@@ -281,6 +281,7 @@ static const registration expected[] = {
     {727, 0, "EightxEight", "8x8", 43, true, 1024},
     {112, 0, "ElasticEmail", "elasticemail", 96, true, -1},
     {652, 0, "Enablex", "enablex", 36, true, 1024},
+    {993, 0, "EndorLabs", "endr+", 21, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -408,6 +409,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 801) { memcpy(key, "AK1", 3); key[20] = '/'; }
     if (entry->type == 568) { key[36] = key[129] = '.'; key[172] = '_'; }
     if (entry->type == 112) { key[35] = '-'; key[66] = '_'; }
+    if (entry->type == 993) { memcpy(key, "endr+", 5); key[11] = '-'; }
     if (entry->type == 258)
         for (size_t i = 0; i < entry->key_len; ++i)
             if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
@@ -574,6 +576,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 652:
         test_secret(secondary_buffer, 24, 11);
         secondary = secondary_buffer; secondary_name = "id";
+        break;
+    case 993:
+        memcpy(secondary_buffer, key, entry->key_len + 1); secondary_buffer[5] = 'Q';
+        secondary = secondary_buffer; secondary_name = "secret";
         break;
     case 727:
         test_secret(secondary_buffer, 30, 11); secondary_buffer[8] = '_';
@@ -1002,7 +1008,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
-    CHECK(results.len == (entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 || entry->type == 282 ? 2u : 1u));
+    CHECK(results.len == (entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 || entry->type == 282 || entry->type == 993 ? 2u : 1u));
     const br_result *result = &results.items[0];
     CHECK(result->detector_type == entry->type);
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
