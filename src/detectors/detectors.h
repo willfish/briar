@@ -470,5 +470,7 @@ int br_lendflow_init(const br_detector **out, char **error);
 int br_lessannoyingcrm_init(const br_detector **out, char **error);
 int br_lexigram_init(const br_detector **out, char **error);
 int br_linearapi_init(const br_detector **out, char **error);
+int br_jiratoken_v1_init(const br_detector **out, char **error);
+int br_jiratoken_v2_init(const br_detector **out, char **error);
 
 #endif

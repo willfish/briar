@@ -474,11 +474,35 @@ static const registration expected[] = {
     {267, 0, "LessAnnoyingCRM", "lessannoyingcrm", 57, true, -1},
     {437, 0, "Lexigram", "lexigram", 301, true, -1},
     {177, 0, "LinearAPI", "lin_api_", 48, true, -1},
+    {120, 1, "JiraToken", "atlassian", 24, true, 1024},
+    {120, 2, "JiraToken", "atlassian", 54, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 120) {
+        const char *token = entry->version == 1 ? "Z7VoIYJ0K4rFWLBfkhOsLAWX" : "ATATTb7C9d2E5f6G8h3J4k1m0n2p4q6r8s1t3u5v7w9x2=Z7VoIYJ0";
+        char input[240], raw_v2[200];
+        snprintf(input, sizeof(input), "jira %s\njira XKName@grum.com\njira X\xe2\x84\xaaName@grum.com", token);
+        snprintf(raw_v2, sizeof(raw_v2), "xkname@grum.com:%s:api.atlassian.com", token);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input));
+        CHECK(results.len == 1);
+        br_result *r = &results.items[0]; br_json *part = NULL;
+        CHECK(r->detector_type == 120 && r->raw.len == strlen(token) && !memcmp(r->raw.data, token, r->raw.len));
+        CHECK(r->raw_v2.len == strlen(raw_v2) && !memcmp(r->raw_v2.data, raw_v2, r->raw_v2.len));
+        CHECK(r->secret_parts && json_object_object_length(r->secret_parts) == 3);
+        CHECK(json_object_object_get_ex(r->secret_parts, "email", &part) && !strcmp(json_object_get_string(part), "xkname@grum.com"));
+        CHECK(json_object_object_get_ex(r->secret_parts, "domain", &part) && !strcmp(json_object_get_string(part), "api.atlassian.com"));
+        CHECK(json_object_object_get_ex(r->secret_parts, "token", &part) && !strcmp(json_object_get_string(part), token));
+        CHECK(r->extra_data && json_object_object_length(r->extra_data) == 2);
+        CHECK(json_object_object_get_ex(r->extra_data, "version", &part) && !strcmp(json_object_get_string(part), entry->version == 1 ? "1" : "2"));
+        CHECK(json_object_object_get_ex(r->extra_data, "rotation_guide", &part));
+        CHECK(!strcmp(json_object_get_string(part), "https://howtorotate.com/docs/tutorials/atlassian/"));
+        CHECK(!r->verified && !r->verification_error && !r->redacted && !r->structured_data);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 901) {
         const char *url = "ldap://Z7p8q.invalid/dc=Briar";
         const char *username = "BriarName", *password = "B7q9Vp2r4N6m8T1z";
@@ -2222,7 +2246,7 @@ int main(void)
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
-              entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
+              entry->type == 994 || entry->type == 2 || entry->type == 120 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
               entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
@@ -2279,6 +2303,7 @@ int main(void)
             br_detector invalid = *detector; invalid.version = 0; CHECK(!br_detector_is_default(&invalid, NULL));
             invalid.version = 3; CHECK(!br_detector_is_default(&invalid, NULL));
         }
+        if (entry->type == 120) CHECK(!strcmp(detector->keywords[1], "confluence") && !strcmp(detector->keywords[2], "jira"));
         if (entry->type == 901) CHECK(!strcmp(detector->keywords[1], "ldap://"));
         if (entry->type == 926) CHECK(!strcmp(detector->keywords[1], "api_org_"));
         if (entry->type == 1062) CHECK(!strcmp(detector->keywords[1], "vault"));
@@ -2364,6 +2389,8 @@ int main(void)
         } else if (entry->type == 39 || entry->type == 1043) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);
             CHECK(!strcmp(detector->cloud_endpoint, "https://api.datadoghq.com"));
+        } else if (entry->type == 120) {
+            CHECK(detector->validate_endpoints && detector->cloud_endpoint && !strcmp(detector->cloud_endpoint, "https://api.atlassian.com"));
         } else if (entry->type == 9 || entry->type == 1050) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint && !strcmp(detector->cloud_endpoint, "https://gitlab.com"));
         } else if (entry->type == 8) {

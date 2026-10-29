@@ -1096,6 +1096,16 @@ for selector, source in (
     _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
     check(not rows, "Hidden LDAP credentials, exact lengths, CRM dispatch and sensitive Linear prefixes remain required")
 
+for version, token in ((1, key32[:24]), (2, "ATATT" + key40 + "=" + key32[:8])):
+    source = "jira " + token + "\njira XKName@grum.com\njira X\u212aName@grum.com"
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=120.v" + str(version)], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorName"] == "JiraToken" and rows[0]["Raw"] == token, "Both Jira versions dispatch real scanners and deduplicate captured emails after Go lowercase")
+    check(rows[0]["RawV2"] == "xkname@grum.com:" + token + ":api.atlassian.com", "Jira's rewritten email byte length controls RawV2")
+    check(rows[0]["SecretParts"] == {"token": token, "email": "xkname@grum.com", "domain": "api.atlassian.com"}, "The fallback host and source-lowercased email retain their named parts")
+    check(rows[0]["ExtraData"] == {"rotation_guide": "https://howtorotate.com/docs/tutorials/atlassian/", "version": str(version)} and not rows[0]["Verified"], "Jira keeps source version/rotation metadata without authenticating")
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=120.v" + str(version)], ("jira " + token).encode())
+    check(not rows, "Both Jira versions require an independent captured email")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

@@ -787,6 +787,10 @@ def fixtures():
     lessannoyingcrm_key = lessannoyingcrm_key[:20] + b"-" + lessannoyingcrm_key[21:]
     lexigram_key = alnum("lexigram-key", 301)
     linearapi_key = b"lin_api_" + alnum("linearapi-key", 40)
+    jiratoken_v1 = alnum("jiratoken-v1-key", 24)
+    jiratoken_v2 = b"ATATT" + alnum("jiratoken-v2-key", 40) + b"=" + alnum("jiratoken-v2-tail", 8)
+    jiratoken_context = b"\njira X7Case@grum.com\njira z7q8.atlassian.net"
+    jiratoken_kelvin = "\njira XKName@grum.com\njira X\u212aName@grum.com".encode()
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1652,6 +1656,12 @@ def fixtures():
         ("lexigram_short", 437, b"lexigram " + lexigram_key[:-1]),
         ("linearapi", 177, linearapi_key),
         ("linearapi_wrong_case", 177, b"LIN_API_" + linearapi_key[8:]),
+        ("jiratoken_v1", "120.v1", b"jira " + jiratoken_v1 + jiratoken_context),
+        ("jiratoken_v1_missing_email", "120.v1", b"jira " + jiratoken_v1 + b"\njira z7q8.atlassian.net"),
+        ("jiratoken_v1_kelvin", "120.v1", b"jira " + jiratoken_v1 + jiratoken_kelvin),
+        ("jiratoken_v2", "120.v2", b"jira " + jiratoken_v2 + jiratoken_context),
+        ("jiratoken_v2_missing_email", "120.v2", b"jira " + jiratoken_v2 + b"\njira z7q8.atlassian.net"),
+        ("jiratoken_v2_kelvin", "120.v2", b"jira " + jiratoken_v2 + jiratoken_kelvin),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2045,6 +2055,10 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": LDAP forms and required credentials, exact token lengths and dispatch/prefix policies must retain findings")
+    if name.startswith(("jiratoken_v1_", "jiratoken_v2_")):
+        count = 0 if name.startswith(("jiratoken_v1_missing_email_", "jiratoken_v2_missing_email_")) else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": source version grammar, required emails and lowercase-before-dedup must retain exact Jira findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):
