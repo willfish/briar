@@ -407,12 +407,24 @@ static const registration expected[] = {
     {107, 2, "HubSpotApiKey", "pat-na1-", 44, true, -1},
     {926, 0, "HuggingFace", "hf_", 37, true, -1},
     {508, 0, "Humanity", "humanity", 40, true, -1},
+    {72, 0, "Hunter", "hunter", 40, true, -1},
+    {773, 0, "Hybiscus", "hybiscus", 43, true, -1},
+    {459, 0, "Hypertrack", "hypertrack", 54, true, 1024},
+    {73, 0, "IbmCloudUserKey", "ibm", 44, false, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 459) {
+        char account[28], key[55], input[130]; test_secret(account, 27, 0); test_secret(key, 54, 7);
+        snprintf(input, sizeof(input), "hypertrack %s\nhypertrack %s", account, key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 459, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 107) {
         const char *uuid = "AbCdEf01-gHi2-JkL3-mNo4-PqRsTuVwXyZ5";
         char key[45], input[100];

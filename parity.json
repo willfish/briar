@@ -3492,6 +3492,42 @@
       "evidence": ["tests/detectors/test_humanity.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
     },
+    "hunter/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/hunter/hunter.go",
+      "scope_notes": "Hunter72/v0/default enabled/no hints. Keyword-onlyCI prefix plus word-bounded40 lower-alphanumeric/underscore/hyphen original occurrences/duplicates, including contextual hyphen boundaries rather than whole-token validation. Raw/key only. Complete literal leads_lists token query precedes nil constructor drop. SANE5 bodyless GET/common UA only/no Auth/Type/Accept/dedup. Every2xx verifies ignoring body/readerrors at every status; whole mixed shared setup/Do causes false-kept without setters or diagnostic classifiers. Owned capture/finding/URL/push nonzero failures fatal before ordinary outcomes with invocation-only caller-preserving rollback. Exactly one ordinary release each attempt including preparation failure; original URL/captures survive release, synthesized request/headers/UA only send-return.",
+      "native_files": ["src/detectors/hunter.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_hunter.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "hybiscus/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/hybiscus/hybiscus.go",
+      "scope_notes": "Hybiscus773/v0/default enabled/no hints. Keyword-onlyCI prefix plus word-bounded43 mixed-alphanumeric occurrences/duplicates; Raw/key only. Finding precedes nil constructor drop and then Accept application/vnd.hybiscus+json; version=3 followed by canonical X-Api-Key. SANE5 bodyless fixed quota GET/common UA only/no Auth/dedup. Every2xx verifies ignoring body/readerrors; whole mixed shared setup/Do failures false-kept without setters. All owned nonzero capture/finding/projection/push failures fatal before ordinary skip/drop/suppression/success with invocation-only rollback preserving caller rows. Original borrowed key/header values survive one release per attempt including preparation failure; synthesized request/header-array/UA storage does not gain a longer lifetime.",
+      "native_files": ["src/detectors/hybiscus.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_hybiscus.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "hypertrack/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/hypertrack/hypertrack.go",
+      "scope_notes": "Hypertrack459/v0/default enabled/span1024 only as engine hint, not direct-scanner cap. Independent keyword-onlyCI prefixed word-bounded27 account and54 key mixed-alphanumeric/underscore/hyphen occurrences, account-major complete products/duplicates including contextual internal-hyphen overlapping roles; no uniqueness/inequality/role validation. Account stays hidden: RawKEY/SecretParts.key only/no RawV2/account part. Fixed trips GET constructor nil-drop precedes true Basic(ACCOUNT,KEY) encoding,82 plaintext/112 encoded/two padding equals/118 auth bytes+NUL. Every nonzero owned encoder result including positive failures fatal after constructor; no encoding before nil drop. SANE5 bodyless GET/Auth then JSON Content-Type then common UA/no Accept/dedup. Every2xx verifies ignoring bodies/readerrors; whole mixed setup/Do errors false-kept/no setter. All owned capture/finding/encoding/push failures fatal before ordinary outcomes with invocation-only caller-preserving rollback. Original auth/captures survive exactly one ordinary release per attempt including failed preparation; synthesized headers/UA only send-return.",
+      "native_files": ["src/detectors/hypertrack.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_hypertrack.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "ibmclouduserkey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/ibmclouduserkey/ibmclouduserkey.go",
+      "scope_notes": "IbmCloudUserKey73/v0/default COMMENTED DISABLED/no hints. Registered direct scanner positive evidence only; name/numeric include selectors cannot enable it, no positive CLI oracle claim. Keyword-onlyCI ibm prefix plus word-bounded44 mixed-alphanumeric/underscore/hyphen occurrences/duplicates/contextual hyphen boundaries, Raw/key only. Verification assembles complete literal apikey/grant_type percent-encoded form before nil constructor drop, without a general encoder or credential discovery. SANE5 token POST/Content-Type form then LITERALAuthorization Basic Yng6Yng= then common UA; authorization is not derived from matched key. All2xx verify ignoring bodies/readerrors; whole shared setup/Do false-kept/no setters. Own form/capture/finding/push nonzero failures fatal before ordinary drop/suppression/success with caller-preserving invocation rollback. Exactly one release per attempt including preparation failure; original form/header/captures survive, synthesized storage does not. Token-issuing endpoint never contacted; only synthetic injected byte evidence.",
+      "native_files": ["src/detectors/ibmclouduserkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_ibmclouduserkey.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior", "Positive pinned-reference CLI evidence unavailable while source default remains disabled"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

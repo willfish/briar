@@ -837,6 +837,21 @@ for selector, number, key, prefix in (("Html2Pdf", 355, html2pdf_key, "HtMl2PdF 
     expected_redacted = key[8:] + "..." if number == 107 and key.startswith("pat-") else ""
     check(rows[0]["Redacted"] == expected_redacted and not rows[0]["RawV2"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Only HubSpot v2 exposes its complete UUID-tail redaction; NoV invents no metadata")
 
+hunter_key = key40[:10] + "_-" + key40[12:]
+hybiscus_key = key40 + key32[:3]
+hypertrack_account, hypertrack_key = key40[:27], key40 + "_-" + key32[:12]
+for selector, number, key, source in (("Hunter", 72, hunter_key, "HuNtEr " + hunter_key),
+                                     ("Hybiscus", 773, hybiscus_key, "HyBiScUs " + hybiscus_key),
+                                     ("Hypertrack", 459, hypertrack_key, "hypertrack " + hypertrack_account + "\nhypertrack " + hypertrack_key)):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Hunter, Hybiscus and Hypertrack dispatch enabled source scanners")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Complete captures remain key-only; Hypertrack account stays hidden")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV invents no metadata or service results")
+for selector in ("IbmCloudUserKey", "73"):
+    proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector],
+                        ("ibm " + key40 + key32[:4]).encode(), code=1)
+    check(not rows and b"no enabled implemented detectors selected" in proc.stderr, "IBM name and numeric selectors cannot enable its commented source default")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

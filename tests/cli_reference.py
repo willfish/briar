@@ -690,6 +690,11 @@ def fixtures():
     hubspot_na, hubspot_eu = b"pat-na1-" + hubspot_v1, b"pat-eu1-" + hubspot_v1
     huggingface_key, huggingface_org = b"hf_" + alnum("huggingface-key", 34), b"api_org_" + alnum("huggingface-org", 34)
     humanity_key = alnum("humanity-key", 40).lower()
+    hunter_key = b"z" + alnum("hunter-key", 39).lower()
+    hunter_key = hunter_key[:15] + b"_-" + hunter_key[17:]
+    hybiscus_key = alnum("hybiscus-key", 43)
+    hypertrack_account, hypertrack_key = alnum("hypertrack-account", 27), alnum("hypertrack-key", 54)
+    hypertrack_input = b"HyPeRtRaCk " + hypertrack_account + b"\nhypertrack " + hypertrack_key
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1411,6 +1416,12 @@ def fixtures():
         ("huggingface_wrong_case", 926, b"HF_" + huggingface_key[3:]),
         ("humanity", 508, b"HuMaNiTy " + humanity_key),
         ("humanity_upper_key", 508, b"humanity " + humanity_key.upper()),
+        ("hunter", 72, b"HuNtEr " + hunter_key),
+        ("hunter_upper_key", 72, b"hunter Z" + hunter_key[1:]),
+        ("hybiscus", 773, b"HyBiScUs " + hybiscus_key),
+        ("hybiscus_short", 773, b"hybiscus " + hybiscus_key[:42]),
+        ("hypertrack", 459, hypertrack_input),
+        ("hypertrack_missing_account", 459, b"hypertrack " + hypertrack_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1723,6 +1734,10 @@ def compare(native, reference, case):
         count = 0 if empty else 2 if name == "html2pdf_duplicate_filesystem" else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact provider/version prefixes, boundaries, uniqueness and default CLI cleaning must retain the expected findings")
+    if name.startswith(("hunter_", "hybiscus_", "hypertrack_")):
+        count = 0 if name.startswith(("hunter_upper_key_", "hybiscus_short_", "hypertrack_missing_account_")) else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact capture alphabets and the required hidden Hypertrack account must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):
