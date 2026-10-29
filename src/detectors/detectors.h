@@ -390,5 +390,10 @@ int br_hasura_init(const br_detector **out, char **error);
 int br_hellosign_init(const br_detector **out, char **error);
 int br_helpcrunch_init(const br_detector **out, char **error);
 int br_helpscout_init(const br_detector **out, char **error);
+int br_hereapi_init(const br_detector **out, char **error);
+int br_heroku_v1_init(const br_detector **out, char **error);
+int br_heroku_v2_init(const br_detector **out, char **error);
+int br_hive_init(const br_detector **out, char **error);
+int br_hiveage_init(const br_detector **out, char **error);
 
 #endif
