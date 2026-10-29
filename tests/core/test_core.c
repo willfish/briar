@@ -256,6 +256,66 @@ static void prefix_tests(void)
     br_regex_free(re);
 }
 
+static void prefix_sequence_tests(void)
+{
+    static const char uuid[] = "01234567-89ab-cdef-0123-456789abcdef";
+    static const char uuid_tail[] =
+        "\\b([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\\b";
+    static const char public_tail[] =
+        "\\b(pk-lf-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\\b";
+    static const char secret_tail[] =
+        "\\b(sk-lf-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\\b";
+    static const char kraken_public[] = "\\b([0-9A-Za-z\\/\\+=]{56}[ \"'\\r\\n]{1})";
+    static const char kraken_private[] = "\\b([0-9A-Za-z\\/\\+=]{86,88}[ \"'\\r\\n]{1})";
+    static const char kickbox[] = "\\b([a-zA-Z0-9_]+[a-zA-Z0-9]{64})\\b";
+    char public_crlf[59], private_quote[90], public_tab[58], kick_long[67], kick_short[65];
+    memset(public_crlf, 'A', 56); memcpy(public_crlf + 56, "\r\n", 3);
+    memset(private_quote, 'A', 88); memcpy(private_quote + 88, "'", 2);
+    memset(public_tab, 'A', 56); memcpy(public_tab + 56, "\t", 2);
+    memcpy(kick_long, "p_", 2); memset(kick_long + 2, 'A', 64); kick_long[66] = '\0';
+    memset(kick_short, 'A', 64); kick_short[64] = '\0';
+    const struct {
+        const char *head, *tail, *unit;
+        size_t gap;
+        const char *payload;
+        size_t capture_len;
+    } cases[] = {
+        {"kucoin", uuid_tail, "\xed\xa0\x80", 40, uuid, 36},
+        {"kucoin", uuid_tail, "\xed\xa0\x80", 41, uuid, 0},
+        {"langfuse", public_tail, "\xe0\x80\x80", 1, "pk-lf-01234567-89ab-cdef-0123-456789abcdef", 42},
+        {"langfuse", secret_tail, "\xe0\x80\x80", 1, "sk-lf-01234567-89ab-cdef-0123-456789abcdef", 42},
+        {"langfuse", public_tail, "\xe0\x80\x80", 1, "PK-lf-01234567-89ab-cdef-0123-456789abcdef", 0},
+        {"kraken", kraken_public, "\xe0\x80\x80", 1, public_crlf, 57},
+        {"kraken", kraken_private, "\xe0\x80\x80", 1, private_quote, 89},
+        {"kraken", kraken_public, "\xe0\x80\x80", 1, public_tab, 0},
+        {"kickbox", kickbox, "\xf4\x90\x80\x80", 1, kick_long, 66},
+        {"kickbox", kickbox, "\xf4\x90\x80\x80", 1, kick_short, 0},
+        {"kucoin", "([ \\r\\n]{1}[!-~]{7,32}[ \\r\\n]{1})", "\xe0\x80\x80", 1, " abcDEF! ", 9},
+        {"langfuse", public_tail, " \xff", 1, "pk-lf-01234567-89ab-cdef-0123-456789abcdef", 0},
+        {"word", "(AB{2}C)", "\xe0\x80\x80", 1, "ABBC", 4},
+        {"word", "(AB{2}C)", "\xe0\x80\x80", 1, "ABABC", 0},
+    };
+    for (size_t mode = 0; mode < 2; ++mode) for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        char input[256];
+        size_t at = strlen(cases[i].head), width = strlen(cases[i].unit);
+        size_t end = at + cases[i].gap * width, payload = strlen(cases[i].payload);
+        CHECK(end + payload <= sizeof(input));
+        memcpy(input, cases[i].head, at);
+        for (size_t gap = 0; gap < cases[i].gap; ++gap) {
+            memcpy(input + at, cases[i].unit, width); at += width;
+        }
+        memcpy(input + at, cases[i].payload, payload);
+        captures c = prefix_match(&cases[i].head, 1, cases[i].tail,
+                                   (br_slice){(unsigned char *)input, end + payload}, mode != 0);
+        CHECK(c.count == (cases[i].capture_len ? 1u : 0u));
+        if (c.count) {
+            CHECK(c.ngroups[0] == 2 && c.spans[0][0].begin == 0);
+            CHECK(c.spans[0][0].end == end + cases[i].capture_len);
+            CHECK(c.spans[0][1].begin == end && c.spans[0][1].end == end + cases[i].capture_len);
+        }
+    }
+}
+
 static void fp_tests(void)
 {
     CHECK(br_ascii_shannon_entropy(SLICE("")) == 0);
@@ -506,10 +566,14 @@ static void unsupported_native_profiles(void)
 
 int main(int argc, char **argv)
 {
-    if (argc == 3 && !strcmp(argv[1], "--regex-probe")) {
+    bool prefixed_probe = argc >= 3 && !strcmp(argv[1], "--prefixed-regex-probe");
+    if ((argc == 3 && !strcmp(argv[1], "--regex-probe")) || prefixed_probe) {
         unsigned char input[8192]; size_t len = fread(input, 1, sizeof(input), stdin);
         if (ferror(stdin) || len == sizeof(input)) return 2;
-        captures c = match(argv[2], (br_slice){input, len});
+        captures c = prefixed_probe
+            ? prefix_match((const char *const *)(argv + 3), (size_t)argc - 3, argv[2],
+                           (br_slice){input, len}, false)
+            : match(argv[2], (br_slice){input, len});
         putchar('[');
         for (size_t i = 0; i < c.count; ++i) {
             printf("%s[", i ? "," : "");
@@ -521,7 +585,7 @@ int main(int argc, char **argv)
         puts("]"); return 0;
     }
     CHECK(BR_ABI_REVISION == 1);
-    result_tests(); regex_tests(); prefix_tests(); fp_tests(); http_tests(); browserstack_http_tests(); unsupported_native_profiles();
+    result_tests(); regex_tests(); prefix_tests(); prefix_sequence_tests(); fp_tests(); http_tests(); browserstack_http_tests(); unsupported_native_profiles();
     printf("core: %zu assertions, 0 failures\n", checks);
     return 0;
 }

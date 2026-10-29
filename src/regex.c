@@ -175,12 +175,18 @@ static bool ascii_suffix(const char *p)
     boundary(&p);
     if (*p++ != '(') return false;
     boundary(&p);
-    if (*p == '[') {
-        ++p;
-        if (*p == '^') return false;
-        const char *start = p;
-        while (*p && *p != ']') if (!ascii_atom(&p, true)) return false;
-        if (p == start || *p++ != ']') return false;
+    bool any = false;
+    /* Each atom consumes ASCII with a positive minimum. Repetitions bind to
+     * that atom; the original PCRE2 suffix still owns lengths/backtracking. */
+    for (;;) {
+        if (*p == '[') {
+            ++p;
+            if (*p == '^') return false;
+            const char *start = p;
+            while (*p && *p != ']') if (!ascii_atom(&p, true)) return false;
+            if (p == start || *p++ != ']') return false;
+        } else if (!ascii_atom(&p, false)) break;
+        any = true;
         bool repeated = false;
         if (*p == '+') { ++p; repeated = true; }
         else if (*p == '{') {
@@ -195,11 +201,8 @@ static bool ascii_suffix(const char *p)
             repeated = true;
         }
         if (repeated && *p == '?') ++p;
-    } else {
-        const char *start = p;
-        while (ascii_atom(&p, false)) {}
-        if (p == start) return false;
     }
+    if (!any) return false;
     boundary(&p);
     if (*p++ != ')') return false;
     boundary(&p);
