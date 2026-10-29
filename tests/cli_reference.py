@@ -721,6 +721,12 @@ def fixtures():
     ipgeolocation_key = b"z" + alnum("ipgeolocation-key", 31).lower()
     ipinfo_key = synthetic("ipinfo-key", 14)
     ipinfodb_key = b"z" + alnum("ipinfodb-key", 63).lower()
+    ipstack_key = b"A" + synthetic("ipstack-key", 31)
+    leadfeeder_key = alnum("leadfeeder-head", 18) + b"-" + alnum("leadfeeder-tail", 24)
+    locationiq_key = b"pk." + alnum("locationiq-head", 16) + b"-" + alnum("locationiq-tail", 15)
+    loginradius_key = b"-".join(synthetic("loginradius-" + str(i), n) for i, n in enumerate((8, 4, 4, 4, 12)))
+    madkudu_key = synthetic("madkudu-key", 32)
+    mailerlite_key = b"z" + alnum("mailerlite-key", 31).lower()
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1498,6 +1504,18 @@ def fixtures():
         ("ipinfo_nonhex_key", 939, b"ipinfo g" + ipinfo_key[1:]),
         ("ipinfodb", 530, b"IpInFoDb " + ipinfodb_key),
         ("ipinfodb_upper_key", 530, b"ipinfodb G" + ipinfodb_key[1:]),
+        ("ipstack", 133, b"IpStAcK " + ipstack_key),
+        ("ipstack_nonhex_key", 133, b"ipstack g" + ipstack_key[1:]),
+        ("leadfeeder", 329, b"LeAdFeEdEr " + leadfeeder_key),
+        ("leadfeeder_short_key", 329, b"leadfeeder " + leadfeeder_key[:-1]),
+        ("locationiq", 450, b"LoCaTiOnIq " + locationiq_key),
+        ("locationiq_no_dispatch", 450, locationiq_key),
+        ("loginradius", 510, b"LoGiNrAdIuS " + loginradius_key),
+        ("loginradius_upper_key", 510, b"loginradius A" + loginradius_key[1:]),
+        ("madkudu", 715, b"MaDkUdU " + madkudu_key),
+        ("madkudu_upper_key", 715, b"madkudu A" + madkudu_key[1:]),
+        ("mailerlite", 228, b"MaIlErLiTe " + mailerlite_key),
+        ("mailerlite_upper_key", 228, b"mailerlite G" + mailerlite_key[1:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1839,6 +1857,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": lowercase-alphanumeric IP keys and IPInfo's actual lowercase-hex grammar must retain exact findings")
+    if name.startswith(("ipstack_", "leadfeeder_", "locationiq_", "loginradius_", "madkudu_", "mailerlite_")):
+        empty = name.startswith(("ipstack_nonhex_key_", "leadfeeder_short_key_", "locationiq_no_dispatch_", "loginradius_upper_key_", "madkudu_upper_key_", "mailerlite_upper_key_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact provider alphabets, lengths, direct pk grammar and keyword dispatch must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

@@ -427,7 +427,13 @@ static const detector_factory named_factories[] = {
     br_ipgeolocation_init,
     br_ipinfo_init,
     br_ipinfodb_init,
+    br_ipstack_init,
     br_jiradatacenterpat_init,
+    br_leadfeeder_init,
+    br_locationiq_init,
+    br_loginradius_init,
+    br_madkudu_init,
+    br_mailerlite_init,
 };
 
 static int fail(char **error, const char *message)
@@ -584,6 +590,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 307: case 311: case 317: case 318: case 320: case 322: case 812: case 815: case 816: case 819: case 821: case 823: case 646: case 269: case 270: case 278: case 280: case 281: case 282: case 283: case 284: case 285: case 286: case 1041: case 1042: case 180: case 181: case 184: case 185: case 187: case 189: case 385: case 386: case 387: case 388: case 389: case 794: case 800: case 801: case 897: case 899:
         case 98: case 103: case 41: case 376: case 377: case 378: case 166: case 1045: case 1047: case 1046: case 1026:
         case 578: case 602: case 603: case 604: case 619: case 621: case 110: case 112: case 55: case 56: case 57: case 59: case 60: case 62: case 64: case 65: case 66: case 68: case 69: case 323: case 324: case 325: case 554: case 555: case 564: case 511: case 512: case 513: case 733: case 739: case 749: case 2: case 1052: case 959: case 960: case 962: case 963: case 980: case 988: case 990: case 993: case 947: case 953: case 954: case 957: case 971: case 1013: case 1007: case 1009: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975: case 1020: case 260: case 1036: case 1030: case 395: case 164: case 153: case 408: case 572: case 361: case 764: case 877: case 556: case 355: case 926: case 508: case 72: case 773: case 459: case 487: case 813: case 557: case 250: case 349: case 509: case 906: case 271: case 856: case 941: case 156: case 858: case 987: case 579: case 689: case 940: case 362: case 356: case 530:
+        case 133: case 329: case 450: case 510: case 715: case 228:
             return detector->version == 0;
         default: break;
         }
@@ -994,6 +1001,12 @@ const char *br_detector_type_name(int32_t type)
     case 1061: return "HashiCorpVaultBatchToken";
     case 1062: return "HashiCorpVaultToken";
     case 1063: return "Duo";
+    case 133: return "IpStack";
+    case 329: return "Leadfeeder";
+    case 450: return "LocationIQ";
+    case 510: return "Loginradius";
+    case 715: return "MadKudu";
+    case 228: return "Mailerlite";
     default: return NULL;
     }
 }

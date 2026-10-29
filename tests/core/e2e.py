@@ -919,6 +919,17 @@ for selector, number, key, prefix in (("Ipapi", 362, key32, "IpApI "),
     check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "IP provider findings retain original key bytes")
     check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV does not access geolocation services or invent metadata")
 
+for selector, number, key, source in (("IpStack", 133, "A" + hex_key[1:], "IpStAcK A" + hex_key[1:]),
+                                      ("Leadfeeder", 329, key40 + "A7z", "LeAdFeEdEr " + key40 + "A7z"),
+                                      ("LocationIQ", 450, "pk." + key32, "LoCaTiOnIq pk." + key32),
+                                      ("Loginradius", 510, interseller_key, "LoGiNrAdIuS " + interseller_key),
+                                      ("MadKudu", 715, hex_key, "MaDkUdU " + hex_key),
+                                      ("Mailerlite", 228, key32, "MaIlErLiTe " + key32)):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Six named IP and lead/email provider scanners dispatch source grammars")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Original hex case, direct pk prefix and UUID-shaped bytes remain unnormalized")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV preserves key-only fields without contacting providers")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

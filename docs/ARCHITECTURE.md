@@ -4,9 +4,13 @@
 
 Reproduce all behavior of TruffleHog 3.97.2, commit `cc1fe982afc515d2991365ce8d4d0dd07170fcad`, as pinned in `UPSTREAM.json`. `.reference/trufflehog` is read-only specification evidence, never runtime code. Port detector logic and supporting components directly to C. Do not build a general Go runtime/compatibility framework or call Go as the implementation.
 
-Use the declared PCRE2, libcurl, json-c and OpenSSL dependencies for matching, HTTP, structured values and native request signing. Track additional archive, database, SSH or other native dependencies with their concrete ports. Preserve AGPL-3.0-only licensing and notices. Development and acceptance use synthetic inputs and injected responses, never real credentials or service verification.
+Use the declared PCRE2, libcurl, json-c and OpenSSL dependencies for matching, HTTP, structured values and native request signing. Track additional archive, database, SSH or other native dependencies with their concrete ports. Preserve AGPL-3.0-only licensing for the port and upstream notices and file-specific licenses, including the isolated MPL-2.0 MySQL DSN translation. Development and acceptance use synthetic inputs and injected responses, never real credentials or service verification.
 
 Build in vertical slices: shared primitives and three complete detectors; remaining detector families and decoders; sources/file handlers; analysis and remaining CLI/runtime behavior. Each slice leaves the full inventory visible. Unsupported behavior is an explicit gap, not an empty successful scan.
+
+Private URL helpers share selected byte parsing, decoding and query lookup, while Jira endpoint, request and diagnostic policy stays in its named helper. Their semantic baseline is the selected Go 1.26.7 source with the pinned binary's urlstrictcolons=0 setting, not a general Go runtime or proof of native/Nix-patch equivalence.
+
+The private SQL boundary clones immutable detector configuration and exchanges DSN bytes, database handles and explicit ordinary error-type facts through Open, Ping and Close. It does not accept verification verdicts or use global callbacks or HTTP userdata. The separate MySQL DSN translation preserves ordered validation and lexical address normalization even before verification; reached native database, named timezone and ambient TLS/key-registry behavior remains guarded rather than approximated. Driver-specific connection acquisition and context timing are not interchangeable.
 
 ## Shared C ABI, revision 1
 

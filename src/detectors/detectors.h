@@ -428,6 +428,11 @@ int br_ipapi_init(const br_detector **out, char **error);
 int br_ipgeolocation_init(const br_detector **out, char **error);
 int br_ipinfo_init(const br_detector **out, char **error);
 int br_ipinfodb_init(const br_detector **out, char **error);
+int br_ipstack_init(const br_detector **out, char **error);
+int br_leadfeeder_init(const br_detector **out, char **error);
+int br_locationiq_init(const br_detector **out, char **error);
+int br_loginradius_init(const br_detector **out, char **error);
 int br_madkudu_init(const br_detector **out, char **error);
+int br_mailerlite_init(const br_detector **out, char **error);
 
 #endif

@@ -3708,6 +3708,60 @@
       "evidence": ["tests/detectors/test_ipinfodb.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
     },
+    "ipstack/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/ipstack/ipstack.go",
+      "scope_notes": "IpStack133/v0/ungated default/no hints. Prefixed word-bounded32 mixed-case hex occurrences preserve original bytes and duplicates. Finding and complete literal access_key query precede nil-context drop. SANE5 bodyless GET/common UA; whole mixed send failures retain false without setter. Every successful-send status reads the body: any read-error pointer drops, otherwise either exact binary continent_code or quoted Access Restricted marker verifies INDEPENDENT of status. No JSON normalization. Owned nonzero failures are fatal with invocation-only caller-preserving rollback; originals survive one release per attempt.",
+      "native_files": ["src/detectors/ipstack.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_ipstack.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source deferred-close behavior"]
+    },
+    "leadfeeder/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/leadfeeder/leadfeeder.go",
+      "scope_notes": "Leadfeeder329/v0/ungated default/no hints. Keyword-only case-folded prefix and word-bounded43 mixed-alphanumeric/hyphen occurrences; key-only fields and duplicates remain. Nil constructor drop follows finding but precedes fixed-size literal Token token= header construction. SANE5 GET accounts, canonical Authorization/common UA, no body/key. Any2xx verifies ignoring bodies/read errors; whole mixed send failures retain false/no setter. Module-owned nonzero failures precede outcomes and roll back only invocation additions. Provider auth survives one release; synthesized request/headers/UA do not outlive send.",
+      "native_files": ["src/detectors/leadfeeder.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_leadfeeder.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source deferred-close behavior"]
+    },
+    "locationiq/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/locationiq/locationiq.go",
+      "scope_notes": "LocationIQ450/v0/ungated default/no hints. DIRECT word-bounded pk. plus32 mixed-alphanumeric/hyphen bytes, not PrefixRegex; locationiq remains the engine dispatch keyword. Original key-only occurrences/duplicates retained. Full literal reverse.php key/coordinates/format query follows finding and precedes nil-context drop. SANE5 bodyless GET/common UA; any2xx/body-ignore and whole-send-suppression/no-setter policy. Successful responses release LIFO after publication with provider URL/request storage retained, never synthesized prepared storage; failed attempts release once immediately. Every owned nonzero remains fatal with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/locationiq.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_locationiq.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain/Close-error and process-global client behavior"]
+    },
+    "loginradius/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/loginradius/loginradius.go",
+      "scope_notes": "Loginradius510/v0/ungated default/no hints. Keyword-only case-folded prefix plus lowerhex UUID-shaped occurrences, no semantic UUID filter; original duplicates/key-only fields remain. Finding and full serverinfo apikey query precede nil-context drop. SANE5 bodyless GET/common UA. Any2xx/body-ignore and whole mixed send suppression/no-setter policy. Successful closes are LIFO after publication with original provider URL/request values retained, not synthesized prepared headers/UA; failed attempts release once. Owned nonzero capture/finding/URL/push failures are fatal with invocation-only rollback preserving caller results.",
+      "native_files": ["src/detectors/loginradius.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_loginradius.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain/Close-error and process-global client behavior"]
+    },
+    "madkudu/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/madkudu/madkudu.go",
+      "scope_notes": "MadKudu715/v0/ungated default/no hints. Keyword-only case-folded prefix plus word-bounded32 lowercase hex occurrences, duplicates/key-only fields retained. Finding precedes nil-constructor drop; true KEY-colon Basic is constructed only afterward. SANE5 bodyless GET v1/ping/common UA/no key. Any2xx verifies ignoring body/read errors; whole mixed send failures retain false without setter or diagnostic classifier. Original Basic survives send/release; synthesized HTTP storage ends at send return. Every module-owned nonzero capture/finding/Basic/JSON/push failure is fatal before skip/suppression/publication with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/madkudu.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_madkudu.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source deferred-close behavior"]
+    },
+    "mailerlite/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mailerlite/mailerlite.go",
+      "scope_notes": "Mailerlite228/v0/ungated default/no hints. Keyword-only case-folded prefix plus word-bounded32 lowercase alphanumeric occurrences, not hex-only; original duplicates/key-only fields remain. Finding precedes nil-constructor drop; canonical X-Mailerlite-Apikey is added afterward. SANE5 bodyless campaigns GET/common UA/empty key. Any2xx verifies while body/read errors are ignored; whole mixed setup/Do failures retain false and no setter is called. Every owned nonzero capture/finding/metadata/push failure is fatal before ordinary outcomes with invocation-only caller-preserving rollback; provider values survive one release, synthesized HTTP storage only send return.",
+      "native_files": ["src/detectors/mailerlite.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mailerlite.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

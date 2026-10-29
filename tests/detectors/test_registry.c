@@ -431,12 +431,32 @@ static const registration expected[] = {
     {356, 0, "IPGeolocation", "ipgeolocation", 32, true, -1},
     {939, 0, "IPInfo", "ipinfo", 14, true, -1},
     {530, 0, "IPinfoDB", "ipinfodb", 64, true, -1},
+    {133, 0, "IpStack", "ipstack", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
+    {329, 0, "Leadfeeder", "leadfeeder", 43, true, -1},
+    {450, 0, "LocationIQ", "locationiq", 35, true, -1},
+    {510, 0, "Loginradius", "loginradius", 36, true, -1},
+    {715, 0, "MadKudu", "madkudu", 32, true, -1},
+    {228, 0, "Mailerlite", "mailerlite", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 133 || entry->type == 715 || entry->type == 450 || entry->type == 510) {
+        char key[37] = {0}, input[80];
+        if (entry->type == 450) { memcpy(key, "pk.", 3); test_secret(key + 3, 32, 0); }
+        else if (entry->type == 510) strcpy(key, "b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3");
+        else {
+            for (size_t i = 0; i < 32; ++i) key[i] = "0123456789abcdef"[i % 16];
+            if (entry->type == 133) key[0] = 'A';
+        }
+        snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], entry->type, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 987) {
         char secret[74] = "s-s4t2ud-", id[74] = "u-s4t2af-", input[160];
         for (size_t i = 0; i < 64; ++i) { secret[9 + i] = "0123456789abcdef"[i % 16]; id[9 + i] = "fedcba9876543210"[i % 16]; }
