@@ -3928,6 +3928,42 @@
       "evidence": ["tests/detectors/test_mailjetsms.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
     },
+    "kanbantool/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/kanbantool/kanbantool.go",
+      "scope_notes": "Kanbantool853/v0/ungated default/span1024 engine-only. Independent prefixed12 uppercase-alphanumeric keys and2-22 mixed-alphanumeric domains form key-major occurrence products, retaining duplicates and hiding domains evenNoV; a key can itself be a domain capture. Both regex sets run even without keys. Finding/full literal domain URL precede nil-constructor drop; Bearer follows construction. PUBLIC10/common-UA bodyless GET/no key verifies all2xx ignoring body/read errors and suppressing whole shared Do failures without setter. Provider originals survive one release per attempted send. All owned nonzero/+1 failures remain fatal before skips/publication with invocation-only caller-preserving rollback.",
+      "native_files": ["src/detectors/kanbantool.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_kanbantool.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "PUBLIC native address/redirect policy remains guarded", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
+    "karmacrm/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/karmacrm/karmacrm.go",
+      "scope_notes": "KarmaCRM296/v0/ungated default/no hints. Engine dispatch keywordkarmacrm differs from extraction prefixkarma; the literalcrm consumes three gap units. Bounded20 mixed-alphanumeric key-only occurrences/duplicates. Capture/finding/full literal api_token then page1 URL precede nil-constructor drop, then Accept application/vnd.karmacrm+json; version=3 and Bearer. SANE5/common-UA/empty key; all2xx verify ignoring bodies/read errors, whole shared send domain retains false without setter/text classification. Original URL/request/auth/key survive one release per attempt. Every owned nonzero/+1 is fatal before outcomes with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/karmacrm.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_karmacrm.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
+    "keenio/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/keenio/keenio.go",
+      "scope_notes": "KeenIO140/v0/ungated default/span1024 engine-only. Independent keen-prefixed64 uppercase-alphanumeric keys and24 lowercase-alphanumeric hidden IDs form key-major occurrence products with duplicates, evenNoV. Both capture sets run when no keys/nilctx. Finding/full organizations/ID/projects URL precede nil-constructor drop, then JSON Content-Type and raw key Authorization, NOT Bearer. SANE5/common-UA/empty key GET; all2xx verify ignoring bodies/read errors and whole shared Do failures retain false without setter. Original request/header/URL/key/ID survive one release per attempt. Owned nonzero/+1 failures are fatal with invocation-only caller-preserving rollback.",
+      "native_files": ["src/detectors/keenio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_keenio.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
+    "kickbox/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/kickbox/kickbox.go",
+      "scope_notes": "Kickbox573/v0/ungated default/no hints. Prefixed bounded-at-ends but UNBOUNDED-length alnum/underscore leading1+ followed by64 alnum; minimum65, original key-only occurrences/duplicates. No direct key/URL cap. Capture/finding/full raw email=kickbox@example.com then apikey query allocation precede nil-constructor drop; no provider headers. SANE5/common-UA/empty key GET; all2xx verify ignoring bodies/read errors and whole shared Do domain suppresses without setter. Dynamic URL/original request/key survive one release per attempt. Every owned nonzero/+1 URL/finding/capture/push failure is fatal before ordinary outcomes with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/kickbox.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_kickbox.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
     "leadfeeder/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/leadfeeder/leadfeeder.go",

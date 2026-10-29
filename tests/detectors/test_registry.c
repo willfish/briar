@@ -448,11 +448,33 @@ static const registration expected[] = {
     {145, 0, "Mailboxlayer", "mailboxlayer", 32, true, -1},
     {105, 0, "MailJetBasicAuth", "mailjet", 88, true, -1},
     {106, 0, "MailJetSMS", "mailjet", 32, true, -1},
+    {853, 0, "Kanbantool", "kanbantool", 12, true, 1024},
+    {296, 0, "KarmaCRM", "karmacrm", 20, true, -1},
+    {140, 0, "KeenIO", "keen", 64, true, 1024},
+    {573, 0, "Kickbox", "kickbox", 65, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 853 || entry->type == 296 || entry->type == 140 || entry->type == 573) {
+        char key[66], input[180];
+        size_t len = entry->type == 853 ? 12 : entry->type == 296 ? 20 : entry->type == 140 ? 64 : 65;
+        test_secret(key, len, 0);
+        if (entry->type == 853 || entry->type == 140)
+            for (size_t i = 0; i < len; ++i) if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
+        if (entry->type == 573) key[0] = '_';
+        snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
+        if (entry->type == 140) {
+            br_results missing = test_scan(detector, NULL, false, input, strlen(input)); CHECK(!missing.len);
+            br_results_clear(&missing);
+            strcat(input, "\nkeen g7h9j2k5l6m8n3p4q1r0s2t4");
+        }
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], entry->type, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 982 || entry->type == 786 || entry->type == 145 || entry->type == 105 || entry->type == 106) {
         char key[89], input[160];
         size_t len = entry->type == 982 ? 76 : entry->type == 786 ? 40 : entry->type == 105 ? 88 : 32;

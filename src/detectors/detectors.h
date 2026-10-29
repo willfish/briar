@@ -444,5 +444,9 @@ int br_magicbell_init(const br_detector **out, char **error);
 int br_mailboxlayer_init(const br_detector **out, char **error);
 int br_mailjetbasicauth_init(const br_detector **out, char **error);
 int br_mailjetsms_init(const br_detector **out, char **error);
+int br_kanbantool_init(const br_detector **out, char **error);
+int br_karmacrm_init(const br_detector **out, char **error);
+int br_keenio_init(const br_detector **out, char **error);
+int br_kickbox_init(const br_detector **out, char **error);
 
 #endif

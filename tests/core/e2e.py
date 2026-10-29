@@ -956,6 +956,21 @@ for selector, number, key, source in (("JupiterOne", 982, jupiterone_key, "JuPiT
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=MagicBell"], ("magicbell " + key40).encode())
 check(not rows, "MagicBell still requires a hidden email with verification disabled")
 
+keenio_key = (key40 * 2)[:64].upper()
+kickbox_key = "_" + (key40 * 2)[:64]
+for selector, number, key, source in (("Kanbantool", 853, key32[:12].upper(), "KaNbAnToOl " + key32[:12].upper()),
+                                      ("KarmaCRM", 296, key32[:20], "KaRmAcRm " + key32[:20]),
+                                      ("KeenIO", 140, keenio_key, "KeEn " + keenio_key + "\nkeen " + key32[:24].lower()),
+                                      ("Kickbox", 573, kickbox_key, "KiCkBoX " + kickbox_key)):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Four corrected provider scanners dispatch real version-zero implementations")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Kanbantool self-domain and hidden Keen ID do not alter key-only findings")
+    check(not rows[0]["RawV2"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV leaves verifier-only metadata and actions absent")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=KeenIO"], ("keen " + keenio_key).encode())
+check(not rows, "KeenIO still requires its independent hidden ID without verification")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=KarmaCRM"], ("karma " + key32[:20]).encode())
+check(not rows, "Karma extraction prefix does not replace karmacrm engine dispatch")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
