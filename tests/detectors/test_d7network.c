@@ -29,6 +29,19 @@ int json_object_object_add(struct json_object *object, const char *name, struct 
 
 static br_slice text(const char *s) { return (br_slice){(const unsigned char *)s, strlen(s)}; }
 
+#include "../../src/detectors/captures.h"
+static bool positive_capture;
+static int checked_capture_push(br_captures *out, br_slice value, bool unique, char **error)
+{
+    if (positive_capture) { positive_capture = false; return 1; }
+    return br_captures_push(out, value, unique, error);
+}
+#define br_d7network_init observed_d7network_init
+#define br_captures_push checked_capture_push
+#include "../../src/detectors/d7network.c"
+#undef br_captures_push
+#undef br_d7network_init
+
 static const br_detector *descriptor(void)
 {
     const br_detector *detector = NULL, *again = NULL; char *error = NULL;
@@ -196,6 +209,42 @@ static void runes_and_trim(const br_detector *detector)
     br_results_clear(&results);
 }
 
+static br_results prior_results(void);
+static void check_prior(const br_results *, br_result);
+
+static void optimized_any_units(const br_detector *detector)
+{
+    static const unsigned char units[][4] = {
+        {0xe0,0x80,0x80}, {0xed,0xa0,0x80}, {0xf0,0x80,0x80,0x80}, {0xf4,0x90,0x80,0x80},
+    };
+    unsigned char capture[94], input[300];
+    for (size_t i = 0; i < sizeof(units) / sizeof(*units); ++i) {
+        size_t width = i < 2 ? 3 : 4;
+        memcpy(capture, units[i], width); memcpy(capture + width, ascii_key, 22); capture[width + 22] = '=';
+        br_slice key = {capture, width + 23};
+        /* A leading optimized-invalid unit is nonspace to strict Go TrimSpace. */
+        rune_capture(detector, "d7network", key, key);
+        for (size_t gap = 40; gap <= 41; ++gap) {
+            memcpy(input, "d7network", 9); size_t at = 9;
+            for (size_t n = 0; n < gap; ++n) { memcpy(input + at, units[i], width); at += width; }
+            memcpy(input + at, ascii_key, 24);
+            extraction_case(detector, (br_slice){input, at + 24}, gap == 40 ? text(ascii_key) : (br_slice){0});
+        }
+        memcpy(capture, "A", 1); memcpy(capture + 1, units[i], width);
+        memcpy(capture + 1 + width, ascii_key, 21); capture[22 + width] = '=';
+        rune_capture(detector, "d7network ", (br_slice){capture, 23 + width}, (br_slice){capture, 23 + width});
+    }
+    /* The keyword inside the first complete23-unit match is not a second hit. */
+    const char nested[] = "d7network d7network A1b2C3d4E5f6G=";
+    extraction_case(detector, text(nested), text("d7network A1b2C3d4E5f6G="));
+    const br_detector *observed = NULL; char *error = NULL;
+    CHECK(observed_d7network_init(&observed, &error) == 0 && !error);
+    br_results out = prior_results(); br_result prior = out.items[0];
+    positive_capture = true;
+    CHECK(observed->scan(observed, NULL, true, text("d7network AbCdEfGhIjKlMnOpQrStUvW="), &out, &error) == -1);
+    CHECK(!positive_capture && error); free(error); check_prior(&out, prior); br_results_clear(&out);
+}
+
 static void nul_and_unsafe_controls(const br_detector *detector)
 {
     unsigned char key[24], input[34]; memcpy(key, ascii_key, 24); key[6] = 0;
@@ -314,10 +363,20 @@ static void fatal_resources(const br_detector *detector)
     br_results_clear(&results);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
     const br_detector *detector = descriptor();
-    extraction(detector); runes_and_trim(detector); nul_and_unsafe_controls(detector);
+    if (argc == 2 && !strcmp(argv[1], "--raw-probe")) {
+        unsigned char input[8192]; size_t len = fread(input, 1, sizeof(input), stdin);
+        if (ferror(stdin) || len == sizeof(input)) return 2;
+        br_results out = test_scan(detector, NULL, false, input, len);
+        for (size_t i = 0; i < out.len; ++i) {
+            for (size_t j = 0; j < out.items[i].raw.len; ++j) printf("%02x", out.items[i].raw.data[j]);
+            putchar('\n');
+        }
+        br_results_clear(&out); return 0;
+    }
+    extraction(detector); runes_and_trim(detector); optimized_any_units(detector); nul_and_unsafe_controls(detector);
     verification(detector); suppressed_setup(detector); fatal_resources(detector);
     return test_finish("D7Network all-rune captures + Go trim + literal PUBLIC Basic + NUL guard + rollback");
 }
