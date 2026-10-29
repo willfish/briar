@@ -161,6 +161,15 @@ int main(void)
     CHECK(br_json_document(string, &root, &cause) == 1 && !root && cause);
     CHECK(!strcmp(cause, "invalid character '{' after top-level value"));
     free(cause); cause = NULL;
+    /* A completed compound first value wins over an error returned with its
+     * bytes. Jira's typed decoder must not blanket-reject body_error. */
+    const char *complete[] = {"{\"name\":\"kept\"}", "[]", "{\"name\":\"kept\"} {}"};
+    for (size_t i = 0; i < sizeof(complete) / sizeof(complete[0]); ++i) {
+        br_slice document = {(const unsigned char *)complete[i], strlen(complete[i])};
+        CHECK(br_json_first_document(document, "synthetic terminal error", &root, &end, &cause) == 0 && root && !cause);
+        CHECK(end > 0 && end <= document.len);
+        json_object_put(root);
+    }
     const struct { const char *body, *read_error, *cause; } failures[] = {
         {"{\"v\":\"\xce\xbb\",", NULL, "unexpected EOF"},
         {"{\"v\":\"\xce\xbb\",", "synthetic read failure", "synthetic read failure"},
