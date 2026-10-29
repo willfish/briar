@@ -395,5 +395,9 @@ int br_heroku_v1_init(const br_detector **out, char **error);
 int br_heroku_v2_init(const br_detector **out, char **error);
 int br_hive_init(const br_detector **out, char **error);
 int br_hiveage_init(const br_detector **out, char **error);
+int br_holidayapi_init(const br_detector **out, char **error);
+int br_holistic_init(const br_detector **out, char **error);
+int br_honeycomb_init(const br_detector **out, char **error);
+int br_host_init(const br_detector **out, char **error);
 
 #endif
