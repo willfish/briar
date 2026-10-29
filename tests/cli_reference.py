@@ -791,6 +791,7 @@ def fixtures():
     jiratoken_v2 = b"ATATT" + alnum("jiratoken-v2-key", 40) + b"=" + alnum("jiratoken-v2-tail", 8)
     jiratoken_context = b"\njira X7Case@grum.com\njira z7q8.atlassian.net"
     jiratoken_kelvin = "\njira XKName@grum.com\njira X\u212aName@grum.com".encode()
+    loadmill_key = alnum("loadmill-key", 40)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1662,6 +1663,8 @@ def fixtures():
         ("jiratoken_v2", "120.v2", b"jira " + jiratoken_v2 + jiratoken_context),
         ("jiratoken_v2_missing_email", "120.v2", b"jira " + jiratoken_v2 + b"\njira z7q8.atlassian.net"),
         ("jiratoken_v2_kelvin", "120.v2", b"jira " + jiratoken_v2 + jiratoken_kelvin),
+        ("loadmill", 758, b"LoAdMiLl " + loadmill_key),
+        ("loadmill_short", 758, b"loadmill " + loadmill_key[:-1]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2059,6 +2062,10 @@ def compare(native, reference, case):
         count = 0 if name.startswith(("jiratoken_v1_missing_email_", "jiratoken_v2_missing_email_")) else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": source version grammar, required emails and lowercase-before-dedup must retain exact Jira findings")
+    if name.startswith("loadmill_"):
+        count = 0 if name.startswith("loadmill_short_") else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": Loadmill mixed-case dispatch and exact forty-byte keys must retain findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

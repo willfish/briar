@@ -32,6 +32,7 @@ int main(void)
         {br_ipinfo_init, 939, BR_HTTP_SANE},
         {br_hashicorpvaultbatchtoken_init, 1061, BR_HTTP_DETECTOR_PUBLIC},
         {br_hashicorpvaulttoken_init, 1062, BR_HTTP_DETECTOR_PUBLIC},
+        {br_loadmill_init, 758, BR_HTTP_SANE},
     };
     char *error = NULL;
     CHECK(br_native_http_init(NULL, &error) && error);
@@ -56,10 +57,11 @@ int main(void)
         br_scan_ctx local = base;
         br_native_http_bind(runtime, detector, &local);
         unchanged(&local, &base);
-        CHECK(local.transport != raw && br_http_client_is_owned(local.transport));
+        CHECK(local.transport != raw && br_http_client_is_owned(local.transport) && local.transport->user);
         CHECK(base.transport == raw); /* A local binding cannot mutate its base. */
         clients[i] = local.transport;
-        for (size_t j = 0; j < i; ++j) CHECK(clients[j] != clients[i]);
+        for (size_t j = 0; j < i; ++j)
+            CHECK(clients[j] != clients[i] && clients[j]->user != clients[i]->user);
         br_scan_ctx repeat = base;
         br_native_http_bind(runtime, detector, &repeat);
         CHECK(repeat.transport == clients[i]); /* Across scans/chunks, not per call. */
@@ -72,6 +74,26 @@ int main(void)
         local = base; local.transport = NULL;
         br_native_http_bind(runtime, detector, &local);
         CHECK(!local.transport); unchanged(&local, &base);
+        if (sources[i].profile == BR_HTTP_SANE) {
+            /* A fresh context reaches this real owned client's SANE preparation,
+             * but an invalid UA stops before its shared raw curl backend. */
+            br_scan_ctx attempt = {.transport = clients[i], .user_agent = "invalid\r\nagent"};
+            unsigned char full_key[64];
+            int prefix = snprintf((char *)full_key, sizeof(full_key), "%d:", sources[i].type);
+            CHECK(prefix > 0 && (size_t)prefix + 40 <= sizeof(full_key));
+            memset(full_key + prefix, 'a', 40);
+            size_t key_len = (size_t)prefix + 40;
+            if (sources[i].type == 758) CHECK(key_len == 44);
+            br_http_request request = {.method = "GET", .url = "http://127.0.0.1:1/",
+                .profile = BR_HTTP_SANE, .detector_type = sources[i].type,
+                .dedup_key = {full_key, key_len}};
+            br_http_response response = {0};
+            CHECK(br_http_send(&attempt, &request, &response, &error) != 0 && error &&
+                  !strcmp(error, "invalid HTTP user agent"));
+            CHECK(!response.status && !response.body.data && !response.body.len && !response.body_error &&
+                  !response.headers && !response.nheaders);
+            free(error); error = NULL; br_http_release(&attempt, &response);
+        }
         if (sources[i].profile == BR_HTTP_DETECTOR_PUBLIC) {
             br_scan_ctx attempt = base;
             attempt.transport = clients[i]; attempt.deadline_monotonic_ms = 0;

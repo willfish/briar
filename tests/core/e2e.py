@@ -1106,6 +1106,13 @@ for version, token in ((1, key32[:24]), (2, "ATATT" + key40 + "=" + key32[:8])):
     _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=120.v" + str(version)], ("jira " + token).encode())
     check(not rows, "Both Jira versions require an independent captured email")
 
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Loadmill"], ("LoAdMiLl " + key40).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 758 and rows[0]["Raw"] == key40, "Loadmill dispatches the real mixed-alphanumeric scanner")
+check(rows[0]["SecretParts"] == {"key": key40} and rows[0]["RawV2"] == "" and rows[0]["ExtraData"] is None, "Loadmill keeps only source key fields")
+check(not rows[0]["Verified"] and "VerificationError" not in rows[0], "Loadmill NoV performs no service request")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=758"], ("loadmill " + key40[:-1]).encode())
+check(not rows, "Loadmill requires all forty key bytes")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

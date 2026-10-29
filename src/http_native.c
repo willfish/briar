@@ -24,6 +24,7 @@ static const struct {
     {br_ipinfo_init, BR_HTTP_SANE},
     {br_hashicorpvaultbatchtoken_init, BR_HTTP_DETECTOR_PUBLIC},
     {br_hashicorpvaulttoken_init, BR_HTTP_DETECTOR_PUBLIC},
+    {br_loadmill_init, BR_HTTP_SANE},
 };
 #define SOURCE_CLIENT_COUNT (sizeof(source_clients) / sizeof(*source_clients))
 

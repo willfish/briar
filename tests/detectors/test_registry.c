@@ -476,6 +476,7 @@ static const registration expected[] = {
     {177, 0, "LinearAPI", "lin_api_", 48, true, -1},
     {120, 1, "JiraToken", "atlassian", 24, true, 1024},
     {120, 2, "JiraToken", "atlassian", 54, true, 1024},
+    {758, 0, "Loadmill", "loadmill", 40, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
