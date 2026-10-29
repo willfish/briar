@@ -427,6 +427,10 @@ static const registration expected[] = {
     {579, 0, "Intrinio", "intrinio", 44, true, -1},
     {689, 0, "InvoiceOcean", "invoiceocean", 20, true, 1024},
     {940, 0, "Ip2location", "ip2location", 32, true, -1},
+    {362, 0, "Ipapi", "ipapi", 32, true, -1},
+    {356, 0, "IPGeolocation", "ipgeolocation", 32, true, -1},
+    {939, 0, "IPInfo", "ipinfo", 14, true, -1},
+    {530, 0, "IPinfoDB", "ipinfodb", 64, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -954,7 +958,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     char key[5001], secondary_buffer[89], session_buffer[133], input[8192];
     static const char cloudinary_secret[] = "AbCd0123EfGh4567IjKl8901MnO";
     test_secret(key, entry->key_len, 0);
-    if (entry->type == 763)
+    if (entry->type == 763 || entry->type == 939)
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
     if (entry->type == 349 || entry->type == 856) key[15] = '=';
     if (entry->type == 509) key[15] = '_';
@@ -1890,6 +1894,7 @@ int main(void)
     feature_gate_tests(1063, "DuoDetectorEnabled");
     feature_gate_tests(1048, "CloudinaryDetectorEnabled");
     feature_gate_tests(1043, "DatadogApiKeyDetectorEnabled");
+    feature_gate_tests(939, "IPInfoDetectorEnabled");
     cloudflare_feature_gate_tests(100, "CloudflareApiTokenV2DetectorEnabled");
     cloudflare_feature_gate_tests(58, "CloudflareGlobalApiKeyV2DetectorEnabled");
     CHECK(br_registry(&detectors, &count, &error) == 0 && error == NULL);

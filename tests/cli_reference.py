@@ -717,6 +717,10 @@ def fixtures():
     invoiceocean_key = alnum("invoiceocean-key", 20)
     invoiceocean_input = b"InVoIcEoCeAn " + invoiceocean_key + b"\ntenant7.invoiceocean.com"
     ip2location_key = b"Z" + alnum("ip2location-key", 31).upper()
+    ipapi_key = b"z" + alnum("ipapi-key", 31).lower()
+    ipgeolocation_key = b"z" + alnum("ipgeolocation-key", 31).lower()
+    ipinfo_key = synthetic("ipinfo-key", 14)
+    ipinfodb_key = b"z" + alnum("ipinfodb-key", 63).lower()
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1486,6 +1490,14 @@ def fixtures():
         ("invoiceocean_long_host", 689, b"invoiceocean " + invoiceocean_key + b"\n" + b"a" * 80 + b".invoiceocean.com"),
         ("ip2location", 940, b"Ip2LoCaTiOn " + ip2location_key),
         ("ip2location_lower_key", 940, b"ip2location z" + ip2location_key[1:]),
+        ("ipapi", 362, b"IpApI " + ipapi_key),
+        ("ipapi_upper_key", 362, b"ipapi G" + ipapi_key[1:]),
+        ("ipgeolocation", 356, b"IpGeOlOcAtIoN " + ipgeolocation_key),
+        ("ipgeolocation_upper_key", 356, b"ipgeolocation G" + ipgeolocation_key[1:]),
+        ("ipinfo", 939, b"IpInFo " + ipinfo_key),
+        ("ipinfo_nonhex_key", 939, b"ipinfo g" + ipinfo_key[1:]),
+        ("ipinfodb", 530, b"IpInFoDb " + ipinfodb_key),
+        ("ipinfodb_upper_key", 530, b"ipinfodb G" + ipinfodb_key[1:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1822,6 +1834,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": direct Intra42 flavors, hidden IDs/hosts and exact provider alphabets must retain the expected findings")
+    if name.startswith(("ipapi_", "ipgeolocation_", "ipinfo_", "ipinfodb_")):
+        empty = name.startswith(("ipapi_upper_key_", "ipgeolocation_upper_key_", "ipinfo_nonhex_key_", "ipinfodb_upper_key_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": lowercase-alphanumeric IP keys and IPInfo's actual lowercase-hex grammar must retain exact findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):
