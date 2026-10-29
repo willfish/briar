@@ -28,6 +28,7 @@ int main(void)
         {br_cliengo_init, 710, BR_HTTP_SANE}, {br_clockify_init, 280, BR_HTTP_SANE}, {br_databox_init, 834, BR_HTTP_SANE},
         {br_duffeltoken_init, 1059, BR_HTTP_SANE}, {br_finage_init, 423, BR_HTTP_SANE}, {br_geocode_init, 486, BR_HTTP_SANE},
         {br_gitter_init, 555, BR_HTTP_SANE},
+        {br_holidayapi_init, 361, BR_HTTP_SANE},
         {br_hashicorpvaultbatchtoken_init, 1061, BR_HTTP_DETECTOR_PUBLIC},
         {br_hashicorpvaulttoken_init, 1062, BR_HTTP_DETECTOR_PUBLIC},
     };

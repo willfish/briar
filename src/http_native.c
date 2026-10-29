@@ -20,6 +20,7 @@ static const struct {
     {br_finage_init, BR_HTTP_SANE},
     {br_geocode_init, BR_HTTP_SANE},
     {br_gitter_init, BR_HTTP_SANE},
+    {br_holidayapi_init, BR_HTTP_SANE},
     {br_hashicorpvaultbatchtoken_init, BR_HTTP_DETECTOR_PUBLIC},
     {br_hashicorpvaulttoken_init, BR_HTTP_DETECTOR_PUBLIC},
 };

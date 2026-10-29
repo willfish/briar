@@ -398,12 +398,25 @@ static const registration expected[] = {
     {19, 2, "Heroku", "HRKU-AA", 65, true, -1},
     {571, 0, "Hive", "hive", 17, false, 1024},
     {572, 0, "Hiveage", "hiveage", 20, true, -1},
+    {361, 0, "HolidayAPI", "holidayapi", 36, true, -1},
+    {764, 0, "Holistic", "holistic", 64, true, -1},
+    {877, 0, "Honeycomb", "Honeycomb", 22, true, -1},
+    {556, 0, "Host", "host.io", 14, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 764) {
+        char key[65], input[100];
+        for (size_t i = 0; i < 64; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[64] = '\0'; snprintf(input, sizeof(input), "holistic %s", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 764, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 19) {
         char key[66], input[100];
         if (entry->version == 1) strcpy(key, "A1b2c3d4-1234-abcd-5678-012345abcdef");

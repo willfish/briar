@@ -804,6 +804,22 @@ for selector in ("Hive", "571"):
                         ("hive " + key40[:17] + "\nhive " + key32).encode(), code=1)
     check(not rows and b"no enabled implemented detectors selected" in proc.stderr, "Explicit Hive selectors cannot enable its commented source default")
 
+holidayapi_key, holistic_key = key40[:36], hex_key * 2
+honeycomb_old, honeycomb_new = hex_key, "Z" + key40[:21]
+host_key = "z" + key40[:13]
+for selector, number, key, prefix in (("HolidayAPI", 361, holidayapi_key, "HoLiDaYaPi "),
+                                     ("Holistic", 764, holistic_key, "HoLiStIc "),
+                                     ("Honeycomb", 877, honeycomb_old, "HoNeYcOmB "),
+                                     ("Honeycomb", 877, honeycomb_new, "Honeycomb "),
+                                     ("Host", 556, host_key, "HoSt.Io ")):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], (prefix + key).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "HolidayAPI, Holistic, both Honeycomb formats and Host dispatch enabled scanners")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Source-specific capture grammars preserve complete keys")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV neither verifies services nor invents metadata")
+for prefix in ("host ", "host.io" + ":" * 38):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=556"], (prefix + host_key).encode())
+    check(not rows, "Host needs literal host.io dispatch and its extraction prefix's forty-rune budget")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

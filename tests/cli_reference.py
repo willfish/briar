@@ -680,6 +680,10 @@ def fixtures():
     heroku_v1 = b"A" + heroku_v1[1:]
     heroku_v2 = b"HRKU-AA" + alnum("heroku-v2", 58)
     hiveage_key = alnum("hiveage-head", 9) + b"_-" + alnum("hiveage-tail", 9)
+    holidayapi_key = alnum("holidayapi-key", 36).lower()
+    holistic_key = synthetic("holistic-key", 64)
+    honeycomb_old, honeycomb_new = synthetic("honeycomb-old", 32), b"Z" + alnum("honeycomb-new", 21)
+    host_key = b"z" + alnum("host-key", 13).lower()
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1377,6 +1381,16 @@ def fixtures():
         ("heroku_v2_wrong_prefix", "19.v2", b"hrku-AA" + heroku_v2[7:]),
         ("hiveage", 572, b"HiVeAgE " + hiveage_key),
         ("hiveage_edges", 572, b"hiveage-" + hiveage_key[1:-1] + b"-X"),
+        ("holidayapi", 361, b"HoLiDaYaPi " + holidayapi_key),
+        ("holidayapi_edges", 361, b"holidayapi_-" + holidayapi_key[1:-1] + b"-x"),
+        ("holistic", 764, b"HoLiStIc " + holistic_key),
+        ("holistic_upper_key", 764, b"holistic A" + holistic_key[1:]),
+        ("honeycomb_old", 877, b"HoNeYcOmB " + honeycomb_old),
+        ("honeycomb_new", 877, b"Honeycomb " + honeycomb_new),
+        ("honeycomb_upper_old", 877, b"Honeycomb A" + honeycomb_old[1:]),
+        ("host", 556, b"HoSt.Io " + host_key),
+        ("host_no_dispatch", 556, b"host " + host_key),
+        ("host_gap38", 556, b"host.io" + b":" * 38 + host_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1680,6 +1694,10 @@ def compare(native, reference, case):
         count = 0 if name.startswith(("heroku_v1_disallowed_first_B_", "heroku_v2_wrong_prefix_")) else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact provider/version grammar and byte-preserving captures must retain the expected findings")
+    if name.startswith(("holidayapi_", "holistic_", "honeycomb_", "host_")):
+        count = 0 if name.startswith(("holistic_upper_key_", "honeycomb_upper_old_", "host_no_dispatch_", "host_gap38_")) else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": source capture alternatives, exact alphabets and dispatch/prefix distinctions must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):
