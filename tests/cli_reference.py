@@ -733,6 +733,11 @@ def fixtures():
     juro_key = alnum("juro-key", 40)
     kanban_key = alnum("kanban-key", 12).upper()
     kanban_input = b"KaNbAn " + kanban_key + b"\ntenant7.kanbantool.com"
+    jupiterone_key = alnum("jupiterone-key", 76)
+    magicbell_key = alnum("magicbell-key", 40)
+    mailboxlayer_key = alnum("mailboxlayer-key", 32).lower()
+    mailjetbasicauth_key = alnum("mailjetbasicauth-key", 87) + b"="
+    mailjetsms_key = alnum("mailjetsms-key", 32)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1533,6 +1538,16 @@ def fixtures():
         ("madkudu_upper_key", 715, b"madkudu A" + madkudu_key[1:]),
         ("mailerlite", 228, b"MaIlErLiTe " + mailerlite_key),
         ("mailerlite_upper_key", 228, b"mailerlite G" + mailerlite_key[1:]),
+        ("jupiterone", 982, b"JuPiTeRoNe " + jupiterone_key),
+        ("jupiterone_overlong", 982, b"jupiterone " + jupiterone_key + b"X"),
+        ("magicbell", 786, b"MaGiCbElL " + magicbell_key + b"\nUser@Example.test"),
+        ("magicbell_missing_email", 786, b"magicbell " + magicbell_key),
+        ("mailboxlayer", 145, b"MaIlBoXlAyEr " + mailboxlayer_key),
+        ("mailboxlayer_upper_key", 145, b"mailboxlayer A" + mailboxlayer_key[1:]),
+        ("mailjetbasicauth", 105, b"MaIlJeT " + mailjetbasicauth_key),
+        ("mailjetbasicauth_missing_equals", 105, b"mailjet " + mailjetbasicauth_key[:-1]),
+        ("mailjetsms", 106, b"MaIlJeT " + mailjetsms_key),
+        ("mailjetsms_overlong", 106, b"mailjet " + mailjetsms_key + b"X"),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1886,6 +1901,11 @@ def compare(native, reference, case):
         count = (1 if kind == "stdin" else 2) if name.startswith("kanban_products_") else 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact alphabets, hidden hosts and source-location notifier dedup must retain the expected findings")
+    if name.startswith(("jupiterone_", "magicbell_", "mailboxlayer_", "mailjetbasicauth_", "mailjetsms_")):
+        empty = name.startswith(("jupiterone_overlong_", "magicbell_missing_email_", "mailboxlayer_upper_key_", "mailjetbasicauth_missing_equals_", "mailjetsms_overlong_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact provider alphabets, hidden MagicBell email and Basic's missing ending boundary must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

@@ -3883,6 +3883,51 @@
         "Full Go global-client/Reader and scan-deferred Close timing rather than immediate ABI release"
       ]
     },
+    "jupiterone/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/jupiterone/jupiterone.go",
+      "scope_notes": "JupiterOne982/v0/ungated default/no hints. Prefixed bounded76 mixed-alphanumeric key-only occurrences/duplicates. Finding precedes nil-constructor drop; exact293-byte GraphQL POST body is static, then Bearer/effective Jupiterone-Account/JSON headers. SANE5/common UA/empty request key;200 verifies and401 is quiet with NO setter. Other statuses format unexpected HTTP response status N before checked token-secret setter. The WHOLE shared Do-error domain reaches that setter including NULL cause; never invent diagnostics or classify text. Setter precedes release, and every attempted send releases once even fatal formatter/setter+1. Original storage and owned diagnostics survive release. Owned nonzero failures roll back only invocation additions.",
+      "native_files": ["src/detectors/jupiterone.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_jupiterone.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
+    "magicbell/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/magicbell/magicbell.go",
+      "scope_notes": "MagicBell786/v0/ungated default/span1024 engine-only. Prefixed40 alphanumeric/hyphen key occurrences require independent bytewise-unique case-preserved common-pattern emails evenNoV. Key-major products publish only key; email remains hidden. Both regex sets run with no keys. Finding precedes fixed nil-constructor drop, then effective X-Magicbell-Api-Key/User-Email headers. SANE5/common-UA GET notification_preferences verifies all2xx ignoring body/read errors, suppresses WHOLE shared send domain without setter, including control-header guard failures. Original request/header/key/email storage survives exactly one release per attempt. All owned nonzero/+1 failures are fatal with caller-preserving invocation-only rollback.",
+      "native_files": ["src/detectors/magicbell.c", "src/detectors/email_pattern.h", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_magicbell.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full Go email-map iteration order and native HTTP/Reader/drain/source deferred-Close behavior"]
+    },
+    "mailboxlayer/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mailboxlayer/mailboxlayer.go",
+      "scope_notes": "Mailboxlayer145/v0/ungated default/no hints. Prefixed bounded32 lowercase-alphanumeric NOT hex, key-only occurrences/duplicates. Finding/full literal apilayer access_key then email=support@email.com query precede nil-constructor drop. SANE5/common-UA GET/empty key; every body-error pointer drops before byte projection at every status. Successful reads verify on binary email or exact quoted Access Restricted HTTPS message, status deliberately ignored. WHOLE shared Do errors retain false without touching populated response/body or invoking setter. Provider originals and owned causes survive exactly one release per attempted send. Every owned nonzero/+1 failure aborts with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/mailboxlayer.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mailboxlayer.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
+    "mailjetbasicauth/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mailjetbasicauth/mailjetbasicauth.go",
+      "scope_notes": "MailJetBasicAuth105/v0/ungated default/no hints. Prefix mailjet plus87 mixed-alphanumeric bytes and equals, LEFT boundary only; suffixes allowed, no Base64 decode/canonical-padding validation. Original88-byte key-only occurrences/duplicates. Finding precedes nil-constructor drop, then literal Basic followed by RAW capture (never true Basic/re-encoding). SANE5/common-UA GET v3/REST/message/empty key; all2xx verify ignoring bodies/read errors. WHOLE shared preparation/Do errors retain false without setter/text classification. Original auth/request/key and owned cause survive one release per attempt. Every owned nonzero/+1 is fatal before outcomes with caller-preserving invocation-only rollback.",
+      "native_files": ["src/detectors/mailjetbasicauth.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mailjetbasicauth.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Observed suffix-form decoder scheduling can label an otherwise identical row BASE64 upstream versus PLAIN natively; not counted as compared fixture evidence", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
+    "mailjetsms/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mailjetsms/mailjetsms.go",
+      "scope_notes": "MailJetSMS106/v0/ungated default/no hints. Prefix mailjet with bounded32 mixed-alphanumeric key-only occurrences/duplicates. Finding precedes fixed nil-constructor drop, then Accept application/vnd.mailjetsms+json; version=3 and Bearer. SANE5/common-UA GET api.mailjet.com/v4/sms/empty key; every2xx verifies regardless of body/read errors, and WHOLE shared send/preparation errors retain false without any setter or text classification. Provider originals survive one release per attempted send. All owned nonzero/+1 capture/finding/push failures remain fatal before skips/suppression/publication with caller-preserving invocation-only rollback. Only synthetic injected GET verification exercised; no SMS/email action.",
+      "native_files": ["src/detectors/mailjetsms.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mailjetsms.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
     "leadfeeder/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/leadfeeder/leadfeeder.go",

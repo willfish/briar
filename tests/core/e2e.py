@@ -942,6 +942,20 @@ for selector, number, key, source in (("IPQuality", 478, key32, "IpQuAlItY " + k
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Kanban"], ("kanban " + key32[:12].upper()).encode())
 check(not rows, "Kanban still requires a hidden host with verification disabled")
 
+jupiterone_key = (key40 * 2)[:76]
+mailjet_basic_key = (key40 * 3)[:87] + "="
+for selector, number, key, source in (("JupiterOne", 982, jupiterone_key, "JuPiTeRoNe " + jupiterone_key),
+                                      ("MagicBell", 786, key40, "MaGiCbElL " + key40 + "\nUser@Example.test"),
+                                      ("Mailboxlayer", 145, key32.lower(), "MaIlBoXlAyEr " + key32.lower()),
+                                      ("MailJetBasicAuth", 105, mailjet_basic_key, "MaIlJeT " + mailjet_basic_key + "TAIL"),
+                                      ("MailJetSMS", 106, key32, "MaIlJeT " + key32)):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Five named security/email scanners dispatch their source grammars")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Literal Basic bytes and hidden MagicBell email preserve key-only findings")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV performs no provider, email or SMS action")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=MagicBell"], ("magicbell " + key40).encode())
+check(not rows, "MagicBell still requires a hidden email with verification disabled")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

@@ -16,6 +16,8 @@ The private LDAP boundary similarly copies immutable I/O configuration and excha
 
 The shared time helper implements one fixed Unix-second String projection, not a Go layout interpreter. It preserves unsigned calendar wrapping and initializes an immutable Local timezone lazily. The pinned Linux reference's Nix-patched timezone search, TZif transitions, POSIX tails and STORED-ZIP fallback remain explicit; libc timezone state is not substituted. Initial GOROOT and first-use TZ have different sampling lifetimes. NumericDate conversion, truncation and metadata publication remain detector responsibilities.
 
+Provider constructor skips do not bypass required capture, finding or dynamic URL work. JupiterOne's reached error setter runs before release, including a missing shared diagnostic, while fatal formatting or setter failure still performs attempted-send cleanup. MagicBell keeps required emails hidden, Mailboxlayer distinguishes read-drop from send-error retention, and MailJet Basic authorization is literal captured text rather than a fresh Base64 encoding.
+
 ## Shared C ABI, revision 1
 
 This is an internal source ABI, not a stable plugin interface. The engine builder owns its declaration in `include/briar.h`. Forward-declare json-c values; do not expose PCRE2 or curl handles. All sizes/offsets are byte-based unless specified otherwise.

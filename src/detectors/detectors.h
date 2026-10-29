@@ -439,5 +439,10 @@ int br_locationiq_init(const br_detector **out, char **error);
 int br_loginradius_init(const br_detector **out, char **error);
 int br_madkudu_init(const br_detector **out, char **error);
 int br_mailerlite_init(const br_detector **out, char **error);
+int br_jupiterone_init(const br_detector **out, char **error);
+int br_magicbell_init(const br_detector **out, char **error);
+int br_mailboxlayer_init(const br_detector **out, char **error);
+int br_mailjetbasicauth_init(const br_detector **out, char **error);
+int br_mailjetsms_init(const br_detector **out, char **error);
 
 #endif
