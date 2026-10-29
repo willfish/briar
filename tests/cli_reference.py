@@ -795,6 +795,7 @@ def fixtures():
     meraki_key = synthetic("meraki-key", 40)
     linenotify_key = alnum("linenotify-key", 43)
     linkpreview_key = alnum("linkpreview-key", 32)
+    liveagent_key = alnum("liveagent-key", 32)
     livestorm_key = b"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhcGkubGl2ZXN0b3JtLmNvIiwianRpIjoi" + alnum("livestorm-middle", 134) + b"." + alnum("livestorm-signature", 43)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
@@ -1677,6 +1678,8 @@ def fixtures():
         ("linkpreview_short", 438, b"linkpreview " + linkpreview_key[:-1]),
         ("livestorm", 735, b"LiVeStOrM " + livestorm_key + b" "),
         ("livestorm_wrong_head", 735, b"livestorm X" + livestorm_key[1:] + b" "),
+        ("liveagent", 165, b"LiVeAgEnT " + liveagent_key + b"\nhttps://z7p8.ladesk.com"),
+        ("liveagent_missing_domain", 165, b"liveagent " + liveagent_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2087,6 +2090,10 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact LINE, LinkPreview and Livestorm grammars must retain findings and Livestorm suffix trimming")
+    if name.startswith("liveagent_"):
+        count = 0 if name.startswith("liveagent_missing_domain_") else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": LiveAgent still requires independent key and domain captures without verification")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

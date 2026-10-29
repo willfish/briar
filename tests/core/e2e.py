@@ -1137,6 +1137,14 @@ for selector in ("168", "LineMessaging"):
     proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], ("line " + (key40 * 5)[:171]).encode(), code=1)
     check(not rows and b"no enabled implemented detectors selected" in proc.stderr, "Explicit selectors cannot enable source-disabled LineMessaging")
 
+liveagent_domain = "https://briar.ladesk.com"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=LiveAgent"], ("LiVeAgEnT " + key32 + "\n" + liveagent_domain).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 165 and rows[0]["Raw"] == key32, "LiveAgent dispatches real key and domain capture products")
+check(rows[0]["SecretParts"] == {"key": key32} and rows[0]["ExtraData"] == {"domain": liveagent_domain} and rows[0]["RawV2"] == "", "LiveAgent retains source domain metadata and key-only secret parts")
+check(not rows[0]["Verified"] and "VerificationError" not in rows[0], "LiveAgent NoV performs no provider request")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=165"], ("liveagent " + key32).encode())
+check(not rows, "LiveAgent still needs the independent domain without verification")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

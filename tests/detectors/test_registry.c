@@ -482,11 +482,27 @@ static const registration expected[] = {
     {176, 0, "LineNotify", "linenotify", 43, true, -1},
     {438, 0, "LinkPreview", "linkpreview", 32, true, -1},
     {735, 0, "Livestorm", "livestorm", 243, true, -1},
+    {165, 0, "LiveAgent", "liveagent", 32, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 165) {
+        const char *domain = "https://briar.ladesk.com";
+        char key[33], input[120]; test_secret(key, 32, 7);
+        snprintf(input, sizeof(input), "liveagent %s\n%s", key, domain);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input));
+        CHECK(results.len == 1);
+        br_json *value = NULL;
+        CHECK(results.items[0].extra_data && json_object_object_length(results.items[0].extra_data) == 1);
+        CHECK(json_object_object_get_ex(results.items[0].extra_data, "domain", &value) && !strcmp(json_object_get_string(value), domain));
+        br_result plain = results.items[0]; plain.extra_data = NULL;
+        test_key_result(&plain, 165, key, "key");
+        CHECK(!plain.verified && !plain.verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 735) {
         static const char prefix[] = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhcGkubGl2ZXN0b3JtLmNvIiwianRpIjoi";
         char key[244], input[280];
@@ -2278,7 +2294,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 120 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
@@ -2302,6 +2318,7 @@ int main(void)
         if (entry->type == 1021) CHECK(!strcmp(detector->keywords[1], "sk-lf-"));
         if (entry->type == 1028) CHECK(!strcmp(detector->keywords[1], "lsv2_sk_"));
         if (entry->type == 191) CHECK(!strcmp(detector->keywords[1], "sdk-"));
+        if (entry->type == 165) CHECK(!strcmp(detector->keywords[1], "ladesk"));
         if (entry->type == 991 || entry->type == 992) CHECK(!strcmp(detector->keywords[1], "larksuite"));
         if (entry->type == 992) CHECK(!strcmp(detector->keywords[2], "cli_"));
         if (entry->type == 954) CHECK(!strcmp(detector->keywords[1], "ddw_"));

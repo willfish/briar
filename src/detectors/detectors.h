@@ -478,5 +478,6 @@ int br_linemessaging_init(const br_detector **out, char **error);
 int br_linenotify_init(const br_detector **out, char **error);
 int br_linkpreview_init(const br_detector **out, char **error);
 int br_livestorm_init(const br_detector **out, char **error);
+int br_liveagent_init(const br_detector **out, char **error);
 
 #endif
