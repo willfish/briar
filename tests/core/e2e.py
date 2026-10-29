@@ -1113,6 +1113,14 @@ check(not rows[0]["Verified"] and "VerificationError" not in rows[0], "Loadmill 
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=758"], ("loadmill " + key40[:-1]).encode())
 check(not rows, "Loadmill requires all forty key bytes")
 
+meraki_key = "b7c9d2e5f6a8b3c4d1e0f2a4b6c8d1e3a5c7e9f1"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Meraki"], ("MeRaKi " + meraki_key).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 1000 and rows[0]["Raw"] == meraki_key, "Meraki dispatches the real lowercase-hex scanner")
+check(rows[0]["SecretParts"] == {"key": meraki_key} and rows[0]["RawV2"] == "" and rows[0]["ExtraData"] == {}, "Meraki retains the source empty NoV metadata object")
+check(not rows[0]["Verified"] and "VerificationError" not in rows[0], "Meraki NoV performs no service request")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=1000"], ("meraki " + meraki_key.upper()).encode())
+check(not rows, "Meraki folds its keyword but not its hexadecimal key")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

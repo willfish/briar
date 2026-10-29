@@ -477,11 +477,23 @@ static const registration expected[] = {
     {120, 1, "JiraToken", "atlassian", 24, true, 1024},
     {120, 2, "JiraToken", "atlassian", 54, true, 1024},
     {758, 0, "Loadmill", "loadmill", 40, true, -1},
+    {1000, 0, "Meraki", "meraki", 40, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 1000) {
+        const char *key = "b7c9d2e5f6a8b3c4d1e0f2a4b6c8d1e3a5c7e9f1";
+        char input[64]; snprintf(input, sizeof(input), "MeRaKi %s", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].extra_data && !json_object_object_length(results.items[0].extra_data));
+        br_result plain = results.items[0]; plain.extra_data = NULL;
+        test_key_result(&plain, 1000, key, "key");
+        CHECK(!plain.verified && !plain.verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 120) {
         const char *token = entry->version == 1 ? "Z7VoIYJ0K4rFWLBfkhOsLAWX" : "ATATTb7C9d2E5f6G8h3J4k1m0n2p4q6r8s1t3u5v7w9x2=Z7VoIYJ0";
         char input[240], raw_v2[200];

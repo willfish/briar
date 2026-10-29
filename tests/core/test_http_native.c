@@ -33,6 +33,7 @@ int main(void)
         {br_hashicorpvaultbatchtoken_init, 1061, BR_HTTP_DETECTOR_PUBLIC},
         {br_hashicorpvaulttoken_init, 1062, BR_HTTP_DETECTOR_PUBLIC},
         {br_loadmill_init, 758, BR_HTTP_SANE},
+        {br_meraki_init, 1000, BR_HTTP_SANE},
     };
     char *error = NULL;
     CHECK(br_native_http_init(NULL, &error) && error);
@@ -84,6 +85,7 @@ int main(void)
             memset(full_key + prefix, 'a', 40);
             size_t key_len = (size_t)prefix + 40;
             if (sources[i].type == 758) CHECK(key_len == 44);
+            if (sources[i].type == 1000) CHECK(key_len == 45);
             br_http_request request = {.method = "GET", .url = "http://127.0.0.1:1/",
                 .profile = BR_HTTP_SANE, .detector_type = sources[i].type,
                 .dedup_key = {full_key, key_len}};

@@ -473,5 +473,6 @@ int br_linearapi_init(const br_detector **out, char **error);
 int br_jiratoken_v1_init(const br_detector **out, char **error);
 int br_jiratoken_v2_init(const br_detector **out, char **error);
 int br_loadmill_init(const br_detector **out, char **error);
+int br_meraki_init(const br_detector **out, char **error);
 
 #endif
