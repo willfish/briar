@@ -751,6 +751,17 @@ def fixtures():
     kontent_key = b"ey" + alnum("kontent-first", 30) + b".ey" + alnum("kontent-second", 200) + b"." + alnum("kontent-third", 40)
     meistertask_key = alnum("meistertask-key", 43)
     messagebird_key = alnum("messagebird-key", 8) + b"_-" + alnum("messagebird-tail", 15)
+    kraken_key = alnum("kraken-key", 56)
+    kraken_private = alnum("kraken-private", 88)
+    kucoin_key = synthetic("kucoin-key", 24)
+    kucoin_secret_hex = synthetic("kucoin-secret", 32)
+    kucoin_secret = b"-".join(kucoin_secret_hex[a:b] for a, b in ((0, 8), (8, 12), (12, 16), (16, 20), (20, 32)))
+    kucoin_passphrase = b"!" + alnum("kucoin-passphrase", 16)
+    kylas_key = b"g" + alnum("kylas-key", 35).lower()
+    langfuse_public_hex = synthetic("langfuse-public", 32)
+    langfuse_secret_hex = synthetic("langfuse-secret", 32)
+    langfuse_public = b"pk-lf-" + b"-".join(langfuse_public_hex[a:b] for a, b in ((0, 8), (8, 12), (12, 16), (16, 20), (20, 32)))
+    langfuse_secret = b"sk-lf-" + b"-".join(langfuse_secret_hex[a:b] for a, b in ((0, 8), (8, 12), (12, 16), (16, 20), (20, 32)))
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1581,6 +1592,15 @@ def fixtures():
         ("meistertask_short", 656, b"meistertask " + meistertask_key[:-1]),
         ("messagebird", 111, b"MeSsAgEbIrD " + messagebird_key),
         ("messagebird_short", 111, b"messagebird " + messagebird_key[:-1]),
+        ("kraken", 186, b"KrAkEn " + kraken_key + b"\nkraken " + kraken_private + b" "),
+        ("kraken_short_key", 186, b"kraken " + kraken_key[:-1] + b"\nkraken " + kraken_private + b" "),
+        # TAB keeps the key out of the passphrase set even after the filesystem LF.
+        ("kucoin", 736, b"KuCoIn " + kucoin_passphrase + b"\nkucoin " + kucoin_secret + b"\nkucoin\t" + kucoin_key),
+        ("kucoin_missing_secret", 736, b"kucoin " + kucoin_passphrase + b"\nkucoin\t" + kucoin_key),
+        ("kylas", 272, b"KyLaS " + kylas_key),
+        ("kylas_upper_key", 272, b"kylas A" + kylas_key[1:]),
+        ("langfuse", 1021, b"langfuse " + langfuse_public + b"\nlangfuse " + langfuse_secret),
+        ("langfuse_missing_public", 1021, b"langfuse " + langfuse_secret),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1954,6 +1974,11 @@ def compare(native, reference, case):
         count = 0 if empty else 2 if name.startswith("klaviyo_") else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": both Klaviyo formats, required Kontent environment and exact provider alphabets must retain findings")
+    if name.startswith(("kraken_", "kucoin_", "kylas_", "langfuse_")):
+        empty = name.startswith(("kraken_short_key_", "kucoin_missing_secret_", "kylas_upper_key_", "langfuse_missing_public_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": required hidden crypto/public keys, exact alphabets and whitespace-delimited passphrases must retain exact findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

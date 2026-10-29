@@ -996,6 +996,27 @@ for selector, number, key in (("Meistertask", 656, key40 + "G7h"), ("MessageBird
     check(len(rows) == 1 and rows[0]["DetectorType"] == number and rows[0]["Raw"] == key, "Task and messaging scanners dispatch exact alphanumeric and underscore/hyphen grammars")
     check(rows[0]["SecretParts"] == {"key": key} and not rows[0]["Verified"] and not rows[0]["RawV2"], "NoV performs no task or messaging action")
 
+kraken_key = (key40 * 2)[:56]
+kraken_private = (key40 * 3)[:88]
+kucoin_key = "c19c2539c53367c726a5c04c"
+kucoin_passphrase = "Briar!7pw"
+langfuse_secret = "sk-lf-" + kontent_env
+langfuse_public = "pk-lf-" + kontent_env
+for selector, number, source, key, parts, raw_v2 in (
+    ("Kraken", 186, "kraken " + kraken_key + "\nkraken " + kraken_private + " ", kraken_key,
+     {"key": kraken_key, "private_key": kraken_private}, kraken_key + kraken_private),
+    ("KuCoin", 736, "kucoin " + kucoin_passphrase + "\nkucoin " + kontent_env + "\nkucoin\t" + kucoin_key, kucoin_key,
+     {"key": kucoin_key, "passphrase": kucoin_passphrase}, kucoin_key + kucoin_passphrase),
+    ("Kylas", 272, "kylas " + key32.lower() + "g7h9", key32.lower() + "g7h9",
+     {"key": key32.lower() + "g7h9"}, ""),
+    ("Langfuse", 1021, "langfuse " + langfuse_public + "\nlangfuse " + langfuse_secret, langfuse_secret,
+     {"key": langfuse_secret}, ""),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number and rows[0]["Raw"] == key, "Crypto, CRM and AI scanners dispatch their actual source grammars")
+    check(rows[0]["SecretParts"] == parts and rows[0]["RawV2"] == raw_v2, "Hidden keys and separator-free credential projections retain exact metadata")
+    check(not rows[0]["Verified"] and rows[0]["ExtraData"] is None, "NoV performs no balance, account, CRM or AI service action")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

@@ -4099,6 +4099,42 @@
       "evidence": ["tests/detectors/test_azure_storage.c", "tests/detectors/test_registry.c", "tests/cli_reference.py"],
       "remaining": ["Native PUBLIC HTTP policy remains fail-closed without fallback", "Whole-document XML rejects source-accepted trailing roots/junk; DTD rejection and stricter namespace/parser limits are explicit fail-closed gaps", "Complete streaming XML, encoding/error diagnostics and shared source-engine/regexp behavior"]
     },
+    "kraken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/kraken/kraken.go",
+      "scope_notes": "Kraken186/v0/default/span1024. Independently prefixed56-byte key and86..88-byte private-key occurrence sets include one required space/quote/CR/LF delimiter; whitespace trimming preserves captured quotes. Key-major duplicate products/Raw key/RawV2 key+private/key and private_key parts. Source Unix-second nonce/form/partial standard-Base64 decode/SHA256/HMAC-SHA512 precede reached nil-context constructor drop. Signature input is18-byte path plus32-byte digest,50bytes without C NUL; independent fixed synthetic vector retained. Exact Balance POST/SANE5/Content-Type form then Api-Key/Api-Sign/commonUA/empty coalescing key. On send success, exact binary Invalid key marker alone prevents verification, independent of status; body_error ignored. Invalid reached body slice is fatal through one release; Do errors do not project body and stay false without setter. Provider values survive release; every owned nonzero fatal before ordinary outcomes with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/kraken.c", "src/detectors/azure_shared_key.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_kraken.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte, decoder/engine/output and clock/runtime behavior", "Full native HTTP/Reader/drain and source deferred-close/client-instance behavior"]
+    },
+    "kucoin/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/kucoin/kucoin.go",
+      "scope_notes": "KuCoin736/v0/default/span1024. Independent24lowerhex key/lowerhex UUID hidden-secret/space-CR-LF-delimited7..32visible-ASCII passphrase occurrence sets, all required evenNoV; spaced keys can also be passphrases. Key-major secret-middle passphrase-inner duplicate products. Raw key/RawV2 key+passphrase/no separator/key+passphrase parts, secret hidden. Source signed64 Unix-second*1000 wrapping includes negative and valid-1; actual time failure separated by errno on selected Linux64 profile. Timestamp and both padded HMAC-SHA256 signatures precede reached nil-context constructor drop; no header/send/release on that drop. Exact accounts GET/SANE5/five canonical Kc-Api headers/commonUA/empty coalescing key. Every2xx verifies regardless of bodies/read errors; whole mixed send domain stays false/no setter. Every owned nonzero includingHMAC+1 fatal before ordinary outcomes, one release per attempted send and invocation-only caller-preserving rollback.",
+      "native_files": ["src/detectors/kucoin.c", "src/detectors/azure_shared_key.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_kucoin.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte, decoder/engine/output and clock/platform behavior", "Full native HTTP/Reader/drain and source deferred-close/client-instance behavior"]
+    },
+    "kylas/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/kylas/kylas.go",
+      "scope_notes": "Kylas272/v0/default/no hints. Keyword-only case-folded prefix plus word-bounded36lowercase-alphanumeric-or-hyphen occurrences, NOT UUID validation or hex-only. Duplicates and original key-only fields retained. Capture/finding precede reached nil-context constructor drop; fixed contacts GET then Content-Type JSON/Api-Key headers/SANE5/commonUA/empty key. Every2xx verifies, bodies/read errors ignored; whole mixed send domain stays false/no setter. Successful responses retained and released LIFO after publication while original captured key values remain alive; send failures release immediately once. Every owned nonzero includingdeferred storage/finding/push failures fatal before ordinary outcomes, with invocation-only caller-preserving rollback.",
+      "native_files": ["src/detectors/kylas.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_kylas.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain/Close-error and source-client lifecycle behavior"]
+    },
+    "langfuse/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/langfuse/langfuse.go",
+      "scope_notes": "Langfuse1021/v0/default/no hints. Dispatch pk-lf-/sk-lf- differs from langfuse extraction prefix; lowercase-hex UUID-shaped public/secret keys without UUID validation. Both unique sets required evenNoV; public-major secret-minor products choose first-seen order, not full Go map iteration parity. Raw/only key part is secret; no public part/RawV2/Extra/Redacted. Fixed projects GET/SANE5/commonUA/true Basic(public,secret) only after constructor. Nil context retains false finding with constructor cause/no Basic/send/release. Status200 true/401 quiet; others checked unexpected-status formatting BEFORE release. Release precedes caller verdict and reached checked public-key-secret setter. Error presence is separate from diagnostic storage: every send-nonzero reaches setter evenNULLcause, without invented cause;200/401 never call it. Formatter/setter+1 and all owned nonzero failures fatal through cleanup with caller-preserving invocation rollback; Basic bytes survive release.",
+      "native_files": ["src/detectors/langfuse.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_langfuse.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte, Go map order and decoder/engine/output behavior", "Full native HTTP/Reader/drain and optional client/source-instance lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

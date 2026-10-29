@@ -454,6 +454,10 @@ static const detector_factory named_factories[] = {
     br_kontent_init,
     br_meistertask_init,
     br_messagebird_init,
+    br_kraken_init,
+    br_kucoin_init,
+    br_kylas_init,
+    br_langfuse_init,
 };
 
 static int fail(char **error, const char *message)
@@ -612,7 +616,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 578: case 602: case 603: case 604: case 619: case 621: case 110: case 112: case 55: case 56: case 57: case 59: case 60: case 62: case 64: case 65: case 66: case 68: case 69: case 323: case 324: case 325: case 554: case 555: case 564: case 511: case 512: case 513: case 733: case 739: case 749: case 2: case 1052: case 959: case 960: case 962: case 963: case 980: case 988: case 990: case 993: case 947: case 953: case 954: case 957: case 971: case 1013: case 1007: case 1009: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975: case 1020: case 260: case 1036: case 1030: case 395: case 164: case 153: case 408: case 572: case 361: case 764: case 877: case 556: case 355: case 926: case 508: case 72: case 773: case 459: case 487: case 813: case 557: case 250: case 349: case 509: case 906: case 271: case 856: case 941: case 156: case 858: case 987: case 579: case 689: case 940: case 362: case 356: case 530:
         case 478: case 133: case 287: case 131: case 295: case 686: case 329: case 450: case 510: case 715: case 228:
         case 982: case 786: case 145: case 105: case 106:
-        case 853: case 296: case 140: case 573: case 740: case 760: case 935: case 328: case 656: case 111:
+        case 853: case 296: case 140: case 573: case 740: case 760: case 935: case 328: case 656: case 111: case 186: case 736: case 272: case 1021:
             return detector->version == 0;
         default: break;
         }
@@ -1044,6 +1048,10 @@ const char *br_detector_type_name(int32_t type)
     case 328: return "Kontent";
     case 656: return "Meistertask";
     case 111: return "MessageBird";
+    case 186: return "Kraken";
+    case 736: return "KuCoin";
+    case 272: return "Kylas";
+    case 1021: return "Langfuse";
     case 329: return "Leadfeeder";
     case 450: return "LocationIQ";
     case 510: return "Loginradius";

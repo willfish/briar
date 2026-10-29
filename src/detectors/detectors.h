@@ -454,5 +454,9 @@ int br_klaviyo_init(const br_detector **out, char **error);
 int br_kontent_init(const br_detector **out, char **error);
 int br_meistertask_init(const br_detector **out, char **error);
 int br_messagebird_init(const br_detector **out, char **error);
+int br_kraken_init(const br_detector **out, char **error);
+int br_kucoin_init(const br_detector **out, char **error);
+int br_kylas_init(const br_detector **out, char **error);
+int br_langfuse_init(const br_detector **out, char **error);
 
 #endif

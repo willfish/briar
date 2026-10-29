@@ -458,11 +458,60 @@ static const registration expected[] = {
     {328, 0, "Kontent", "kontent", 36, true, -1},
     {656, 0, "Meistertask", "meistertask", 43, true, -1},
     {111, 0, "MessageBird", "messagebird", 25, true, -1},
+    {186, 0, "Kraken", "kraken", 56, true, 1024},
+    {736, 0, "KuCoin", "kucoin", 24, true, 1024},
+    {272, 0, "Kylas", "kylas", 36, true, -1},
+    {1021, 0, "Langfuse", "pk-lf-", 42, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 186 || entry->type == 736 || entry->type == 272 || entry->type == 1021) {
+        char key[89], secondary[89], input[300], missing[180];
+        const char *second_name = NULL;
+        const char *uuid = "b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3";
+        if (entry->type == 186) {
+            test_secret(key, 56, 0); test_secret(secondary, 88, 11);
+            second_name = "private_key";
+            snprintf(input, sizeof(input), "kraken %s\nkraken %s ", key, secondary);
+            snprintf(missing, sizeof(missing), "kraken %s ", key);
+        } else if (entry->type == 736) {
+            strcpy(key, "c19c2539c53367c726a5c04c"); strcpy(secondary, "Briar!7pw");
+            second_name = "passphrase";
+            snprintf(input, sizeof(input), "kucoin %s\nkucoin %s\nkucoin\t%s", secondary, uuid, key);
+            snprintf(missing, sizeof(missing), "kucoin %s\nkucoin\t%s", secondary, key);
+        } else if (entry->type == 1021) {
+            snprintf(key, sizeof(key), "sk-lf-%s", uuid);
+            snprintf(secondary, sizeof(secondary), "pk-lf-%s", uuid);
+            snprintf(input, sizeof(input), "langfuse %s\nlangfuse %s", secondary, key);
+            snprintf(missing, sizeof(missing), "langfuse %s", key);
+        } else {
+            test_secret(key, 36, 0);
+            for (size_t i = 0; i < 36; ++i) if (key[i] >= 'A' && key[i] <= 'Z') key[i] += 'a' - 'A';
+            key[0] = 'g'; key[17] = '-';
+            snprintf(input, sizeof(input), "kylas %s", key);
+        }
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        if (second_name) {
+            br_result *r = &results.items[0]; br_json *part = NULL;
+            size_t klen = strlen(key), slen = strlen(secondary);
+            CHECK(r->raw.len == klen && !memcmp(r->raw.data, key, klen));
+            CHECK(r->raw_v2.len == klen + slen && !memcmp(r->raw_v2.data, key, klen));
+            CHECK(!memcmp(r->raw_v2.data + klen, secondary, slen));
+            CHECK(r->secret_parts && json_object_object_length(r->secret_parts) == 2);
+            CHECK(json_object_object_get_ex(r->secret_parts, "key", &part) && !strcmp(json_object_get_string(part), key));
+            CHECK(json_object_object_get_ex(r->secret_parts, second_name, &part) && !strcmp(json_object_get_string(part), secondary));
+            CHECK(!r->redacted && !r->extra_data && !r->structured_data);
+        } else test_key_result(&results.items[0], entry->type, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        if (entry->type != 272) {
+            results = test_scan(detector, NULL, false, missing, strlen(missing)); CHECK(!results.len);
+            br_results_clear(&results);
+        }
+        return;
+    }
     if (entry->type == 935 || entry->type == 328 || entry->type == 656 || entry->type == 111) {
         char key[300], input[450];
         const char *env = "b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3";
@@ -2045,7 +2094,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
@@ -2066,6 +2115,7 @@ int main(void)
         if (entry->type == 430 && entry->version == 2) CHECK(!strcmp(detector->keywords[1], "bb_ma_"));
         if (entry->type == 39 || entry->type == 1043) CHECK(!strcmp(detector->keywords[1], "ddog-gov"));
         if (entry->type == 920) CHECK(!strcmp(detector->keywords[1], "couchbases://"));
+        if (entry->type == 1021) CHECK(!strcmp(detector->keywords[1], "sk-lf-"));
         if (entry->type == 954) CHECK(!strcmp(detector->keywords[1], "ddw_"));
         if (entry->type == 343) CHECK(!strcmp(detector->keywords[1], "\\\"auths\\"));
         if (entry->type == 18) CHECK(!strcmp(detector->keywords[1], "sl."));
