@@ -428,5 +428,6 @@ int br_ipapi_init(const br_detector **out, char **error);
 int br_ipgeolocation_init(const br_detector **out, char **error);
 int br_ipinfo_init(const br_detector **out, char **error);
 int br_ipinfodb_init(const br_detector **out, char **error);
+int br_madkudu_init(const br_detector **out, char **error);
 
 #endif
