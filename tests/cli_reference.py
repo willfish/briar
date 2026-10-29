@@ -703,6 +703,14 @@ def fixtures():
     impala_key = alnum("impala-head", 22) + b"_" + alnum("impala-tail", 23)
     infura_key = b"z" + alnum("infura-key", 31).lower()
     insightly_key = b"z" + alnum("insightly-head", 14).lower() + b"-" + alnum("insightly-tail", 20).lower()
+    instabot_key = alnum("instabot-head", 20) + b"=+/" + alnum("instabot-tail", 21)
+    instamojo_id, instamojo_secret = alnum("instamojo-id", 40), alnum("instamojo-secret", 128)
+    instamojo_input = b"InStAmOjO " + instamojo_secret + b"\ninstamojo " + instamojo_id
+    intercom_key = base64.b64encode(b"tok:" + alnum("intercom-key", 40))
+    intercom_short = base64.b64encode(b"tok:" + alnum("intercom-short", 37))
+    intercom_crlf = intercom_short[:8] + b"\r\n\r\n" + intercom_short[8:]
+    intercom_wrong = base64.b64encode(b"TOK:" + alnum("intercom-key", 40))
+    interseller_key = b"-".join(synthetic("interseller-" + str(i), n) for i, n in enumerate((8, 4, 4, 4, 12)))
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1450,6 +1458,17 @@ def fixtures():
         ("infura_upper_key", 906, b"infura A" + infura_key[1:]),
         ("insightly", 271, b"InSiGhTlY " + insightly_key),
         ("insightly_upper_key", 271, b"insightly A" + insightly_key[1:]),
+        ("instabot", 856, b"InStAbOt " + instabot_key),
+        ("instabot_overlong", 856, b"instabot " + instabot_key + b"EXTRA"),
+        ("instamojo", 941, instamojo_input),
+        ("instamojo_missing_secret", 941, b"instamojo " + instamojo_id),
+        ("intercom", 156, b"InTeRcOm " + intercom_key),
+        ("intercom_trim", 156, b"intercom    " + intercom_short),
+        ("intercom_crlf", 156, b"intercom " + intercom_crlf),
+        ("intercom_corrupt", 156, b"intercom " + intercom_key[:20] + b"!" + intercom_key[21:]),
+        ("intercom_wrong_prefix", 156, b"intercom " + intercom_wrong),
+        ("interseller", 858, b"InTeRsElLeR " + interseller_key),
+        ("interseller_upper_key", 858, b"interseller A" + interseller_key[1:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1776,6 +1795,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact alphabets and provider-specific boundaries must retain the expected findings")
+    if name.startswith(("instabot_", "instamojo_", "intercom_", "interseller_")):
+        empty = name.startswith(("instamojo_missing_secret_", "intercom_corrupt_", "intercom_wrong_prefix_", "interseller_upper_key_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact grammars, hidden-secret requirements and unconditional Intercom decoding must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

@@ -419,12 +419,32 @@ static const registration expected[] = {
     {509, 0, "Impala", "impala", 46, true, -1},
     {906, 0, "Infura", "infura", 32, true, -1},
     {271, 0, "Insightly", "insightly", 36, true, -1},
+    {856, 0, "Instabot", "instabot", 44, true, -1},
+    {941, 0, "Instamojo", "instamojo", 40, true, 1024},
+    {156, 0, "Intercom", "intercom", 60, true, -1},
+    {858, 0, "Interseller", "interseller", 36, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 941) {
+        char id[41], secret[129], input[210]; test_secret(id, 40, 0); test_secret(secret, 128, 7);
+        snprintf(input, sizeof(input), "instamojo %s\ninstamojo %s", secret, id);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 941, id, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
+    if (entry->type == 156) {
+        const char *key = "dG9rOgABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICEiIyQlJic=";
+        char input[80]; snprintf(input, sizeof(input), "intercom %s", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 156, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 813) {
         char key[36] = "sk_", input[60]; test_secret(key + 3, 32, 0);
         snprintf(input, sizeof(input), "iexapis %s", key);
@@ -915,7 +935,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     test_secret(key, entry->key_len, 0);
     if (entry->type == 763)
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
-    if (entry->type == 349) key[15] = '=';
+    if (entry->type == 349 || entry->type == 856) key[15] = '=';
     if (entry->type == 509) key[15] = '_';
     if (entry->type == 271) key[15] = '-';
     if (entry->type == 259) strcpy(key, "A7z9w2y5-g6h8-j3k4-m1n0-p2q4r6s8t1u3");
@@ -1021,7 +1041,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         for (size_t i = 0; i < entry->key_len; ++i)
             if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
-    if (entry->type == 919 || entry->type == 821) {
+    if (entry->type == 919 || entry->type == 821 || entry->type == 858) {
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         key[8] = key[13] = key[18] = key[23] = '-';
     }

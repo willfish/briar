@@ -3600,6 +3600,42 @@
       "evidence": ["tests/detectors/test_insightly.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
     },
+    "instabot/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/instabot/instabot.go",
+      "scope_notes": "Instabot856/v0/enabled/no hints. Keyword-onlyCI prefix plus starting word boundary44 mixed-alphanumeric/equals/plus/slash bytes, original43+1 quantifiers/no ending boundary/Base64 validation. Preserve occurrences/duplicates/longer prefixes/contextual nonword starts, Raw-key only. Finding then nil constructor drop precede canonical X-Instabot-Api-Key. SANE5 bodyless GET/common UA only/no Auth/Type/Accept/dedup. All2xx verify ignoring bodies/read errors; whole mixed setup/Do failures false-kept without setters or diagnostic classifiers. All owned nonzero failures fatal before ordinary outcomes with caller-preserving invocation rollback. Original captures/header values survive one ordinary release per attempted send including preparation failure; synthesized request/headers/UA only send return.",
+      "native_files": ["src/detectors/instabot.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_instabot.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "instamojo/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/instamojo/instamojo.go",
+      "scope_notes": "Instamojo941/v0/enabled/span1024 as engine hint only. Independent prefixed128 mixed-alphanumeric secrets collected FIRST, then40-byte mixed-alphanumeric IDs; secret-major complete occurrence products/duplicates/no dedup. RawID/SecretParts.keyID only, secret hidden/no RawV2. Finding then full literal grant_type/client_id/client_secret form Reader precede nil constructor drop. SANE5 POST token endpoint with trailing slash/form Type/common UA only. Successful send reads every status; any read-error pointer including empty drops pair. Successful read verifies only2xx AND unquoted binary access_token marker anywhere including after NUL. Otherwise secret-only checked setter retains unexpected HTTP response status N even200 without marker. Whole mixed setup/Do causes retained through same secret-only setter/ID unredacted/NULL no-op/+1 fatal/no diagnostic classifiers. Verdict/setter and successful push precede ordinary release, matching publication before source deferred close without claiming timing/leak parity. All owned nonzero capture/finding/form/format/cause/setter/push failures fatal before ordinary outcomes, invocation rollback preserves callers. Exactly one release per attempt including fatal setter/format/push outcomes; original form/captures/headers/cause survive, synthesized storage only send return. No tokens or customer actions.",
+      "native_files": ["src/detectors/instamojo.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/result.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_instamojo.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full selected/default native HTTP/Reader/source deferred-close behavior"]
+    },
+    "intercom/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/intercom/intercom.go",
+      "scope_notes": "Intercom156/v0/enabled/no hints. Keyword-onlyCI prefix and start boundary59 ALL-RUNES union-class characters then literal equals/no ending boundary. Go TrimSpace precedes unconditional unchanged standard Base64 decoding evenNoV; no post-trim60-byte/rune requirement. Corruption drops despite emitted tok: prefix, resource failure fatal; decoded prefix freed on every outcome. Successful decoded bytes must start binary tok:, arbitrary remainder. Raw/key stay trimmed encoded bytes, including valid interior CRLF; no decoding for publication or header rewriting. Finding precedes nil constructor drop then Bearer and Accept JSON. SANE5 bodyless contacts GET/common UA/no Type/dedup; all2xx/read ignored/whole mixed setup/Do false-kept/no setter. All owned nonzero trim/decode-resource/capture/finding/auth/push failures fatal before ordinary drops/outcomes, caller-preserving invocation rollback. Provider originals survive one ordinary release per attempted send, synthesized storage only send return. Existing Azure-named Go-compatible codec reused unchanged without new shared API.",
+      "native_files": ["src/detectors/intercom.c", "src/detectors/azure_shared_key.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/go_unicode.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_intercom.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "interseller/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/interseller/interseller.go",
+      "scope_notes": "Interseller858/v0/enabled/no hints. Keyword-onlyCI prefix plus word-bounded actual lowerhex UUID8-4-4-4-12 occurrences/duplicates, no semantic UUID version/variant validation; Raw-key only. Finding precedes nil constructor drop, then Accept JSON and canonical X-Api-Key in source order. SANE5 bodyless campaigns/list GET/common UA/no Auth/Type/dedup. All2xx verify ignoring body/read errors; whole mixed setup/Do failures false-kept without setter. Owned nonzero failures fatal before ordinary outcomes with invocation-only caller-preserving rollback. Original captures/header values survive one ordinary release each attempt including failed preparation; synthesized request/header-array/UA only send return. No campaigns or customer actions.",
+      "native_files": ["src/detectors/interseller.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_interseller.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

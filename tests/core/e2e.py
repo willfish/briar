@@ -879,6 +879,23 @@ for selector, number, key, source in (("Imagga", 349, imagga_key, "ImAgGa " + im
     check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Imagga retains its longer-token prefix; Infura and Insightly are not hex or UUID validators")
     check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV exposes only source key metadata and never probes services")
 
+instabot_key = key40[:20] + "=+/" + key40[23:] + "Q7z9"
+instamojo_secret = key40 * 3 + key32[:8]
+intercom_key = base64.b64encode(b"tok:" + bytes(range(40))).decode()
+intercom_short = base64.b64encode(b"tok:" + bytes(range(37))).decode()
+intercom_crlf = intercom_short[:8] + "\r\n\r\n" + intercom_short[8:]
+interseller_key = "b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3"
+for selector, number, key, source in (("Instabot", 856, instabot_key, "InStAbOt " + instabot_key + "EXTRA"),
+                                     ("Instamojo", 941, key40, "instamojo " + instamojo_secret + "\ninstamojo " + key40),
+                                     ("Intercom", 156, intercom_key, "InTeRcOm " + intercom_key),
+                                     ("156", 156, intercom_short, "intercom    " + intercom_short),
+                                     ("Intercom", 156, intercom_crlf, "intercom " + intercom_crlf),
+                                     ("Interseller", 858, interseller_key, "InTeRsElLeR " + interseller_key)):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Instabot, Instamojo, Intercom and Interseller dispatch real scanners")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Instamojo's secret stays hidden; Intercom retains trimmed encoded bytes including interior CRLF")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV validates Intercom tokens without probing services or inventing metadata")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
