@@ -671,6 +671,10 @@ def fixtures():
     vault_role = b"-".join(synthetic("vault-role-" + str(i), n) for i, n in enumerate((8, 4, 4, 4, 12)))
     vault_secret = b"-".join(synthetic("vault-secret-" + str(i), n) for i, n in enumerate((8, 4, 4, 4, 12))).upper()
     vault_auth_pair = b"role " + vault_role + b"\nsecret " + vault_secret + b"\n"
+    hasura_key, hasura_domain = alnum("hasura-key", 64), b"Project101.hasura.app"
+    hellosign_key = alnum("hellosign-head", 30) + b"-/+" + alnum("hellosign-tail", 31)
+    helpcrunch_key = alnum("helpcrunch-head", 100) + b"+/=" + alnum("helpcrunch-tail", 225)
+    helpscout_key = b"z" + synthetic("helpscout-key", 39)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1347,6 +1351,17 @@ def fixtures():
         ("hashicorpvaultauth", 1036, vault_auth_pair + vault_url),
         ("hashicorpvaultauth_missing_role", 1036, b"secret " + vault_secret + b"\n" + vault_url),
         ("hashicorpvaultauth_binary_path", 1036, vault_auth_pair + b"https://alpha100.hashicorp.cloud/p\0x/\v"),
+        ("hasura", 1030, b"HaSuRa " + hasura_key + b"\n" + hasura_domain),
+        ("hasura_no_domain", 1030, b"hasura " + hasura_key),
+        ("hasura_no_prefix", 1030, hasura_key + b"\n" + hasura_domain),
+        ("hellosign", 395, b"HeLlOsIgN " + hellosign_key),
+        ("hellosign_edge", 395, b"hellosign " + hellosign_key[:63] + b"/X"),
+        ("hellosign_overlong", 395, b"hellosign " + hellosign_key + b"X"),
+        ("helpcrunch", 164, b"HeLpCrUnCh " + helpcrunch_key),
+        ("helpcrunch_overlong", 164, b"helpcrunch " + helpcrunch_key + b"EXTRA"),
+        ("helpcrunch_no_dispatch", 164, helpcrunch_key),
+        ("helpscout", 153, b"HeLpScOuT " + helpscout_key),
+        ("helpscout_upper_key", 153, b"helpscout Z" + helpscout_key[1:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1641,6 +1656,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1  # Default CLI cleaning keeps one unverified occurrence product.
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact token grammar, required hidden IDs/endpoints, original URL bytes and source CLI cleaning must retain the expected findings")
+    if name.startswith(("hasura_", "hellosign_", "helpcrunch_", "helpscout_")):
+        empty = name.startswith(("hasura_no_domain_", "hasura_no_prefix_", "hellosign_overlong_", "helpcrunch_no_dispatch_", "helpscout_upper_key_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": required Hasura domains and exact provider capture boundaries must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

@@ -3330,6 +3330,42 @@
       "evidence": ["tests/detectors/test_hashicorpvault.c", "tests/detectors/test_endpoints.c", "tests/core/test_http_coalescing.c", "tests/core/test_http_native.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Go URL forms outside the explicit canonical ASCII JoinPath subset", "Native PUBLIC/DNS/address policy and process-global sharing/custom-client overrides", "Complete regexp, JSON/Reader/deferred-close and engine/output/platform behavior"]
     },
+    "hasura/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/hasura/hasura.go",
+      "scope_notes": "Hasura1030/v0/default enabled/no hints despite multipart credentials. Independent unique64 mixed-alphanumeric hasura-prefixed keys and unbounded case-sensitive Hasura domains form key-major products. RawKEY/RawV2DOMAIN:KEY/domain+key parts/NoVExtra nil; append each outcome before breaking remaining domains only for a verified key. Complete URL precedes nil construction; SANE5 GraphQL POST uses exact JSON, canonical X-Hasura-Admin-Secret/Content-Type/common UA. Successful send allocates domain metadata before read/status. Every read error including empty wins; only500 with either exact binary unavailable-project marker suppresses status cause.200 whole-document typed Data any/Errors []any preserves duplicate/null/sticky errors and original generic numeric checks in known fields only. False/0/emptystring/empty containers are nonnil Data; wrongtyped errors objects are not generic-decoded. Known helper-produced float causes gain .data/.errors context without classifying arbitrary diagnostics; known %w wrappers unwrap structurally. Release precedes publication/key-only setter. Owned failures remain fatal with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/hasura.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_hasura.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Deterministic match order does not reproduce Go map iteration when choosing the first verified domain", "Complete shared regexp/arbitrary-byte, JSON/resource/Reader and native HTTP/deferred-close behavior", "Full engine/output/platform parity"]
+    },
+    "hellosign/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/hellosign/hellosign.go",
+      "scope_notes": "HelloSign395/v0/default enabled/no hints. Keyword-only folding captures word-bounded64 mixed-alphanumeric/hyphen/slash/plus occurrences and duplicates, including contextual nonword edges rather than Base64/token validation. Raw/key only. Finding precedes nil-context constructor skip, then true Basic(KEY,empty), encoding65 plaintext bytes including the colon into88 Base64 bytes with one padding character. SANE5 bodyless account GET uses Basic/common UA only. Every successful2xx verifies regardless of body/read errors; the whole mixed shared setup/Do domain retains false without setters or diagnostic classifiers. Original authorization survives release without extending synthesized storage. Every owned nonzero failure remains fatal before ordinary outcomes, rolling back only invocation additions.",
+      "native_files": ["src/detectors/hellosign.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_hellosign.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
+    "helpcrunch/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/helpcrunch/helpcrunch.go",
+      "scope_notes": "HelpCrunch164/v0/default enabled/no hints. Keyword-only folding captures328 mixed-alphanumeric/hyphen/plus/slash/equals bytes from a word start, with NO ending boundary; original duplicates and prefixes of longer strings remain, without JWT/Base64 validation. Raw/key only. Finding precedes nil-context constructor skipping and complete335-byte Bearer assembly. SANE5 bodyless departments GET uses Authorization/common UA only. Every successful2xx verifies ignoring body/read errors; whole mixed shared setup/Do failures retain false without a setter. Provider-owned failures are fatal before skip/suppression/success with invocation-only caller-preserving rollback. Provider-original storage survives each ordinary release; synthesized request/header/UA does not gain a longer lifetime.",
+      "native_files": ["src/detectors/helpcrunch.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_helpcrunch.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
+    "helpscout/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/helpscout/helpscout.go",
+      "scope_notes": "Helpscout153/v0/default enabled/no hints. Keyword-only folding captures word-bounded40 lowercase-alphanumeric occurrences, not hex-only keys, with original duplicates. Raw/key only. Finding precedes nil-context constructor skip, then Basic(KEY,literal uppercase X):42 plaintext bytes,56 Base64 bytes without padding. SANE5 bodyless collections GET uses Basic/common UA only, not Content-Type/Accept or dedup. All successful2xx verify despite body/read errors; whole mixed shared setup/Do causes retain false without a setter. Every module-owned nonzero capture/finding/encoder/projection/push failure is fatal before ordinary outcomes with invocation-only rollback preserving caller findings. Original auth/key/URL survive per-attempt release; deferred source close timing remains partial.",
+      "native_files": ["src/detectors/helpscout.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_helpscout.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

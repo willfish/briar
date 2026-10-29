@@ -764,6 +764,26 @@ check(rows[0]["Raw"] == vault_secret and rows[0]["RawV2"] == vault_role + ":" + 
 check(rows[0]["SecretParts"] == {"role_id": vault_role, "secret_id": vault_secret}, "AppRole does not add a URL secret part")
 check(rows[0]["ExtraData"] == {"URL": vault_auth_url} and not rows[0]["Redacted"] and not rows[0]["Verified"], "AppRole NoV retains the whole binary path and never issues a login")
 
+hasura_key, hasura_domain = key40 + key32[:24], "Project101.hasura.app"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Hasura"], ("HaSuRa " + hasura_key + "\n" + hasura_domain).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 1030, "Hasura dispatches required key-domain products")
+check(rows[0]["Raw"] == hasura_key and rows[0]["RawV2"] == hasura_domain + ":" + hasura_key, "Hasura RawV2 keeps domain before key")
+check(rows[0]["SecretParts"] == {"domain": hasura_domain, "key": hasura_key} and rows[0]["ExtraData"] is None, "Hasura NoV preserves both roles without verification metadata")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=1030"], ("hasura " + hasura_key).encode())
+check(not rows, "Hasura cannot emit a key without its domain")
+hellosign_key = key40[:30] + "-/+" + key40[:31]
+helpcrunch_key = (key40 * 9)[:328]
+helpcrunch_key = helpcrunch_key[:100] + "+/=" + helpcrunch_key[103:]
+for selector, number, key, prefix in (("HelloSign", 395, hellosign_key, "HeLlOsIgN "),
+                                     ("HelpCrunch", 164, helpcrunch_key, "HeLpCrUnCh "),
+                                     ("Helpscout", 153, "z" + key40[1:], "HeLpScOuT ")):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], (prefix + key).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Help provider selectors dispatch enabled source scanners")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Help providers retain complete provider-specific captures")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Help provider NoV does not probe services or invent metadata")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=HelpCrunch"], ("helpcrunch " + helpcrunch_key + "EXTRA").encode())
+check(len(rows) == 1 and rows[0]["Raw"] == helpcrunch_key, "HelpCrunch has no ending boundary and retains its complete 328-byte prefix")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

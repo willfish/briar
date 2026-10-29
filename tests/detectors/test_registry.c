@@ -389,12 +389,31 @@ static const registration expected[] = {
     {1061, 0, "HashiCorpVaultBatchToken", "hvb.", 54, true, 1024},
     {1036, 0, "HashiCorpVaultAuth", "hashicorp", 36, true, 1024},
     {1062, 0, "HashiCorpVaultToken", "hvs.", 94, true, 1024},
+    {1030, 0, "Hasura", "hasura", 64, true, -1},
+    {395, 0, "HelloSign", "hellosign", 64, true, -1},
+    {164, 0, "HelpCrunch", "helpcrunch", 328, true, -1},
+    {153, 0, "Helpscout", "helpscout", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 1030) {
+        char key[65], input[160], raw_v2[160]; test_secret(key, 64, 0);
+        const char *domain = "Registry101.hasura.app";
+        snprintf(input, sizeof(input), "hasura %s\n%s", key, domain);
+        snprintf(raw_v2, sizeof(raw_v2), "%s:%s", domain, key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        const br_result *r = &results.items[0]; br_json *part = NULL;
+        CHECK(r->detector_type == 1030 && r->raw.len == 64 && !memcmp(r->raw.data, key, 64));
+        CHECK(r->raw_v2.len == strlen(raw_v2) && !memcmp(r->raw_v2.data, raw_v2, strlen(raw_v2)));
+        CHECK(r->secret_parts && json_object_object_length(r->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(r->secret_parts, "domain", &part) && !strcmp(json_object_get_string(part), domain));
+        CHECK(json_object_object_get_ex(r->secret_parts, "key", &part) && !strcmp(json_object_get_string(part), key));
+        CHECK(!r->redacted && !r->extra_data && !r->verified && !r->verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 1020) {
         char key[73] = "pat.", input[100];
         test_secret(key + 4, 22, 0); key[26] = '.';
