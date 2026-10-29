@@ -408,5 +408,9 @@ int br_hunter_init(const br_detector **out, char **error);
 int br_hybiscus_init(const br_detector **out, char **error);
 int br_hypertrack_init(const br_detector **out, char **error);
 int br_ibmclouduserkey_init(const br_detector **out, char **error);
+int br_iconfinder_init(const br_detector **out, char **error);
+int br_iexapis_init(const br_detector **out, char **error);
+int br_iexcloud_init(const br_detector **out, char **error);
+int br_imagekit_init(const br_detector **out, char **error);
 
 #endif
