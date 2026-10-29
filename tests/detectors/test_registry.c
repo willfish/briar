@@ -415,6 +415,10 @@ static const registration expected[] = {
     {813, 0, "Iexapis", "iexapis", 35, true, -1},
     {557, 0, "Iexcloud", "iexcloud", 35, true, -1},
     {250, 0, "Imagekit", "imagekit", 36, true, -1},
+    {349, 0, "Imagga", "imagga", 72, true, -1},
+    {509, 0, "Impala", "impala", 46, true, -1},
+    {906, 0, "Infura", "infura", 32, true, -1},
+    {271, 0, "Insightly", "insightly", 36, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
@@ -911,6 +915,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     test_secret(key, entry->key_len, 0);
     if (entry->type == 763)
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+    if (entry->type == 349) key[15] = '=';
+    if (entry->type == 509) key[15] = '_';
+    if (entry->type == 271) key[15] = '-';
     if (entry->type == 259) strcpy(key, "A7z9w2y5-g6h8-j3k4-m1n0-p2q4r6s8t1u3");
     if (entry->type == 163) strcpy(key, "B7C9D2E5-F6G8H3J4-K1M0N2P4-Q6R8S1T3");
     if (entry->type == 3 && entry->version == 2) memcpy(key, "b7c1Q~", 6);

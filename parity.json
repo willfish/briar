@@ -3564,6 +3564,42 @@
       "evidence": ["tests/detectors/test_imagekit.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
     },
+    "imagga/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/imagga/imagga.go",
+      "scope_notes": "Imagga349/v0/enabled/no hints. Keyword-onlyCI prefix and starting word boundary capture72 mixed-alphanumeric/equals bytes, no ending boundary, underscore or Base64 validation. Preserve occurrences, duplicates, longer prefixes and contextual leading equals; Raw/key only. Finding precedes nil-constructor drop, then JSON Content-Type and literal Basic SPACE ORIGINALKEY, not true Basic encoding. SANE5 bodyless usage GET/common UA/no Accept/dedup. All2xx verify ignoring body/read errors; whole mixed setup/Do failures false-kept without setters or diagnostic classification. Every owned nonzero capture/finding/auth/push failure fatal before ordinary outcomes; invocation rollback preserves caller findings. Provider originals survive exactly one ordinary release per attempt; synthesized headers/UA end at send return.",
+      "native_files": ["src/detectors/imagga.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_imagga.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "impala/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/impala/impala.go",
+      "scope_notes": "Impala509/v0/enabled/no hints. Keyword-onlyCI prefix and word-bounded46 mixed-alphanumeric/underscore original occurrences/duplicates; Raw/key only. Finding precedes nil-constructor drop, then canonical X-Api-Key using the original capture. SANE5 bodyless sandbox bookings GET/common UA only/no Authorization/Type/Accept/dedup. All2xx verify ignoring body/read errors; whole mixed setup/Do failures false-kept without setters. All owned nonzero failures fatal before ordinary outcomes with invocation-only caller-preserving rollback. Original captures/headers survive one ordinary release per attempt including preparation failures; synthesized headers/UA only send return. No bookings or service actions during verification work.",
+      "native_files": ["src/detectors/impala.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_impala.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "infura/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/infura/infura.go",
+      "scope_notes": "Infura906/v0/enabled/no hints. Keyword-onlyCI prefix and word-bounded32 lowercase-alphanumeric bytes, not hex; occurrences/duplicates/Raw-key only. Finding then exact declaration-ordered RPC payload Reader and complete v3 key URL precede nil-constructor drop. SANE5 POST/JSON/common UA only/no Auth/Accept/dedup. Whole mixed setup/Do failures false-kept without setters. Every successful send reads every status first; any body-error pointer including empty drops the finding. Successful reads verify the exact eight-byte quoted result binary substring anywhere, including after NUL, independent of status; no JSON parsing or word/case normalization. Owned nonzero capture/finding/URL/body/push failures fatal before ordinary outcomes, invocation-only rollback preserves callers. Exactly one ordinary release per attempt with originals alive, without reproducing source leaks/deferred timing. No live RPC or blockchain actions.",
+      "native_files": ["src/detectors/infura.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_infura.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "insightly/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/insightly/insightly.go",
+      "scope_notes": "Insightly271/v0/enabled/no hints. Keyword-onlyCI prefix and word-bounded36 lowercase-alphanumeric/hyphen bytes, not UUID/hex validation; original occurrences/duplicates/contextual hyphens/Raw-key only. Finding then fixed capital Contacts query constructor/nil drop precede true Basic(KEY,empty),37 plaintext KEYcolon/52 encoded/two padding equals/58 auth bytes+NUL59. All nonzero owned encoder failures including positive returns fatal after constructor. SANE5 bodyless GET/Auth/common UA only/no Type/Accept/dedup. All2xx verify ignoring body/read errors; whole mixed setup/Do failures false-kept without setters. Owned failures fatal before ordinary outcomes with invocation-only caller-preserving rollback. Original authorization/captures survive exactly one ordinary release per attempt including preparation failure, synthesized storage only send return.",
+      "native_files": ["src/detectors/insightly.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_insightly.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

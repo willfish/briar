@@ -699,6 +699,10 @@ def fixtures():
     iexapis_key = b"sk_z" + alnum("iexapis-key", 31).lower()
     iexcloud_key = b"z" + alnum("iexcloud-head", 16).lower() + b"_" + alnum("iexcloud-tail", 17).lower()
     imagekit_key = alnum("imagekit-head", 16) + b"_=" + alnum("imagekit-tail", 18)
+    imagga_key = alnum("imagga-head", 31) + b"=" + alnum("imagga-tail", 40)
+    impala_key = alnum("impala-head", 22) + b"_" + alnum("impala-tail", 23)
+    infura_key = b"z" + alnum("infura-key", 31).lower()
+    insightly_key = b"z" + alnum("insightly-head", 14).lower() + b"-" + alnum("insightly-tail", 20).lower()
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1436,6 +1440,16 @@ def fixtures():
         ("imagekit", 250, b"ImAgEkIt " + imagekit_key),
         ("imagekit_overlong", 250, b"imagekit " + imagekit_key + b"EXTRA"),
         ("imagekit_equal_start", 250, b"imagekit=" + imagekit_key[1:]),
+        ("imagga", 349, b"ImAgGa " + imagga_key),
+        ("imagga_overlong", 349, b"imagga " + imagga_key + b"EXTRA"),
+        ("imagga_equal_start", 349, b"imagga=" + imagga_key[1:]),
+        ("imagga_underscore", 349, b"imagga " + imagga_key[:31] + b"_" + imagga_key[32:]),
+        ("impala", 509, b"ImPaLa " + impala_key),
+        ("impala_overlong", 509, b"impala " + impala_key + b"X"),
+        ("infura", 906, b"InFuRa " + infura_key),
+        ("infura_upper_key", 906, b"infura A" + infura_key[1:]),
+        ("insightly", 271, b"InSiGhTlY " + insightly_key),
+        ("insightly_upper_key", 271, b"insightly A" + insightly_key[1:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1757,6 +1771,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact provider grammars, dispatch and Imagekit's missing ending boundary must retain the expected findings")
+    if name.startswith(("imagga_", "impala_", "infura_", "insightly_")):
+        empty = name.startswith(("imagga_underscore_", "impala_overlong_", "infura_upper_key_", "insightly_upper_key_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact alphabets and provider-specific boundaries must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

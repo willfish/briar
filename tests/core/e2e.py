@@ -867,6 +867,18 @@ for selector, number, key, source in (("IconFinder", 487, iconfinder_key, "IcOnF
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=813"], iexapis_key.encode())
 check(not rows, "Iexapis requires its provider dispatch keyword, not merely the literal sk_ token prefix")
 
+imagga_key = key40[:20] + "=" + key40[21:] + key32
+impala_key = key40 + "_Z" + key32[:4]
+insightly_key = key32 + "-z9q"
+for selector, number, key, source in (("Imagga", 349, imagga_key, "ImAgGa " + imagga_key + "EXTRA"),
+                                     ("Impala", 509, impala_key, "ImPaLa " + impala_key),
+                                     ("Infura", 906, key32, "InFuRa " + key32),
+                                     ("Insightly", 271, insightly_key, "InSiGhTlY " + insightly_key)):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Imagga, Impala, Infura and Insightly dispatch exact provider grammars")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Imagga retains its longer-token prefix; Infura and Insightly are not hex or UUID validators")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV exposes only source key metadata and never probes services")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
