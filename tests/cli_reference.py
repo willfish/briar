@@ -1680,6 +1680,8 @@ def fixtures():
         ("livestorm_wrong_head", 735, b"livestorm X" + livestorm_key[1:] + b" "),
         ("liveagent", 165, b"LiVeAgEnT " + liveagent_key + b"\nhttps://z7p8.ladesk.com"),
         ("liveagent_missing_domain", 165, b"liveagent " + liveagent_key),
+        ("jdbc_example", 10, b"jdbc:sqlite:/data/example.db"),
+        ("jdbc_postgres", 10, b"jdbc:postgresql://BriarU:BriarP@192.0.2.7:5432/BriarDb"),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2094,6 +2096,8 @@ def compare(native, reference, case):
         count = 0 if name.startswith("liveagent_missing_domain_") else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": LiveAgent still requires independent key and domain captures without verification")
+    if name.startswith("jdbc_") and (len(actual) != 1 or len(expected) != 1):
+        raise AssertionError(name + ": JDBC custom false-positive policy retains example paths and parsed connection metadata without verification")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

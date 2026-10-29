@@ -1145,6 +1145,17 @@ check(not rows[0]["Verified"] and "VerificationError" not in rows[0], "LiveAgent
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=165"], ("liveagent " + key32).encode())
 check(not rows, "LiveAgent still needs the independent domain without verification")
 
+jdbc_example = "jdbc:sqlite:/data/example.db"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=JDBC"], jdbc_example.encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 10 and rows[0]["Raw"] == jdbc_example, "JDBC always-false custom filtering retains example paths")
+check(rows[0]["Redacted"] == jdbc_example and rows[0]["SecretParts"] == {"connection_string": jdbc_example} and rows[0]["ExtraData"] is None, "JDBC preserves anonymous redaction and connection-string parts")
+jdbc_postgres = "jdbc:postgresql://BriarU:BriarP@192.0.2.7:5432/BriarDb"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=10"], jdbc_postgres.encode())
+check(len(rows) == 1 and rows[0]["Raw"] == jdbc_postgres and rows[0]["Redacted"] == jdbc_postgres.replace("BriarP@", "******@"), "JDBC numeric selection retains Raw and applies source Basic redaction")
+check(rows[0]["ExtraData"] == {"host": "192.0.2.7:5432", "username": "BriarU", "database": "BriarDb"}, "JDBC parses connection metadata even without verification")
+check(rows[0]["SecretParts"] == {"connection_string": jdbc_postgres} and rows[0]["RawV2"] == "", "JDBC does not invent alternate raw credentials")
+check(not rows[0]["Verified"] and "VerificationError" not in rows[0], "JDBC NoV does not attempt native SQL")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

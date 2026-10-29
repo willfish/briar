@@ -483,11 +483,26 @@ static const registration expected[] = {
     {438, 0, "LinkPreview", "linkpreview", 32, true, -1},
     {735, 0, "Livestorm", "livestorm", 243, true, -1},
     {165, 0, "LiveAgent", "liveagent", 32, true, 1024},
+    {10, 0, "JDBC", "jdbc", 28, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 10) {
+        const char *connection = "jdbc:sqlite:/data/example.db";
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, connection, strlen(connection));
+        CHECK(results.len == 1 && results.items[0].detector_type == 10);
+        CHECK(results.items[0].raw.len == strlen(connection) && !memcmp(results.items[0].raw.data, connection, strlen(connection)));
+        CHECK(results.items[0].redacted && !strcmp(results.items[0].redacted, connection));
+        br_json *value = NULL;
+        CHECK(results.items[0].secret_parts && json_object_object_get_ex(results.items[0].secret_parts, "connection_string", &value));
+        CHECK(!strcmp(json_object_get_string(value), connection));
+        CHECK(!results.items[0].extra_data && !results.items[0].raw_v2.data && !results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 165) {
         const char *domain = "https://briar.ladesk.com";
         char key[33], input[120]; test_secret(key, 32, 7);
@@ -2393,7 +2408,7 @@ int main(void)
               detector->start_offset == (entry->type == 1013 || entry->type == 6 ? 4096 : entry->type == 983 ? 1024 : -1) &&
               detector->max_credential_span == entry->span);
         CHECK(detector->state && detector->scan);
-        if (entry->type == 957 || entry->type == 1019 || entry->type == 958 || entry->type == 1024 || entry->type == 975) {
+        if (entry->type == 957 || entry->type == 1019 || entry->type == 958 || entry->type == 1024 || entry->type == 975 || entry->type == 10) {
             char *reason = NULL;
             CHECK(detector->false_positive && !detector->false_positive(detector, NULL, &reason));
             CHECK(reason && !strcmp(reason, ""));
