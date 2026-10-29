@@ -4279,6 +4279,42 @@
       "evidence": ["tests/detectors/test_meraki.c", "tests/detectors/test_registry.c", "tests/core/test_http_native.c", "tests/core/test_http_coalescing.c", "tests/core/http_profiles.c", "tests/core/http_profiles.py", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior, including Go unique-map iteration order", "NUL-bearing metadata object keys remain explicitly unsupported after successful full typed decode", "Go package-client sharing across runtimes and optional custom-client configuration/lifetime", "Full native SANE HTTP/redirect/Reader/drain/cancellation-notification and streaming-close behavior"]
     },
+    "linemessaging/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/linemessaging/linemessaging.go",
+      "scope_notes": "LineMessaging168/v0/source DISABLED/no hints. Dispatch/extraction keyword line with keyword-only folding, word-bounded171..172 Base64-alphabet bytes without equals; original occurrences/duplicates and key-only results, no decoding/token validation. Finding precedes nil-context constructor drop; complete owned Bearer follows successful constructor. Bodyless GET https://api.line.me/v2/bot/info/SANE5/commonUA/no dedup. Whole preparation/Do errors keep false/no setter, successful-send2xx verifies without reading body or suppressing body_error. Successful responses and ORIGINAL Bearer values stay live through verdict/publication to scanner-return LIFO; failed sends immediately release once. Deferred-list construction/other owned nonzero failures are fatal before ordinary outcomes, drain successes and preserve caller findings. Selectors cannot enable this source-disabled implementation; positive capture/verifier evidence is direct native API testing, not CLI findings.",
+      "native_files": ["src/detectors/linemessaging.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_linemessaging.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and optional source-client lifetime/sharing", "Disabled identity has no enabled CLI-oracle execution; direct native behavior and selector rejection only"]
+    },
+    "linenotify/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/linenotify/linenotify.go",
+      "scope_notes": "LineNotify176/v0/default/no hints. Keyword-only folding and word-bounded43 mixed-alphanumeric original occurrences/duplicates, key-only results/no setter. Finding precedes nil-context constructor drop, then complete owned Bearer. Exact bodyless POST https://notify-api.line.me/api/notify?message=Notification Successful retains literal query SPACE, with NO invented body/Content-Type/Accept; SANE5/commonUA/no dedup. Source action can SEND A NOTIFICATION; all evidence strictly synthetic/offline, CLI verification remains disabled. Whole preparation/Do errors keep false; successful-send2xx verifies while ignoring body/read errors. Successful response and original Bearer live through verdict/publication until scanner-return LIFO, failed sends release immediately once. Every owned nonzero/retention failure fatal before ordinary outcomes with pending drains and caller-preserving rollback.",
+      "native_files": ["src/detectors/linenotify.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_linenotify.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/literal-query transport and source-client lifetime behavior"]
+    },
+    "linkpreview/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/linkpreview/linkpreview.go",
+      "scope_notes": "LinkPreview438/v0/default/no hints. Keyword-only folding and word-bounded32 mixed-alphanumeric occurrences/duplicates; key-only results/no setter. Finding then COMPLETE OWNED literal https://api.linkpreview.net/?key=KEY&q=https://google.com URL BEFORE nil-context constructor drop, no escaping/provider headers/body/dedup. URL allocation failure fatal even when nil would otherwise drop. SANE5 GET/commonUA; successful-send2xx verifies, ignores body/read errors; whole preparation/Do errors keepfalse. Successful response and ORIGINAL URL survive verdict/publication until scanner-return LIFO; failed sends release immediately once. All owned nonzero/retention/push failures drain pending successes and roll back only invocation additions.",
+      "native_files": ["src/detectors/linkpreview.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_linkpreview.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifetime/sharing behavior"]
+    },
+    "livestorm/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/livestorm/livestorm.go",
+      "scope_notes": "Livestorm735/v0/default/no hints. Keyword-only folding, EXACT source literal head and [0-9A-Z-a-z] middle class spelling,43-byte alphanumeric/underscore/hyphen signature and REQUIRED one captured space/CR/LF.244-byte capture becomes243-byte Raw after source TrimSpace, no final boundary/JWT validation; original occurrences/duplicates, key-only results/no setter. Finding before nil-context constructor drop, then complete owned RAW Authorization, not Bearer. Bodyless GET https://api.livestorm.co/v1/ping/SANE5/commonUA/no dedup. Whole preparation/Do errors keepfalse; successful-send2xx verifies ignoring body/read errors. Successful responses and ORIGINAL Authorization survive verdict/publication to scanner-return LIFO; failed sends release immediately once. Every owned nonzero/retention/push failure fatal before ordinary outcomes, drains successes and preserves caller findings via invocation-only rollback.",
+      "native_files": ["src/detectors/livestorm.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_livestorm.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifetime/sharing behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

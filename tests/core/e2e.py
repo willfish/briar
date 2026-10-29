@@ -1121,6 +1121,22 @@ check(not rows[0]["Verified"] and "VerificationError" not in rows[0], "Meraki No
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=1000"], ("meraki " + meraki_key.upper()).encode())
 check(not rows, "Meraki folds its keyword but not its hexadecimal key")
 
+livestorm_key = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhcGkubGl2ZXN0b3JtLmNvIiwianRpIjoi" + (key40 * 4)[:134] + "." + (key40 * 2)[:43]
+for selector, number, key, tail in (
+    ("LineNotify", 176, (key40 * 2)[:43], ""),
+    ("LinkPreview", 438, key32, ""),
+    ("Livestorm", 735, livestorm_key, " "),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], (selector + " " + key + tail).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number and rows[0]["Raw"] == key, "LINE, preview and webinar scanners dispatch their exact source grammars")
+    check(rows[0]["SecretParts"] == {"key": key} and rows[0]["RawV2"] == "" and rows[0]["ExtraData"] is None, "The three scanners retain only source key fields")
+    check(not rows[0]["Verified"] and "VerificationError" not in rows[0], "NoV sends no notification or other provider request")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Livestorm"], ("livestorm " + livestorm_key).encode())
+check(not rows, "Livestorm requires its captured trailing space, CR or LF even at EOF")
+for selector in ("168", "LineMessaging"):
+    proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], ("line " + (key40 * 5)[:171]).encode(), code=1)
+    check(not rows and b"no enabled implemented detectors selected" in proc.stderr, "Explicit selectors cannot enable source-disabled LineMessaging")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

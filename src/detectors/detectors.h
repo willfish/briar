@@ -474,5 +474,9 @@ int br_jiratoken_v1_init(const br_detector **out, char **error);
 int br_jiratoken_v2_init(const br_detector **out, char **error);
 int br_loadmill_init(const br_detector **out, char **error);
 int br_meraki_init(const br_detector **out, char **error);
+int br_linemessaging_init(const br_detector **out, char **error);
+int br_linenotify_init(const br_detector **out, char **error);
+int br_linkpreview_init(const br_detector **out, char **error);
+int br_livestorm_init(const br_detector **out, char **error);
 
 #endif

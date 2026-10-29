@@ -793,6 +793,9 @@ def fixtures():
     jiratoken_kelvin = "\njira XKName@grum.com\njira X\u212aName@grum.com".encode()
     loadmill_key = alnum("loadmill-key", 40)
     meraki_key = synthetic("meraki-key", 40)
+    linenotify_key = alnum("linenotify-key", 43)
+    linkpreview_key = alnum("linkpreview-key", 32)
+    livestorm_key = b"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhcGkubGl2ZXN0b3JtLmNvIiwianRpIjoi" + alnum("livestorm-middle", 134) + b"." + alnum("livestorm-signature", 43)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1668,6 +1671,12 @@ def fixtures():
         ("loadmill_short", 758, b"loadmill " + loadmill_key[:-1]),
         ("meraki", 1000, b"MeRaKi " + meraki_key),
         ("meraki_upper_key", 1000, b"meraki " + meraki_key.upper()),
+        ("linenotify", 176, b"LiNeNoTiFy " + linenotify_key),
+        ("linenotify_short", 176, b"linenotify " + linenotify_key[:-1]),
+        ("linkpreview", 438, b"LiNkPrEvIeW " + linkpreview_key),
+        ("linkpreview_short", 438, b"linkpreview " + linkpreview_key[:-1]),
+        ("livestorm", 735, b"LiVeStOrM " + livestorm_key + b" "),
+        ("livestorm_wrong_head", 735, b"livestorm X" + livestorm_key[1:] + b" "),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2073,6 +2082,11 @@ def compare(native, reference, case):
         count = 0 if name.startswith("meraki_upper_key_") else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": Meraki keyword-only folding and lowercase-hex key grammar must retain findings")
+    if name.startswith(("linenotify_", "linkpreview_", "livestorm_")):
+        empty = name.startswith(("linenotify_short_", "linkpreview_short_", "livestorm_wrong_head_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact LINE, LinkPreview and Livestorm grammars must retain findings and Livestorm suffix trimming")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

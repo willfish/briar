@@ -478,11 +478,29 @@ static const registration expected[] = {
     {120, 2, "JiraToken", "atlassian", 54, true, 1024},
     {758, 0, "Loadmill", "loadmill", 40, true, -1},
     {1000, 0, "Meraki", "meraki", 40, true, -1},
+    {168, 0, "LineMessaging", "line", 171, false, -1},
+    {176, 0, "LineNotify", "linenotify", 43, true, -1},
+    {438, 0, "LinkPreview", "linkpreview", 32, true, -1},
+    {735, 0, "Livestorm", "livestorm", 243, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 735) {
+        static const char prefix[] = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhcGkubGl2ZXN0b3JtLmNvIiwianRpIjoi";
+        char key[244], input[280];
+        CHECK(sizeof(prefix) - 1 == 65);
+        memcpy(key, prefix, 65); test_secret(key + 65, 134, 7);
+        key[199] = '.'; test_secret(key + 200, 43, 9);
+        snprintf(input, sizeof(input), "livestorm %s ", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input));
+        CHECK(results.len == 1);
+        test_key_result(&results.items[0], 735, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 1000) {
         const char *key = "b7c9d2e5f6a8b3c4d1e0f2a4b6c8d1e3a5c7e9f1";
         char input[64]; snprintf(input, sizeof(input), "MeRaKi %s", key);
