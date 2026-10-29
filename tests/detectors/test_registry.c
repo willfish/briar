@@ -411,12 +411,24 @@ static const registration expected[] = {
     {773, 0, "Hybiscus", "hybiscus", 43, true, -1},
     {459, 0, "Hypertrack", "hypertrack", 54, true, 1024},
     {73, 0, "IbmCloudUserKey", "ibm", 44, false, -1},
+    {487, 0, "IconFinder", "iconfinder", 64, true, -1},
+    {813, 0, "Iexapis", "iexapis", 35, true, -1},
+    {557, 0, "Iexcloud", "iexcloud", 35, true, -1},
+    {250, 0, "Imagekit", "imagekit", 36, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 813) {
+        char key[36] = "sk_", input[60]; test_secret(key + 3, 32, 0);
+        snprintf(input, sizeof(input), "iexapis %s", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 813, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 459) {
         char account[28], key[55], input[130]; test_secret(account, 27, 0); test_secret(key, 54, 7);
         snprintf(input, sizeof(input), "hypertrack %s\nhypertrack %s", account, key);

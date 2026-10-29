@@ -852,6 +852,21 @@ for selector in ("IbmCloudUserKey", "73"):
                         ("ibm " + key40 + key32[:4]).encode(), code=1)
     check(not rows and b"no enabled implemented detectors selected" in proc.stderr, "IBM name and numeric selectors cannot enable its commented source default")
 
+iconfinder_key = key40 + key32[:24]
+iexapis_key = "sk_" + key32
+iexcloud_key = key40[:12] + "_" + key40[13:35]
+imagekit_key = key32 + "_=Z9"
+for selector, number, key, source in (("IconFinder", 487, iconfinder_key, "IcOnFiNdEr " + iconfinder_key),
+                                     ("Iexapis", 813, iexapis_key, "IeXaPiS " + iexapis_key),
+                                     ("Iexcloud", 557, iexcloud_key, "IeXcLoUd " + iexcloud_key),
+                                     ("Imagekit", 250, imagekit_key, "ImAgEkIt " + imagekit_key + "EXTRA")):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "IconFinder, distinct IEX providers and Imagekit dispatch their exact grammars")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Imagekit retains its 36-byte longer-token prefix; all results stay key-only")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV neither probes services nor invents metadata")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=813"], iexapis_key.encode())
+check(not rows, "Iexapis requires its provider dispatch keyword, not merely the literal sk_ token prefix")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

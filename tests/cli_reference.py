@@ -695,6 +695,10 @@ def fixtures():
     hybiscus_key = alnum("hybiscus-key", 43)
     hypertrack_account, hypertrack_key = alnum("hypertrack-account", 27), alnum("hypertrack-key", 54)
     hypertrack_input = b"HyPeRtRaCk " + hypertrack_account + b"\nhypertrack " + hypertrack_key
+    iconfinder_key = alnum("iconfinder-key", 64)
+    iexapis_key = b"sk_z" + alnum("iexapis-key", 31).lower()
+    iexcloud_key = b"z" + alnum("iexcloud-head", 16).lower() + b"_" + alnum("iexcloud-tail", 17).lower()
+    imagekit_key = alnum("imagekit-head", 16) + b"_=" + alnum("imagekit-tail", 18)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1422,6 +1426,16 @@ def fixtures():
         ("hybiscus_short", 773, b"hybiscus " + hybiscus_key[:42]),
         ("hypertrack", 459, hypertrack_input),
         ("hypertrack_missing_account", 459, b"hypertrack " + hypertrack_key),
+        ("iconfinder", 487, b"IcOnFiNdEr " + iconfinder_key),
+        ("iconfinder_overlong", 487, b"iconfinder " + iconfinder_key + b"X"),
+        ("iexapis", 813, b"IeXaPiS " + iexapis_key),
+        ("iexapis_upper_prefix", 813, b"iexapis SK_" + iexapis_key[3:]),
+        ("iexapis_no_dispatch", 813, iexapis_key),
+        ("iexcloud", 557, b"IeXcLoUd " + iexcloud_key),
+        ("iexcloud_upper_key", 557, b"iexcloud A" + iexcloud_key[1:]),
+        ("imagekit", 250, b"ImAgEkIt " + imagekit_key),
+        ("imagekit_overlong", 250, b"imagekit " + imagekit_key + b"EXTRA"),
+        ("imagekit_equal_start", 250, b"imagekit=" + imagekit_key[1:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1738,6 +1752,11 @@ def compare(native, reference, case):
         count = 0 if name.startswith(("hunter_upper_key_", "hybiscus_short_", "hypertrack_missing_account_")) else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact capture alphabets and the required hidden Hypertrack account must retain the expected findings")
+    if name.startswith(("iconfinder_", "iexapis_", "iexcloud_", "imagekit_")):
+        empty = name.startswith(("iconfinder_overlong_", "iexapis_upper_prefix_", "iexapis_no_dispatch_", "iexcloud_upper_key_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact provider grammars, dispatch and Imagekit's missing ending boundary must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

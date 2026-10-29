@@ -3528,6 +3528,42 @@
       "evidence": ["tests/detectors/test_ibmclouduserkey.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior", "Positive pinned-reference CLI evidence unavailable while source default remains disabled"]
     },
+    "iconfinder/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/iconfinder/iconfinder.go",
+      "scope_notes": "IconFinder487/v0/default enabled/no hints. Keyword-onlyCI prefix plus word-bounded64 mixed-alphanumeric original occurrences/duplicates, Raw/key only. Finding precedes nil constructor drop; complete Bearer assembly follows construction. SANE5 bodyless fixed v4/iconsets GET/Auth/common UA only/no Type/Accept/dedup. Every successful2xx verifies ignoring body/readerrors at every status; whole mixed shared setup/Do failures false-kept without setters or diagnostic classification. Every owned nonzero capture/finding/projection/push failure fatal before ordinary skip/drop/suppression/success, preserving caller findings through invocation-only rollback. Provider originals survive one ordinary release per attempt including preparation failure; synthesized effective request/header-array/UA only send-return.",
+      "native_files": ["src/detectors/iconfinder.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_iconfinder.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "iexapis/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/iexapis/iexapis.go",
+      "scope_notes": "Iexapis813/v0/default enabled/no hints, distinct named provider/grammar/URL/client contract from Iexcloud. Keyword-onlyCI iexapis prefix plus word-bounded literal case-sensitive sk_ and32 lower-alphanumeric bytes, not hex; dispatch iexapis rather than token prefix. Original occurrences/duplicates/Raw-key only. Complete literal stable/stock/aapl/quote token query precedes nil constructor drop. SANE5 bodyless GET/common UA only/no Auth/Type/Accept/dedup. Every2xx verifies ignoring bodies/readerrors; whole mixed shared setup/Do failures false-kept without setters. All owned nonzero capture/finding/URL/push failures fatal before ordinary outcomes with invocation-only caller-preserving rollback. Original URL/captures survive exactly one release each attempt including failed preparation, synthesized storage only send-return.",
+      "native_files": ["src/detectors/iexapis.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_iexapis.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "iexcloud/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/iexcloud/iexcloud.go",
+      "scope_notes": "Iexcloud557/v0/default enabled/no hints, separate named provider from Iexapis. Keyword-onlyCI iexcloud prefix plus word-bounded35 lower-alphanumeric/underscore bytes, with NO required sk_ prefix and no hex validation. Original occurrences/duplicates/Raw-key only. Complete source-formatted v1/stock/aapl/quote token URL assembled before nil constructor drop, not Iexapis stable endpoint. SANE5 bodyless GET/common UA only/no Auth/Type/Accept/dedup. Every2xx verifies ignoring bodies/readerrors; whole mixed shared setup/Do failures false-kept without setters. All owned nonzero capture/finding/URL/assembly/push failures fatal before ordinary outcomes, invocation-only rollback preserves caller findings. Exactly one ordinary release each attempt including preparation failure; original URL/captures through release, synthesized headers/UA only send-return.",
+      "native_files": ["src/detectors/iexcloud.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_iexcloud.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "imagekit/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/imagekit/imagekit.go",
+      "scope_notes": "Imagekit250/v0/default enabled/no hints. Keyword-onlyCI prefix plus START word boundary and36 mixed-alphanumeric/underscore/equals bytes, NO ending boundary. Original occurrences/duplicates/longer-token36-byte prefixes/contextual leading equals retained without Base64 or semantic validation. Raw/key only. Fixed files GET nil constructor drop precedes true Basic(KEY,empty) encoding,37 plaintext KEYcolon to52 encoded/two padding equals/58 auth bytes+NUL59. Any nonzero owned encoder failure including+1 fatal AFTER constructor; no encoding before nil drop, no literal/key-only Base64 shortcuts. SANE5 bodyless GET/Auth/common UA only/no Type/Accept/dedup. Every2xx verifies ignoring bodies/readerrors; whole mixed setup/Do errors false-kept/no setter. All owned capture/finding/encoding/push nonzero failures fatal before ordinary outcomes with caller-preserving invocation-only rollback. Original auth/captures survive one ordinary release per attempt including preparation failure; synthesized request/header-array/UA only send-return.",
+      "native_files": ["src/detectors/imagekit.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_imagekit.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
