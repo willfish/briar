@@ -240,7 +240,9 @@ static void prefix_tests(void)
         c = prefix_match(jumping, 2, "(X)", SLICE("a x\xff" "bX"), mode != 0);
         CHECK(c.count == 1 && c.spans[0][0].begin == 4 && c.spans[0][1].begin == 5);
         const char *const fragments[] = {"ab.tract", "word"};
-        c = prefix_match(fragments, 2, "(X)", SLICE("word\xed\xa0\x80X"), mode != 0); CHECK(!c.count);
+        c = prefix_match(fragments, 2, "(X)", SLICE("word\xed\xa0\x80X"), mode != 0);
+        CHECK(c.count == 1 && c.spans[0][0].begin == 0 && c.spans[0][0].end == 8);
+        CHECK(c.spans[0][1].begin == 7 && c.spans[0][1].end == 8);
         c = prefix_match(word, 1, "(A)(B)", SLICE("wordAB"), mode != 0); CHECK(c.count == 1 && c.ngroups[0] == 3);
         c = prefix_match(word, 1, "(A*)", SLICE("word"), mode != 0); CHECK(c.count == 1 && c.spans[0][1].begin == c.spans[0][1].end);
         c = prefix_match(NULL, 0, "(X)", SLICE("X"), mode != 0); CHECK(c.count == 1);
@@ -313,6 +315,49 @@ static void prefix_sequence_tests(void)
             CHECK(c.spans[0][0].end == end + cases[i].capture_len);
             CHECK(c.spans[0][1].begin == end && c.spans[0][1].end == end + cases[i].capture_len);
         }
+    }
+}
+
+static void prefix_dot_tests(void)
+{
+    const struct {
+        const char *first, *second, *tail;
+        br_slice input;
+        size_t count, begin, end, capture_begin, capture_end;
+    } cases[] = {
+        {"ab.tract", "word", "(X)", SLICE("ab\xed\xa0\x80tract X"), 1, 0, 12, 11, 12},
+        {"ab.tract", "word", "(X)", SLICE("ab\ntract X"), 0, 0, 0, 0, 0},
+        {"ab.tract", "word", "(X)", SLICE("ab\rtract X"), 1, 0, 10, 9, 10},
+        {"ab.tract", "word", "(X)", SLICE("ab\xe0\x80\x8atract X"), 1, 0, 12, 11, 12},
+        {"ab.tract", "word", "(X)", SLICE("word\nX"), 1, 0, 6, 5, 6},
+        {"ab.tract", "ab", "([A-Z]+)", SLICE("abZtractX"), 1, 0, 9, 8, 9},
+        {"ab", "ab.tract", "([A-Z]+)", SLICE("abZtractX"), 1, 0, 3, 2, 3},
+        {"ab.tract", "word", "(X)", SLICE("ab#\xfftract X"), 0, 0, 0, 0, 0},
+        {"ab.tract", "word", "(X)", SLICE("ab#\x80tract X"), 0, 0, 0, 0, 0},
+        {"aba.tract", NULL, "(X)", SLICE("ababaZtractX"), 1, 2, 12, 11, 12},
+        {"k.s", "word", "(X)", SLICE("\xe2\x84\xaa\xed\xa0\x80\xc5\xbfX"), 1, 0, 9, 8, 9},
+    };
+    for (size_t mode = 0; mode < 2; ++mode) {
+        for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+            const char *const heads[] = {cases[i].first, cases[i].second};
+            captures c = prefix_match(heads, cases[i].second ? 2 : 1, cases[i].tail,
+                                      cases[i].input, mode != 0);
+            CHECK(c.count == cases[i].count);
+            if (c.count) {
+                CHECK(c.ngroups[0] == 2);
+                CHECK(c.spans[0][0].begin == cases[i].begin && c.spans[0][0].end == cases[i].end);
+                CHECK(c.spans[0][1].begin == cases[i].capture_begin && c.spans[0][1].end == cases[i].capture_end);
+            }
+        }
+        const char *const heads[] = {"ab.tract", "word"};
+        captures c = prefix_match(heads, 2, "(X)", SLICE("ab\xed\xa0\x80tract X word X"), mode != 0);
+        CHECK(c.count == 2);
+        CHECK(c.spans[0][0].begin == 0 && c.spans[0][0].end == 12 && c.spans[0][1].begin == 11);
+        CHECK(c.spans[1][0].begin == 13 && c.spans[1][0].end == 19 && c.spans[1][1].begin == 18);
+        c = prefix_match(heads, 2, "(X)", SLICE("abZtractXabYtractX"), mode != 0);
+        CHECK(c.count == 2);
+        CHECK(c.spans[0][0].begin == 0 && c.spans[0][0].end == 9 && c.spans[0][1].begin == 8);
+        CHECK(c.spans[1][0].begin == 9 && c.spans[1][0].end == 18 && c.spans[1][1].begin == 17);
     }
 }
 
@@ -585,7 +630,7 @@ int main(int argc, char **argv)
         puts("]"); return 0;
     }
     CHECK(BR_ABI_REVISION == 1);
-    result_tests(); regex_tests(); prefix_tests(); prefix_sequence_tests(); fp_tests(); http_tests(); browserstack_http_tests(); unsupported_native_profiles();
+    result_tests(); regex_tests(); prefix_tests(); prefix_sequence_tests(); prefix_dot_tests(); fp_tests(); http_tests(); browserstack_http_tests(); unsupported_native_profiles();
     printf("core: %zu assertions, 0 failures\n", checks);
     return 0;
 }

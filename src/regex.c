@@ -10,8 +10,8 @@
 #include <string.h>
 
 typedef struct {
-    pcre2_code *search, **heads, *tail;
-    size_t count;
+    pcre2_code *search, **heads, *tail, *right;
+    size_t count, dotted;
 } br_regex_prefix;
 struct br_regex { pcre2_code *code; size_t ngroups; br_regex_prefix *prefix; };
 
@@ -220,6 +220,7 @@ static void prefix_free(br_regex_prefix *prefix)
     if (!prefix) return;
     pcre2_code_free(prefix->search);
     pcre2_code_free(prefix->tail);
+    pcre2_code_free(prefix->right);
     if (prefix->heads)
         for (size_t i = 0; i < prefix->count; ++i) pcre2_code_free(prefix->heads[i]);
     free(prefix->heads);
@@ -237,19 +238,39 @@ static int piece_compile(const char *pattern, pcre2_code **out, char **error)
     return 0;
 }
 
+static int folded_literal(const char *text, size_t len, pcre2_code **out, char **error)
+{
+    if (len > SIZE_MAX - sizeof("(?i:)")) return fail(error, "regex prefix too large");
+    char *part = malloc(len + sizeof("(?i:)"));
+    if (!part) return fail(error, "out of memory compiling regex prefix");
+    memcpy(part, "(?i:", 4);
+    memcpy(part + 4, text, len);
+    memcpy(part + 4 + len, ")", 2);
+    int rc = piece_compile(part, out, error);
+    free(part);
+    return rc;
+}
+
 static int prefix_init(const char *pattern, br_regex *re, char **error)
 {
     static const char pre[] = "(?i:", post[] = ")(?s:.){0,40}?";
     if (re->ngroups != 2 || strncmp(pattern, pre, sizeof(pre) - 1)) return 0;
     const char *head = pattern + sizeof(pre) - 1, *end = strstr(head, post);
     if (!end || head == end || !ascii_suffix(end + sizeof(post) - 1)) return 0;
-    size_t count = 1;
+    size_t count = 1, dotted = SIZE_MAX;
+    const char *dot = NULL, *dot_end = NULL;
     bool word = false;
     for (const char *p = head; p < end; ++p) {
         if (*p == '|') {
             if (!word) return 0;
             word = false;
             ++count;
+        } else if (*p == '.') {
+            /* One fixed L.R branch only, with nonempty literal pieces. */
+            if (!word || dot) return 0;
+            dot = p;
+            dotted = count - 1;
+            word = false;
         } else {
             if (!head_byte((unsigned char)*p)) return 0;
             word = true;
@@ -260,27 +281,36 @@ static int prefix_init(const char *pattern, br_regex *re, char **error)
     br_regex_prefix *prefix = calloc(1, sizeof(*prefix));
     if (!prefix) return fail(error, "out of memory compiling regex prefix");
     prefix->count = count;
+    prefix->dotted = dotted;
     prefix->heads = calloc(count, sizeof(*prefix->heads));
     size_t len = (size_t)(end - pattern) + 1;
+    if (dot) {
+        dot_end = memchr(dot, '|', (size_t)(end - dot));
+        if (!dot_end) dot_end = end;
+        len -= (size_t)(dot_end - dot);
+    }
     char *search = malloc(len + 1);
     if (!prefix->heads || !search) {
         free(search); prefix_free(prefix);
         return fail(error, "out of memory compiling regex prefix");
     }
-    memcpy(search, pattern, len); search[len] = '\0';
+    if (dot) {
+        /* Search the literal L stem, not scalar L.R: otherwise an earlier
+         * source match whose dot consumes a non-scalar unit can be hidden. */
+        size_t first = (size_t)(dot - pattern);
+        memcpy(search, pattern, first);
+        memcpy(search + first, dot_end, (size_t)(end - dot_end) + 1);
+    } else memcpy(search, pattern, len);
+    search[len] = '\0';
     int rc = piece_compile(search, &prefix->search, error);
     free(search);
     for (size_t i = 0; rc == 0 && i < count; ++i) {
         const char *next = memchr(head, '|', (size_t)(end - head));
         if (!next) next = end;
-        size_t word_len = (size_t)(next - head);
-        char *part = malloc(word_len + sizeof("(?i:)"));
-        if (!part) { rc = fail(error, "out of memory compiling regex prefix"); break; }
-        memcpy(part, pre, sizeof(pre) - 1);
-        memcpy(part + sizeof(pre) - 1, head, word_len);
-        memcpy(part + sizeof(pre) - 1 + word_len, ")", 2);
-        rc = piece_compile(part, &prefix->heads[i], error);
-        free(part);
+        const char *left_end = i == dotted ? dot : next;
+        rc = folded_literal(head, (size_t)(left_end - head), &prefix->heads[i], error);
+        if (rc == 0 && i == dotted)
+            rc = folded_literal(dot + 1, (size_t)(next - dot - 1), &prefix->right, error);
         head = next == end ? end : next + 1;
     }
     if (rc == 0) rc = piece_compile(end + sizeof(post) - 1, &prefix->tail, error);
@@ -299,8 +329,8 @@ static int execution_error(char **error, int code)
     return fail(error, message);
 }
 
-/* This is only canonical PrefixRegex with literal alternatives and a proved
- * nonnullable ASCII suffix. Keyword fragments/wide atoms stay on the old path. */
+/* Canonical prefixes admit literal alternatives and at most one fixed L.R
+ * branch. Other fragments and wide suffix atoms stay on the scalar path. */
 static int each_prefixed(const br_regex *re, br_slice input, br_match_fn fn,
                           void *user, char **error)
 {
@@ -336,6 +366,18 @@ static int each_prefixed(const br_regex *re, br_slice input, br_match_fn fn,
              * fragment. Only the requested original continuation is eligible. */
             if (head_spans[0] != begin) continue;
             size_t at = head_spans[1];
+            if (i == prefix->dotted) {
+                size_t width = br_re2_any_unit_width((br_slice){data + at, input.len - at});
+                /* Plain head dot excludes literal LF; only the later gap is DOTALL. */
+                if (!width || data[at] == '\n') continue;
+                at += width;
+                n = pcre2_match(prefix->right, data, input.len, at, PCRE2_ANCHORED, head, mc);
+                if (n == PCRE2_ERROR_NOMATCH) continue;
+                if (n <= 0) { rc = execution_error(error, n); break; }
+                head_spans = pcre2_get_ovector_pointer(head);
+                if (head_spans[0] != at) continue;
+                at = head_spans[1];
+            }
             for (size_t gap = 0; gap <= 40; ++gap) {
                 /* A nonnullable ASCII suffix cannot start on a non-ASCII byte.
                  * Keep original whole-subject boundaries and byte offsets. */
