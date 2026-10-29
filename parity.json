@@ -3447,6 +3447,51 @@
       "evidence": ["tests/detectors/test_host.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/deferred-close behavior"]
     },
+    "html2pdf/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/html2pdf/html2pdf.go",
+      "scope_notes": "Html2Pdf355/v0/default enabled/no hints. Keyword-onlyCI prefix captures word-bounded64 mixed-alphanumeric occurrences/duplicates; Raw/key only. Verification assembles complete ASCII struct JSON in html/apiKey declaration order before package http.Post. The private DefaultClient byte boundary uses zero timeout/background context and no common UA, ignoring caller cancellation/deadline/options/endpoints while retaining only installed transport. Nil context does not drop; whole helper/setup/Do errors keep false without setters, every successful2xx verifies ignoring body/readerrors. Native/copied curl and every owned profile remain guarded before I/O; no SANE/GetEmail alias or native DefaultClient claim. Original request/body/header storage survives one ordinary release per attempt; background projection ends at send return. All owned nonzero failures fatal before suppression/success with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/html2pdf.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/http_internal.h", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_html2pdf.c", "tests/core/test_http_default_transport.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Native DefaultClient, global replacement/custom overrides, wire UA/redirect/proxy/cookie/HTTP2/Reader semantics and source deferred-close timing"]
+    },
+    "hubspot_apikey/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/hubspot_apikey/v1/apikey.go",
+      "scope_notes": "HubSpotApiKey107/v1/default enabled/no hints, separate descriptor/grammar/client contract fromv2 in one cohesive provider module. Regex options hubapi,hapi_?key,hubspot differ from four literal dispatch keywords. Word-bounded mixed-alphanumeric UUID-shaped36-byte originals are unique without UUID/hex validation. Raw/key only/no invented Version. Full hapikey query precedes nil constructor, whose cause is retained; SANE5 bodyless lists GET/common UA only. Exact200or403 true/401quiet/other unexpected HTTP response status cause including201; all body/readerrors ignored. Whole shared setup/Do causes retained unredacted through checked ZERO-secret setter, even NULL no-op; release precedes Verified/setter. All owned nonzero URL/format/cause/finding/setter/push failures fatal before ordinary outcomes with invocation-only rollback. Deterministic discovery order is not Go map iteration parity.",
+      "native_files": ["src/detectors/hubspot_apikey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_hubspot_apikey.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte, map ordering and engine/output behavior", "Full native HTTP/client/Reader/deferred-drain/close and optional override semantics"]
+    },
+    "hubspot_apikey/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/hubspot_apikey/v2/apikey.go",
+      "scope_notes": "HubSpotApiKey107/v2/default enabled/no hints. Direct case-sensitive word-bounded pat-eu1-/pat-na1- plus mixed-alphanumeric UUID-shaped tail,44-byte unique originals. Source Redacted retains ENTIRE token[8:] UUID tail then ellipsis, not first8; Raw/key only/no invented Version. Nil constructor retains cause before full Bearer assembly. SANE5 bodyless fixed private-app usage GET/Bearer/common UA only, no coalescing namespace. Exact200or403 true/401quiet/other unexpected HTTP response status cause including201; ignore reads at every status. Whole setup/Do causes retained completely unredacted by checked ZERO-secret setter. Release precedes caller Verified/setter; NULL cause is no-op, any nonzero setter fatal. Owned redaction/authorization/format/cause/finding/push failures fatal before ordinary outcomes, preserving caller findings through invocation-only rollback. Separate descriptor/client semantics fromv1 and deterministic rather than Go map order.",
+      "native_files": ["src/detectors/hubspot_apikey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_hubspot_apikey.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte, map ordering and engine/output behavior", "Full native HTTP/client/Reader/deferred-drain/close and optional override semantics"]
+    },
+    "huggingface/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/huggingface/huggingface.go",
+      "scope_notes": "HuggingFace926/v0/default enabled/no hints. Direct case-sensitive hf_/api_org_ plus34 mixed alphanumerics, exact match0 occurrences/duplicates, Raw/key only/NoV Extra nil. Nil constructor keeps false/nil/nil before Bearer but caller still checks full-token setter. SANE5 bodyless whoami GET/Bearer/common UA. Whole Do causes retained/token-redacted. Every2xx first typed Decoder document: ordinary syntax/read/type error remains verified true/nil Extra/retained cause, while owned failures remain fatal;401 quiet/ignores reads, other status cause. Provider-local retained-byte projection preserves duplicate/null merges, named/anonymous typed contexts, sticky first ordinary error with continued required visitation, unknown huge-number skips and Go invalidUTF8 repair. Organization value-struct slots grow before element inspection; null preserves slots, shorter nonempty arrays hide but retain backing values, null/empty arrays discard all backing. Token string computed before initial Username/Email/Token map, which precedes ordered duplicate-preserving comma-space organization rows; Organizations only for nonempty logical slice. Embedded NUL stays length-bearing. Helper release precedes caller Verified/Extra and checked token setter; original headers survive release, synthesized storage does not. All owned nonzero JSON/capture/finding/projection/cause/setter/push failures fatal before ordinary success/error, with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/huggingface.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/detectors/gcp_json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_huggingface.c", "tests/detectors/test_json.c", "tests/detectors/test_gcp_json.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Complete Go typed JSON/Reader/runtime and large-string representation", "Full native HTTP/custom-client/source deferred-close behavior"]
+    },
+    "humanity/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/humanity/humanity.go",
+      "scope_notes": "Humanity508/v0/default enabled/no hints. Keyword-onlyCI prefix plus word-bounded40 lower-alphanumeric occurrences/duplicates, not hex; Raw/key only. Full literal access_token query assembled before nil constructor drop. SANE5 bodyless me GET/common UA only/no Auth/Type/Accept/dedup. Whole mixed shared setup/Do failures false-kept/no setters. Every successful send reads before any status: ANY read-error pointer including empty drops finding. Successful read verifies exact binary name substring anywhere including after NUL INDEPENDENT of HTTP status, without JSON parsing/word/case normalization. Exactly one ordinary release per attempt; source leaks/deferred-close timing not reproduced. Original URL/captures survive release. Every owned nonzero capture/finding/URL/projection/push failure fatal before ordinary skip/drop/suppression/success, with invocation-only rollback preserving caller data.",
+      "native_files": ["src/detectors/humanity.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_humanity.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

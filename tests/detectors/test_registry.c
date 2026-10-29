@@ -402,12 +402,39 @@ static const registration expected[] = {
     {764, 0, "Holistic", "holistic", 64, true, -1},
     {877, 0, "Honeycomb", "Honeycomb", 22, true, -1},
     {556, 0, "Host", "host.io", 14, true, -1},
+    {355, 0, "Html2Pdf", "html2pdf", 64, true, -1},
+    {107, 1, "HubSpotApiKey", "hubapi", 36, true, -1},
+    {107, 2, "HubSpotApiKey", "pat-na1-", 44, true, -1},
+    {926, 0, "HuggingFace", "hf_", 37, true, -1},
+    {508, 0, "Humanity", "humanity", 40, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 107) {
+        const char *uuid = "AbCdEf01-gHi2-JkL3-mNo4-PqRsTuVwXyZ5";
+        char key[45], input[100];
+        snprintf(key, sizeof(key), "%s%s", entry->version == 2 ? "pat-na1-" : "", uuid);
+        snprintf(input, sizeof(input), entry->version == 1 ? "hapi_key %s" : "%s", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        br_result plain = results.items[0]; plain.redacted = NULL;
+        test_key_result(&plain, 107, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        if (entry->version == 2) {
+            char redacted[40]; snprintf(redacted, sizeof(redacted), "%s...", key + 8);
+            CHECK(results.items[0].redacted && !strcmp(results.items[0].redacted, redacted));
+        } else CHECK(!results.items[0].redacted);
+        br_results_clear(&results); return;
+    }
+    if (entry->type == 926) {
+        char key[38] = "hf_"; test_secret(key + 3, 34, 0);
+        br_results results = test_scan(detector, NULL, false, key, 37); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 926, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 764) {
         char key[65], input[100];
         for (size_t i = 0; i < 64; ++i) key[i] = "0123456789abcdef"[i % 16];
@@ -1810,9 +1837,9 @@ int main(void)
         CHECK(!strcmp(br_detector_type_name(detector->type), entry->name));
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
-        CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
+        CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
@@ -1855,6 +1882,14 @@ int main(void)
                 for (size_t k = 0; k < 6; ++k) CHECK(!strcmp(detector->keywords[k], prefixes[k]));
             }
         }
+        if (entry->type == 107) {
+            if (entry->version == 1) {
+                CHECK(!strcmp(detector->keywords[1], "hapikey") && !strcmp(detector->keywords[2], "hapi_key") && !strcmp(detector->keywords[3], "hubspot"));
+            } else CHECK(!strcmp(detector->keywords[1], "pat-eu1-"));
+            br_detector invalid = *detector; invalid.version = 0; CHECK(!br_detector_is_default(&invalid, NULL));
+            invalid.version = 3; CHECK(!br_detector_is_default(&invalid, NULL));
+        }
+        if (entry->type == 926) CHECK(!strcmp(detector->keywords[1], "api_org_"));
         if (entry->type == 1062) CHECK(!strcmp(detector->keywords[1], "vault"));
         if (entry->type == 876) CHECK(!strcmp(detector->keywords[1], "account-"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));

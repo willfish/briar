@@ -820,6 +820,23 @@ for prefix in ("host ", "host.io" + ":" * 38):
     _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=556"], (prefix + host_key).encode())
     check(not rows, "Host needs literal host.io dispatch and its extraction prefix's forty-rune budget")
 
+html2pdf_key = key40 + key32[:24]
+hubspot_v1 = "G7h3Z1k9-gHi2-JkL3-mNo4-PqRsTuVwXyZ5"
+hubspot_na, hubspot_eu = "pat-na1-" + hubspot_v1, "pat-eu1-" + hubspot_v1
+huggingface_key, huggingface_org = "hf_" + key40[:34], "api_org_" + key40[:34]
+for selector, number, key, prefix in (("Html2Pdf", 355, html2pdf_key, "HtMl2PdF "),
+                                     ("HubSpotApiKey.v1", 107, hubspot_v1, "HaPi_KeY "),
+                                     ("107.v2", 107, hubspot_na, ""),
+                                     ("HubSpotApiKey.v2", 107, hubspot_eu, ""),
+                                     ("HuggingFace", 926, huggingface_key, ""),
+                                     ("926", 926, huggingface_org, ""),
+                                     ("Humanity", 508, key40, "HuMaNiTy ")):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], (prefix + key).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Html2Pdf, HubSpot versions, both HuggingFace prefixes and Humanity dispatch real scanners")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Provider-specific captures stay complete and key-only")
+    expected_redacted = key[8:] + "..." if number == 107 and key.startswith("pat-") else ""
+    check(rows[0]["Redacted"] == expected_redacted and not rows[0]["RawV2"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Only HubSpot v2 exposes its complete UUID-tail redaction; NoV invents no metadata")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

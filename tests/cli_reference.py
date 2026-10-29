@@ -684,6 +684,12 @@ def fixtures():
     holistic_key = synthetic("holistic-key", 64)
     honeycomb_old, honeycomb_new = synthetic("honeycomb-old", 32), b"Z" + alnum("honeycomb-new", 21)
     host_key = b"z" + alnum("host-key", 13).lower()
+    html2pdf_key = alnum("html2pdf-key", 64)
+    hubspot_v1 = b"-".join(alnum("hubspot-v1-" + str(i), n) for i, n in enumerate((8, 4, 4, 4, 12)))
+    hubspot_v1 = b"Z" + hubspot_v1[1:]
+    hubspot_na, hubspot_eu = b"pat-na1-" + hubspot_v1, b"pat-eu1-" + hubspot_v1
+    huggingface_key, huggingface_org = b"hf_" + alnum("huggingface-key", 34), b"api_org_" + alnum("huggingface-org", 34)
+    humanity_key = alnum("humanity-key", 40).lower()
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1391,6 +1397,20 @@ def fixtures():
         ("host", 556, b"HoSt.Io " + host_key),
         ("host_no_dispatch", 556, b"host " + host_key),
         ("host_gap38", 556, b"host.io" + b":" * 38 + host_key),
+        ("html2pdf", 355, b"HtMl2PdF " + html2pdf_key),
+        ("html2pdf_overlong", 355, b"html2pdf " + html2pdf_key + b"X"),
+        ("html2pdf_duplicate", 355, b"html2pdf " + html2pdf_key + b"\nhtml2pdf " + html2pdf_key),
+        ("hubspot_v1", "107.v1", b"HuBaPi " + hubspot_v1),
+        ("hubspot_v1_alias", "107.v1", b"HaPi_KeY " + hubspot_v1),
+        ("hubspot_v1_unique", "107.v1", b"hubspot " + hubspot_v1 + b"\nhubspot " + hubspot_v1),
+        ("hubspot_v2_na", "107.v2", hubspot_na),
+        ("hubspot_v2_eu", "107.v2", hubspot_eu),
+        ("hubspot_v2_wrong_case", "107.v2", b"PAT-na1-" + hubspot_v1),
+        ("huggingface", 926, huggingface_key),
+        ("huggingface_org", 926, huggingface_org),
+        ("huggingface_wrong_case", 926, b"HF_" + huggingface_key[3:]),
+        ("humanity", 508, b"HuMaNiTy " + humanity_key),
+        ("humanity_upper_key", 508, b"humanity " + humanity_key.upper()),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1698,6 +1718,11 @@ def compare(native, reference, case):
         count = 0 if name.startswith(("holistic_upper_key_", "honeycomb_upper_old_", "host_no_dispatch_", "host_gap38_")) else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": source capture alternatives, exact alphabets and dispatch/prefix distinctions must retain the expected findings")
+    if name.startswith(("html2pdf_", "hubspot_v1_", "hubspot_v2_", "huggingface_", "humanity_")):
+        empty = name.startswith(("html2pdf_overlong_", "hubspot_v2_wrong_case_", "huggingface_wrong_case_", "humanity_upper_key_"))
+        count = 0 if empty else 2 if name == "html2pdf_duplicate_filesystem" else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact provider/version prefixes, boundaries, uniqueness and default CLI cleaning must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):
