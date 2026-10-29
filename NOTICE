@@ -83,3 +83,26 @@ FTP control-channel behavior derives from github.com/jlaffaye/ftp v0.2.0,
 licensed under the ISC license. Original copyright and license:
 Copyright (c) 2011-2013, Julien Laffaye <jlaffaye@FreeBSD.org>
 See LICENSES/ISC-jlaffaye-ftp.txt.
+
+Selected JDBC MySQL DSN validation and field projection derive from
+Go-MySQL-Driver v1.8.1 dsn.go, utils.go and collations.go. The translation in
+src/detectors/jdbc_mysql_dsn.c remains separately licensed under MPL-2.0.
+Copyright 2012, 2014, 2016 The Go-MySQL-Driver Authors. All rights reserved.
+See LICENSES/MPL-2.0-go-sql-driver-mysql.txt.
+Its selected Go duration, integer and lexical address rules retain the Go
+notices above. No timezone database, TLS/key registry or native DB I/O is loaded.
+
+The private SQL error/acquisition contracts use selected lib/pq v1.10.9 and
+Microsoft go-mssqldb v1.8.2 source behavior. Retained notices:
+Copyright (c) 2011-2013, 'pq' Contributors.
+Portions Copyright (C) 2011 Blake Mizerany.
+See LICENSES/MIT-lib-pq.txt.
+Copyright (c) 2012 The Go Authors. All rights reserved.
+Copyright (c) Microsoft Corporation.
+See LICENSES/BSD-3-Clause-go-mssqldb.txt.
+These contracts do not link Go drivers or implement native database access.
+
+Selected invalid-host cache policy follows patrickmn/go-cache
+v2.1.0+incompatible, without claiming janitor/clock-rollback equivalence.
+Copyright (c) 2012-2017 Patrick Mylund Nielsen and the go-cache contributors.
+See LICENSES/MIT-go-cache.txt.
