@@ -462,5 +462,8 @@ int br_langsmith_init(const br_detector **out, char **error);
 int br_languagelayer_init(const br_detector **out, char **error);
 int br_larksuite_init(const br_detector **out, char **error);
 int br_larksuiteapikey_init(const br_detector **out, char **error);
+int br_launchdarkly_init(const br_detector **out, char **error);
+int br_lemlist_init(const br_detector **out, char **error);
+int br_lemonsqueezy_init(const br_detector **out, char **error);
 
 #endif

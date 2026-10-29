@@ -1036,6 +1036,28 @@ check(not rows, "LarkSuite retains its provider-specific extension false-positiv
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=LarkSuiteApiKey"], ("lark " + larksuite_id).encode())
 check(not rows, "LarkSuiteApiKey requires its independent hidden secret even without verification")
 
+launchdarkly_key = "api-" + key32[:8].lower() + "-" + key32[8:12].lower() + "-4" + key32[13:16].lower() + "-" + key32[16:20].lower() + "-" + key32[20:].lower()
+lemlist_key = klipfolio_key[:32]
+lemonsqueezy_signature = (key40 * 13)[:512]
+lemonsqueezy_prefix = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9." + (key32 * 10)[:314] + "."
+lemonsqueezy_clipped = lemonsqueezy_prefix + lemonsqueezy_signature
+# An internal keyword makes the complete token visible in the default radius.
+lemonsqueezy_signature = lemonsqueezy_signature[:48] + "lemonsqueezy" + lemonsqueezy_signature[60:]
+lemonsqueezy_key = lemonsqueezy_prefix + lemonsqueezy_signature
+for selector, number, source, key, extra in (
+    ("LaunchDarkly", 191, launchdarkly_key, launchdarkly_key, {}),
+    ("Lemlist", 841, "LEMLIST " + lemlist_key, lemlist_key, None),
+    ("LemonSqueezy", 952, "lemonsqueezy " + lemonsqueezy_key, lemonsqueezy_key, None),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number and rows[0]["Raw"] == key, "LaunchDarkly, Lemlist and LemonSqueezy dispatch source-derived version-zero grammars")
+    check(rows[0]["SecretParts"] == {"key": key} and rows[0]["RawV2"] == "" and rows[0]["ExtraData"] == extra, "LaunchDarkly's empty NoV map remains distinct from absent metadata")
+    check(not rows[0]["Verified"], "NoV performs no feature-flag, outreach or product service action")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=LaunchDarkly"], ("mob-" + launchdarkly_key[4:]).encode())
+check(not rows, "Public LaunchDarkly mobile keys remain excluded")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=LemonSqueezy"], ("lemonsqueezy " + lemonsqueezy_clipped).encode())
+check(not rows, "An external keyword alone clips the long token at the source's default radius")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

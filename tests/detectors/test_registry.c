@@ -466,11 +466,46 @@ static const registration expected[] = {
     {489, 0, "LanguageLayer", "languagelayer", 32, true, -1},
     {991, 0, "LarkSuite", "lark", 16, true, 1024},
     {992, 0, "LarkSuiteApiKey", "lark", 20, true, 1024},
+    {191, 0, "LaunchDarkly", "api-", 40, true, -1},
+    {841, 0, "Lemlist", "lemlist", 32, true, -1},
+    {952, 0, "LemonSqueezy", "lemonsqueezy", 864, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 191 || entry->type == 841 || entry->type == 952) {
+        char key[865], input[1000];
+        if (entry->type == 191) {
+            strcpy(key, "api-abcdefgh-abcd-4abc-abcd-abcdefghijkl");
+            strcpy(input, key);
+        } else if (entry->type == 841) {
+            strcpy(key, "24203d9f149dd02d1d944ee799cfb57e");
+            snprintf(input, sizeof(input), "lemlist %s", key);
+        } else {
+            memcpy(key, "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9", 36);
+            key[36] = '.';
+            test_secret(key + 37, 314, 0);
+            key[351] = '.';
+            test_secret(key + 352, 512, 7);
+            snprintf(input, sizeof(input), "lemonsqueezy %s", key);
+        }
+        br_results results = test_scan(detector, NULL, false, input, strlen(input));
+        CHECK(results.len == 1);
+        br_result *r = &results.items[0]; br_json *part = NULL;
+        CHECK(r->detector_type == entry->type && r->raw.len == strlen(key));
+        CHECK(!memcmp(r->raw.data, key, r->raw.len));
+        CHECK(r->secret_parts && json_object_object_length(r->secret_parts) == 1);
+        CHECK(json_object_object_get_ex(r->secret_parts, "key", &part));
+        CHECK(!strcmp(json_object_get_string(part), key));
+        CHECK(!r->raw_v2.data && !r->raw_v2.len && !r->verified && !r->verification_error);
+        CHECK(!r->redacted && !r->structured_data);
+        if (entry->type == 191)
+            CHECK(r->extra_data && json_object_object_length(r->extra_data) == 0);
+        else CHECK(!r->extra_data);
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 1028 || entry->type == 489 || entry->type == 991 || entry->type == 992) {
         char key[52], secret[33], input[200];
         if (entry->type == 1028) {
@@ -2137,7 +2172,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 991 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
@@ -2160,6 +2195,7 @@ int main(void)
         if (entry->type == 920) CHECK(!strcmp(detector->keywords[1], "couchbases://"));
         if (entry->type == 1021) CHECK(!strcmp(detector->keywords[1], "sk-lf-"));
         if (entry->type == 1028) CHECK(!strcmp(detector->keywords[1], "lsv2_sk_"));
+        if (entry->type == 191) CHECK(!strcmp(detector->keywords[1], "sdk-"));
         if (entry->type == 991 || entry->type == 992) CHECK(!strcmp(detector->keywords[1], "larksuite"));
         if (entry->type == 992) CHECK(!strcmp(detector->keywords[2], "cli_"));
         if (entry->type == 954) CHECK(!strcmp(detector->keywords[1], "ddw_"));

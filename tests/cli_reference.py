@@ -768,6 +768,15 @@ def fixtures():
     larksuite_extension = b"t-" + alnum("larksuite-extension", 16) + b".json"
     larksuite_id = b"cli_" + alnum("larksuite-id", 16)
     larksuite_secret = alnum("larksuite-secret", 32)
+    launchdarkly_hex = synthetic("launchdarkly-key", 32)
+    launchdarkly_uuid = b"-".join((launchdarkly_hex[:8], launchdarkly_hex[8:12], b"4" + launchdarkly_hex[13:16], launchdarkly_hex[16:20], launchdarkly_hex[20:]))
+    launchdarkly_key = b"api-" + launchdarkly_uuid
+    lemlist_key = synthetic("lemlist-key", 32)
+    lemonsqueezy_signature = alnum("lemonsqueezy-signature", 512)
+    # The internal keyword keeps this 864-byte token inside the source's
+    # default 512-byte dispatch radius without changing its absent hints.
+    lemonsqueezy_signature = lemonsqueezy_signature[:48] + b"lemonsqueezy" + lemonsqueezy_signature[60:]
+    lemonsqueezy_key = b"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9." + alnum("lemonsqueezy-payload", 314) + b"." + lemonsqueezy_signature
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1615,6 +1624,12 @@ def fixtures():
         ("larksuite_extension", 991, b"lark " + larksuite_extension),
         ("larksuiteapikey", 992, b"LaRk " + larksuite_id + b"\nlark " + larksuite_secret),
         ("larksuiteapikey_missing_secret", 992, b"lark " + larksuite_id),
+        ("launchdarkly", 191, launchdarkly_key),
+        ("launchdarkly_mobile", 191, b"mob-" + launchdarkly_uuid),
+        ("lemlist", 841, b"LeMlIsT " + lemlist_key),
+        ("lemlist_upper_key", 841, b"lemlist A" + lemlist_key[1:]),
+        ("lemonsqueezy", 952, b"LeMoNsQuEeZy " + lemonsqueezy_key),
+        ("lemonsqueezy_short", 952, b"lemonsqueezy " + lemonsqueezy_key[:-1]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1998,6 +2013,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact direct/prefixed grammars, token extension filtering and required hidden secret must preserve findings")
+    if name.startswith(("launchdarkly_", "lemlist_", "lemonsqueezy_")):
+        empty = name.startswith(("launchdarkly_mobile_", "lemlist_upper_key_", "lemonsqueezy_short_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": sensitive LaunchDarkly prefixes, lowercase Lemlist keys and exact LemonSqueezy length must retain findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

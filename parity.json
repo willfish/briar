@@ -4171,6 +4171,33 @@
       "evidence": ["tests/detectors/test_larksuiteapikey.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte, Go map order and decoder/engine/output behavior", "Full native HTTP/Reader/drain/diagnostic behavior; reached formatted NUL messages cannot be represented in ABI1"]
     },
+    "launchdarkly/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/launchdarkly/launchdarkly.go",
+      "scope_notes": "LaunchDarkly191/v0/default/no hints. Direct lowercase api-/sdk- UUID-shaped occurrences with mandatory version4 nibble; no mobile keys, prefix grammar or uniqueness. Raw/key only and empty NoV extra object. Fixed caller-identity GET/SANE5/raw Authorization. Nil constructor retains its cause. Only200 decodes a typed first document with tag paths/folding/ordered duplicates/null and sticky first cause while later valid fields, including unpublished tokenId, still copy/assign. String/bool numeric type errors say number only, not a numeric conversion lexeme. Every visitor nonzero is fatal. Successful metadata is prepared before helper release; caller order is Verified, mandatory checked zero-secret setter evenNULL, then ExtraData replacement.401 quiet; other status checked formatting before release. Owned nonzero/setter+1 fatal with caller-preserving invocation rollback, original key through release.",
+      "native_files": ["src/detectors/launchdarkly.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_launchdarkly.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain/diagnostic and optional source-client lifecycle behavior"]
+    },
+    "lemlist/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/lemlist/lemlist.go",
+      "scope_notes": "Lemlist841/v0/default/no hints. Folded keyword prefix then32lowerhex occurrences/duplicates; Raw/key only. Finding then checked colon-plus-key Basic construction BEFORE nil-context drop; no encoding inNoV. Fixed team GET/SANE5/Basic(empty,key), all successful-send2xx true/body and read errors ignored, whole mixed send failure suppressed without setter. Successful responses retain original owned Basic through scanner-return LIFO cleanup AFTER publication; failed sends release once immediately. Later owned/retention/push nonzero failures drain pending responses and roll back only invocation additions, preserving caller findings.",
+      "native_files": ["src/detectors/lemlist.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_lemlist.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client sharing/lifecycle behavior"]
+    },
+    "lemonsqueezy/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/lemonsqueezy/lemonsqueezy.go",
+      "scope_notes": "LemonSqueezy952/v0/default/no hints. Exact864-byte source token-shaped capture with36-byte literal header,314alnum payload and512 signature class; no JWT validation, occurrences/duplicates preserved. Raw/key only. Finding before nil-context drop, Bearer afterward. Fixed products GET/SANE5/body ignored.2xx true and401 quiet without setter; other status checked formatting and key-secret setter precede publication/final successful-response release. Send errors reach checked key-secret setter evenNULL after one immediate failed-attempt release. Successful responses and original Bearers remain held through verdict/setter/append then scanner LIFO release; every later owned/retention/formatter/setter/push nonzero fatal drains once with caller-preserving rollback.",
+      "native_files": ["src/detectors/lemonsqueezy.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_lemonsqueezy.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and optional source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
