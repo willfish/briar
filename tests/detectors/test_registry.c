@@ -469,11 +469,62 @@ static const registration expected[] = {
     {191, 0, "LaunchDarkly", "api-", 40, true, -1},
     {841, 0, "Lemlist", "lemlist", 32, true, -1},
     {952, 0, "LemonSqueezy", "lemonsqueezy", 864, true, -1},
+    {901, 0, "LDAP", "ldaps://", 0, true, 1024},
+    {668, 0, "Lendflow", "lendflow", 956, true, 1024},
+    {267, 0, "LessAnnoyingCRM", "lessannoyingcrm", 57, true, -1},
+    {437, 0, "Lexigram", "lexigram", 301, true, -1},
+    {177, 0, "LinearAPI", "lin_api_", 48, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 901) {
+        const char *url = "ldap://Z7p8q.invalid/dc=Briar";
+        const char *username = "BriarName", *password = "B7q9Vp2r4N6m8T1z";
+        char input[160], raw[128];
+        snprintf(input, sizeof(input), "LDAP://Z7p8q.invalid/dc=Briar\nuser '%s'\npass '%s'", username, password);
+        snprintf(raw, sizeof(raw), "%s\t%s\t%s", url, username, password);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input));
+        CHECK(results.len == 1);
+        br_result *r = &results.items[0]; br_json *part = NULL;
+        CHECK(r->detector_type == 901 && r->raw.len == strlen(raw) && !memcmp(r->raw.data, raw, r->raw.len));
+        CHECK(r->secret_parts && json_object_object_length(r->secret_parts) == 3);
+        CHECK(json_object_object_get_ex(r->secret_parts, "url", &part) && !strcmp(json_object_get_string(part), url));
+        CHECK(json_object_object_get_ex(r->secret_parts, "username", &part) && !strcmp(json_object_get_string(part), username));
+        CHECK(json_object_object_get_ex(r->secret_parts, "password", &part) && !strcmp(json_object_get_string(part), password));
+        CHECK(!r->raw_v2.data && !r->raw_v2.len && !r->verified && !r->verification_error && !r->extra_data);
+        CHECK(!r->redacted && !r->structured_data);
+        br_results_clear(&results);
+        results = test_scan(detector, NULL, false, url, strlen(url)); CHECK(!results.len);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 668 || entry->type == 267 || entry->type == 437 || entry->type == 177) {
+        char key[957], input[1100];
+        if (entry->type == 668) {
+            const size_t lengths[] = {36, 235, 32, 47, 162, 42, 40, 66, 59, 7, 220};
+            size_t used = 0;
+            for (size_t i = 0; i < sizeof(lengths) / sizeof(*lengths); ++i) {
+                if (i) key[used++] = i < 3 ? '.' : '-';
+                test_secret(key + used, lengths[i], (unsigned)i); used += lengths[i];
+            }
+            CHECK(used == entry->key_len);
+        } else if (entry->type == 177) {
+            memcpy(key, "lin_api_", 8); test_secret(key + 8, 40, 3);
+        } else test_secret(key, entry->key_len, 7);
+        snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input));
+        CHECK(results.len == 1);
+        test_key_result(&results.items[0], entry->type, key, "key");
+        br_results_clear(&results);
+        if (entry->type == 267) {
+            snprintf(input, sizeof(input), "less %s", key);
+            results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+            test_key_result(&results.items[0], entry->type, key, "key"); br_results_clear(&results);
+        }
+        return;
+    }
     if (entry->type == 191 || entry->type == 841 || entry->type == 952) {
         char key[865], input[1000];
         if (entry->type == 191) {
@@ -2172,7 +2223,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
@@ -2228,6 +2279,7 @@ int main(void)
             br_detector invalid = *detector; invalid.version = 0; CHECK(!br_detector_is_default(&invalid, NULL));
             invalid.version = 3; CHECK(!br_detector_is_default(&invalid, NULL));
         }
+        if (entry->type == 901) CHECK(!strcmp(detector->keywords[1], "ldap://"));
         if (entry->type == 926) CHECK(!strcmp(detector->keywords[1], "api_org_"));
         if (entry->type == 1062) CHECK(!strcmp(detector->keywords[1], "vault"));
         if (entry->type == 876) CHECK(!strcmp(detector->keywords[1], "account-"));

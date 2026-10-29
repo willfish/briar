@@ -1058,6 +1058,44 @@ check(not rows, "Public LaunchDarkly mobile keys remain excluded")
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=LemonSqueezy"], ("lemonsqueezy " + lemonsqueezy_clipped).encode())
 check(not rows, "An external keyword alone clips the long token at the source's default radius")
 
+ldap_url = "ldap://192.0.2.7/dc=Briar"
+ldap_user, ldap_password = "BriarZ", key32[:20]
+ldap_raw = "\t".join((ldap_url, ldap_user, ldap_password))
+ldap_parts = {"url": ldap_url, "username": ldap_user, "password": ldap_password}
+ldap_source = ldap_url + "\nuser '" + ldap_user + "'\npass '" + ldap_password + "'"
+ldap_iad = 'OpenDSObject("' + ldap_url.replace("ldap://", "LDAP://") + '", "' + ldap_user + '", "' + ldap_password + '", 1)'
+for source in (ldap_source, ldap_iad):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=LDAP"], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == 901 and rows[0]["Raw"] == ldap_raw, "LDAP dispatches both source credential forms and projects the URL scheme")
+    check(rows[0]["SecretParts"] == ldap_parts and rows[0]["RawV2"] == "" and rows[0]["ExtraData"] is None, "LDAP retains URL, username and password parts without invented metadata")
+    check(not rows[0]["Verified"], "LDAP NoV performs no dial, bind or TLS action")
+
+lendflow_segments = [(key40 * 6)[:n] for n in (36, 235, 32, 47, 162, 42, 40, 66, 59, 7, 220)]
+lendflow_key = ".".join(lendflow_segments[:2]) + "." + "-".join(lendflow_segments[2:])
+lessannoyingcrm_key = (key40 * 2)[:57]
+lessannoyingcrm_key = lessannoyingcrm_key[:20] + "-" + lessannoyingcrm_key[21:]
+lexigram_key = (key40 * 8)[:301]
+linearapi_key = "lin_api_" + key40
+for selector, number, source, key in (
+    ("Lendflow", 668, "lendflow " + lendflow_key, lendflow_key),
+    ("LessAnnoyingCRM", 267, "lessannoyingcrm " + lessannoyingcrm_key, lessannoyingcrm_key),
+    ("Lexigram", 437, "LEXIGRAM " + lexigram_key, lexigram_key),
+    ("LinearAPI", 177, linearapi_key, linearapi_key),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number and rows[0]["Raw"] == key, "Financial, CRM, medical and project scanners dispatch their exact source grammars")
+    check(rows[0]["SecretParts"] == {"key": key} and rows[0]["RawV2"] == "" and rows[0]["ExtraData"] is None, "The four single-key scanners retain only source result fields")
+    check(not rows[0]["Verified"], "NoV performs no financial, CRM, medical or project service action")
+for selector, source in (
+    ("LDAP", ldap_url + "\nuser '" + ldap_user + "'"),
+    ("Lendflow", "lendflow " + lendflow_key[:-1]),
+    ("LessAnnoyingCRM", "less " + lessannoyingcrm_key),
+    ("Lexigram", "lexigram " + lexigram_key[:-1]),
+    ("LinearAPI", "LIN_API_" + key40),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(not rows, "Hidden LDAP credentials, exact lengths, CRM dispatch and sensitive Linear prefixes remain required")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

@@ -465,5 +465,10 @@ int br_larksuiteapikey_init(const br_detector **out, char **error);
 int br_launchdarkly_init(const br_detector **out, char **error);
 int br_lemlist_init(const br_detector **out, char **error);
 int br_lemonsqueezy_init(const br_detector **out, char **error);
+int br_ldap_init(const br_detector **out, char **error);
+int br_lendflow_init(const br_detector **out, char **error);
+int br_lessannoyingcrm_init(const br_detector **out, char **error);
+int br_lexigram_init(const br_detector **out, char **error);
+int br_linearapi_init(const br_detector **out, char **error);
 
 #endif

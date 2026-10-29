@@ -4198,6 +4198,51 @@
       "evidence": ["tests/detectors/test_lemonsqueezy.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and optional source-client lifecycle behavior"]
     },
+    "ldap/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/ldap/ldap.go",
+      "scope_notes": "LDAP901/v0/default/span1024. URI occurrences are collected first; each accepted URL then reaches username captures, per-username password captures and their occurrence products. IAD collection follows that entire phase. Raw is projected URL, username and password joined with tabs; three named parts, no RawV2 or invented metadata. Source nonspace classes retain VT; URL projection preserves scheme/authority and original length-bearing bytes within its documented subset. NoV, rejected URLs, missing captures and unknown schemes never acquire a dial guard. At a reached ldap/ldaps dial, nil context is an explicit upstream-panic boundary before missing native I/O. Injected whole DialURL/BindContext/StartTLS/Close preserves five-second dial, insecure TLS, initial-bind shortcut, discarded first bind error and second bind after successful StartTLS. A successful dial transfers a nonNULL handle and closes once on every later path; failed or unpublished dial never closes. Typed error presence/op/deadline/canceled facts govern the conditional password-secret setter independently of diagnostic storage. All owned, formatter, callback and setter nonzero failures are fatal with invocation-only caller-preserving rollback.",
+      "native_files": ["src/detectors/ldap.c", "src/detectors/ldap_private.c", "src/detectors/ldap_private.h", "src/detectors/ldap_url.c", "src/go_url.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_ldap.c", "tests/detectors/test_ldap_private.c", "tests/detectors/test_ldap_url.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Native LDAP dial/bind/StartTLS, complete URL projection, error chains, diagnostic quoting and context/runtime behavior"]
+    },
+    "lendflow/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/lendflow/lendflow.go",
+      "scope_notes": "Lendflow668/v0/default/span1024. Exact956-byte segmented mixed-alphanumeric grammar with underscores only in the source-selected segments, occurrence duplicates and key-only findings. Finding precedes nil-context constructor drop; complete owned Bearer follows construction. Fixed deals GET with JSON Content-Type, Bearer then JSON Accept/SANE10000ms request-local timeout, not shared-client mutation. Successful-send2xx verifies without reading body or read errors; whole mixed send failure is suppressed without a setter. Original Bearer and successful response remain held through verdict/publication, then scanner-return LIFO release. Failed attempts release immediately once. Every module-owned capture/finding/auth/retention/push nonzero is fatal, drains pending successes and preserves caller findings.",
+      "native_files": ["src/detectors/lendflow.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_lendflow.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/runtime and Go package-client timeout mutation/sharing behavior"]
+    },
+    "lessannoyingcrm/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/lessannoyingcrm/lessannoyingcrm.go",
+      "scope_notes": "LessAnnoyingCRM267/v0/default/no hints. Dispatch keyword lessannoyingcrm differs from extraction prefix less; exactly57 ASCII alphanumeric/hyphen bytes without UUID validation, occurrence duplicates/key-only findings. After finding creation, checked formatting constructs the complete literal UserCode/APIToken/Function URL BEFORE nil-context constructor drop. UserCode is source fmt-style strings.Split output: bracketed elements separated by spaces, retaining empty elements. No query escaping or normalization. Fixed GET/Accept application/vnd.lessannoyingcrm+json; version=3/SANE5. Successful-send2xx verifies and ignores body/read errors; mixed send failures suppress without setter. Original owned URL and successful response stay alive through publication then scanner-return LIFO release; failed attempts release immediately once. Owned nonzero resources are fatal before ordinary skips, drain pending successes and roll back only invocation additions.",
+      "native_files": ["src/detectors/lessannoyingcrm.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_lessannoyingcrm.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader, literal-query transport and source-client lifecycle behavior"]
+    },
+    "lexigram/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/lexigram/lexigram.go",
+      "scope_notes": "Lexigram437/v0/default/no hints. Folded prefix plus301 source nonspace units and ASCII boundaries, then strict Go whitespace trimming, including empty findings; VT remains capturable. Occurrence duplicates/key-only results. Finding then nil-context constructor drop, then complete checked owned Bearer construction BEFORE the NUL quiet boundary. A reached NUL keeps the untruncated key unverified without attempted send or setter; it never masks a preceding owned allocation failure. Fixed lexigraph search GET/SANE5/Bearer. Any successful-send2xx verifies, body and read errors ignored, mixed send failures suppressed without setter. Successful responses/original Bearers survive verdict/publication then scanner-return LIFO release; failures release immediately once. Every owned nonzero failure drains pending successes and preserves caller findings.",
+      "native_files": ["src/detectors/lexigram.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/go_unicode.c", "src/utf8.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_lexigram.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/nonspace byte-unit and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "linearapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/linearapi/linearapi.go",
+      "scope_notes": "LinearAPI177/v0/default/no hints. Direct lowercase lin_api_ plus40 mixed-alphanumeric bytes,48-byte occurrences/duplicates and key-only findings; no PrefixRegex, uniqueness or setter. Finding precedes nil-context constructor drop. Fixed GraphQL POST with exact37-byte source literal, JSON Content-Type then raw Authorization/SANE5. Failed send suppresses without projecting body. Successful send registers scan-deferred cleanup before ReadAll decisions. Any present body_error, including empty, drops the candidate without body inspection; otherwise a NULL/nonzero reached slice is fatal BEFORE status, including non2xx. Only2xx tests binary exact data marker, including after NUL/nonJSON; other successful reads remain false-kept. Successful responses and original Authorization survive verdict/publication, including dropped reads, until scanner-return LIFO release. Failed attempts release immediately once; every module-owned nonzero failure drains pending successes with caller-preserving rollback.",
+      "native_files": ["src/detectors/linearapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_linearapi.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

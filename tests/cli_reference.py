@@ -777,6 +777,16 @@ def fixtures():
     # default 512-byte dispatch radius without changing its absent hints.
     lemonsqueezy_signature = lemonsqueezy_signature[:48] + b"lemonsqueezy" + lemonsqueezy_signature[60:]
     lemonsqueezy_key = b"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9." + alnum("lemonsqueezy-payload", 314) + b"." + lemonsqueezy_signature
+    ldap_url = b"ldap://192.0.2.7/dc=Briar"
+    ldap_user, ldap_password = b"BriarZ", b"B7" + alnum("ldap-password", 18)
+    ldap_payload = ldap_url + b"\nuser '" + ldap_user + b"'\npass '" + ldap_password + b"'"
+    ldap_iad = b'OpenDSObject("' + ldap_url.replace(b"ldap://", b"LDAP://") + b'", "' + ldap_user + b'", "' + ldap_password + b'", 1)'
+    lendflow_segments = [alnum("lendflow-segment-" + str(i), n) for i, n in enumerate((36, 235, 32, 47, 162, 42, 40, 66, 59, 7, 220))]
+    lendflow_key = b".".join(lendflow_segments[:2]) + b"." + b"-".join(lendflow_segments[2:])
+    lessannoyingcrm_key = alnum("lessannoyingcrm-key", 57)
+    lessannoyingcrm_key = lessannoyingcrm_key[:20] + b"-" + lessannoyingcrm_key[21:]
+    lexigram_key = alnum("lexigram-key", 301)
+    linearapi_key = b"lin_api_" + alnum("linearapi-key", 40)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1630,6 +1640,18 @@ def fixtures():
         ("lemlist_upper_key", 841, b"lemlist A" + lemlist_key[1:]),
         ("lemonsqueezy", 952, b"LeMoNsQuEeZy " + lemonsqueezy_key),
         ("lemonsqueezy_short", 952, b"lemonsqueezy " + lemonsqueezy_key[:-1]),
+        ("ldap", 901, ldap_payload),
+        ("ldap_upper_scheme", 901, ldap_payload.replace(b"ldap://", b"LDAP://")),
+        ("ldap_iad", 901, ldap_iad),
+        ("ldap_missing_password", 901, ldap_url + b"\nuser '" + ldap_user + b"'"),
+        ("lendflow", 668, b"LeNdFlOw " + lendflow_key),
+        ("lendflow_short", 668, b"lendflow " + lendflow_key[:-1]),
+        ("lessannoyingcrm", 267, b"LeSsAnNoYiNgCrM " + lessannoyingcrm_key),
+        ("lessannoyingcrm_no_dispatch", 267, b"less " + lessannoyingcrm_key),
+        ("lexigram", 437, b"LeXiGrAm " + lexigram_key),
+        ("lexigram_short", 437, b"lexigram " + lexigram_key[:-1]),
+        ("linearapi", 177, linearapi_key),
+        ("linearapi_wrong_case", 177, b"LIN_API_" + linearapi_key[8:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2018,6 +2040,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": sensitive LaunchDarkly prefixes, lowercase Lemlist keys and exact LemonSqueezy length must retain findings")
+    if name.startswith(("ldap_", "lendflow_", "lessannoyingcrm_", "lexigram_", "linearapi_")):
+        empty = name.startswith(("ldap_missing_password_", "lendflow_short_", "lessannoyingcrm_no_dispatch_", "lexigram_short_", "linearapi_wrong_case_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": LDAP forms and required credentials, exact token lengths and dispatch/prefix policies must retain findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):
