@@ -431,8 +431,13 @@ static const registration expected[] = {
     {356, 0, "IPGeolocation", "ipgeolocation", 32, true, -1},
     {939, 0, "IPInfo", "ipinfo", 14, true, -1},
     {530, 0, "IPinfoDB", "ipinfodb", 64, true, -1},
+    {478, 0, "IPQuality", "ipquality", 32, true, -1},
     {133, 0, "IpStack", "ipstack", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
+    {287, 0, "Jotform", "jotform", 32, true, -1},
+    {131, 0, "Jumpcloud", "jumpcloud", 40, true, -1},
+    {295, 0, "Juro", "juro", 40, true, -1},
+    {686, 0, "Kanban", "kanban", 12, true, 1024},
     {329, 0, "Leadfeeder", "leadfeeder", 43, true, -1},
     {450, 0, "LocationIQ", "locationiq", 35, true, -1},
     {510, 0, "Loginradius", "loginradius", 36, true, -1},
@@ -443,6 +448,18 @@ static const registration expected[] = {
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 686) {
+        char key[13], input[80]; test_secret(key, 12, 0);
+        for (size_t i = 0; i < 12; ++i) if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
+        snprintf(input, sizeof(input), "kanban %s\ntenant7.kanbantool.com", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 686, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results);
+        snprintf(input, sizeof(input), "kanban %s", key);
+        results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(!results.len);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 133 || entry->type == 715 || entry->type == 450 || entry->type == 510) {
         char key[37] = {0}, input[80];
         if (entry->type == 450) { memcpy(key, "pk.", 3); test_secret(key + 3, 32, 0); }

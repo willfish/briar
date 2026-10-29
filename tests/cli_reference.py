@@ -727,6 +727,12 @@ def fixtures():
     loginradius_key = b"-".join(synthetic("loginradius-" + str(i), n) for i, n in enumerate((8, 4, 4, 4, 12)))
     madkudu_key = synthetic("madkudu-key", 32)
     mailerlite_key = b"z" + alnum("mailerlite-key", 31).lower()
+    ipquality_key = alnum("ipquality-key", 32)
+    jotform_key = b"A" + alnum("jotform-key", 31).lower()
+    jumpcloud_key = alnum("jumpcloud-key", 40)
+    juro_key = alnum("juro-key", 40)
+    kanban_key = alnum("kanban-key", 12).upper()
+    kanban_input = b"KaNbAn " + kanban_key + b"\ntenant7.kanbantool.com"
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1506,6 +1512,17 @@ def fixtures():
         ("ipinfodb_upper_key", 530, b"ipinfodb G" + ipinfodb_key[1:]),
         ("ipstack", 133, b"IpStAcK " + ipstack_key),
         ("ipstack_nonhex_key", 133, b"ipstack g" + ipstack_key[1:]),
+        ("ipquality", 478, b"IpQuAlItY " + ipquality_key),
+        ("ipquality_non_alnum", 478, b"ipquality " + ipquality_key[:15] + b"_" + ipquality_key[16:]),
+        ("jotform", 287, b"JoTfOrM " + jotform_key),
+        ("jotform_upper_b", 287, b"jotform B" + jotform_key[1:]),
+        ("jumpcloud", 131, b"JuMpClOuD " + jumpcloud_key),
+        ("jumpcloud_overlong", 131, b"jumpcloud " + jumpcloud_key + b"X"),
+        ("juro", 295, b"JuRo " + juro_key),
+        ("juro_overlong", 295, b"juro " + juro_key + b"X"),
+        ("kanban", 686, kanban_input),
+        ("kanban_missing_host", 686, b"kanban " + kanban_key),
+        ("kanban_products", 686, kanban_input + b"\nkanban " + kanban_key + b"\ntenant8.kanbantool.com"),
         ("leadfeeder", 329, b"LeAdFeEdEr " + leadfeeder_key),
         ("leadfeeder_short_key", 329, b"leadfeeder " + leadfeeder_key[:-1]),
         ("locationiq", 450, b"LoCaTiOnIq " + locationiq_key),
@@ -1862,6 +1879,13 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact provider alphabets, lengths, direct pk grammar and keyword dispatch must retain the expected findings")
+    if name.startswith(("ipquality_", "jotform_", "jumpcloud_", "juro_", "kanban_")):
+        empty = name.startswith(("ipquality_non_alnum_", "jotform_upper_b_", "jumpcloud_overlong_", "juro_overlong_", "kanban_missing_host_"))
+        # Four direct products share Raw. Notifier dedup keeps one stdin
+        # location or both distinct filesystem key lines, not all four rows.
+        count = (1 if kind == "stdin" else 2) if name.startswith("kanban_products_") else 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact alphabets, hidden hosts and source-location notifier dedup must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

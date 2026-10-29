@@ -3708,6 +3708,40 @@
       "evidence": ["tests/detectors/test_ipinfodb.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
     },
+    "ipquality/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/ipquality/ipquality.go",
+      "scope_notes": "IPQuality478/v0/ungated default. Prefixed bounded32 mixed-alphanumeric occurrences retain key-only fields and duplicates. Complete URL precedes nil-constructor handling, which retains false with a cause. SANE5 GET/JSON Content-Type. Only200 reads whole typed success/message JSON, with ordered duplicates/null merges/sticky errors and binary message search; read errors win. Insufficient credits precedes quiet invalid-key handling; other statuses retain numeric causes. Helper release precedes Verified and mandatory checked zero-secret setter, including NULL/noop and whole shared Do errors without diagnostics. Borrowed read causes are copied before release. Every owned nonzero including positive visitors/setters is fatal with invocation-only rollback.",
+      "native_files": [
+        "src/detectors/ipquality.c",
+        "src/detectors/captures.c",
+        "src/detectors/findings.c",
+        "src/detectors/key_scan.c",
+        "src/detectors/json.c",
+        "src/http.c",
+        "src/detectors/registry.c"
+      ],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "verified",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": [
+        "tests/detectors/test_ipquality.c",
+        "tests/detectors/test_registry.c",
+        "tests/core/e2e.py",
+        "tests/cli_reference.py",
+        "docs/ACCEPTANCE.md"
+      ],
+      "remaining": [
+        "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
+        "Complete Go JSON/error projection and source HTTP/Reader/drain/native runtime behavior"
+      ]
+    },
     "ipstack/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/ipstack/ipstack.go",
@@ -3716,6 +3750,138 @@
       "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_ipstack.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source deferred-close behavior"]
+    },
+    "jotform/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/jotform/jotform.go",
+      "scope_notes": "Jotform287/v0/ungated default/no hints. Prefix plus word-bounded32 digits/lowercase/uppercase-A-only occurrences, not arbitrary mixed alphanumeric. Preserve duplicates and key-only fields. Finding and complete capital-K apiKey query precede nil-constructor drop, headers follow construction. SANE5 bodyless GET/common UA verifies every2xx, ignores body/read errors and suppresses the whole shared Do domain without setter. Provider originals survive one release per attempted send; all owned nonzero/+1 failures are fatal before skip/drop/publication, rolling back only invocation additions.",
+      "native_files": [
+        "src/detectors/jotform.c",
+        "src/detectors/captures.c",
+        "src/detectors/findings.c",
+        "src/detectors/key_scan.c",
+        "src/http.c",
+        "src/detectors/registry.c"
+      ],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "verified",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": [
+        "tests/detectors/test_jotform.c",
+        "tests/detectors/test_registry.c",
+        "tests/core/e2e.py",
+        "tests/cli_reference.py",
+        "docs/ACCEPTANCE.md"
+      ],
+      "remaining": [
+        "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
+        "Full native HTTP/Reader and source scan-deferred Close timing rather than immediate ABI release"
+      ]
+    },
+    "jumpcloud/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/jumpcloud/jumpcloud.go",
+      "scope_notes": "Jumpcloud131/v0/ungated default/no hints. Prefixed bounded40 mixed-alphanumeric key-only occurrences preserve duplicates. Finding precedes nil-constructor drop; effective X-Api-Key header follows construction. Fixed systemgroups GET/SANE5/common UA verifies every2xx regardless of body/read errors. Suppress the entire shared Do/preparation domain without setter or text classification. One release per attempted send while provider originals remain valid; owned nonzero failures abort before ordinary outcomes and roll back invocation additions only.",
+      "native_files": [
+        "src/detectors/jumpcloud.c",
+        "src/detectors/captures.c",
+        "src/detectors/findings.c",
+        "src/detectors/key_scan.c",
+        "src/http.c",
+        "src/detectors/registry.c"
+      ],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "verified",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": [
+        "tests/detectors/test_jumpcloud.c",
+        "tests/detectors/test_registry.c",
+        "tests/core/e2e.py",
+        "tests/cli_reference.py",
+        "docs/ACCEPTANCE.md"
+      ],
+      "remaining": [
+        "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
+        "Full native HTTP/Reader and source scan-deferred Close timing rather than immediate ABI release"
+      ]
+    },
+    "juro/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/juro/juro.go",
+      "scope_notes": "Juro295/v0/ungated default/no hints. Prefixed bounded40 mixed-alphanumeric key-only occurrences preserve duplicates. Finding precedes nil-constructor drop; effective X-Api-Key follows construction. SANE5/common-UA GET to literal v3/templates verifies every2xx, ignores body/read errors and suppresses the whole shared send domain without setter. Provider request/header/key storage survives exactly one release per attempted send. Every owned nonzero/+1 failure is fatal before ordinary outcomes with caller-preserving invocation-only rollback.",
+      "native_files": [
+        "src/detectors/juro.c",
+        "src/detectors/captures.c",
+        "src/detectors/findings.c",
+        "src/detectors/key_scan.c",
+        "src/http.c",
+        "src/detectors/registry.c"
+      ],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "verified",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": [
+        "tests/detectors/test_juro.c",
+        "tests/detectors/test_registry.c",
+        "tests/core/e2e.py",
+        "tests/cli_reference.py",
+        "docs/ACCEPTANCE.md"
+      ],
+      "remaining": [
+        "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
+        "Full native HTTP/Reader and source scan-deferred Close timing rather than immediate ABI release"
+      ]
+    },
+    "kanban/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/kanban/kanban.go",
+      "scope_notes": "Kanban686/v0/ungated default, span1024 is engine-only. Prefixed bounded12 uppercase-alphanumeric keys require independent unbounded lowercase kanbantool.com hosts even NoV. Preserve key-major occurrence products/duplicates, publishing only keys with no host/RawV2/Extra. Both regexes run even with no keys. Finding and complete URL precede nil-constructor drop; Accept then Bearer follow construction. PUBLIC10s bodyless GET/no coalescing key/common UA; every2xx verifies, body/read errors ignored, whole shared Do domain suppressed and no setter. Owned nonzero/+1 failures are fatal with invocation-only rollback; originals survive one release per attempt.",
+      "native_files": [
+        "src/detectors/kanban.c",
+        "src/detectors/captures.c",
+        "src/detectors/findings.c",
+        "src/http.c",
+        "src/detectors/registry.c"
+      ],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "verified",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": [
+        "tests/detectors/test_kanban.c",
+        "tests/detectors/test_registry.c",
+        "tests/core/e2e.py",
+        "tests/cli_reference.py",
+        "docs/ACCEPTANCE.md"
+      ],
+      "remaining": [
+        "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
+        "PUBLIC native address/redirect enforcement remains guarded, not aliased to SANE",
+        "Full Go global-client/Reader and scan-deferred Close timing rather than immediate ABI release"
+      ]
     },
     "leadfeeder/Scanner": {
       "status": "partial",

@@ -930,6 +930,18 @@ for selector, number, key, source in (("IpStack", 133, "A" + hex_key[1:], "IpStA
     check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Original hex case, direct pk prefix and UUID-shaped bytes remain unnormalized")
     check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV preserves key-only fields without contacting providers")
 
+for selector, number, key, source in (("IPQuality", 478, key32, "IpQuAlItY " + key32),
+                                      ("Jotform", 287, "A" + key32.lower()[1:], "JoTfOrM A" + key32.lower()[1:]),
+                                      ("Jumpcloud", 131, key40, "JuMpClOuD " + key40),
+                                      ("Juro", 295, key40, "JuRo " + key40),
+                                      ("Kanban", 686, key32[:12].upper(), "KaNbAn " + key32[:12].upper() + "\ntenant7.kanbantool.com")):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Five named IP and workflow provider scanners dispatch source grammars")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Jotform's uppercase A is accepted and Kanban's required host remains hidden")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV preserves key-only fields without provider actions")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Kanban"], ("kanban " + key32[:12].upper()).encode())
+check(not rows, "Kanban still requires a hidden host with verification disabled")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

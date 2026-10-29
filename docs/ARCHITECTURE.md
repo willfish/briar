@@ -8,9 +8,11 @@ Use the declared PCRE2, libcurl, json-c and OpenSSL dependencies for matching, H
 
 Build in vertical slices: shared primitives and three complete detectors; remaining detector families and decoders; sources/file handlers; analysis and remaining CLI/runtime behavior. Each slice leaves the full inventory visible. Unsupported behavior is an explicit gap, not an empty successful scan.
 
-Private URL helpers share selected byte parsing, decoding and query lookup, while Jira endpoint, request and diagnostic policy stays in its named helper. Their semantic baseline is the selected Go 1.26.7 source with the pinned binary's urlstrictcolons=0 setting, not a general Go runtime or proof of native/Nix-patch equivalence.
+Private URL helpers share selected byte parsing, decoding and query lookup, while Jira endpoint, request and diagnostic policy and LDAP's authority URL.String projection stay in named helpers. Their semantic baseline is the selected Go 1.26.7 source with the pinned binary's urlstrictcolons=0 setting, not a general Go runtime or proof of native/Nix-patch equivalence.
 
 The private SQL boundary clones immutable detector configuration and exchanges DSN bytes, database handles and explicit ordinary error-type facts through Open, Ping and Close. It does not accept verification verdicts or use global callbacks or HTTP userdata. The separate MySQL DSN translation preserves ordered validation and lexical address normalization even before verification; reached native database, named timezone and ambient TLS/key-registry behavior remains guarded rather than approximated. Driver-specific connection acquisition and context timing are not interchangeable.
+
+The private LDAP boundary similarly copies immutable I/O configuration and exchanges owned innermost error bytes, explicit error presence, typed cancellation/network facts and connection handles. Empty diagnostic bytes do not mean success. Dial, Bind and StartTLS remain whole library calls; StartTLS inherits the dial-established connection context rather than receiving a new deadline. Native LDAP remains unsupported. Scheme routing follows the parsed scheme, including empty-authority URLs whose serialized form omits the double slash.
 
 ## Shared C ABI, revision 1
 
