@@ -380,6 +380,11 @@ static const detector_factory named_factories[] = {
     br_guru_init,
     br_gyazo_init,
     br_happyscribe_init,
+    br_harness_init,
+    br_harvest_init,
+    br_hashicorpvaultbatchtoken_init,
+    br_hashicorpvaultauth_init,
+    br_hashicorpvaulttoken_init,
     br_jiradatacenterpat_init,
 };
 
@@ -502,6 +507,22 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_object_get_ex(feature_flags, "BraintrustDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
+        case 1061: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "HashiCorpVaultBatchTokenDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1062: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "HashiCorpVaultTokenDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
         case 9: case 113: return detector->version >= 1 && detector->version <= 3;
         case 3: case 4: case 8: case 142: case 190: case 303: case 333: case 394: case 430: case 708: case 921: case 994: case 1008: return detector->version == 1 || detector->version == 2;
         case 0: case 5: case 6: case 983: case 696: case 876: case 529: case 486: case 542: case 18: case 36: case 39: case 40: case 138: case 192: case 196: case 149: case 150: case 158: case 237: case 238: case 239: case 249: case 254: case 255: case 256: case 258: case 259: case 265: case 521: case 390: case 431: case 432: case 433: case 434: case 436: case 678: case 681: case 683: case 684: case 685: case 692: case 334: case 335: case 343: case 693: case 197: case 199: case 802: case 805: case 808:
@@ -511,7 +532,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 1002: case 1003: case 401: case 402: case 403: case 404: case 406: case 407: case 416: case 418: case 420: case 423: case 424: case 426: case 427: case 428: case 391: case 393: case 484: case 485: case 783: case 784: case 788: case 789: case 792: case 636: case 637: case 639: case 642: case 647: case 648: case 649: case 650: case 651: case 652: case 653: case 654: case 664: case 665: case 666: case 667: case 643: case 206: case 208: case 1004: case 768: case 769: case 770: case 771: case 588: case 592: case 598:
         case 307: case 311: case 317: case 318: case 320: case 322: case 812: case 815: case 816: case 819: case 821: case 823: case 646: case 269: case 270: case 278: case 280: case 281: case 282: case 283: case 284: case 285: case 286: case 1041: case 1042: case 180: case 181: case 184: case 185: case 187: case 189: case 385: case 386: case 387: case 388: case 389: case 794: case 800: case 801: case 897: case 899:
         case 98: case 103: case 41: case 376: case 377: case 378: case 166: case 1045: case 1047: case 1046: case 1026:
-        case 578: case 602: case 603: case 604: case 619: case 621: case 110: case 112: case 55: case 56: case 57: case 59: case 60: case 62: case 64: case 65: case 66: case 68: case 69: case 323: case 324: case 325: case 554: case 555: case 564: case 511: case 512: case 513: case 733: case 739: case 749: case 2: case 1052: case 959: case 960: case 962: case 963: case 980: case 988: case 990: case 993: case 947: case 953: case 954: case 957: case 971: case 1013: case 1007: case 1009: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975:
+        case 578: case 602: case 603: case 604: case 619: case 621: case 110: case 112: case 55: case 56: case 57: case 59: case 60: case 62: case 64: case 65: case 66: case 68: case 69: case 323: case 324: case 325: case 554: case 555: case 564: case 511: case 512: case 513: case 733: case 739: case 749: case 2: case 1052: case 959: case 960: case 962: case 963: case 980: case 988: case 990: case 993: case 947: case 953: case 954: case 957: case 971: case 1013: case 1007: case 1009: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975: case 1020: case 260: case 1036:
             return detector->version == 0;
         default: break;
         }
@@ -603,6 +624,7 @@ const char *br_detector_type_name(int32_t type)
     case 256: return "CompanyHub";
     case 258: return "Dyspatch";
     case 259: return "Guardianapi";
+    case 260: return "Harvest";
     case 265: return "FlowFlu";
     case 257: return "Debounce";
     case 269: return "Apptivo";
@@ -860,11 +882,13 @@ const char *br_detector_type_name(int32_t type)
     case 1015: return "AirtablePersonalAccessToken";
     case 1018: return "AzureApiManagementRepositoryKey";
     case 1019: return "AzureAPIManagementSubscriptionKey";
+    case 1020: return "Harness";
     case 1024: return "AzureDirectManagementKey";
     case 1025: return "AzureAppConfigConnectionString";
     case 1026: return "DeepSeek";
     case 1029: return "BitbucketAppPassword";
     case 1032: return "AnypointOAuth2";
+    case 1036: return "HashiCorpVaultAuth";
     case 1041: return "GoogleGeminiAPIKey";
     case 1042: return "ArtifactoryReferenceToken";
     case 1043: return "DatadogApikey";
@@ -876,6 +900,8 @@ const char *br_detector_type_name(int32_t type)
     case 1052: return "AWSAppSync";
     case 1053: return "BrainTrustApiKey";
     case 1059: return "DuffelToken";
+    case 1061: return "HashiCorpVaultBatchToken";
+    case 1062: return "HashiCorpVaultToken";
     case 1063: return "Duo";
     default: return NULL;
     }

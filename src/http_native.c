@@ -9,14 +9,19 @@
 /* Each entry represents an actual upstream package client, not a rule that
  * detector types define client identity. Duffel's entry is its default client.
  * This runtime does not claim process-global sharing across separate engines. */
-static int (*const source_clients[])(const br_detector **, char **) = {
-    br_cliengo_init,
-    br_clockify_init,
-    br_databox_init,
-    br_duffeltoken_init,
-    br_finage_init,
-    br_geocode_init,
-    br_gitter_init,
+static const struct {
+    int (*initialize)(const br_detector **, char **);
+    br_http_profile profile;
+} source_clients[] = {
+    {br_cliengo_init, BR_HTTP_SANE},
+    {br_clockify_init, BR_HTTP_SANE},
+    {br_databox_init, BR_HTTP_SANE},
+    {br_duffeltoken_init, BR_HTTP_SANE},
+    {br_finage_init, BR_HTTP_SANE},
+    {br_geocode_init, BR_HTTP_SANE},
+    {br_gitter_init, BR_HTTP_SANE},
+    {br_hashicorpvaultbatchtoken_init, BR_HTTP_DETECTOR_PUBLIC},
+    {br_hashicorpvaulttoken_init, BR_HTTP_DETECTOR_PUBLIC},
 };
 #define SOURCE_CLIENT_COUNT (sizeof(source_clients) / sizeof(*source_clients))
 
@@ -47,8 +52,8 @@ int br_native_http_init(br_native_http **out, char **error)
      * runtime, rather than an individual client, owns its initialization. */
     br_http_owned_backend backend = {.transport = *runtime->raw};
     for (size_t i = 0; i < SOURCE_CLIENT_COUNT; ++i) {
-        if (source_clients[i](&runtime->sources[i].detector, error) ||
-            br_http_client_init(&runtime->sources[i].client, backend, BR_HTTP_SANE, error))
+        if (source_clients[i].initialize(&runtime->sources[i].detector, error) ||
+            br_http_client_init(&runtime->sources[i].client, backend, source_clients[i].profile, error))
             goto failed;
     }
     *out = runtime;

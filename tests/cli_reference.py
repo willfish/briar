@@ -660,6 +660,17 @@ def fixtures():
     gumroad_key = alnum("gumroad-key", 21) + b"-" + alnum("gumroad-tail", 21)
     gyazo_key = alnum("gyazo-key", 21) + b"-" + alnum("gyazo-tail", 21)
     happyscribe_key = alnum("happyscribe-key", 24)
+    harness_key = b"pat." + alnum("harness-id", 10) + b"_" + alnum("harness-id-end", 11) + b"." + synthetic("harness-hex", 24) + b"." + alnum("harness-tail", 20)
+    harvest_key = alnum("harvest-a", 32) + b"." + alnum("harvest-b", 32) + b"_" + alnum("harvest-c", 31)
+    harvest_input = b"HaRvEsT " + harvest_key + b"\nharvest 004203"
+    vault_url = b"https://alpha100.hashicorp.cloud:8200/team//x/../users"
+    vault_binary_origin = "https://a\0\v☃.hashicorp.cloud/path".encode()
+    vault_batch_key = b"hvb." + alnum("vault-batch-a", 24) + b"._-" + alnum("vault-batch-b", 29)
+    vault_service_key = b"hvs." + alnum("vault-service-a", 96) + b"_" + alnum("vault-service-b", 4)
+    vault_legacy_key = b"s." + alnum("vault-legacy", 30)
+    vault_role = b"-".join(synthetic("vault-role-" + str(i), n) for i, n in enumerate((8, 4, 4, 4, 12)))
+    vault_secret = b"-".join(synthetic("vault-secret-" + str(i), n) for i, n in enumerate((8, 4, 4, 4, 12))).upper()
+    vault_auth_pair = b"role " + vault_role + b"\nsecret " + vault_secret + b"\n"
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1320,6 +1331,22 @@ def fixtures():
         ("gyazo_end_hyphen", 467, b"gyazo " + gyazo_key[:42] + b"-x"),
         ("happyscribe", 507, b"HaPpYsCrIbE " + happyscribe_key),
         ("happyscribe_short", 507, b"happyscribe " + happyscribe_key[:23]),
+        ("harness", 1020, b"HaRnEsS " + harness_key),
+        ("harness_upper_prefix", 1020, b"harness PAT." + harness_key[4:]),
+        ("harness_unique", 1020, b"harness " + harness_key + b"\nharness " + harness_key),
+        ("harvest", 260, harvest_input),
+        ("harvest_products", 260, harvest_input + b"\nharvest 006708"),
+        ("harvest_missing_id", 260, b"harvest " + harvest_key),
+        ("hashicorpvaultbatchtoken", 1061, vault_batch_key + b"\n" + vault_url),
+        ("hashicorpvaultbatchtoken_no_url", 1061, vault_batch_key),
+        ("hashicorpvaultbatchtoken_binary_origin", 1061, vault_batch_key + b"\n" + vault_binary_origin),
+        ("hashicorpvaulttoken", 1062, vault_service_key + b"\n" + vault_url),
+        ("hashicorpvaulttoken_legacy", 1062, b"vault " + vault_legacy_key + b"\n" + vault_url),
+        ("hashicorpvaulttoken_legacy_no_dispatch", 1062, vault_legacy_key + b"\n" + vault_url),
+        ("hashicorpvaulttoken_no_url", 1062, vault_service_key),
+        ("hashicorpvaultauth", 1036, vault_auth_pair + vault_url),
+        ("hashicorpvaultauth_missing_role", 1036, b"secret " + vault_secret + b"\n" + vault_url),
+        ("hashicorpvaultauth_binary_path", 1036, vault_auth_pair + b"https://alpha100.hashicorp.cloud/p\0x/\v"),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1609,6 +1636,11 @@ def compare(native, reference, case):
         count = 0 if name.startswith("happyscribe_short_") else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": mixed alphabets, hyphen boundaries and required lengths must retain the expected findings")
+    if name.startswith(("harness_", "harvest_", "hashicorpvaultbatchtoken_", "hashicorpvaulttoken_", "hashicorpvaultauth_")):
+        empty = name.startswith(("harness_upper_prefix_", "harvest_missing_id_", "hashicorpvaultbatchtoken_no_url_", "hashicorpvaulttoken_legacy_no_dispatch_", "hashicorpvaulttoken_no_url_", "hashicorpvaultauth_missing_role_"))
+        count = 0 if empty else 1  # Default CLI cleaning keeps one unverified occurrence product.
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact token grammar, required hidden IDs/endpoints, original URL bytes and source CLI cleaning must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

@@ -724,6 +724,46 @@ check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] 
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Happyscribe"], ("happyscribe " + happyscribe_key[:23]).encode())
 check(not rows, "Happyscribe requires all 24 token bytes")
 
+harness_key = "pat." + key32[:10] + "_" + key32[:11] + ".a19b28c37d46e50fa19b28c3." + key32[:20]
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Harness"], ("HaRnEsS " + harness_key).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 1020, "Harness selector dispatches its enabled scanner")
+check(rows[0]["Raw"] == harness_key and rows[0]["SecretParts"] == {"key": harness_key}, "Harness retains the complete literal PAT grammar")
+check(rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Harness NoV does not fetch user data or invent last-login metadata")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=1020"], ("harness PAT." + harness_key[4:]).encode())
+check(not rows, "Harness folds the keyword, not its literal token prefix")
+harvest_key = key40 + "." + key40 + "_" + key32[:15]
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Harvest"], ("harvest " + harvest_key + "\nharvest 004203").encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 260, "Harvest requires and binds its independently prefixed hidden account ID")
+check(rows[0]["Raw"] == harvest_key and rows[0]["SecretParts"] == {"key": harvest_key}, "Harvest does not expose its hidden ID")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Harvest"], ("harvest " + harvest_key).encode())
+check(not rows, "Harvest cannot emit a key without an account ID")
+vault_origin = "https://alpha100.hashicorp.cloud:8200"
+vault_batch_key = "hvb." + key40 + key32[:10]
+vault_service_key = "hvs." + key40 * 2 + key32[:10]
+for selector, number, key, prefix in (("HashiCorpVaultBatchToken", 1061, vault_batch_key, ""),
+                                     ("HashiCorpVaultToken", 1062, vault_service_key, ""),
+                                     ("1062", 1062, "s." + key32[:18], "vault ")):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], (prefix + key + "\n" + vault_origin + "/team/path").encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Vault source selectors dispatch enabled token grammars")
+    check(rows[0]["Raw"] == key and rows[0]["RawV2"] == key + ":" + vault_origin, "Vault token metadata uses the captured origin, not the full path")
+    check(rows[0]["SecretParts"] == {"key": key, "url": vault_origin} and rows[0]["Redacted"] == key[:8] + "...", "Vault preserves endpoint parts and source redaction")
+    check(rows[0]["ExtraData"] is None and not rows[0]["Verified"], "Vault NoV does not look up tokens")
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], (prefix + key).encode())
+    check(not rows, "Vault tokens require a selected endpoint even without verification")
+vault_binary_origin = "https://a\0\v☃.hashicorp.cloud"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=1061"], (vault_batch_key + "\n" + vault_binary_origin + "/path").encode())
+check(len(rows) == 1 and rows[0]["SecretParts"]["url"] == vault_binary_origin, "Vault found origins preserve NUL, VT and Unicode bytes")
+check(rows[0]["RawV2"] == vault_batch_key + ":" + vault_binary_origin, "Vault RawV2 cannot silently truncate its endpoint")
+vault_role = "fb2ca917-481c-4b1d-af03-768c2de0a51b"
+vault_secret = "A19D3C72-5B84-4E06-9AF1-32C47D8B906E"
+vault_auth_prefix = "role " + vault_role + "\n" + " " * 64 + "\nsecret " + vault_secret + "\n"
+vault_auth_url = vault_origin + "/a\0b/"
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=HashiCorpVaultAuth"], (vault_auth_prefix + vault_auth_url).encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 1036, "Vault AppRole dispatches its two required UUID roles")
+check(rows[0]["Raw"] == vault_secret and rows[0]["RawV2"] == vault_role + ":" + vault_secret, "AppRole Raw and RawV2 preserve their distinct credential roles")
+check(rows[0]["SecretParts"] == {"role_id": vault_role, "secret_id": vault_secret}, "AppRole does not add a URL secret part")
+check(rows[0]["ExtraData"] == {"URL": vault_auth_url} and not rows[0]["Redacted"] and not rows[0]["Verified"], "AppRole NoV retains the whole binary path and never issues a login")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

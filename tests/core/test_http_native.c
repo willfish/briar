@@ -24,10 +24,12 @@ static void unchanged(const br_scan_ctx *actual, const br_scan_ctx *base)
 
 int main(void)
 {
-    const struct { int (*factory)(const br_detector **, char **); int type; } sources[] = {
-        {br_cliengo_init, 710}, {br_clockify_init, 280}, {br_databox_init, 834},
-        {br_duffeltoken_init, 1059}, {br_finage_init, 423}, {br_geocode_init, 486},
-        {br_gitter_init, 555},
+    const struct { int (*factory)(const br_detector **, char **); int type; br_http_profile profile; } sources[] = {
+        {br_cliengo_init, 710, BR_HTTP_SANE}, {br_clockify_init, 280, BR_HTTP_SANE}, {br_databox_init, 834, BR_HTTP_SANE},
+        {br_duffeltoken_init, 1059, BR_HTTP_SANE}, {br_finage_init, 423, BR_HTTP_SANE}, {br_geocode_init, 486, BR_HTTP_SANE},
+        {br_gitter_init, 555, BR_HTTP_SANE},
+        {br_hashicorpvaultbatchtoken_init, 1061, BR_HTTP_DETECTOR_PUBLIC},
+        {br_hashicorpvaulttoken_init, 1062, BR_HTTP_DETECTOR_PUBLIC},
     };
     char *error = NULL;
     CHECK(br_native_http_init(NULL, &error) && error);
@@ -68,6 +70,20 @@ int main(void)
         local = base; local.transport = NULL;
         br_native_http_bind(runtime, detector, &local);
         CHECK(!local.transport); unchanged(&local, &base);
+        if (sources[i].profile == BR_HTTP_DETECTOR_PUBLIC) {
+            br_scan_ctx attempt = base;
+            attempt.transport = clients[i]; attempt.deadline_monotonic_ms = 0;
+            attempt.cancelled = NULL; attempt.cancel_user = NULL; attempt.options = NULL;
+            static const unsigned char full_key[] = "native-public:token";
+            br_http_request request = {.method = "GET", .url = "http://127.0.0.1:1/",
+                .profile = sources[i].profile, .detector_type = sources[i].type,
+                .dedup_key = {full_key, sizeof(full_key) - 1}};
+            br_http_response response = {0};
+            CHECK(br_http_send(&attempt, &request, &response, &error) != 0 && error &&
+                  !strcmp(error, "unsupported: native curl HTTP client profile"));
+            CHECK(!response.status && !response.body.data && !response.body_error);
+            free(error); error = NULL; br_http_release(&attempt, &response);
+        }
     }
     /* Matching type, scan and state are not authorization to reuse a source
      * client's namespace. Custom descriptors/clients remain explicit. */

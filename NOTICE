@@ -42,6 +42,9 @@ GoCanvas XML response projection follows selected encoding/xml struct, direct-te
 and integer-decoding behavior, with a narrower explicit supported subset.
 Google OAuth token expiry follows selected strconv.ParseInt and time.Unix/String
 behavior only within its explicit UTC configuration and calendar subset.
+Vault token URL joining follows selected rooted path.Clean/Join and net/url.JoinPath
+behavior. Harness and Vault response projection follow selected encoding/json
+typed-field, integer and slice-reuse rules.
 Selected Unicode 15.0 category, whitespace and lowercase ranges derive from
 Go 1.26.7 src/unicode/tables.go; regenerate them with tools/generate_go_unicode.py.
 Original copyright and BSD license:

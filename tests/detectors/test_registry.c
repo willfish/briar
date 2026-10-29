@@ -384,12 +384,71 @@ static const registration expected[] = {
     {570, 0, "Guru", "guru", 9, false, 1024},
     {467, 0, "Gyazo", "gyazo", 43, true, -1},
     {507, 0, "Happyscribe", "happyscribe", 24, true, -1},
+    {1020, 0, "Harness", "harness", 72, true, -1},
+    {260, 0, "Harvest", "harvest", 97, true, 1024},
+    {1061, 0, "HashiCorpVaultBatchToken", "hvb.", 54, true, 1024},
+    {1036, 0, "HashiCorpVaultAuth", "hashicorp", 36, true, 1024},
+    {1062, 0, "HashiCorpVaultToken", "hvs.", 94, true, 1024},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 1020) {
+        char key[73] = "pat.", input[100];
+        test_secret(key + 4, 22, 0); key[26] = '.';
+        memcpy(key + 27, "a19b28c37d46e50fa19b28c3", 24); key[51] = '.'; test_secret(key + 52, 20, 7);
+        snprintf(input, sizeof(input), "harness %s", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 1020, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
+    if (entry->type == 260) {
+        char key[98], input[160]; test_secret(key, 97, 0); key[20] = '.'; key[40] = '_';
+        snprintf(input, sizeof(input), "harvest %s\nharvest 0012", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 260, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
+    if (entry->type == 1061 || entry->type == 1062) {
+        char key[125], input[220], raw_v2[220];
+        const char *url = "https://registry.hashicorp.cloud";
+        memcpy(key, entry->type == 1061 ? "hvb." : "hvs.", 4); test_secret(key + 4, entry->key_len - 4, 0);
+        snprintf(input, sizeof(input), "%s\n%s/path", key, url);
+        snprintf(raw_v2, sizeof(raw_v2), "%s:%s", key, url);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        const br_result *r = &results.items[0]; br_json *part = NULL;
+        CHECK(r->detector_type == entry->type && r->raw.len == entry->key_len && !memcmp(r->raw.data, key, entry->key_len));
+        CHECK(r->raw_v2.len == strlen(raw_v2) && !memcmp(r->raw_v2.data, raw_v2, strlen(raw_v2)));
+        CHECK(r->redacted && strlen(r->redacted) == 11 && !memcmp(r->redacted, key, 8) && !strcmp(r->redacted + 8, "..."));
+        CHECK(r->secret_parts && json_object_object_length(r->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(r->secret_parts, "key", &part) && !strcmp(json_object_get_string(part), key));
+        CHECK(json_object_object_get_ex(r->secret_parts, "url", &part) && !strcmp(json_object_get_string(part), url));
+        CHECK(!r->verified && !r->verification_error && !r->extra_data && !r->structured_data);
+        br_results_clear(&results); return;
+    }
+    if (entry->type == 1036) {
+        const char *role = "01234567-89ab-cdef-0123-456789abcdef";
+        const char *secret = "ABCDEF01-2345-6789-abcd-ef0123456789";
+        const char *url = "https://registry.hashicorp.cloud/path";
+        char input[256], raw_v2[74];
+        snprintf(input, sizeof(input), "role %s\n%64s\nsecret %s\n%s", role, "", secret, url);
+        snprintf(raw_v2, sizeof(raw_v2), "%s:%s", role, secret);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        const br_result *r = &results.items[0]; br_json *part = NULL;
+        CHECK(r->detector_type == 1036 && r->raw.len == 36 && !memcmp(r->raw.data, secret, 36));
+        CHECK(r->raw_v2.len == 73 && !memcmp(r->raw_v2.data, raw_v2, 73));
+        CHECK(r->secret_parts && json_object_object_length(r->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(r->secret_parts, "role_id", &part) && !strcmp(json_object_get_string(part), role));
+        CHECK(json_object_object_get_ex(r->secret_parts, "secret_id", &part) && !strcmp(json_object_get_string(part), secret));
+        CHECK(r->extra_data && json_object_object_length(r->extra_data) == 1);
+        CHECK(json_object_object_get_ex(r->extra_data, "URL", &part) && !strcmp(json_object_get_string(part), url));
+        CHECK(!r->verified && !r->verification_error && !r->redacted && !r->structured_data);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 570) {
         const char *username = "AbC@de.fg";
         const char *input = "guru AbC@de.fg\nguru ghijklmn-opqr-stuv-wxyz-0123456789ab";
@@ -1671,6 +1730,8 @@ int main(void)
     feature_gate_tests(405, "EnigmaDetectorEnabled");
     feature_gate_tests(1053, "BraintrustDetectorEnabled");
     feature_gate_tests(1050, "GitLabOAuthDetectorEnabled");
+    feature_gate_tests(1061, "HashiCorpVaultBatchTokenDetectorEnabled");
+    feature_gate_tests(1062, "HashiCorpVaultTokenDetectorEnabled");
     feature_gate_tests(1059, "DuffelTokenDetectorEnabled");
     feature_gate_tests(1063, "DuoDetectorEnabled");
     feature_gate_tests(1048, "CloudinaryDetectorEnabled");
@@ -1696,7 +1757,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
@@ -1739,6 +1800,7 @@ int main(void)
                 for (size_t k = 0; k < 6; ++k) CHECK(!strcmp(detector->keywords[k], prefixes[k]));
             }
         }
+        if (entry->type == 1062) CHECK(!strcmp(detector->keywords[1], "vault"));
         if (entry->type == 876) CHECK(!strcmp(detector->keywords[1], "account-"));
         if (entry->type == 603) CHECK(!strcmp(detector->keywords[1], "runscope"));
         if (entry->type == 307) CHECK(!strcmp(detector->keywords[1], "clientary"));
@@ -1808,7 +1870,7 @@ int main(void)
         } else CHECK(!detector->false_positive);
         if (entry->type == 2 || entry->type == 959) CHECK(detector->clean && detector->clean_always);
         else CHECK(!detector->clean && !detector->clean_always);
-        if (entry->type == 181 || entry->type == 1042 || entry->type == 1047) {
+        if (entry->type == 181 || entry->type == 1042 || entry->type == 1047 || entry->type == 1061 || entry->type == 1062) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint);
             CHECK(!detector->cloud_endpoint[0]);
         } else if (entry->type == 39 || entry->type == 1043) {
@@ -1818,7 +1880,7 @@ int main(void)
             CHECK(detector->validate_endpoints && detector->cloud_endpoint && !strcmp(detector->cloud_endpoint, "https://gitlab.com"));
         } else if (entry->type == 8) {
             CHECK(detector->validate_endpoints && detector->cloud_endpoint && !strcmp(detector->cloud_endpoint, "https://api.github.com"));
-        } else if (entry->type == 1045 || entry->type == 1046) {
+        } else if (entry->type == 1045 || entry->type == 1046 || entry->type == 1036) {
             CHECK(detector->validate_endpoints && !detector->cloud_endpoint);
         } else CHECK(!detector->validate_endpoints && !detector->cloud_endpoint);
         CHECK(br_detector_is_default(detector, NULL) == entry->enabled);
