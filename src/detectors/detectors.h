@@ -404,5 +404,9 @@ int br_hubspot_apikey_v1_init(const br_detector **out, char **error);
 int br_hubspot_apikey_v2_init(const br_detector **out, char **error);
 int br_huggingface_init(const br_detector **out, char **error);
 int br_humanity_init(const br_detector **out, char **error);
+int br_hunter_init(const br_detector **out, char **error);
+int br_hybiscus_init(const br_detector **out, char **error);
+int br_hypertrack_init(const br_detector **out, char **error);
+int br_ibmclouduserkey_init(const br_detector **out, char **error);
 
 #endif
