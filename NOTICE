@@ -30,9 +30,10 @@ mime/multipart writer behavior. Enigma's ASCII Content-Type diagnostics and Figm
 ASCII 403 response diagnostics follow selected strconv quoting behavior.
 Freshbooks request guards and Geocodio/HereAPI query/fragment projection
 follow selected net/url and net/http constructor behavior. Shared byte URL
-parsing/query projection and Jira endpoint-host/request-URL projection follow
-selected net/url, net/netip and net/http rules, including the pinned binary's
-urlstrictcolons=0 compatibility setting. The private DefaultClient
+parsing/query projection, Jira endpoint-host/request-URL projection and LDAP
+URL.String projection follow selected net/url, net/netip and net/http rules,
+including the pinned binary's urlstrictcolons=0 compatibility setting.
+The private DefaultClient
 background-context JSON-POST boundary follows selected net/http/client.go and
 request.go behavior, without claiming native transport equivalence.
 Google credential string projection and ordered marshaling follow selected
@@ -106,3 +107,11 @@ Selected invalid-host cache policy follows patrickmn/go-cache
 v2.1.0+incompatible, without claiming janitor/clock-rollback equivalence.
 Copyright (c) 2012-2017 Patrick Mylund Nielsen and the go-cache contributors.
 See LICENSES/MIT-go-cache.txt.
+
+The private LDAP I/O/error contract follows selected ldap-verify
+v0.0.0-20260824144701-aa52b4613a85 behavior, without linking its Go implementation
+or authorizing native LDAP access. Original MIT notices:
+Copyright (c) 2011-2015 Michael Mitton.
+Portions copyright (c) 2015-2024 go-ldap Authors.
+Portions copyright (c) 2020 Andrew Suffield.
+See LICENSES/MIT-ldap-verify.txt.
