@@ -980,6 +980,22 @@ for selector, number, key in (("Klipfolio", 740, klipfolio_key), ("KnapsackPro",
     check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Hex-only and nonhex lowercase-alphanumeric grammars retain key-only fields")
     check(not rows[0]["RawV2"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV makes no provider or test-suite request")
 
+klaviyo_key = "pk_" + klipfolio_key[:34]
+for key in (klaviyo_key, "pk_Ab12Cd_" + klipfolio_key[:34]):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Klaviyo"], key.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == 935 and rows[0]["Raw"] == key, "Klaviyo dispatches both source key formats without a provider-name prefix")
+    check(rows[0]["SecretParts"] == {"key": key} and not rows[0]["RawV2"] and rows[0]["ExtraData"] is None, "Klaviyo keeps key-only metadata without an invented version")
+kontent_env = "b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3"
+kontent_key = "ey" + "A" * 30 + ".ey" + "B" * 200 + "." + "C" * 40
+kontent_source = "env " + kontent_env + "\nkontent " + kontent_key
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=Kontent"], kontent_source.encode())
+check(len(rows) == 1 and rows[0]["DetectorType"] == 328 and rows[0]["Raw"] == kontent_env, "Kontent uses its required environment as Raw")
+check(rows[0]["RawV2"] == kontent_env + kontent_key and rows[0]["SecretParts"] == {"env_id": kontent_env, "key": kontent_key}, "Kontent preserves separator-free environment/key RawV2 and both parts")
+for selector, number, key in (("Meistertask", 656, key40 + "G7h"), ("MessageBird", 111, key32[:8] + "_-" + key32[10:25])):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], (selector.upper() + " " + key).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number and rows[0]["Raw"] == key, "Task and messaging scanners dispatch exact alphanumeric and underscore/hyphen grammars")
+    check(rows[0]["SecretParts"] == {"key": key} and not rows[0]["Verified"] and not rows[0]["RawV2"], "NoV performs no task or messaging action")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

@@ -3982,6 +3982,42 @@
       "evidence": ["tests/detectors/test_knapsackpro.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
     },
+    "klaviyo/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/klaviyo/klaviyo.go",
+      "scope_notes": "Klaviyo935/v0/ungated default/no hints/direct word-bounded pk_ then34 lowercasehex OR6 mixedalnum underscore34lowerhex. Preserve37/44-byte key-only occurrences/duplicates, no Version extra. Capture/finding before fixed-URL nil constructor drop; Revision2023-02-22 then literal Klaviyo-API-Key authorization. SANE5 GET profiles/common UA/empty key: all2xx true/body ignored,401 quiet,403 typed first-document errors slice nonempty verifies including null elements; empty gets errors expected, ordinary syntax/type errors unexpected API JSON response. String/int64/source.pointer fields honor folding/null/ordered duplicates and sticky type errors while visitation continues. Every visitor nonzero including+1 is fatal; first_document+1 remains ordinary decode cause. Other status checked formatting and whole Do errors reach checked key-secret setter including NULL, before one mandatory release even fatal; no invented missing cause. Owned failures roll back invocation-only findings.",
+      "native_files": ["src/detectors/klaviyo.c", "src/detectors/json.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_klaviyo.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte, JSON/Reader and decoder/engine/output behavior", "Full native HTTP and source scan-deferred Close timing"]
+    },
+    "kontent/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/kontent/kontent.go",
+      "scope_notes": "Kontent328/v0/ungated default/no hints. Independent unique kontent-prefixed JWT-shaped keys and kontent-or-env prefixed lowercasehex UUIDs; both sets run evenNoV. Preserve BuildRegexJWT wildcard dots/minmax, exact37-row UUID exclusion list and entropy below3 filtering before environment-major products. Raw environment, RawV2 environment+key without separator, env_id/key parts only. Full literal projects URL and Bearer use NewRequest BACKGROUND context, not nil-scan skip/caller deadline. SANE5/common UA/empty key:200 true,401 quiet,403 read-error first else exact permission sentence anywhere verifies; other status checked unexpected status code formatting. Release once BEFORE caller stores verdict and mandatory checked zero-secret setter including NULL; owned borrowed-cause copies survive release mutations, no fabricated cause. NUL header gets exact retained invalid-header cause without send/release, original binary fields unchanged. Every owned nonzero/+1 fatal and caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/kontent.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_kontent.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Go map product order, complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and client-instance equivalence"]
+    },
+    "meistertask/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/meistertask/meistertask.go",
+      "scope_notes": "Meistertask656/v0/ungated default/no hints. Keyword-only folded prefix and word-bounded43 mixed-alphanumeric key-only occurrences/duplicates. Required capture/finding precede fixed-URL nil-constructor drop, then literal Bearer. SANE5 GET https://www.meistertask.com/api/projects/common UA/empty key verifies every2xx, ignores body/read errors and suppresses whole shared preparation/Do nonzero domain with no setter. Original request/auth/key survive one release per attempt. Every owned nonzero/+1 compile/capture/finding/push failure is fatal with invocation-only caller-preserving rollback.",
+      "native_files": ["src/detectors/meistertask.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_meistertask.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
+    "messagebird/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/messagebird/messagebird.go",
+      "scope_notes": "MessageBird111/v0/ungated default/no hints. Keyword-only folded prefix plus25 mixed-alphanumeric/underscore/hyphen with literal ASCII word boundaries; edge hyphens depend on neighboring original bytes, not a format validator. Preserve key-only occurrences/duplicates. Capture/finding before fixed-URL nil-constructor drop, then literal AccessKey, not Bearer or Base64. SANE5 GET https://rest.messagebird.com/messages/common UA/empty key verifies every2xx, ignores body/read errors and suppresses whole shared preparation/Do nonzero domain with no setter. No SMS/voice/chat action, only injected synthetic GET. Originals survive one release per attempt, every owned nonzero/+1 fatal with invocation-only caller-preserving rollback.",
+      "native_files": ["src/detectors/messagebird.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_messagebird.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
     "leadfeeder/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/leadfeeder/leadfeeder.go",

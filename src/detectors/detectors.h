@@ -450,5 +450,9 @@ int br_keenio_init(const br_detector **out, char **error);
 int br_kickbox_init(const br_detector **out, char **error);
 int br_klipfolio_init(const br_detector **out, char **error);
 int br_knapsackpro_init(const br_detector **out, char **error);
+int br_klaviyo_init(const br_detector **out, char **error);
+int br_kontent_init(const br_detector **out, char **error);
+int br_meistertask_init(const br_detector **out, char **error);
+int br_messagebird_init(const br_detector **out, char **error);
 
 #endif

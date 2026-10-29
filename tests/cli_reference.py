@@ -745,6 +745,12 @@ def fixtures():
     kickbox_key = b"_" + alnum("kickbox-key", 64)
     klipfolio_key = synthetic("klipfolio-key", 40)
     knapsackpro_key = b"g" + alnum("knapsackpro-key", 31).lower()
+    klaviyo_key = b"pk_" + synthetic("klaviyo-key", 34)
+    klaviyo_newer = b"pk_Ab12Cd_" + synthetic("klaviyo-newer", 34)
+    kontent_env = b"b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3"
+    kontent_key = b"ey" + alnum("kontent-first", 30) + b".ey" + alnum("kontent-second", 200) + b"." + alnum("kontent-third", 40)
+    meistertask_key = alnum("meistertask-key", 43)
+    messagebird_key = alnum("messagebird-key", 8) + b"_-" + alnum("messagebird-tail", 15)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1567,6 +1573,14 @@ def fixtures():
         ("klipfolio_upper_key", 740, b"klipfolio A" + klipfolio_key[1:]),
         ("knapsackpro", 760, b"KnApSaCkPrO " + knapsackpro_key),
         ("knapsackpro_upper_key", 760, b"knapsackpro Z" + knapsackpro_key[1:]),
+        ("klaviyo", 935, klaviyo_key + b"\n" + klaviyo_newer),
+        ("klaviyo_wrong_case", 935, b"P" + klaviyo_key[1:]),
+        ("kontent", 328, b"env " + kontent_env + b"\nkontent " + kontent_key),
+        ("kontent_missing_env", 328, b"kontent " + kontent_key),
+        ("meistertask", 656, b"MeIsTeRtAsK " + meistertask_key),
+        ("meistertask_short", 656, b"meistertask " + meistertask_key[:-1]),
+        ("messagebird", 111, b"MeSsAgEbIrD " + messagebird_key),
+        ("messagebird_short", 111, b"messagebird " + messagebird_key[:-1]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1935,6 +1949,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": lowercase hex versus nonhex lower-alphanumeric keys must preserve exact findings")
+    if name.startswith(("klaviyo_", "kontent_", "meistertask_", "messagebird_")):
+        empty = name.startswith(("klaviyo_wrong_case_", "kontent_missing_env_", "meistertask_short_", "messagebird_short_"))
+        count = 0 if empty else 2 if name.startswith("klaviyo_") else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": both Klaviyo formats, required Kontent environment and exact provider alphabets must retain findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

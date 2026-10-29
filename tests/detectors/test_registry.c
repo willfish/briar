@@ -454,11 +454,43 @@ static const registration expected[] = {
     {573, 0, "Kickbox", "kickbox", 65, true, -1},
     {740, 0, "Klipfolio", "klipfolio", 40, true, -1},
     {760, 0, "KnapsackPro", "knapsackpro", 32, true, -1},
+    {935, 0, "Klaviyo", "pk_", 37, true, -1},
+    {328, 0, "Kontent", "kontent", 36, true, -1},
+    {656, 0, "Meistertask", "meistertask", 43, true, -1},
+    {111, 0, "MessageBird", "messagebird", 25, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 935 || entry->type == 328 || entry->type == 656 || entry->type == 111) {
+        char key[300], input[450];
+        const char *env = "b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3";
+        if (entry->type == 328) {
+            snprintf(key, sizeof(key), "ey%030u.ey%0200u.%040u", 7u, 8u, 9u);
+            CHECK(strlen(key) == 276);
+            snprintf(input, sizeof(input), "env %s\nkontent %s", env, key);
+        } else if (entry->type == 935) {
+            memcpy(key, "pk_", 3);
+            for (size_t i = 0; i < 34; ++i) key[i + 3] = "0123456789abcdef"[(i * 7 + 3) % 16];
+            key[37] = '\0'; strcpy(input, key);
+        } else {
+            test_secret(key, entry->type == 656 ? 43 : 25, 0);
+            snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
+        }
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        if (entry->type == 328) {
+            CHECK(results.items[0].raw.len == 36 && !memcmp(results.items[0].raw.data, env, 36));
+            CHECK(results.items[0].raw_v2.len == 36 + strlen(key));
+            CHECK(!memcmp(results.items[0].raw_v2.data, env, 36) && !memcmp(results.items[0].raw_v2.data + 36, key, strlen(key)));
+            br_json *part = NULL;
+            CHECK(json_object_object_length(results.items[0].secret_parts) == 2);
+            CHECK(json_object_object_get_ex(results.items[0].secret_parts, "key", &part) && !strcmp(json_object_get_string(part), key));
+            CHECK(json_object_object_get_ex(results.items[0].secret_parts, "env_id", &part) && !strcmp(json_object_get_string(part), env));
+        } else test_key_result(&results.items[0], entry->type, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 740 || entry->type == 760) {
         char key[41], input[80];
         size_t len = entry->type == 740 ? 40 : 32;
