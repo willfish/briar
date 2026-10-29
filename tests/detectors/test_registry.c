@@ -423,12 +423,33 @@ static const registration expected[] = {
     {941, 0, "Instamojo", "instamojo", 40, true, 1024},
     {156, 0, "Intercom", "intercom", 60, true, -1},
     {858, 0, "Interseller", "interseller", 36, true, -1},
+    {987, 0, "Intra42", "s-s4t2ud-", 73, true, 1024},
+    {579, 0, "Intrinio", "intrinio", 44, true, -1},
+    {689, 0, "InvoiceOcean", "invoiceocean", 20, true, 1024},
+    {940, 0, "Ip2location", "ip2location", 32, true, -1},
     {1046, 0, "JiraDataCenterPAT", "jira", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 987) {
+        char secret[74] = "s-s4t2ud-", id[74] = "u-s4t2af-", input[160];
+        for (size_t i = 0; i < 64; ++i) { secret[9 + i] = "0123456789abcdef"[i % 16]; id[9 + i] = "fedcba9876543210"[i % 16]; }
+        secret[73] = id[73] = '\0'; snprintf(input, sizeof(input), "%s %s", secret, id);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 987, secret, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
+    if (entry->type == 689) {
+        char key[21], input[80]; test_secret(key, 20, 0);
+        snprintf(input, sizeof(input), "invoiceocean %s\nhidden.invoiceocean.com", key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], 689, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 941) {
         char id[41], secret[129], input[210]; test_secret(id, 40, 0); test_secret(secret, 128, 7);
         snprintf(input, sizeof(input), "instamojo %s\ninstamojo %s", secret, id);
@@ -1037,7 +1058,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         }
     }
     if (entry->type == 993) { memcpy(key, "endr+", 5); key[11] = '-'; }
-    if (entry->type == 258 || entry->type == 905 || entry->type == 962 || entry->type == 527 || entry->type == 454)
+    if (entry->type == 258 || entry->type == 905 || entry->type == 962 || entry->type == 527 || entry->type == 454 || entry->type == 940)
         for (size_t i = 0; i < entry->key_len; ++i)
             if (key[i] >= 'a' && key[i] <= 'z') key[i] -= 'a' - 'A';
     if (entry->type == 325) strcpy(key, "apiuser-a1b2c3d4e5f6@apiconnector.com");
@@ -1890,7 +1911,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
@@ -1907,6 +1928,7 @@ int main(void)
             const char *aliases[] = {"dp.pt.", "dp.st", "dp.sa.", "dp.scim.", "dp.audit."};
             for (size_t j = 0; j < 5; ++j) CHECK(!strcmp(detector->keywords[j + 1], aliases[j]));
         }
+        if (entry->type == 987) CHECK(!strcmp(detector->keywords[1], "s-s4t2af-"));
         if (entry->type == 430 && entry->version == 2) CHECK(!strcmp(detector->keywords[1], "bb_ma_"));
         if (entry->type == 39 || entry->type == 1043) CHECK(!strcmp(detector->keywords[1], "ddog-gov"));
         if (entry->type == 920) CHECK(!strcmp(detector->keywords[1], "couchbases://"));

@@ -711,6 +711,12 @@ def fixtures():
     intercom_crlf = intercom_short[:8] + b"\r\n\r\n" + intercom_short[8:]
     intercom_wrong = base64.b64encode(b"TOK:" + alnum("intercom-key", 40))
     interseller_key = b"-".join(synthetic("interseller-" + str(i), n) for i, n in enumerate((8, 4, 4, 4, 12)))
+    intra42_ud, intra42_af = b"s-s4t2ud-" + synthetic("intra42-ud", 64), b"s-s4t2af-" + synthetic("intra42-af", 64)
+    intra42_id = b"u-s4t2af-" + synthetic("intra42-id", 64)
+    intrinio_key = alnum("intrinio-key", 44)
+    invoiceocean_key = alnum("invoiceocean-key", 20)
+    invoiceocean_input = b"InVoIcEoCeAn " + invoiceocean_key + b"\ntenant7.invoiceocean.com"
+    ip2location_key = b"Z" + alnum("ip2location-key", 31).upper()
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1469,6 +1475,17 @@ def fixtures():
         ("intercom_wrong_prefix", 156, b"intercom " + intercom_wrong),
         ("interseller", 858, b"InTeRsElLeR " + interseller_key),
         ("interseller_upper_key", 858, b"interseller A" + interseller_key[1:]),
+        ("intra42_ud", 987, intra42_ud + b"\n" + intra42_id),
+        ("intra42_af", 987, intra42_af + b"\n" + intra42_id),
+        ("intra42_missing_id", 987, intra42_ud),
+        ("intra42_upper_prefix", 987, b"S" + intra42_ud[1:] + b"\n" + intra42_id),
+        ("intrinio", 579, b"InTrInIo " + intrinio_key),
+        ("intrinio_overlong", 579, b"intrinio " + intrinio_key + b"X"),
+        ("invoiceocean", 689, invoiceocean_input),
+        ("invoiceocean_missing_host", 689, b"invoiceocean " + invoiceocean_key),
+        ("invoiceocean_long_host", 689, b"invoiceocean " + invoiceocean_key + b"\n" + b"a" * 80 + b".invoiceocean.com"),
+        ("ip2location", 940, b"Ip2LoCaTiOn " + ip2location_key),
+        ("ip2location_lower_key", 940, b"ip2location z" + ip2location_key[1:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1800,6 +1817,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": exact grammars, hidden-secret requirements and unconditional Intercom decoding must retain the expected findings")
+    if name.startswith(("intra42_", "intrinio_", "invoiceocean_", "ip2location_")):
+        empty = name.startswith(("intra42_missing_id_", "intra42_upper_prefix_", "intrinio_overlong_", "invoiceocean_missing_host_", "ip2location_lower_key_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": direct Intra42 flavors, hidden IDs/hosts and exact provider alphabets must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

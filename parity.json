@@ -3636,6 +3636,42 @@
       "evidence": ["tests/detectors/test_interseller.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
     },
+    "intra42/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/intra42/intra42.go",
+      "scope_notes": "Intra42987/v0/enabled/span1024 engine hint only. Direct case-sensitive word-bounded73-byte secret s-s4t2(ud|af)-lowerhex64 and independent hidden ID u-s4t2(ud|af)-lowerhex64, no flavor coupling. Secret-prefix dispatch keywords only; secret-FIRST collection/secret-major occurrence products/duplicates/no dedup. RawSECRET/SecretParts.keySECRET only/no ID/V2. Full sorted201-byte client_id/client_secret/grant_type form precedes nil constructor; nil KEEPS false with net/http: nil Context cause. After constructor form Type then decimal Content-Length201/common UA. SANE5 token POST/200ONLY true/401quiet/others lowercase unexpected http response status N including201/403, ignore bodies/read errors. Whole setup/Do causes retained/secret-only redacted. Helper release precedes caller Verified then mandatory checked secret-only setter evenNULL/no-op/+1 fatal. Owned capture/finding/form/length/format/cause/setter/push nonzero failures fatal before ordinary outcomes with invocation-only caller-preserving rollback. Original form/length/headers/captures/cause through one release per attempt, synthesized storage only send return. No token issuance or school-system actions.",
+      "native_files": ["src/detectors/intra42.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/result.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_intra42.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full selected/default native HTTP/Reader/redirect behavior"]
+    },
+    "intrinio/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/intrinio/intrinio.go",
+      "scope_notes": "Intrinio579/v0/enabled/no hints. Keyword-onlyCI prefix plus word-bounded44 mixed-alphanumeric original occurrences/duplicates, Raw-key only. Finding then complete literal securities query URL precede nil constructor DROP. SANE5 bodyless GET/common UA only/no Auth/Type/Accept/dedup. All2xx verify ignoring bodies/read errors; whole mixed setup/Do failures false-kept without setter or diagnostic classifier. All owned nonzero capture/finding/URL/push failures fatal before ordinary outcomes with invocation-only caller-preserving rollback. Provider originals survive one ordinary release per attempt including failed preparation, synthesized effective request/header-array/UA only send return.",
+      "native_files": ["src/detectors/intrinio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_intrinio.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
+    "invoiceocean/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/invoiceocean/invoiceocean.go",
+      "scope_notes": "InvoiceOcean689/v0/enabled/span1024 engine hint only. Independent keyword-onlyCI prefixed20 mixed-alphanumeric keys and direct case-sensitive lower-alphanumeric label.invoiceocean.com hosts; word boundaries/unbounded label/no semantic DNS63 or whole-host validation. Key-major occurrence products/duplicates/no dedup; hidden host required evenNoV, RawKEY/SecretParts.key only/no host/V2. Complete literal invoices query URL precedes nil constructor DROP, JSON Type follows construction. PUBLIC10 bodyless GET/common UA/no Auth/Accept/dedup; retain no-local/no-follow/native PUBLIC guard, no SANE alias/native bypass. All2xx verify ignoring body/read errors; whole mixed setup/Do failures false-kept/no setter. Owned capture/finding/URL/push nonzero failures fatal before ordinary outcomes/caller-preserving invocation rollback. One ordinary release per attempt including prep/guard failures with originals alive, synthesized storage only send return. No live invoices or financial/customer actions.",
+      "native_files": ["src/detectors/invoiceocean.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_invoiceocean.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Native PUBLIC address/redirect policy and full Reader/source deferred-close behavior"]
+    },
+    "ip2location/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/ip2location/ip2location.go",
+      "scope_notes": "Ip2location940/v0/enabled/no hints. Keyword-onlyCI prefix plus word-bounded32 UPPER-alphanumeric bytes, not hex; original occurrences/duplicates/Raw-key only. Finding then complete literal key query precede nil constructor DROP. SANE5 bodyless GET/common UA only/no Auth/Type/Accept/dedup. All2xx true/401quiet/other unexpected HTTP response status N; all body/read errors ignored. Whole mixed setup/Do causes retained through checked token-only setter/NULL no-op/+1 fatal/no diagnostic classifier. Verdict/setter and successful append precede ordinary release; own format/cause/setter/push failures still release once. All owned capture/finding/URL/format/cause/setter/push nonzero failures fatal before ordinary outcomes/invocation-only caller-preserving rollback. Original URL/captures/causes survive release, synthesized request/header-array/UA only send return.",
+      "native_files": ["src/detectors/ip2location.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/result.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_ip2location.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader/source deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",

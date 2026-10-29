@@ -896,6 +896,20 @@ for selector, number, key, source in (("Instabot", 856, instabot_key, "InStAbOt 
     check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Instamojo's secret stays hidden; Intercom retains trimmed encoded bytes including interior CRLF")
     check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV validates Intercom tokens without probing services or inventing metadata")
 
+intra42_ud, intra42_af = "s-s4t2ud-" + hex_key * 2, "s-s4t2af-" + hex_key * 2
+intra42_id = "u-s4t2af-" + hex_key[::-1] * 2
+intrinio_key = "Z" + key40[1:] + key32[:4]
+invoiceocean_key, ip2location_key = key40[:20], key32.upper()
+for selector, number, key, source in (("Intra42", 987, intra42_ud, intra42_ud + "\n" + intra42_id),
+                                     ("987", 987, intra42_af, intra42_af + "\n" + intra42_id),
+                                     ("Intrinio", 579, intrinio_key, "InTrInIo " + intrinio_key),
+                                     ("InvoiceOcean", 689, invoiceocean_key, "invoiceocean " + invoiceocean_key + "\ntenant7.invoiceocean.com"),
+                                     ("Ip2location", 940, ip2location_key, "Ip2LoCaTiOn " + ip2location_key)):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Intra42 flavors, Intrinio, InvoiceOcean and Ip2location dispatch source grammars")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Required Intra42 IDs and InvoiceOcean hosts remain hidden")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV does not issue tokens, access invoices or invent metadata")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",
