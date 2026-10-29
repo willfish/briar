@@ -784,6 +784,26 @@ for selector, number, key, prefix in (("HelloSign", 395, hellosign_key, "HeLlOsI
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=HelpCrunch"], ("helpcrunch " + helpcrunch_key + "EXTRA").encode())
 check(len(rows) == 1 and rows[0]["Raw"] == helpcrunch_key, "HelpCrunch has no ending boundary and retains its complete 328-byte prefix")
 
+hereapi_key = key40 + key32[:3]
+heroku_v1 = "A7e3c19a-8b26-4f9d-a2e7-3b1c8d6f9052"
+heroku_v2 = "HRKU-AA" + key40 + key32[:18]
+hiveage_key = key40[:9] + "_-" + key40[10:19]
+for selector, number, key, prefix in (("HereAPI", 408, hereapi_key, "HeReApI "),
+                                     ("Heroku.v1", 19, heroku_v1, "HeRoKu "),
+                                     ("Heroku.v2", 19, heroku_v2, ""),
+                                     ("Hiveage", 572, hiveage_key, "HiVeAgE ")):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], (prefix + key).encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "HereAPI, Heroku versions and Hiveage dispatch their source grammars")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Provider captures remain byte-exact and key-only")
+    check(not rows[0]["RawV2"] and not rows[0]["Redacted"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV adds no version metadata or service results")
+hereapi_binary = hereapi_key[:20] + "\0" + hereapi_key[21:]
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=408"], ("hereapi " + hereapi_binary).encode())
+check(len(rows) == 1 and rows[0]["Raw"] == hereapi_binary and rows[0]["SecretParts"] == {"key": hereapi_binary}, "HereAPI NoV retains embedded NUL instead of applying URL-constructor rules")
+for selector in ("Hive", "571"):
+    proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector],
+                        ("hive " + key40[:17] + "\nhive " + key32).encode(), code=1)
+    check(not rows and b"no enabled implemented detectors selected" in proc.stderr, "Explicit Hive selectors cannot enable its commented source default")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

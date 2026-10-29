@@ -675,6 +675,11 @@ def fixtures():
     hellosign_key = alnum("hellosign-head", 30) + b"-/+" + alnum("hellosign-tail", 31)
     helpcrunch_key = alnum("helpcrunch-head", 100) + b"+/=" + alnum("helpcrunch-tail", 225)
     helpscout_key = b"z" + synthetic("helpscout-key", 39)
+    hereapi_key = alnum("hereapi-key", 43)
+    heroku_v1 = b"-".join(synthetic("heroku-v1-" + str(i), n) for i, n in enumerate((8, 4, 4, 4, 12)))
+    heroku_v1 = b"A" + heroku_v1[1:]
+    heroku_v2 = b"HRKU-AA" + alnum("heroku-v2", 58)
+    hiveage_key = alnum("hiveage-head", 9) + b"_-" + alnum("hiveage-tail", 9)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1362,6 +1367,16 @@ def fixtures():
         ("helpcrunch_no_dispatch", 164, helpcrunch_key),
         ("helpscout", 153, b"HeLpScOuT " + helpscout_key),
         ("helpscout_upper_key", 153, b"helpscout Z" + helpscout_key[1:]),
+        ("hereapi", 408, b"HeReApI " + hereapi_key),
+        ("hereapi_binary", 408, b"hereapi " + hereapi_key[:20] + b"\0" + hereapi_key[21:]),
+        ("hereapi_unicode", 408, b"hereapi " + hereapi_key[:20] + "💡".encode() + hereapi_key[21:]),
+        ("hereapi_terminal_hash", 408, b"hereapi " + hereapi_key[:42] + b"#X"),
+        ("heroku_v1", "19.v1", b"HeRoKu " + heroku_v1),
+        ("heroku_v1_disallowed_first_B", "19.v1", b"heroku B" + heroku_v1[1:]),
+        ("heroku_v2", "19.v2", heroku_v2),
+        ("heroku_v2_wrong_prefix", "19.v2", b"hrku-AA" + heroku_v2[7:]),
+        ("hiveage", 572, b"HiVeAgE " + hiveage_key),
+        ("hiveage_edges", 572, b"hiveage-" + hiveage_key[1:-1] + b"-X"),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1661,6 +1676,10 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": required Hasura domains and exact provider capture boundaries must retain the expected findings")
+    if name.startswith(("hereapi_", "heroku_v1_", "heroku_v2_", "hiveage_")):
+        count = 0 if name.startswith(("heroku_v1_disallowed_first_B_", "heroku_v2_wrong_prefix_")) else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact provider/version grammar and byte-preserving captures must retain the expected findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

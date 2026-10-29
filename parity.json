@@ -3366,6 +3366,51 @@
       "evidence": ["tests/detectors/test_helpscout.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
     },
+    "hereapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/hereapi/hereapi.go",
+      "scope_notes": "HereAPI408/v0/default enabled/no hints. Keyword-only prefix folding and ASCII word boundaries surround43 RE2-nonwhitespace runes, admitting VT/Unicode/NUL. Original occurrences/duplicates survive two-ended pinned-Go-space trimming, including an empty Raw/key. NoV never runs constructor guards. Exact complete weather query precedes nil constructor drop. Private fixed-prefix URL.String projection splits first hash, rejects C0/DEL only before it, leaves raw query escapes unvalidated and validates fragment escapes before validRawFragment preservation or whole-fragment canonical byte escaping. Empty terminal fragment omits hash; post-hash NUL becomes percent00 rather than truncation or an unsupported guard. SANE5 bodyless GET/common UA only; all successful2xx verify ignoring reads; whole mixed shared setup/Do failures remain false without setters. Original projected URL survives release, not synthesized preparation. Owned failures are fatal with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/hereapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/go_unicode.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_hereapi.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output/platform behavior", "Projected Go URL.String does not establish wire/native client/redirect/Reader/deferred-close equivalence"]
+    },
+    "heroku/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/heroku/v1/heroku.go",
+      "scope_notes": "Heroku19/v1/default enabled/no hints. Keyword-onlyCI heroku prefix plus word-bounded UUID-shaped lowerhex groups with uppercase A admitted ONLY in first8; no generic UUID/entropy validation. Original occurrences/duplicates, Raw/key only without invented Version metadata. Cohesive v1/v2 module retains distinct descriptors/keywords/grammars/source clients. Shared source verifier retains nil constructor causes before header assembly, then Accept version3 and complete Bearer. Exact SANE5 bodyless account GET/common UA/no dedup.200 only true,401 false,other including201 unexpected status code cause; reads ignored everywhere. Entire shared setup/Do causes are retained unchanged with ZERO-secret checked setter, including NULL no-op and positive failures. Helper release precedes caller Verified/setter. Original auth survives release, no synthesized lifetime extension; owned construction/format/cause/setter/push failures fatal before ordinary outcomes, invocation-only rollback.",
+      "native_files": ["src/detectors/heroku.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_heroku.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader and source helper drain/Close behavior"]
+    },
+    "heroku/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/heroku/v2/heroku.go",
+      "scope_notes": "Heroku19/v2/default enabled/no hints shares v1's exact verifier but not its grammar/descriptor/client identity. Direct case-sensitive word-bounded HRKU-AA plus58 mixed-alphanumeric/underscore/hyphen bytes,65 total, no prefix helper or entropy validation; contextual trailing hyphen boundary is preserved. Original occurrences/duplicates, Raw/key only without Version metadata. Nil constructor errors retained, header assembly afterward; SANE5 bodyless account GET Accept version3/Bearer/common UA.200 only true/401 false/other status cause; body/read errors ignored. Full mixed shared setup/Do causes retained with zero-secret checked setter after release/Verified. All owned failures fatal before ordinary outcomes and invocation-only caller-preserving rollback.",
+      "native_files": ["src/detectors/heroku.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_heroku.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/Reader and source helper drain/Close behavior"]
+    },
+    "hive/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/hive/hive.go",
+      "scope_notes": "Hive571/v0 disabled by commented source default, never enabled by selectors; span1024 is an engine hint only. Independent hive-prefixed17 mixed-alphanumeric ID versus32 loweralphanumeric key occurrences form ID-major full products including duplicates. ID is Raw AND SecretParts.key; actual APIkey stays hidden, no invented ID part/RawV2/metadata. Full literal user_id then api_key query constructed before nil constructor drop. SANE5 bodyless testcredentials GET/common UA only/no auth/dedup; all successful2xx verify ignoring reads, whole mixed shared setup/Do failures false-kept without setters. Original URL/captures through per-attempt release, eager source-close timing remains partial. Owned failures fatal before ordinary outcomes with caller-preserving invocation rollback. Direct native/registry positive evidence only; no positive CLI-oracle claim.",
+      "native_files": ["src/detectors/hive.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_hive.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
+    "hiveage/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/hiveage/hiveage.go",
+      "scope_notes": "Hiveage572/v0/default enabled/no hints. Keyword-onlyCI hiveage prefix plus word-bounded20 mixed-alphanumeric/underscore/hyphen occurrences including contextual hyphen edges/duplicates. Raw/key only. Exact true Base64 KEYcolon21plaintext to28encoded bytes without padding BEFOREnil constructor drop; checked memory-only native encoding failures fatal even with nil context. Basic prefix assembly AFTERconstructor,34auth bytes+NUL35. SANE5 bodyless fixed network GET, Accept application/json then Basic then common UA, no Type/dedup. All2xxverify ignoring bodies/readerrors; whole mixed shared setup/Do failures false-kept without setters. Original auth survives release, not shared synthesized storage. Every owned nonzero failure fatal before ordinary outcomes with invocation-only caller-preserving rollback.",
+      "native_files": ["src/detectors/hiveage.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_hiveage.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and engine/output behavior", "Full native HTTP/client/Reader/deferred-close behavior"]
+    },
     "azure_openai/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azure_openai/azure_openai.go",
