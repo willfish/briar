@@ -971,6 +971,15 @@ check(not rows, "KeenIO still requires its independent hidden ID without verific
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=KarmaCRM"], ("karma " + key32[:20]).encode())
 check(not rows, "Karma extraction prefix does not replace karmacrm engine dispatch")
 
+klipfolio_key = "b7c9d2e5f6a8b3c4d1e0f2a4b6c8d1e3a5c7e9f1"
+knapsackpro_key = "g" + key32[1:].lower()
+for selector, number, key in (("Klipfolio", 740, klipfolio_key), ("KnapsackPro", 760, knapsackpro_key)):
+    source = selector.upper() + " " + key
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number, "Two named dashboard and test scanners dispatch real version-zero implementations")
+    check(rows[0]["Raw"] == key and rows[0]["SecretParts"] == {"key": key}, "Hex-only and nonhex lowercase-alphanumeric grammars retain key-only fields")
+    check(not rows[0]["RawV2"] and rows[0]["ExtraData"] is None and not rows[0]["Verified"], "NoV makes no provider or test-suite request")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

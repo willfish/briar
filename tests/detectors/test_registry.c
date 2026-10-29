@@ -452,11 +452,26 @@ static const registration expected[] = {
     {296, 0, "KarmaCRM", "karmacrm", 20, true, -1},
     {140, 0, "KeenIO", "keen", 64, true, 1024},
     {573, 0, "Kickbox", "kickbox", 65, true, -1},
+    {740, 0, "Klipfolio", "klipfolio", 40, true, -1},
+    {760, 0, "KnapsackPro", "knapsackpro", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 740 || entry->type == 760) {
+        char key[41], input[80];
+        size_t len = entry->type == 740 ? 40 : 32;
+        const char *alphabet = entry->type == 740 ? "0123456789abcdef" : "0123456789abcdefghijklmnopqrstuvwxyz";
+        size_t base = strlen(alphabet);
+        for (size_t i = 0; i < len; ++i) key[i] = alphabet[(i * 7 + 3) % base];
+        key[len] = '\0';
+        snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
+        br_results results = test_scan(detector, NULL, false, input, strlen(input)); CHECK(results.len == 1);
+        test_key_result(&results.items[0], entry->type, key, "key");
+        CHECK(!results.items[0].verified && !results.items[0].verification_error);
+        br_results_clear(&results); return;
+    }
     if (entry->type == 853 || entry->type == 296 || entry->type == 140 || entry->type == 573) {
         char key[66], input[180];
         size_t len = entry->type == 853 ? 12 : entry->type == 296 ? 20 : entry->type == 140 ? 64 : 65;

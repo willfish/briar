@@ -743,6 +743,8 @@ def fixtures():
     keenio_key = alnum("keenio-key", 64).upper()
     keenio_id = alnum("keenio-id", 24).lower()
     kickbox_key = b"_" + alnum("kickbox-key", 64)
+    klipfolio_key = synthetic("klipfolio-key", 40)
+    knapsackpro_key = b"g" + alnum("knapsackpro-key", 31).lower()
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1561,6 +1563,10 @@ def fixtures():
         ("keenio_missing_id", 140, b"keen " + keenio_key),
         ("kickbox", 573, b"KiCkBoX " + kickbox_key),
         ("kickbox_short_key", 573, b"kickbox " + kickbox_key[1:]),
+        ("klipfolio", 740, b"KlIpFoLiO " + klipfolio_key),
+        ("klipfolio_upper_key", 740, b"klipfolio A" + klipfolio_key[1:]),
+        ("knapsackpro", 760, b"KnApSaCkPrO " + knapsackpro_key),
+        ("knapsackpro_upper_key", 760, b"knapsackpro Z" + knapsackpro_key[1:]),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1924,6 +1930,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": provider alphabets, Karma dispatch, hidden Keen ID and Kickbox minimum length must retain exact findings")
+    if name.startswith(("klipfolio_", "knapsackpro_")):
+        empty = name.startswith(("klipfolio_upper_key_", "knapsackpro_upper_key_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": lowercase hex versus nonhex lower-alphanumeric keys must preserve exact findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

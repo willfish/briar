@@ -3964,6 +3964,24 @@
       "evidence": ["tests/detectors/test_kickbox.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
     },
+    "klipfolio/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/klipfolio/klipfolio.go",
+      "scope_notes": "Klipfolio740/v0/ungated default/no hints. Keyword-only case-folded prefix and word-bounded40 lowercase-hex key-only occurrences/duplicates. Required capture and finding precede fixed-URL nil-constructor drop; effective Kf-Api-Key follows construction. Exact SANE5 GET https://app.klipfolio.com/api/1.0/users/common UA/empty key verifies every2xx, ignores body/read errors, and suppresses the whole shared send domain without setter or text classification. Originals survive exactly one release per attempt. Owned nonzero failures remain fatal before skips/publication with caller-preserving invocation rollback.",
+      "native_files": ["src/detectors/klipfolio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_klipfolio.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
+    "knapsackpro/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/knapsackpro/knapsackpro.go",
+      "scope_notes": "KnapsackPro760/v0/ungated default/no hints. Keyword-only case-folded prefix and word-bounded32 lowercase-alphanumeric, not hex-only, key-only occurrences/duplicates. Required capture and finding precede fixed-URL nil-constructor drop; JSON Content-Type then effective Knapsack-Pro-Test-Suite-Token follow construction. Exact SANE5 GET https://api.knapsackpro.com/v1/builds?page=1/common UA/empty key verifies every2xx, ignores body/read errors, and suppresses the whole shared send domain without any setter. Originals survive one release per attempt. Owned nonzero/+1 capture/finding/push failures remain fatal before outcomes with invocation-only rollback preserving caller findings.",
+      "native_files": ["src/detectors/knapsackpro.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "verified", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_knapsackpro.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader/drain and source scan-deferred Close timing"]
+    },
     "leadfeeder/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/leadfeeder/leadfeeder.go",
