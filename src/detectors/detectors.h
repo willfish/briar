@@ -424,5 +424,9 @@ int br_intra42_init(const br_detector **out, char **error);
 int br_intrinio_init(const br_detector **out, char **error);
 int br_invoiceocean_init(const br_detector **out, char **error);
 int br_ip2location_init(const br_detector **out, char **error);
+int br_ipapi_init(const br_detector **out, char **error);
+int br_ipgeolocation_init(const br_detector **out, char **error);
+int br_ipinfo_init(const br_detector **out, char **error);
+int br_ipinfodb_init(const br_detector **out, char **error);
 
 #endif
