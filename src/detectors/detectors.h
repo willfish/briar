@@ -412,5 +412,9 @@ int br_iconfinder_init(const br_detector **out, char **error);
 int br_iexapis_init(const br_detector **out, char **error);
 int br_iexcloud_init(const br_detector **out, char **error);
 int br_imagekit_init(const br_detector **out, char **error);
+int br_imagga_init(const br_detector **out, char **error);
+int br_impala_init(const br_detector **out, char **error);
+int br_infura_init(const br_detector **out, char **error);
+int br_insightly_init(const br_detector **out, char **error);
 
 #endif
