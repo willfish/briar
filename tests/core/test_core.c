@@ -176,6 +176,86 @@ static void regex_tests(void)
     br_regex_free(re);
 }
 
+static captures prefix_match(const char *const *heads, size_t count, const char *tail,
+                              br_slice input, bool rendered)
+{
+    br_regex *re = NULL; char *error = NULL; captures c = {0};
+    if (rendered) {
+        char *prefix = NULL;
+        CHECK(!br_prefix_regex(heads, count, &prefix));
+        size_t len = strlen(prefix) + strlen(tail) + 1;
+        char *pattern = malloc(len); CHECK(pattern);
+        snprintf(pattern, len, "%s%s", prefix, tail);
+        CHECK(!br_regex_compile(pattern, &re, &error));
+        free(pattern); free(prefix);
+    } else CHECK(!br_regex_compile_prefixed(heads, count, tail, &re, &error));
+    CHECK(!error && !br_regex_each(re, input, capture, &c, &error) && !error);
+    br_regex_free(re); return c;
+}
+
+static void prefix_tests(void)
+{
+    const char *const alternatives[] = {"a", "ab"}, *const reversed[] = {"ab", "a"};
+    const char *const overlap[] = {"aba"}, *const word[] = {"word"}, *const folded[] = {"k", "s"};
+    char input[256];
+    for (size_t mode = 0; mode < 2; ++mode) {
+        memcpy(input, "AB", 2); memset(input + 2, '.', 40); input[42] = 'X';
+        captures c = prefix_match(alternatives, 2, "(X)", (br_slice){(unsigned char *)input, 43}, mode != 0);
+        CHECK(c.count == 1 && c.ngroups[0] == 2 && c.spans[0][0].begin == 0 && c.spans[0][0].end == 43);
+        CHECK(c.spans[0][1].begin == 42 && c.spans[0][1].end == 43);
+        c = prefix_match(reversed, 2, "([A-Z]+)", SLICE("AB1Z"), mode != 0);
+        CHECK(c.count == 1 && c.spans[0][1].begin == 3 && c.spans[0][1].end == 4);
+        memcpy(input, "ababa", 5); memset(input + 5, '.', 40); input[45] = 'X';
+        c = prefix_match(overlap, 1, "(X)", (br_slice){(unsigned char *)input, 46}, mode != 0);
+        CHECK(c.count == 1 && c.spans[0][0].begin == 2 && c.spans[0][1].begin == 45);
+        c = prefix_match(word, 1, "([0-9]{2,4})", SLICE("word 1234"), mode != 0);
+        CHECK(c.count == 1 && c.spans[0][1].begin == 5 && c.spans[0][1].end == 9);
+        c = prefix_match(word, 1, "([0-9]{2,4}?)", SLICE("word 1234"), mode != 0);
+        CHECK(c.count == 1 && c.spans[0][0].end == 7 && c.spans[0][1].end == 7);
+        c = prefix_match(word, 1, "\\b([-])\\b", SLICE("word-X"), mode != 0);
+        CHECK(c.count == 1 && c.spans[0][1].begin == 4 && c.spans[0][1].end == 5);
+        c = prefix_match(word, 1, "(\\B[X])", SLICE("wordX"), mode != 0);
+        CHECK(c.count == 1 && c.spans[0][1].begin == 4);
+        c = prefix_match(word, 1, "(\\b[\\x21-\\x7e]{2,4}\\b)", SLICE("word a-bc"), mode != 0);
+        CHECK(c.count == 1 && c.spans[0][1].begin == 5 && c.spans[0][1].end == 9);
+        c = prefix_match(word, 1, "([a-zA-Z]{4,5})", SLICE("word wordX"), mode != 0);
+        CHECK(c.count == 1 && c.spans[0][0].begin == 0 && c.spans[0][0].end == 10 && c.spans[0][1].begin == 5);
+        c = prefix_match(word, 1, "(XX)", SLICE("word XX word XX"), mode != 0);
+        CHECK(c.count == 2 && c.spans[0][0].end == 7 && c.spans[1][0].begin == 8 && c.spans[1][1].begin == 13);
+        c = prefix_match(folded, 2, "(X)", SLICE("\xe2\x84\xaaX \xc5\xbfX"), mode != 0);
+        CHECK(c.count == 2 && c.spans[0][1].begin == 3 && c.spans[1][1].begin == 7);
+        static const unsigned char units[][4] = {{0xe0,0x80,0x80},{0xed,0xa0,0x80},{0xf0,0x80,0x80,0x80},{0xf4,0x90,0x80,0x80}};
+        for (size_t u = 0; u < 4; ++u) for (size_t gap = 40; gap <= 41; ++gap) {
+            size_t width = u < 2 ? 3 : 4, at = 4; memcpy(input, "word", 4);
+            for (size_t n = 0; n < gap; ++n) { memcpy(input + at, units[u], width); at += width; }
+            memcpy(input + at, "ABCD", 4);
+            c = prefix_match(word, 1, "\\b([A-Z]{4})\\b", (br_slice){(unsigned char *)input, at + 4}, mode != 0);
+            CHECK(c.count == (gap == 40 ? 1u : 0u));
+            if (c.count) CHECK(c.spans[0][0].begin == 0 && c.spans[0][0].end == at + 4 && c.spans[0][1].begin == at);
+        }
+        c = prefix_match(word, 1, "(X)", SLICE("word\xffX word\0X"), mode != 0);
+        CHECK(c.count == 1 && c.spans[0][0].begin == 7 && c.spans[0][1].begin == 12);
+        c = prefix_match(word, 1, "(X)", SLICE("word \xffX"), mode != 0); CHECK(!c.count);
+        const char *const jumping[] = {"a", "b"};
+        c = prefix_match(jumping, 2, "(X)", SLICE("a x\xff" "bX"), mode != 0);
+        CHECK(c.count == 1 && c.spans[0][0].begin == 4 && c.spans[0][1].begin == 5);
+        const char *const fragments[] = {"ab.tract", "word"};
+        c = prefix_match(fragments, 2, "(X)", SLICE("word\xed\xa0\x80X"), mode != 0); CHECK(!c.count);
+        c = prefix_match(word, 1, "(A)(B)", SLICE("wordAB"), mode != 0); CHECK(c.count == 1 && c.ngroups[0] == 3);
+        c = prefix_match(word, 1, "(A*)", SLICE("word"), mode != 0); CHECK(c.count == 1 && c.spans[0][1].begin == c.spans[0][1].end);
+        c = prefix_match(NULL, 0, "(X)", SLICE("X"), mode != 0); CHECK(c.count == 1);
+    }
+    br_regex *re = NULL; char *error = NULL;
+    CHECK(!br_regex_compile_prefixed(word, 1, "([A-Z]+)", &re, &error) && !error);
+    const int aborts[] = {1, -7};
+    for (size_t i = 0; i < 2; ++i) {
+        captures c = {.abort_code = aborts[i]};
+        CHECK(br_regex_each(re, SLICE("word X word Y"), capture, &c, &error) == aborts[i]);
+        CHECK(c.count == 1 && error); free(error); error = NULL;
+    }
+    br_regex_free(re);
+}
+
 static void fp_tests(void)
 {
     CHECK(br_ascii_shannon_entropy(SLICE("")) == 0);
@@ -424,10 +504,24 @@ static void unsupported_native_profiles(void)
     }
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
+    if (argc == 3 && !strcmp(argv[1], "--regex-probe")) {
+        unsigned char input[8192]; size_t len = fread(input, 1, sizeof(input), stdin);
+        if (ferror(stdin) || len == sizeof(input)) return 2;
+        captures c = match(argv[2], (br_slice){input, len});
+        putchar('[');
+        for (size_t i = 0; i < c.count; ++i) {
+            printf("%s[", i ? "," : "");
+            for (size_t j = 0; j < c.ngroups[i]; ++j)
+                printf("%s%lld,%lld", j ? "," : "", c.spans[i][j].begin == SIZE_MAX ? -1LL : (long long)c.spans[i][j].begin,
+                       c.spans[i][j].end == SIZE_MAX ? -1LL : (long long)c.spans[i][j].end);
+            putchar(']');
+        }
+        puts("]"); return 0;
+    }
     CHECK(BR_ABI_REVISION == 1);
-    result_tests(); regex_tests(); fp_tests(); http_tests(); browserstack_http_tests(); unsupported_native_profiles();
+    result_tests(); regex_tests(); prefix_tests(); fp_tests(); http_tests(); browserstack_http_tests(); unsupported_native_profiles();
     printf("core: %zu assertions, 0 failures\n", checks);
     return 0;
 }

@@ -35,7 +35,9 @@ static const br_detector *descriptor(void)
     const br_detector *d = NULL, *again = NULL; char *error = NULL;
     CHECK(BR_ABI_REVISION == 1);
     CHECK(br_graphcms_init(NULL, &error) == -1 && error); free(error); error = NULL;
-    fail_size = sizeof("(?i:graph)(?s:.){0,40}?"); fail_after = 1;
+    /* The direct key regex owner has the same allocation size.
+     * Skip it so the fault reaches the ID prefix renderer itself. */
+    fail_size = sizeof("(?i:graph)(?s:.){0,40}?"); fail_after = 2;
     CHECK(br_graphcms_init(&d, &error) == -1 && !d && error && !fail_after);
     CHECK(!strcmp(error, "cannot allocate detector prefix pattern")); free(error); error = NULL;
     CHECK(br_graphcms_init(&d, &error) == 0 && d && !error && br_graphcms_init(&again, NULL) == 0 && again == d);

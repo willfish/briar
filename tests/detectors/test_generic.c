@@ -4,6 +4,9 @@
 #include "../support/detector_test.h"
 
 static size_t fail_size, fail_after, failed_allocations, fail_add_after;
+/* Private regex owner: compiled code, capture count and composed-prefix pointer.
+ * This is an allocation-test target, not part of public ABI revision1. */
+static const size_t regex_owner_size = 2 * sizeof(void *) + sizeof(size_t);
 
 /* Focused failures of actual compile/iteration/finding resources. */
 void *malloc(size_t size)
@@ -64,17 +67,18 @@ static void constructors(const br_detector **zero, const br_detector **configure
     free(error); error = NULL;
     CHECK(br_generic_new_init(NULL, NULL) == -1);
     const br_detector *d = (const br_detector *)1;
-    fail_size = 2 * sizeof(void *); fail_after = 1;
+    fail_size = regex_owner_size; fail_after = 1;
     size_t before = failed_allocations;
     CHECK(br_generic_init(&d, &error) == -1 && !d && error);
     CHECK(!fail_after && failed_allocations == before + 1);
     free(error); error = NULL;
     CHECK(br_generic_init(zero, &error) == 0 && *zero && !error);
 
-    /* Fail after at least one compile has succeeded; retry must not retain
-     * partially initialized New() exclusions. */
+    /* The composed key owns full/union/five-head/suffix programs: eight owners.
+     * Fail the SECOND New() exclusion after that key and one exclusion succeed;
+     * retry must not retain any partially initialized state. */
     d = (const br_detector *)1;
-    fail_size = 2 * sizeof(void *); fail_after = 3;
+    fail_size = regex_owner_size; fail_after = 10;
     before = failed_allocations;
     CHECK(br_generic_new_init(&d, &error) == -1 && !d && error);
     CHECK(!fail_after && failed_allocations == before + 1);
