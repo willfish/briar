@@ -386,5 +386,9 @@ int br_harvest_init(const br_detector **out, char **error);
 int br_hashicorpvaultbatchtoken_init(const br_detector **out, char **error);
 int br_hashicorpvaultauth_init(const br_detector **out, char **error);
 int br_hashicorpvaulttoken_init(const br_detector **out, char **error);
+int br_hasura_init(const br_detector **out, char **error);
+int br_hellosign_init(const br_detector **out, char **error);
+int br_helpcrunch_init(const br_detector **out, char **error);
+int br_helpscout_init(const br_detector **out, char **error);
 
 #endif
