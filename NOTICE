@@ -48,6 +48,9 @@ GoCanvas XML response projection follows selected encoding/xml struct, direct-te
 and integer-decoding behavior, with a narrower explicit supported subset.
 Google OAuth token expiry follows selected strconv.ParseInt and time.Unix/String
 behavior only within its explicit UTC configuration and calendar subset.
+The shared fixed Unix-second String formatter follows selected time calendar,
+Local/TZif/STORED-ZIP loading and POSIX-tail rules, including the reference
+compiler's Nix timezone search patch and initial GOROOT environment semantics.
 Vault token URL joining follows selected rooted path.Clean/Join and net/url.JoinPath
 behavior. Harness, Vault, Hasura and HuggingFace response projection follow selected
 encoding/json typed-field, integer and value-struct/string-slice reuse rules.

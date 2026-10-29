@@ -14,6 +14,8 @@ The private SQL boundary clones immutable detector configuration and exchanges D
 
 The private LDAP boundary similarly copies immutable I/O configuration and exchanges owned innermost error bytes, explicit error presence, typed cancellation/network facts and connection handles. Empty diagnostic bytes do not mean success. Dial, Bind and StartTLS remain whole library calls; StartTLS inherits the dial-established connection context rather than receiving a new deadline. Native LDAP remains unsupported. Scheme routing follows the parsed scheme, including empty-authority URLs whose serialized form omits the double slash.
 
+The shared time helper implements one fixed Unix-second String projection, not a Go layout interpreter. It preserves unsigned calendar wrapping and initializes an immutable Local timezone lazily. The pinned Linux reference's Nix-patched timezone search, TZif transitions, POSIX tails and STORED-ZIP fallback remain explicit; libc timezone state is not substituted. Initial GOROOT and first-use TZ have different sampling lifetimes. NumericDate conversion, truncation and metadata publication remain detector responsibilities.
+
 ## Shared C ABI, revision 1
 
 This is an internal source ABI, not a stable plugin interface. The engine builder owns its declaration in `include/briar.h`. Forward-declare json-c values; do not expose PCRE2 or curl handles. All sizes/offsets are byte-based unless specified otherwise.
