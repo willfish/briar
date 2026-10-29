@@ -1017,6 +1017,25 @@ for selector, number, source, key, parts, raw_v2 in (
     check(rows[0]["SecretParts"] == parts and rows[0]["RawV2"] == raw_v2, "Hidden keys and separator-free credential projections retain exact metadata")
     check(not rows[0]["Verified"] and rows[0]["ExtraData"] is None, "NoV performs no balance, account, CRM or AI service action")
 
+langsmith_key = "lsv2_pt_" + klipfolio_key[:32] + "_" + klipfolio_key[:10]
+larksuite_token = "t-" + key32[:20]
+larksuite_id = "cli_" + key32[:16]
+for selector, number, source, key, parts, raw_v2, extra in (
+    ("LanguageLayer", 489, "LANGUAGELAYER " + knapsackpro_key, knapsackpro_key, {"key": knapsackpro_key}, "", None),
+    ("LangSmith", 1028, langsmith_key, langsmith_key, {"key": langsmith_key}, "", None),
+    ("LarkSuite", 991, "lark " + larksuite_token, larksuite_token, {"key": larksuite_token}, "", {"token_type": "Tenant Access Token"}),
+    ("LarkSuiteApiKey", 992, "lark " + larksuite_id + "\nlark " + key32, larksuite_id,
+     {"key": larksuite_id, "secret": key32}, larksuite_id + key32, None),
+):
+    _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], source.encode())
+    check(len(rows) == 1 and rows[0]["DetectorType"] == number and rows[0]["Raw"] == key, "Language and Lark scanners dispatch source-derived version-zero grammars")
+    check(rows[0]["SecretParts"] == parts and rows[0]["RawV2"] == raw_v2 and rows[0]["ExtraData"] == extra, "Lark token kind and required hidden credentials retain exact result fields")
+    check(not rows[0]["Verified"], "NoV performs no language, AI, calendar or token-issuance action")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=LarkSuite"], ("lark t-" + key32[:16] + ".json").encode())
+check(not rows, "LarkSuite retains its provider-specific extension false-positive classification")
+_, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=LarkSuiteApiKey"], ("lark " + larksuite_id).encode())
+check(not rows, "LarkSuiteApiKey requires its independent hidden secret even without verification")
+
 # ADC deliberately byte-slices this valid Unicode token into invalid UTF8.
 # Preserve C result bytes, but repair the outer JSON string like Go's encoder.
 adc = json.dumps({"client_id": key32 + ".apps.googleusercontent.com", "client_secret": "offline",

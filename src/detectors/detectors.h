@@ -458,5 +458,9 @@ int br_kraken_init(const br_detector **out, char **error);
 int br_kucoin_init(const br_detector **out, char **error);
 int br_kylas_init(const br_detector **out, char **error);
 int br_langfuse_init(const br_detector **out, char **error);
+int br_langsmith_init(const br_detector **out, char **error);
+int br_languagelayer_init(const br_detector **out, char **error);
+int br_larksuite_init(const br_detector **out, char **error);
+int br_larksuiteapikey_init(const br_detector **out, char **error);
 
 #endif

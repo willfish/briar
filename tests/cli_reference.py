@@ -762,6 +762,12 @@ def fixtures():
     langfuse_secret_hex = synthetic("langfuse-secret", 32)
     langfuse_public = b"pk-lf-" + b"-".join(langfuse_public_hex[a:b] for a, b in ((0, 8), (8, 12), (12, 16), (16, 20), (20, 32)))
     langfuse_secret = b"sk-lf-" + b"-".join(langfuse_secret_hex[a:b] for a, b in ((0, 8), (8, 12), (12, 16), (16, 20), (20, 32)))
+    languagelayer_key = b"g" + alnum("languagelayer-key", 31).lower()
+    langsmith_key = b"lsv2_pt_" + synthetic("langsmith-key", 32) + b"_" + synthetic("langsmith-tail", 10)
+    larksuite_token = b"t-" + alnum("larksuite-token", 20)
+    larksuite_extension = b"t-" + alnum("larksuite-extension", 16) + b".json"
+    larksuite_id = b"cli_" + alnum("larksuite-id", 16)
+    larksuite_secret = alnum("larksuite-secret", 32)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
     gcp_public = gcp_payload.replace(b"briar87@offline.invalid", b"image-pulling@authenticated-image-pulling.iam.gserviceaccount.com")
@@ -1601,6 +1607,14 @@ def fixtures():
         ("kylas_upper_key", 272, b"kylas A" + kylas_key[1:]),
         ("langfuse", 1021, b"langfuse " + langfuse_public + b"\nlangfuse " + langfuse_secret),
         ("langfuse_missing_public", 1021, b"langfuse " + langfuse_secret),
+        ("languagelayer", 489, b"LaNgUaGeLaYeR " + languagelayer_key),
+        ("languagelayer_upper_key", 489, b"languagelayer G" + languagelayer_key[1:]),
+        ("langsmith", 1028, langsmith_key),
+        ("langsmith_wrong_case", 1028, b"L" + langsmith_key[1:]),
+        ("larksuite", 991, b"LaRk " + larksuite_token),
+        ("larksuite_extension", 991, b"lark " + larksuite_extension),
+        ("larksuiteapikey", 992, b"LaRk " + larksuite_id + b"\nlark " + larksuite_secret),
+        ("larksuiteapikey_missing_secret", 992, b"lark " + larksuite_id),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -1979,6 +1993,11 @@ def compare(native, reference, case):
         count = 0 if empty else 1
         if len(actual) != count or len(expected) != count:
             raise AssertionError(name + ": required hidden crypto/public keys, exact alphabets and whitespace-delimited passphrases must retain exact findings")
+    if name.startswith(("languagelayer_", "langsmith_", "larksuite_", "larksuiteapikey_")):
+        empty = name.startswith(("languagelayer_upper_key_", "langsmith_wrong_case_", "larksuite_extension_", "larksuiteapikey_missing_secret_"))
+        count = 0 if empty else 1
+        if len(actual) != count or len(expected) != count:
+            raise AssertionError(name + ": exact direct/prefixed grammars, token extension filtering and required hidden secret must preserve findings")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):
