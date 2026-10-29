@@ -399,5 +399,10 @@ int br_holidayapi_init(const br_detector **out, char **error);
 int br_holistic_init(const br_detector **out, char **error);
 int br_honeycomb_init(const br_detector **out, char **error);
 int br_host_init(const br_detector **out, char **error);
+int br_html2pdf_init(const br_detector **out, char **error);
+int br_hubspot_apikey_v1_init(const br_detector **out, char **error);
+int br_hubspot_apikey_v2_init(const br_detector **out, char **error);
+int br_huggingface_init(const br_detector **out, char **error);
+int br_humanity_init(const br_detector **out, char **error);
 
 #endif
