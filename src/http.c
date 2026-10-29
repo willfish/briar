@@ -495,3 +495,32 @@ int br_http_default_transport_5s_send(const br_scan_ctx *ctx, const br_http_requ
         return fail(error, "unsupported: default-transport request projection");
     return br_http_send(ctx, request, response, error);
 }
+
+int br_http_default_client_send(const br_scan_ctx *ctx, const br_http_request *request,
+                                br_http_response *response, char **error)
+{
+    if (error) *error = NULL;
+    if (response) memset(response, 0, sizeof(*response));
+    if (!request || !response) return fail(error, "invalid HTTP arguments");
+    const br_transport *transport = ctx ? ctx->transport : NULL;
+    if (!transport || !transport->send || !transport->release)
+        return fail(error, "HTTP transport not installed");
+    /* A copied descriptor retains its implementation identity. None of the
+     * native/owned profiles represents Go's DefaultClient policy. */
+    if (transport->send == curl_send || br_http_client_is_owned(transport))
+        return fail(error, "unsupported: default-client HTTP policy");
+    if (request->dedup_key.len) return fail(error, "unsupported HTTP request coalescing");
+    /* Bound this private projection to the logical JSON POST used by its
+     * source. Do not accept common UA headers or run SANE preparation. */
+    if (request->profile != BR_HTTP_PRIVATE_DEFAULT_CLIENT || request->timeout_ms ||
+        !request->method || strcmp(request->method, "POST") || !request->url || !*request->url ||
+        (!request->body.data && request->body.len) || request->nheaders != 1 || !request->headers ||
+        !header_valid(&request->headers[0]) || strcmp(request->headers[0].name, "Content-Type") ||
+        strcmp(request->headers[0].value, "application/json"))
+        return fail(error, "unsupported: default-client request projection");
+    /* Package http.Post uses NewRequest's Background, not FromData's context.
+     * Keep only the explicitly installed byte backend: no caller cancellation,
+     * deadline, UA, endpoints, or options participates in this operation. */
+    const br_scan_ctx background = {.transport = transport};
+    return transport->send(transport->user, &background, request, response, error);
+}

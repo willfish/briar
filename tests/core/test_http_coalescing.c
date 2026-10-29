@@ -574,8 +574,13 @@ static void public_owned_policy(void)
     launch(&calls[2]); started(other, 1);
     CHECK(count(b) == 1 && count(other) == 1);
     CHECK(b->profile == BR_HTTP_DETECTOR_PUBLIC && other->profile == BR_HTTP_DETECTOR_PUBLIC);
-    CHECK(b->timeout == 10000 && other->timeout == 10000);
-    CHECK(b->deadline >= start + 10000 && b->deadline <= now_ms() + 10000);
+    /* PUBLIC starts with ten seconds, but raw preparation projects only the
+     * remaining budget. Scheduling can consume a millisecond before send. */
+    int64_t observed = now_ms();
+    CHECK(b->timeout > 0 && b->timeout <= 10000 && other->timeout > 0 && other->timeout <= 10000);
+    CHECK(b->deadline >= start + 10000 && b->deadline <= observed + 10000);
+    CHECK(other->deadline >= start + 10000 && other->deadline <= observed + 10000);
+    CHECK((int64_t)b->timeout >= b->deadline - observed && (int64_t)other->timeout >= other->deadline - observed);
     CHECK(b->last_key.len == key().len && !memcmp(b->last_key.data, key().data, key().len));
     atomic_store(&p[0].cancelled, true); join(&calls[0]);
     CHECK(calls[0].rc && calls[0].error && strstr(calls[0].error, "canceled"));

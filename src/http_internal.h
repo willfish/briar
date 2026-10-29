@@ -58,6 +58,17 @@ const br_transport *br_curl_transport_init(char **error);
 int br_http_default_transport_5s_send(const br_scan_ctx *ctx, const br_http_request *request,
                                      br_http_response *response, char **error);
 
+/* Private byte tag, deliberately not a public profile or SANE alias. Represent
+ * DefaultClient.Post with zero client timeout and no common UA preparation.
+ * The admitted injected backend receives a synchronous background context and
+ * the original request, not a wire-policy or native-equivalence guarantee.
+ * Reject raw/copied curl and every owned client before I/O. Caller retains
+ * provider storage through exactly one ordinary release after each attempt;
+ * the projected background context itself lasts only through send return. */
+#define BR_HTTP_PRIVATE_DEFAULT_CLIENT ((br_http_profile)0x100)
+int br_http_default_client_send(const br_scan_ctx *ctx, const br_http_request *request,
+                                br_http_response *response, char **error);
+
 /* Zero-initialize. Own only the synthesized array/UA; other pointers borrow
  * the caller's stable request snapshot. Keep this exact request address and
  * storage alive through raw backend send AND release, then clear it. */
