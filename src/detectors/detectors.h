@@ -416,5 +416,9 @@ int br_imagga_init(const br_detector **out, char **error);
 int br_impala_init(const br_detector **out, char **error);
 int br_infura_init(const br_detector **out, char **error);
 int br_insightly_init(const br_detector **out, char **error);
+int br_instabot_init(const br_detector **out, char **error);
+int br_instamojo_init(const br_detector **out, char **error);
+int br_intercom_init(const br_detector **out, char **error);
+int br_interseller_init(const br_detector **out, char **error);
 
 #endif
