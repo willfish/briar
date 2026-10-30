@@ -50,7 +50,7 @@ static const br_detector *open_detector(int (*init)(const br_detector **, char *
     free(error);
     CHECK(init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 547 && detector->version == 0 && !strcmp(detector->name, "Scrapeowl"));
-    CHECK(!strcmp(detector->description, "Scrapeowl is a video game database and discovery service. Scrapeowl API keys can be used to access game data and related services."));
+    CHECK(!strcmp(detector->description, "ScrapeOwl is a web scraping service that allows users to extract data from websites. ScrapeOwl API keys can be used to automate data extraction tasks."));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "scrapeowl"));
     CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 && detector->max_credential_span == -1);
     return detector;

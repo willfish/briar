@@ -50,7 +50,7 @@ static const br_detector *open_detector(int (*init)(const br_detector **, char *
     free(error);
     CHECK(init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 470 && detector->version == 0 && !strcmp(detector->name, "Sportsmonk"));
-    CHECK(!strcmp(detector->description, "Sportsmonk is a video game database and discovery service. Sportsmonk API keys can be used to access game data and related services."));
+    CHECK(!strcmp(detector->description, "Sportsmonk is a sports data provider offering various API endpoints to access sports data. Sportsmonk API keys can be used to query and retrieve this data."));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "sportsmonk"));
     CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 && detector->max_credential_span == -1);
     return detector;

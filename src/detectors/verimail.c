@@ -64,7 +64,7 @@ static int verimail_scan(const br_detector *detector, const br_scan_ctx *ctx, bo
 static const char *const verimail_keywords[] = {"verimail"};
 static br_detector verimail_detector = {
     .type = 143, .version = 0, .name = "Verimail", .custom_name = "",
-    .description = "Verimail is a video game database and discovery service. Verimail API keys can be used to access game data and related services.",
+    .description = "Verimail is an email verification service that helps ensure email addresses are valid and deliverable. Verimail keys can be used to access the Verimail API for verifying email addresses.",
     .keywords = verimail_keywords, .nkeywords = 1,
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .scan = verimail_scan,

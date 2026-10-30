@@ -50,7 +50,7 @@ static const br_detector *open_detector(int (*init)(const br_detector **, char *
     free(error);
     CHECK(init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 472 && detector->version == 0 && !strcmp(detector->name, "Unsplash"));
-    CHECK(!strcmp(detector->description, "Unsplash is a video game database and discovery service. Unsplash API keys can be used to access game data and related services."));
+    CHECK(!strcmp(detector->description, "Unsplash is a website dedicated to sharing stock photography under the Unsplash license. Unsplash API keys can be used to access and modify Unsplash data."));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "unsplash"));
     CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 && detector->max_credential_span == -1);
     return detector;

@@ -40,6 +40,16 @@ def digits(label, length):
     return material[:length]
 
 
+def alupper(label, length):
+    alphabet = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    material = b""
+    counter = 0
+    while len(material) < length:
+        material += bytes(alphabet[byte % len(alphabet)] for byte in hashlib.sha256(f"briar-alupper:{label}:{counter}".encode()).digest())
+        counter += 1
+    return material[:length]
+
+
 def alnum(label, length):
     alphabet = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     material = b""
@@ -1760,6 +1770,14 @@ def fixtures():
         ("pdfshift", 515, b"pdfshift " + synthetic("pdfshift-key", 32)),
         ("pdflayer", 493, b"pdflayer " + synthetic("pdflayer-key", 32)),
         ("pipedrive", 159, b"pipedrive " + alnum("pipedrive-key", 40)),
+        ("paydirtapp", 793, b"paydirtapp " + synthetic("paydirtapp-key", 32)),
+        ("scrapeowl", 547, b"scrapeowl " + synthetic("scrapeowl-key", 30)),
+        ("unsplash", 472, b"unsplash " + synthetic("unsplash-key", 43)),
+        ("stockdata", 471, b"stockdata " + synthetic("stockdata-key", 40)),
+        ("verimail", 143, b"verimail " + alupper("verimail-key", 32)),
+        ("route4me", 546, b"route4me " + alupper("route4me-key", 32)),
+        ("polygon", 242, b"polygon " + synthetic("polygon-key", 32)),
+        ("sportsmonk", 470, b"sportsmonk " + synthetic("sportsmonk-key", 60)),
         ("rapidapi", 99, b"rapidapi " + alnum("rapidapi-key", 50)),
         ("prefect", 918, b"pnu_" + alnum("prefect-key", 36)),
         ("uplead", 332, b"uplead " + synthetic("uplead-key", 32)),
@@ -2209,7 +2227,7 @@ def compare(native, reference, case):
         # source-valid unit-test input, so the oracle agrees only on absence.
         if actual or expected:
             raise AssertionError(name + ": the CLI oracle emits no Mrticktock rows; native must match that absence")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_", "nicereply_", "nimble_", "oanda_", "noticeable_", "nozbeteams_", "notion_", "openuv_", "owlbot_", "meaningcloud_", "openweather_", "pixabay_", "positionstack_", "jwt_", "nvapi_", "pdfshift_", "pdflayer_", "percy_", "pipedrive_", "postman_", "rawg_", "rebrandly_", "podio_", "vpnapi_", "tomtom_", "theoddsapi_", "wistia_", "uplead_", "vbout_", "rapidapi_", "prefect_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_", "nicereply_", "nimble_", "oanda_", "noticeable_", "nozbeteams_", "notion_", "openuv_", "owlbot_", "meaningcloud_", "openweather_", "pixabay_", "positionstack_", "jwt_", "nvapi_", "pdfshift_", "pdflayer_", "percy_", "pipedrive_", "postman_", "rawg_", "rebrandly_", "podio_", "vpnapi_", "tomtom_", "theoddsapi_", "wistia_", "uplead_", "vbout_", "rapidapi_", "prefect_", "paydirtapp_", "scrapeowl_", "unsplash_", "stockdata_", "verimail_", "route4me_", "polygon_", "sportsmonk_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):

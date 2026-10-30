@@ -64,7 +64,7 @@ static int paydirtapp_scan(const br_detector *detector, const br_scan_ctx *ctx, 
 static const char *const paydirtapp_keywords[] = {"paydirtapp"};
 static br_detector paydirtapp_detector = {
     .type = 793, .version = 0, .name = "Paydirtapp", .custom_name = "",
-    .description = "Paydirtapp is a video game database and discovery service. Paydirtapp API keys can be used to access game data and related services.",
+    .description = "Paydirtapp is a time tracking and invoicing app. Paydirtapp API keys can be used to access and manage user data and billing information.",
     .keywords = paydirtapp_keywords, .nkeywords = 1,
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .scan = paydirtapp_scan,

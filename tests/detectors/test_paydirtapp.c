@@ -50,7 +50,7 @@ static const br_detector *open_detector(int (*init)(const br_detector **, char *
     free(error);
     CHECK(init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 793 && detector->version == 0 && !strcmp(detector->name, "Paydirtapp"));
-    CHECK(!strcmp(detector->description, "Paydirtapp is a video game database and discovery service. Paydirtapp API keys can be used to access game data and related services."));
+    CHECK(!strcmp(detector->description, "Paydirtapp is a time tracking and invoicing app. Paydirtapp API keys can be used to access and manage user data and billing information."));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "paydirtapp"));
     CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 && detector->max_credential_span == -1);
     return detector;

@@ -575,6 +575,14 @@ static const registration expected[] = {
     {99, 0, "RapidApi", "rapidapi", 50, true, -1},
     {918, 0, "Prefect", "pnu_", 40, true, -1},
     {86, 0, "SendinBlueV2", "xkeysib", 89, true, -1},
+    {793, 0, "Paydirtapp", "paydirtapp", 32, true, -1},
+    {547, 0, "Scrapeowl", "scrapeowl", 30, true, -1},
+    {472, 0, "Unsplash", "unsplash", 43, true, -1},
+    {471, 0, "Stockdata", "stockdata", 40, true, -1},
+    {143, 0, "Verimail", "verimail", 32, true, -1},
+    {546, 0, "Route4me", "route4me", 32, true, -1},
+    {242, 0, "Polygon", "polygon", 32, true, -1},
+    {470, 0, "Sportsmonk", "sportsmonk", 60, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2069,6 +2077,16 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(key, "pnu_", 4);
         for (size_t i = 4; i < entry->key_len; ++i) key[i] = "ab12Az"[i % 6];
     }
+    if (entry->type == 793)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "ab12z9"[i % 6];
+    if (entry->type == 547)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "ab12z9"[i % 6];
+    if (entry->type == 472)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "ab12_A"[i % 6];
+    if (entry->type == 143)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "AB12Z9"[i % 6];
+    if (entry->type == 546)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "AB12Z9"[i % 6];
     if (entry->type == 86) {
         memcpy(key, "xkeysib-", 8);
         for (size_t i = 8; i < entry->key_len; ++i) key[i] = "ab12_A"[i % 6];

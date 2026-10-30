@@ -571,5 +571,13 @@ int br_vbout_init(const br_detector **out, char **error);
 int br_rapidapi_init(const br_detector **out, char **error);
 int br_prefect_init(const br_detector **out, char **error);
 int br_sendinbluev2_init(const br_detector **out, char **error);
+int br_paydirtapp_init(const br_detector **out, char **error);
+int br_scrapeowl_init(const br_detector **out, char **error);
+int br_unsplash_init(const br_detector **out, char **error);
+int br_stockdata_init(const br_detector **out, char **error);
+int br_verimail_init(const br_detector **out, char **error);
+int br_route4me_init(const br_detector **out, char **error);
+int br_polygon_init(const br_detector **out, char **error);
+int br_sportsmonk_init(const br_detector **out, char **error);
 
 #endif

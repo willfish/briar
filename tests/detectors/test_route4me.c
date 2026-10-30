@@ -50,7 +50,7 @@ static const br_detector *open_detector(int (*init)(const br_detector **, char *
     free(error);
     CHECK(init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 546 && detector->version == 0 && !strcmp(detector->name, "Route4me"));
-    CHECK(!strcmp(detector->description, "Route4me is a video game database and discovery service. Route4me API keys can be used to access game data and related services."));
+    CHECK(!strcmp(detector->description, "Route4Me is a route planning service that optimizes and manages routes for delivery and service fleets. Route4Me API keys can be used to access and modify routing data and services."));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "route4me"));
     CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 && detector->max_credential_span == -1);
     return detector;

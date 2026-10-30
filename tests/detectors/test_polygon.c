@@ -50,7 +50,7 @@ static const br_detector *open_detector(int (*init)(const br_detector **, char *
     free(error);
     CHECK(init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 242 && detector->version == 0 && !strcmp(detector->name, "Polygon"));
-    CHECK(!strcmp(detector->description, "Polygon is a video game database and discovery service. Polygon API keys can be used to access game data and related services."));
+    CHECK(!strcmp(detector->description, "Polygon is a protocol and a framework for building and connecting Ethereum-compatible blockchain networks. Polygon API keys can be used to interact with its services and access blockchain data."));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "polygon"));
     CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 && detector->max_credential_span == -1);
     return detector;

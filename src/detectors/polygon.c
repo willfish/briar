@@ -64,7 +64,7 @@ static int polygon_scan(const br_detector *detector, const br_scan_ctx *ctx, boo
 static const char *const polygon_keywords[] = {"polygon"};
 static br_detector polygon_detector = {
     .type = 242, .version = 0, .name = "Polygon", .custom_name = "",
-    .description = "Polygon is a video game database and discovery service. Polygon API keys can be used to access game data and related services.",
+    .description = "Polygon is a protocol and a framework for building and connecting Ethereum-compatible blockchain networks. Polygon API keys can be used to interact with its services and access blockchain data.",
     .keywords = polygon_keywords, .nkeywords = 1,
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .scan = polygon_scan,

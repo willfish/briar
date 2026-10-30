@@ -5179,6 +5179,78 @@
       "evidence": ["tests/detectors/test_sendinbluev2.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "paydirtapp/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/paydirtapp/paydirtapp.go",
+      "scope_notes": "Paydirtapp793/v0/default/no hints. Prefixed 32-byte digit/lowercase occurrences, key-only result and no setter. The complete literal request URL ending in the raw key (https://paydirtapp.com/api/v1/clients?api_key=) precedes the nil-context drop; the SANE request adds no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/paydirtapp.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_paydirtapp.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "scrapeowl/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/scrapeowl/scrapeowl.go",
+      "scope_notes": "Scrapeowl547/v0/default/no hints. Prefixed 30-byte digit/lowercase occurrences, key-only result and no setter. The complete literal request URL ending in the raw key (https://api.scrapeowl.com/v1/scrape?api_key=) precedes the nil-context drop; the SANE request adds no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/scrapeowl.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_scrapeowl.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "unsplash/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/unsplash/unsplash.go",
+      "scope_notes": "Unsplash472/v0/default/no hints. Prefixed 43-byte mixed alphanumeric/underscore occurrences, key-only result and no setter. The complete literal request URL ending in the raw key (https://api.unsplash.com/photos/?client_id=) precedes the nil-context drop; the SANE request adds no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/unsplash.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_unsplash.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "stockdata/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/stockdata/stockdata.go",
+      "scope_notes": "Stockdata471/v0/default/no hints. Prefixed 40-byte mixed alphanumeric occurrences, key-only result and no setter. The complete literal request URL ending in the raw key (https://api.stockdata.org/v1/data/quote?symbols=AAPL,TSLA,MSFT&api_token=) precedes the nil-context drop; the SANE request adds no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/stockdata.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_stockdata.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "verimail/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/verimail/verimail.go",
+      "scope_notes": "Verimail143/v0/default/no hints. Prefixed 32-byte UPPERCASE alphanumeric occurrences, key-only result and no setter. The complete literal request URL ending in the raw key (https://api.verimail.io/v3/verify?key=) precedes the nil-context drop; the SANE request adds no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/verimail.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_verimail.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "route4me/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/route4me/route4me.go",
+      "scope_notes": "Route4me546/v0/default/no hints. Prefixed 32-byte digit/UPPERCASE occurrences, key-only result and no setter. The complete literal request URL ending in the raw key (https://api.route4me.com/api.v4/address_book.php?api_key=) precedes the nil-context drop; the SANE request adds no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/route4me.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_route4me.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "polygon/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/polygon/polygon.go",
+      "scope_notes": "Polygon242/v0/default/no hints. Prefixed 32-byte mixed alphanumeric occurrences, key-only result and no setter. The complete literal request URL ending in the raw key (https://api.polygon.io/v2/reference/locales?apiKey=) precedes the nil-context drop; the SANE request adds no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/polygon.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_polygon.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "sportsmonk/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/sportsmonk/sportsmonk.go",
+      "scope_notes": "Sportsmonk470/v0/default/no hints. Prefixed 60-byte mixed alphanumeric occurrences, key-only result and no setter. The complete literal request URL ending in the raw key (https://soccer.sportmonks.com/api/v2.0/leagues?api_token=) precedes the nil-context drop; the SANE request adds no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/sportsmonk.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_sportsmonk.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

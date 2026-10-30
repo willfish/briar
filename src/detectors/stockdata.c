@@ -64,7 +64,7 @@ static int stockdata_scan(const br_detector *detector, const br_scan_ctx *ctx, b
 static const char *const stockdata_keywords[] = {"stockdata"};
 static br_detector stockdata_detector = {
     .type = 471, .version = 0, .name = "Stockdata", .custom_name = "",
-    .description = "Stockdata is a video game database and discovery service. Stockdata API keys can be used to access game data and related services.",
+    .description = "Stockdata is a service providing stock market data. Stockdata API keys can be used to access and retrieve stock market information.",
     .keywords = stockdata_keywords, .nkeywords = 1,
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .scan = stockdata_scan,

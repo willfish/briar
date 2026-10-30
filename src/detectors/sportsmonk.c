@@ -64,7 +64,7 @@ static int sportsmonk_scan(const br_detector *detector, const br_scan_ctx *ctx, 
 static const char *const sportsmonk_keywords[] = {"sportsmonk"};
 static br_detector sportsmonk_detector = {
     .type = 470, .version = 0, .name = "Sportsmonk", .custom_name = "",
-    .description = "Sportsmonk is a video game database and discovery service. Sportsmonk API keys can be used to access game data and related services.",
+    .description = "Sportsmonk is a sports data provider offering various API endpoints to access sports data. Sportsmonk API keys can be used to query and retrieve this data.",
     .keywords = sportsmonk_keywords, .nkeywords = 1,
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .scan = sportsmonk_scan,

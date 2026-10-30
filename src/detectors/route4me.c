@@ -64,7 +64,7 @@ static int route4me_scan(const br_detector *detector, const br_scan_ctx *ctx, bo
 static const char *const route4me_keywords[] = {"route4me"};
 static br_detector route4me_detector = {
     .type = 546, .version = 0, .name = "Route4me", .custom_name = "",
-    .description = "Route4me is a video game database and discovery service. Route4me API keys can be used to access game data and related services.",
+    .description = "Route4Me is a route planning service that optimizes and manages routes for delivery and service fleets. Route4Me API keys can be used to access and modify routing data and services.",
     .keywords = route4me_keywords, .nkeywords = 1,
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .scan = route4me_scan,

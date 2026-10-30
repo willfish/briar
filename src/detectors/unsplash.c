@@ -64,7 +64,7 @@ static int unsplash_scan(const br_detector *detector, const br_scan_ctx *ctx, bo
 static const char *const unsplash_keywords[] = {"unsplash"};
 static br_detector unsplash_detector = {
     .type = 472, .version = 0, .name = "Unsplash", .custom_name = "",
-    .description = "Unsplash is a video game database and discovery service. Unsplash API keys can be used to access game data and related services.",
+    .description = "Unsplash is a website dedicated to sharing stock photography under the Unsplash license. Unsplash API keys can be used to access and modify Unsplash data.",
     .keywords = unsplash_keywords, .nkeywords = 1,
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .scan = unsplash_scan,

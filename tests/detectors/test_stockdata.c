@@ -50,7 +50,7 @@ static const br_detector *open_detector(int (*init)(const br_detector **, char *
     free(error);
     CHECK(init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 471 && detector->version == 0 && !strcmp(detector->name, "Stockdata"));
-    CHECK(!strcmp(detector->description, "Stockdata is a video game database and discovery service. Stockdata API keys can be used to access game data and related services."));
+    CHECK(!strcmp(detector->description, "Stockdata is a service providing stock market data. Stockdata API keys can be used to access and retrieve stock market information."));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "stockdata"));
     CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 && detector->max_credential_span == -1);
     return detector;

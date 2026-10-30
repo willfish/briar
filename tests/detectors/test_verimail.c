@@ -50,7 +50,7 @@ static const br_detector *open_detector(int (*init)(const br_detector **, char *
     free(error);
     CHECK(init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 143 && detector->version == 0 && !strcmp(detector->name, "Verimail"));
-    CHECK(!strcmp(detector->description, "Verimail is a video game database and discovery service. Verimail API keys can be used to access game data and related services."));
+    CHECK(!strcmp(detector->description, "Verimail is an email verification service that helps ensure email addresses are valid and deliverable. Verimail keys can be used to access the Verimail API for verifying email addresses."));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "verimail"));
     CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 && detector->max_credential_span == -1);
     return detector;

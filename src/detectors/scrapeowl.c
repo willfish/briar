@@ -64,7 +64,7 @@ static int scrapeowl_scan(const br_detector *detector, const br_scan_ctx *ctx, b
 static const char *const scrapeowl_keywords[] = {"scrapeowl"};
 static br_detector scrapeowl_detector = {
     .type = 547, .version = 0, .name = "Scrapeowl", .custom_name = "",
-    .description = "Scrapeowl is a video game database and discovery service. Scrapeowl API keys can be used to access game data and related services.",
+    .description = "ScrapeOwl is a web scraping service that allows users to extract data from websites. ScrapeOwl API keys can be used to automate data extraction tasks.",
     .keywords = scrapeowl_keywords, .nkeywords = 1,
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,
     .scan = scrapeowl_scan,
