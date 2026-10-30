@@ -536,6 +536,14 @@ static const registration expected[] = {
     {835, 0, "Onesignal", "onesignal", 36, true, -1},
     {986, 0, "Onfleet", "onfleet", 32, true, -1},
     {273, 0, "OnepageCRM", "onepagecrm", 44, true, 1024},
+    {213, 0, "Nftport", "nftport", 36, true, -1},
+    {847, 0, "Nightfall", "nightfall", 35, true, -1},
+    {481, 0, "Mailsac", "mailsac", 38, true, -1},
+    {336, 0, "Mapquest", "mapquest", 32, true, -1},
+    {468, 0, "Mavenlink", "mavenlink", 64, true, -1},
+    {104, 0, "MapBox", "mapbox", 84, true, 1024},
+    {96, 1, "MaxMindLicense", "maxmind", 16, true, 1024},
+    {96, 2, "MaxMindLicense", "_mmk", 40, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -870,6 +878,81 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 44 && !memcmp(results.items[0].raw.data, key, 44));
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 213) {
+        char key[37], input[70];
+        for (size_t i = 0; i < 36; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[8] = key[13] = key[18] = key[23] = '-';
+        key[36] = '\0';
+        snprintf(input, sizeof(input), "nftport %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 36);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 847) {
+        char key[36], input[70];
+        memcpy(key, "NF-", 3);
+        for (size_t i = 3; i < 35; ++i) key[i] = "ab12"[i % 4];
+        key[35] = '\0';
+        snprintf(input, sizeof(input), "nightfall %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 35);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 481) {
+        char key[40], input[70];
+        memcpy(key, "k_", 2);
+        for (size_t i = 2; i < 38; ++i) key[i] = "ab12ABCD"[i % 8];
+        key[38] = '\0';
+        snprintf(input, sizeof(input), "mailsac %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 38);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 104) {
+        char key[120], ids[200], input[360];
+        memcpy(key, "sk.", 3);
+        for (size_t i = 3; i < 83; ++i) key[i] = "ab12"[i % 4];
+        key[83] = '\0';
+        size_t at = 0;
+        for (size_t i = 0; i < 12; ++i) at += (size_t)snprintf(ids + at, sizeof(ids) - at, "id%05zu ", i);
+        ids[at ? at - 1 : 0] = '\0';
+        snprintf(input, sizeof(input), "mapbox %s\n%s", key, ids);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 83);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 96 && entry->version == 1) {
+        char key[17], input[80];
+        for (size_t i = 0; i < 16; ++i) key[i] = "ab12ABCD"[i % 8];
+        key[16] = '\0';
+        snprintf(input, sizeof(input), "maxmind %s\ngeoip account 12345", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len >= 1 && results.items[0].raw.len == 16 && results.items[0].redacted);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 96 && entry->version == 2) {
+        char key[41], input[70];
+        for (size_t i = 0; i < 36; ++i) key[i] = "ab12"[i % 4];
+        key[6] = '_'; key[36] = '_';
+        memcpy(key + 37, "mmk", 3);
+        key[40] = '\0';
+        snprintf(input, sizeof(input), "_mmk %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 40 && results.items[0].extra_data);
         br_results_clear(&results);
         return;
     }
@@ -2723,7 +2806,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 120 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || entry->type == 490 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || entry->type == 490 || (entry->type == 96 && entry->version == 1) || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;

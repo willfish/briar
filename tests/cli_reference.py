@@ -1733,6 +1733,14 @@ def fixtures():
         ("lunchmoney", 797, b"lunchmoney " + synthetic("lunchmoney-key", 50)),
         ("onepagecrm", 273, b"onepagecrm " + alnum("onepagecrm-key", 44) + b"\nonepagecrm " + synthetic("onepagecrm-id", 24)),
         ("onfleet", 986, b"onfleet " + synthetic("onfleet-key", 32)),
+        ("nftport", 213, b"nftport 7f3a1c2d-4e5f-4a6b-8c9d-0e1f2a3b4c5d"),
+        ("nightfall", 847, b"nightfall NF-" + alnum("nightfall-key", 32)),
+        ("mailsac", 481, b"mailsac k_" + alnum("mailsac-key", 36)),
+        ("mapquest", 336, b"mapquest " + alnum("mapquest-key", 32)),
+        ("mavenlink", 468, b"mavenlink " + synthetic("mavenlink-key", 64)),
+        ("mapbox", 104, b"mapbox sk." + alnum("mapbox-key", 80) + b"\nid00001 id00002 id00003 id00004 id00005 id00006 id00007 id00008 id00009 id00010 id00011 id00012"),
+        ("maxmind_v1", 96, b"maxmind " + alnum("maxmind-key", 16) + b"\ngeoip account 12345"),
+        ("maxmind_v2", 96, b"_mmk " + alnum("maxmind-v2", 6) + b"_" + alnum("maxmind-v2b", 29) + b"_mmk"),
         ("onesignal", 835, b"onesignal b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3"),
         ("moosend", 261, b"moosend A" + synthetic("moosend-key", 7) + b"-" + synthetic("moosend-b", 4) + b"-" + synthetic("moosend-c", 4) + b"-" + synthetic("moosend-d", 4) + b"-" + synthetic("moosend-e", 12)),
         ("couchbase_filtered", 920, couchbase_payload),
@@ -2161,7 +2169,7 @@ def compare(native, reference, case):
         # source-valid unit-test input, so the oracle agrees only on absence.
         if actual or expected:
             raise AssertionError(name + ": the CLI oracle emits no Mrticktock rows; native must match that absence")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):

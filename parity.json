@@ -4801,6 +4801,78 @@
       "evidence": ["tests/detectors/test_onepagecrm.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "nftport/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nftport/nftport.go",
+      "scope_notes": "Nftport213/v0/default/no hints. Prefixed lowercase UUID occurrences, key-only result and no setter. Finding construction precedes the nil-context constructor drop; Content-Type then the raw key as Authorization follow it on a SANE contracts GET. Every reached send stays unverified without publishing transport text, successful-send 2xx verifies regardless of body or read error, and one release follows each attempt. Owned finding and push failures are fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/nftport.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_nftport.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "nightfall/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nightfall/nightfall.go",
+      "scope_notes": "Nightfall847/v0/default/no hints. The NF- plus 32 mixed-alphanumeric grammar is unprefixed (the keyword is an engine hint only) and keeps duplicates. The exact fileSizeBytes body and Bearer authorization are built before the constructor; no Content-Type is invented. A nil context drops after finding allocation. Reached sends stay unverified without published transport text, successful-send 2xx verifies regardless of read errors, and one release follows each attempt with fatal owned failures and invocation-only rollback.",
+      "native_files": ["src/detectors/nightfall.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_nightfall.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "mailsac/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mailsac/mailsac.go",
+      "scope_notes": "Mailsac481/v0/default/no hints. Prefixed k_ plus 36-or-more mixed characters keep duplicates and borrow the complete key into the canonical Mailsac-Key header after Content-Type. The fixed addresses URL follows the nil-context drop; any 2xx verifies, bodies and read errors are ignored, other statuses and send failures stay unverified with no setter, and every attempt releases once. Owned failures are fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/mailsac.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mailsac.c", "tests/detectors/test_registry.c", "tests/cli_reference.c", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "mapquest/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mapquest/mapquest.go",
+      "scope_notes": "Mapquest336/v0/default/no hints. Prefixed 32-byte mixed-alphanumeric keys are appended raw to the get-column-types URL before the nil-context drop, with no headers, encoding or setter. Any 2xx verifies, bodies and read errors are ignored, other statuses and send failures stay unverified, and every attempt releases once with fatal owned failures and invocation-only rollback.",
+      "native_files": ["src/detectors/mapquest.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mapquest.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "mavenlink/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mavenlink/mavenlink.go",
+      "scope_notes": "Mavenlink468/v0/default/no hints. Prefixed 64-byte lowercase-alphanumeric keys keep occurrences; Bearer authorization and the workspaces GET follow the nil-context drop on a SANE request with no other headers. Any 2xx verifies, bodies and read errors are ignored, other statuses and send failures stay unverified with no setter, and every attempt releases once with fatal owned failures and invocation-only rollback.",
+      "native_files": ["src/detectors/mavenlink.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mavenlink.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "mapbox/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mapbox/mapbox.go",
+      "scope_notes": "MapBox104/v0/span1024 engine hint. A prefixed sk-prefixed 80-240 character access token and an unprefixed 4-32 character id grammar are both collected before the nil-context drop; only the twelfth non-overlapping id is used and fewer than twelve publishes nothing. The tokens URL is assembled raw before the constructor, any 2xx verifies, bodies and read errors are ignored, other statuses and send failures stay unverified with no setter, and every attempt releases once.",
+      "native_files": ["src/detectors/mapbox.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mapbox.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "maxmindlicense/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/maxmindlicense/v1/maxmindlicense.go",
+      "scope_notes": "MaxMindLicense96/v1/span1024 with maxmind and geoip keywords. A prefixed 16-byte key and a prefixed 2-7 digit account id form key-major products with the id used as native Redacted and rotation-guide plus version metadata always present. Basic authentication over id and key follows the nil-context drop, any 2xx verifies on the GeoIP country URL, bodies and read errors are ignored, and no setter is called.",
+      "native_files": ["src/detectors/maxmindlicense.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_maxmindlicense.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "maxmindlicense/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/maxmindlicense/v2/maxmindlicense.go",
+      "scope_notes": "MaxMindLicense96/v2/default with the _mmk keyword. The 6-29-_mmk grammar is de-duplicated first-seen and always carries rotation-guide plus version-two metadata. The license_key form body is assembled before the constructor; 204 verifies, 401 stays verifiably unset, other statuses report the numeric cause and send failures keep their diagnostic. Release precedes the mandatory checked key setter.",
+      "native_files": ["src/detectors/maxmindlicense.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_maxmindlicense.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

@@ -532,5 +532,13 @@ int br_lunchmoney_init(const br_detector **out, char **error);
 int br_onesignal_init(const br_detector **out, char **error);
 int br_onfleet_init(const br_detector **out, char **error);
 int br_onepagecrm_init(const br_detector **out, char **error);
+int br_nftport_init(const br_detector **out, char **error);
+int br_nightfall_init(const br_detector **out, char **error);
+int br_mailsac_init(const br_detector **out, char **error);
+int br_mapquest_init(const br_detector **out, char **error);
+int br_mavenlink_init(const br_detector **out, char **error);
+int br_mapbox_init(const br_detector **out, char **error);
+int br_maxmindlicense_v1_init(const br_detector **out, char **error);
+int br_maxmindlicense_v2_init(const br_detector **out, char **error);
 
 #endif
