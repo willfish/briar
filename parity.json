@@ -4792,6 +4792,15 @@
       "evidence": ["tests/detectors/test_onfleet.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Map iteration order is projected as first-seen order", "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "onepagecrm/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/onepagecrm/onepagecrm.go",
+      "scope_notes": "OnepageCRM273/v0/span1024 engine hint. A prefixed 44-byte mixed alphanumeric-or-equals key grammar without a trailing boundary pairs with a prefixed 24-byte lowercase-alphanumeric ID grammar into key-major products; the ID stays hidden and only the key is published. Basic authentication over ID and key follows the nil-context constructor drop, and the contacts GET uses the SANE client. Whole mixed preparation/Do failures stay unverified with no setter, every successful-send 2xx verifies and bodies and read errors are ignored. Successful responses release LIFO after publication with the original authorization alive, a failed attempt releases immediately once, and later push failures roll back only this invocation.",
+      "native_files": ["src/detectors/onepagecrm.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_onepagecrm.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

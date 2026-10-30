@@ -535,6 +535,7 @@ static const registration expected[] = {
     {797, 0, "LunchMoney", "lunchmoney", 50, true, -1},
     {835, 0, "Onesignal", "onesignal", 36, true, -1},
     {986, 0, "Onfleet", "onfleet", 32, true, -1},
+    {273, 0, "OnepageCRM", "onepagecrm", 44, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -856,6 +857,19 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 36);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 273) {
+        char key[45], id[25], input[110];
+        for (size_t i = 0; i < 44; ++i) key[i] = "ab12"[i % 4];
+        key[44] = '\0';
+        for (size_t i = 0; i < 24; ++i) id[i] = "0123456789abcdef"[i % 16];
+        id[24] = '\0';
+        snprintf(input, sizeof(input), "onepagecrm %s\nonepagecrm %s", key, id);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 44 && !memcmp(results.items[0].raw.data, key, 44));
         br_results_clear(&results);
         return;
     }
