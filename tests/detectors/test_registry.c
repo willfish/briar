@@ -534,6 +534,7 @@ static const registration expected[] = {
     {396, 0, "Loyverse", "loyverse", 32, true, -1},
     {797, 0, "LunchMoney", "lunchmoney", 50, true, -1},
     {835, 0, "Onesignal", "onesignal", 36, true, -1},
+    {986, 0, "Onfleet", "onfleet", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */

@@ -530,5 +530,6 @@ int br_luno_init(const br_detector **out, char **error);
 int br_loyverse_init(const br_detector **out, char **error);
 int br_lunchmoney_init(const br_detector **out, char **error);
 int br_onesignal_init(const br_detector **out, char **error);
+int br_onfleet_init(const br_detector **out, char **error);
 
 #endif

@@ -4783,6 +4783,15 @@
       "evidence": ["tests/detectors/test_onesignal.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "onfleet/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/onfleet/onfleet.go",
+      "scope_notes": "Onfleet986/v0/default/no hints. Prefixed 32-byte lowercase-alphanumeric occurrences are de-duplicated first-seen (the source uses an unordered map) and produce key-only results with no extra metadata. Verification builds Basic base64(key:) and the organization GET on a SANE request; a nil context reports the missing-context cause without a send. 2xx verifies, 401 stays unverified with a NULL cause, other statuses report the numeric unexpected-status cause and whole send failures keep their borrowed diagnostic. The checked token-secret setter always runs, release precedes it, successful responses close LIFO after publication and a failed attempt releases immediately once.",
+      "native_files": ["src/detectors/onfleet.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_onfleet.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Map iteration order is projected as first-seen order", "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
