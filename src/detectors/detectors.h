@@ -621,5 +621,9 @@ int br_npmtokenv2_init(const br_detector **out, char **error);
 int br_okta_init(const br_detector **out, char **error);
 int br_omnisend_init(const br_detector **out, char **error);
 int br_onedesk_init(const br_detector **out, char **error);
+int br_paperform_init(const br_detector **out, char **error);
+int br_paralleldots_init(const br_detector **out, char **error);
+int br_parsehub_init(const br_detector **out, char **error);
+int br_parsers_init(const br_detector **out, char **error);
 
 #endif

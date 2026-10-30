@@ -19340,6 +19340,42 @@
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_onedesk.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "paperform/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/paperform/paperform.go",
+      "scope_notes": "Paperform791/v0/default. Keyword paperform. Prefixed capture is 850 to 1000 members of the pinned class with word boundaries. TrimSpace does not change that class. Nil context drops after the finding and before Authorization. SANE GET https://api.paperform.co/v1/forms sends Authorization Bearer plus the raw key. Every 2xx verifies. No body read and no setter. One release per attempt.",
+      "native_files": ["src/detectors/paperform.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_paperform.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "paralleldots/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/paralleldots/paralleldots.go",
+      "scope_notes": "ParallelDots479/v0/default. Keyword paralleldots. Prefixed 43-character alphanumeric capture. The multipart body is built before a nil-context drop. SANE POST https://apis.paralleldots.com/v4/intent sends Content-Type with a 60-hex boundary. A read error drops the candidate. 2xx verifies only when the body contains intent. No setter. One release per attempt.",
+      "native_files": ["src/detectors/paralleldots.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_paralleldots.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "parsehub/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/parsehub/parsehub.go",
+      "scope_notes": "Parsehub803/v0/default. Keyword parsehub. Prefixed 12-character alphanumeric capture. The raw projects URL is assembled before a nil-context drop and is not encoded. SANE GET has no provider headers. Every 2xx verifies. No body read and no setter. One release per attempt.",
+      "native_files": ["src/detectors/parsehub.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_parsehub.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "parsers/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/parsers/parsers.go",
+      "scope_notes": "Parsers765/v0/default. Keyword parsers. Prefixed 64-character lowercase capture. Nil context drops before the headers. SANE POST https://api.parsers.dev/api/v1/parse/postgresql/ sends the exact 62-byte SQL body, Content-Type application/json, then canonical X-Api-Key. Every 2xx verifies. No body read and no setter. One release per attempt.",
+      "native_files": ["src/detectors/parsers.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_parsers.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     }
   },
   "components": {

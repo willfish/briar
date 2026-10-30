@@ -624,6 +624,10 @@ static const registration expected[] = {
     {21, 0, "Okta", ".okta", 42, true, 1024},
     {205, 0, "Omnisend", "omnisend", 75, true, -1},
     {601, 0, "Onedesk", "onedesk", sizeof("briar7@offline.invalid") - 1, true, 1024},
+    {791, 0, "Paperform", "paperform", 850, true, -1},
+    {479, 0, "ParallelDots", "paralleldots", 43, true, -1},
+    {803, 0, "Parsehub", "parsehub", 12, true, -1},
+    {765, 0, "Parsers", "parsers", 64, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2233,6 +2237,9 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         test_secret(key + 2, 40, 0);
     }
     if (entry->type == 601) strcpy(key, "briar7@offline.invalid");
+    if (entry->type == 765)
+        for (size_t i = 0; i < entry->key_len; ++i)
+            if (key[i] >= 'A' && key[i] <= 'Z') key[i] = (char)(key[i] - 'A' + 'a');
     if (entry->type == 588) {
         static const char header[] = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.";
         memcpy(key, header, sizeof(header) - 1);
