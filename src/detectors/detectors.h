@@ -549,5 +549,8 @@ int br_notion_init(const br_detector **out, char **error);
 int br_openuv_init(const br_detector **out, char **error);
 int br_owlbot_init(const br_detector **out, char **error);
 int br_meaningcloud_init(const br_detector **out, char **error);
+int br_openweather_init(const br_detector **out, char **error);
+int br_pixabay_init(const br_detector **out, char **error);
+int br_positionstack_init(const br_detector **out, char **error);
 
 #endif

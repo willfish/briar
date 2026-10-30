@@ -553,6 +553,9 @@ static const registration expected[] = {
     {504, 0, "Openuv", "openuv", 32, true, -1},
     {357, 0, "Owlbot", "owlbot", 40, true, -1},
     {622, 0, "MeaningCloud", "meaningcloud", 32, true, -1},
+    {262, 0, "OpenWeather", "openweather", 32, true, -1},
+    {494, 0, "Pixabay", "pixabay", 34, true, -1},
+    {535, 0, "PositionStack", "positionstack", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */

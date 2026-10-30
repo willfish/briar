@@ -4954,6 +4954,33 @@
       "evidence": ["tests/detectors/test_meaningcloud.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "openweather/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/openweather/openweather.go",
+      "scope_notes": "OpenWeather262/v0/default/no hints. Prefixed 32-byte lowercase-alphanumeric occurrences, key-only result and no setter. The complete literal weather URL carrying the raw key is built before the nil-context constructor drop; no provider headers, body or encoding are added. Whole preparation/Do failures stay unverified, every successful-send 2xx verifies while bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/openweather.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_openweather.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "pixabay/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/pixabay/pixabay.go",
+      "scope_notes": "Pixabay494/v0/default/no hints. Prefixed 34-byte lowercase alphanumeric-or-hyphen occurrences, key-only result and no setter. The complete literal API URL with the raw key and fixed query is built before the nil-context constructor drop, with no provider headers or encoding. Whole preparation/Do failures stay unverified, every successful-send 2xx verifies while bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/pixabay.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_pixabay.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "positionstack/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/positionstack/positionstack.go",
+      "scope_notes": "PositionStack535/v0/default/no hints. Prefixed 32-byte mixed alphanumeric-underscore occurrences, key-only result and no setter. The complete literal forward-geocoding URL carrying the raw key and fixed query is built before the nil-context constructor drop, with no provider headers or encoding. Whole preparation/Do failures stay unverified, every successful-send 2xx verifies while bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/positionstack.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_positionstack.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
