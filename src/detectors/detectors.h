@@ -637,5 +637,9 @@ int br_pipedream_init(const br_detector **out, char **error);
 int br_pivotaltracker_init(const br_detector **out, char **error);
 int br_plaidkey_init(const br_detector **out, char **error);
 int br_planetscale_init(const br_detector **out, char **error);
+int br_partnerstack_init(const br_detector **out, char **error);
+int br_paymoapp_init(const br_detector **out, char **error);
+int br_oopspam_init(const br_detector **out, char **error);
+int br_photoroom_init(const br_detector **out, char **error);
 
 #endif

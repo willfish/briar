@@ -640,6 +640,10 @@ static const registration expected[] = {
     {23, 0, "PivotalTracker", "pivotal", 32, true, -1},
     {79, 0, "PlaidKey", "plaid", 30, true, 1024},
     {195, 0, "PlanetScale", "pscale_tkn_", 54, true, 1024},
+    {545, 0, "Partnerstack", "partnerstack", 64, true, -1},
+    {699, 0, "Paymoapp", "paymoapp", 44, true, -1},
+    {410, 0, "OOPSpam", "oopspam", 40, true, -1},
+    {1038, 0, "Photoroom", "photoroom", 48, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2855,6 +2859,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         for (size_t i = 0; i < 64; ++i) key[18 + i] = "0123456789abcdef"[i % 16];
         key[82] = '\0';
         break;
+    }
+    if (entry->type == 1038) {
+        memcpy(key, "sk_pr_a_", 8);
+        for (size_t i = 8; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[entry->key_len] = '\0';
     }
     if (entry->type == 256)
         snprintf(input, sizeof(input), "%s %s", entry->keyword, key); /* One occurrence, both patterns. */

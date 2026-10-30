@@ -19484,6 +19484,42 @@
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_planetscale.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "partnerstack/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/partnerstack/partnerstack.go",
+      "scope_notes": "Partnerstack545/v0/default. Keyword partnerstack. Prefixed 64-character capture retains duplicates. Raw is the key. Nil context drops before request allocation, with no setter. SANE GET https://api.partnerstack.com/api/v2/partnerships sends Accept then Bearer. Every 2xx verifies. Transport failures stay unverified with no setter. No new HTTP client.",
+      "native_files": ["src/detectors/partnerstack.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_partnerstack.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "paymoapp/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/paymoapp/paymoapp.go",
+      "scope_notes": "Paymoapp699/v0/default. Keyword paymoapp. Prefixed 44-character capture retains duplicates. Raw is the key. Authorization is the literal Basic prefix plus the raw key, not Base64. Nil context drops before send, with no setter. SANE GET https://app.paymoapp.com/api/me sends Accept then that Authorization. Every 2xx verifies. Transport failures stay unverified with no setter. No new HTTP client.",
+      "native_files": ["src/detectors/paymoapp.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_paymoapp.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "oopspam/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/oopspam/oopspam.go",
+      "scope_notes": "OOPSpam410/v0/default. Keyword oopspam. Prefixed 40-character capture retains duplicates. Raw is the key. The static JSON body is built before the nil-context drop. Nil context drops before send, with no setter. SANE POST https://api.oopspam.com/v1/spamdetection sends Content-Type then X-Api-Key. Every 2xx verifies. Transport failures stay unverified with no setter. No new HTTP client. Injected HTTP only.",
+      "native_files": ["src/detectors/oopspam.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_oopspam.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "photoroom/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/photoroom/photoroom.go",
+      "scope_notes": "Photoroom1038/v0/default. Keyword photoroom. Prefixed capture is sk_pr_ plus 1 to 64 mixed characters, then underscore and 40 hex; an optional sandbox_ prefix is not part of the key. Duplicates collapse first-seen. Raw is the key. Nil context sets net/http: nil Context and does not send. SANE GET https://image-api.photoroom.com/v1/account uses canonical X-Api-Key. Status 200 verifies. Status 403 is quiet. Other completed statuses and transport errors set a cause. Successful-response close before the setter is a non-material resource-timing deviation. No new HTTP client.",
+      "native_files": ["src/detectors/photoroom.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_photoroom.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     }
   },
   "components": {
