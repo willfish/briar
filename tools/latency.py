@@ -16,7 +16,7 @@ import hashlib
 import importlib.util
 import json
 import os
-import resource
+import select
 import shutil
 import statistics
 import subprocess
@@ -55,11 +55,30 @@ def measure(command, environment, timeout):
     """Return (wall_ms, max_rss_kib, stdout, stderr, exit)."""
     wrapped, env = isolated(command, timeout, environment)
     started = time.perf_counter()
-    process = subprocess.Popen(wrapped, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
-    out, err = process.communicate(timeout=timeout)
-    elapsed_ms = (time.perf_counter() - started) * 1000.0
-    usage = resource.getrusage(resource.RUSAGE_CHILDREN)
-    return elapsed_ms, usage.ru_maxrss, out, err, process.returncode
+    # A child-specific wait4 result is essential: RUSAGE_CHILDREN is a lifetime
+    # maximum, so a later small process otherwise inherits an earlier peak.
+    # pidfds provide a timed wait without reaping the child or polling delays.
+    # Regular temporary output files also avoid pipe backpressure during wait4.
+    with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
+        process = subprocess.Popen(wrapped, stdout=stdout, stderr=stderr, env=env)
+        pidfd = None
+        try:
+            pidfd = os.pidfd_open(process.pid)
+            if not select.select([pidfd], [], [], timeout)[0]:
+                raise subprocess.TimeoutExpired(command, timeout)
+            _, status, usage = os.wait4(process.pid, 0)
+            process.returncode = os.waitstatus_to_exitcode(status)
+            stdout.seek(0)
+            stderr.seek(0)
+            out, err = stdout.read(), stderr.read()
+            elapsed_ms = (time.perf_counter() - started) * 1000.0
+            return elapsed_ms, usage.ru_maxrss, out, err, process.returncode
+        finally:
+            if pidfd is not None:
+                os.close(pidfd)
+            if process.returncode is None:
+                process.kill()
+                process.wait()
 
 
 def count_rows(payload):
