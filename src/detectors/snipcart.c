@@ -66,7 +66,7 @@ static int snip_scan(const br_detector *detector, const br_scan_ctx *ctx, bool v
         br_slice key = br_captures_at(&keys, i);
         br_result result = {0};
         snip_outcome outcome = SNIP_KEEP;
-        if (key.len != 32) {
+        if (key.len != 75) {
             snip_fail(&owned_error, "invalid Snipcart capture");
             outcome = SNIP_ABORT;
         } else if (br_finding_key_bytes(&result, detector->type, key, "key") != 0) {
@@ -104,7 +104,7 @@ int br_snipcart_init(const br_detector **out, char **error)
     if (error) *error = NULL;
     if (!out) return snip_fail(error, "invalid Snipcart detector output");
     *out = NULL;
-    if (br_key_pattern_init(&snip_detector, "\\b([0-9a-zA-Z]{32})\\b", error) != 0)
+    if (br_key_pattern_init(&snip_detector, "\\b([0-9A-Za-z_]{75})\\b", error) != 0)
         return -1;
     *out = &snip_detector;
     return 0;
