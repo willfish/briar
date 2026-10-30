@@ -561,6 +561,7 @@ static const registration expected[] = {
     {515, 0, "PdfShift", "pdfshift", 32, true, -1},
     {493, 0, "PdfLayer", "pdflayer", 32, true, -1},
     {912, 0, "Percy", "percy", 64, true, -1},
+    {159, 0, "Pipedrive", "pipedrive", 40, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */

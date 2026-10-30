@@ -5026,6 +5026,15 @@
       "evidence": ["tests/detectors/test_percy.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "pipedrive/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/pipedrive/pipedrive.go",
+      "scope_notes": "Pipedrive159/v0/default/no hints. Prefixed 40-byte mixed-alphanumeric occurrences, key-only result and no setter. The complete literal users URL carrying the raw token is built before the nil-context constructor drop; Bearer authorization follows it on a SANE request with no other headers. Whole preparation/Do failures stay unverified, every successful-send 2xx verifies while bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/pipedrive.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_pipedrive.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

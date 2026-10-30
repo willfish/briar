@@ -557,5 +557,6 @@ int br_nvapi_init(const br_detector **out, char **error);
 int br_pdfshift_init(const br_detector **out, char **error);
 int br_pdflayer_init(const br_detector **out, char **error);
 int br_percy_init(const br_detector **out, char **error);
+int br_pipedrive_init(const br_detector **out, char **error);
 
 #endif
