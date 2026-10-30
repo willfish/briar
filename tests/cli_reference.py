@@ -1699,6 +1699,9 @@ def fixtures():
         ("newscatcher", 543, b"newscatcher " + alnum("newscatcher-key", 43)),
         ("ngrok", 966, b"ngrok " + b"2" + alnum("ngrok-key", 26) + b"_7" + alnum("ngrok-tail", 20)),
         ("nexmoapikey", 121, b"nexmo " + alnum("nexmo-key", 8) + b"\nnexmo " + alnum("nexmo-secret", 16)),
+        ("moonclerk", 698, b"moonclerk " + synthetic("moonclerk-key", 32).lower()),
+        ("moralis", 909, b"moralis " + alnum("moralis-key", 64)),
+        ("moosend", 261, b"moosend A" + synthetic("moosend-key", 7) + b"-" + synthetic("moosend-b", 4) + b"-" + synthetic("moosend-c", 4) + b"-" + synthetic("moosend-d", 4) + b"-" + synthetic("moosend-e", 12)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2115,7 +2118,7 @@ def compare(native, reference, case):
             raise AssertionError(name + ": LiveAgent still requires independent key and domain captures without verification")
     if name.startswith("jdbc_") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": JDBC custom false-positive policy retains example paths and parsed connection metadata without verification")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):

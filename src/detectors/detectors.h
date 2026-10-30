@@ -497,5 +497,8 @@ int br_ngc_init(const br_detector **out, char **error);
 int br_newscatcher_init(const br_detector **out, char **error);
 int br_ngrok_init(const br_detector **out, char **error);
 int br_nexmoapikey_init(const br_detector **out, char **error);
+int br_moonclerk_init(const br_detector **out, char **error);
+int br_moralis_init(const br_detector **out, char **error);
+int br_moosend_init(const br_detector **out, char **error);
 
 #endif

@@ -501,6 +501,9 @@ static const registration expected[] = {
     {543, 0, "Newscatcher", "newscatcher", 43, true, -1},
     {966, 0, "Ngrok", "ngrok", 49, true, -1},
     {121, 0, "NexmoApiKey", "nexmo", 8, true, 1024},
+    {698, 0, "Moonclerk", "moonclerk", 32, true, -1},
+    {909, 0, "Moralis", "moralis", 64, true, -1},
+    {261, 0, "Moosend", "moosend", 36, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -1871,6 +1874,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 711:
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789abcdef"[i % 16];
         secondary = "briar7@fixture.invalid"; /* Required email is hidden from results. */
+        break;
+    case 261:
+        /* UUID-shape with the source capital-A first group only. */
+        test_secret(key, 36, 0);
+        key['0'] = 'A'; key[8] = key[13] = key[18] = key[23] = '-';
+        for (size_t i = 0; i < 36; ++i) if (i != 8 && i != 13 && i != 18 && i != 23 && key[i] > 'f') key[i] = 'a';
         break;
     case 157:
         /* Seven-uppercase-alphanumeric groups joined by three literal hyphens. */

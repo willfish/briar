@@ -4486,6 +4486,33 @@
       "evidence": ["tests/detectors/test_nexmoapikey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "moonclerk/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/moonclerk/moonclerk.go",
+      "scope_notes": "Moonclerk698/v0/default/no hints. Prefixed 32-byte lowercase-alphanumeric occurrences, key-only result and no setter. The fixed forms URL keeps literal Accept then Token token= authorization after the nil-context constructor drop, and verification uses the SANE five-second request. Whole preparation/Do failures stay unverified with no invented cause; every successful-send 2xx verifies while bodies and read errors are ignored. Successful responses and their original authorization are held and released LIFO after publication, with the authorization scrubbed after its own release; failed sends release immediately once and every owned nonzero is fatal with invocation-only caller rollback.",
+      "native_files": ["src/detectors/moonclerk.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_moonclerk.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "moralis/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/moralis/moralis.go",
+      "scope_notes": "Moralis909/v0/default/no hints. Prefixed 64-byte mixed-alphanumeric occurrences, key-only result and no setter. The fixed 108-byte deep-index NFT URL with literal Accept then canonical X-Api-Key follows the nil-context constructor drop, and verification uses the SANE five-second request. Whole preparation/Do failures stay unverified with no invented cause; every successful-send 2xx verifies while bodies and read errors are ignored. Successful responses and their original key bytes are held and released LIFO after publication, with the key scrubbed after its own release; failed sends release immediately once and every owned nonzero is fatal with invocation-only caller rollback.",
+      "native_files": ["src/detectors/moralis.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_moralis.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "moosend/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/moosend/moosend.go",
+      "scope_notes": "Moosend261/v0/default/no hints. Prefixed UUID-shaped grammar whose FIRST group keeps the source capital-A spelling `[0-9Aa-f]{8}` while later groups are lowercase hex, occurrences preserved, key-only result and no setter. The complete literal lists URL with the raw key is owned before the nil-context drop. Setup/Do failures stay unverified without a cause; a successful send is registered before the verdict, a present read error drops the candidate, a reached invalid body slice is fatal, and a successful read verifies purely on the binary CreatedOn marker regardless of status. Successful responses, including later-dropped reads, release LIFO after publication with original URL storage alive; failed sends release immediately once and every owned nonzero including +1 is fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/moosend.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_moosend.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
