@@ -5089,6 +5089,24 @@
       "evidence": ["tests/detectors/test_tomtom.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "theoddsapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/theoddsapi/theoddsapi.go",
+      "scope_notes": "TheOddsApi631/v0/default/no hints. TWO keywords (theoddsapi and the-odds-api) share one prefixed 32-byte lowercase-hex grammar, and both prefixed occurrences dispatch. Key-only result, no setter. The complete literal sports URL carrying the raw key precedes the nil-context drop; no explicit headers. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/theoddsapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_theoddsapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "wistia/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/wistia/wistia.go",
+      "scope_notes": "Wistia780/v0/default/no hints. Prefixed 64-byte digit/lowercase occurrences, key-only result and no setter. The complete literal account-stats URL carrying the raw key precedes the nil-context drop; no explicit headers. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/wistia.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_wistia.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

@@ -568,6 +568,8 @@ static const registration expected[] = {
     {671, 0, "Podio", "podio", 32, true, -1},
     {291, 0, "Vpnapi", "vpnapi", 32, true, -1},
     {309, 0, "Tomtom", "tomtom", 32, true, -1},
+    {631, 0, "TheOddsApi", "theoddsapi", 32, true, -1},
+    {780, 0, "Wistia", "wistia", 64, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2052,8 +2054,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         char secret[69]; test_secret(secret, 68, 11);
         snprintf(key, sizeof(key), "https://discord.com/api/webhooks/123456789012345678/%s", secret);
     }
-    if (entry->type == 838 || entry->type == 360)
+    if (entry->type == 838 || entry->type == 360 || entry->type == 631)
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+    if (entry->type == 780)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[i % 36];
     if (entry->type == 897) {
         memcpy(key, "dop_v1_", 7);
         for (size_t i = 7; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
@@ -2684,7 +2688,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
-    CHECK(results.len == (entry->type == 416 || entry->type == 454 ? 4u : entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 || entry->type == 282 || entry->type == 993 ? 2u : 1u));
+    CHECK(results.len == (entry->type == 416 || entry->type == 454 ? 4u : entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 || entry->type == 282 || entry->type == 993 || entry->type == 191 ? 2u : 1u));
     const br_result *result = &results.items[0];
     CHECK(result->detector_type == entry->type);
     CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
@@ -2924,7 +2928,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 120 || entry->type == 1039 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || entry->type == 490 || entry->type == 1039 || entry->type == 716 || (entry->type == 96 && entry->version == 1) || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || entry->type == 490 || entry->type == 631 || entry->type == 1039 || entry->type == 716 || (entry->type == 96 && entry->version == 1) || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;

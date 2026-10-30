@@ -564,5 +564,7 @@ int br_rebrandly_init(const br_detector **out, char **error);
 int br_podio_init(const br_detector **out, char **error);
 int br_vpnapi_init(const br_detector **out, char **error);
 int br_tomtom_init(const br_detector **out, char **error);
+int br_theoddsapi_init(const br_detector **out, char **error);
+int br_wistia_init(const br_detector **out, char **error);
 
 #endif
