@@ -4648,6 +4648,42 @@
       "evidence": ["tests/detectors/test_microsoftteamswebhook.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "lob/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/lob/lob.go",
+      "scope_notes": "Lob490/v0/default with live_ and test_ keywords. A unique live/test plus 35 lowercase-hex grammar yields environment metadata from the first four bytes, key-only parts and no RawV2. Basic authentication over key and an empty password follows the nil-context cause, and the SANE POST to us_verifications distinguishes 422 verified, 401 quiet, 403 typed error-code projection (billing_address_required and feature_limit_reached verify, invalid_api_key quiet, other codes report their text) and other numeric status causes. The mandatory zero-secret setter receives the borrowed cause, release precedes it, and an unrepresentable NUL code is an explicit fatal boundary.",
+      "native_files": ["src/detectors/lob.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/gcp_json.c", "src/detectors/json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_lob.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "lokalisetoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/lokalisetoken/lokalisetoken.go",
+      "scope_notes": "LokaliseToken129/v0/default/no hints. Prefixed 40-byte lowercase-alphanumeric occurrences, key-only result and checked full-key setter. The api2/projects GET with canonical X-Api-Token follows the nil-context cause on a SANE request. Only 200 decodes one first document into the projects array with reused creator slots, duplicate-array shrink clearing, repaired JSON text and ordered creator joins; success verifies regardless of creator metadata, 401 and 403 stay quietly unverified, and other statuses report the numeric cause. Release precedes verdict publication, and reached creator metadata is joined with comma-space into the project creators field.",
+      "native_files": ["src/detectors/lokalisetoken.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/gcp_json.c", "src/detectors/json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_lokalisetoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "loggly/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/loggly/loggly.go",
+      "scope_notes": "Loggly944/v0/span1024 engine hint. Prefixed lowercase-hex UUID keys pair with an independent bare loggly.com host grammar into key-major products; Raw is the key, RawV2 is domain:key and both are named parts. The literal https host apiv2/customer URL precedes the nil-context drop and Bearer construction. The client is DetectorHttpClientWithNoLocalAddresses as PUBLIC with its native guard, 2xx verifies, 401 is quiet, other statuses set the numeric cause, and whole send failures set the borrowed cause while redacting only the key. Successful responses release LIFO after setter/publication.",
+      "native_files": ["src/detectors/loggly.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_loggly.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "logzio/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/logzio/logzio.go",
+      "scope_notes": "LogzIO961/v0/default/no hints. Prefixed lowercase-hex UUID occurrences, key-only result and conditional key setter. Canonical X-Api-Token then Content-Type with charset follow the nil-context drop, and the SANE whoami GET verifies 2xx, keeps 401 quiet and reports other numeric status causes. Whole shared preparation/Do failures invoke the checked setter even with a NULL cause. Successful responses release LIFO after setter and publication, a failed send releases immediately once, and every owned nonzero is fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/logzio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_logzio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

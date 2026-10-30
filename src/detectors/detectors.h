@@ -515,5 +515,9 @@ int br_metaapi_init(const br_detector **out, char **error);
 int br_mesibo_init(const br_detector **out, char **error);
 int br_microsoftteamswebhook_v1_init(const br_detector **out, char **error);
 int br_microsoftteamswebhook_v2_init(const br_detector **out, char **error);
+int br_lob_init(const br_detector **out, char **error);
+int br_lokalisetoken_init(const br_detector **out, char **error);
+int br_loggly_init(const br_detector **out, char **error);
+int br_logzio_init(const br_detector **out, char **error);
 
 #endif

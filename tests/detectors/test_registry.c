@@ -519,6 +519,10 @@ static const registration expected[] = {
     {503, 0, "Mesibo", "mesibo", 64, true, -1},
     {114, 1, "MicrosoftTeamsWebhook", "webhook.office.com", 384, true, 1024},
     {114, 2, "MicrosoftTeamsWebhook", "environment.api.powerplatform.com", 270, true, -1},
+    {490, 0, "Lob", "live_", 40, true, -1},
+    {129, 0, "LokaliseToken", "lokalise", 40, true, -1},
+    {944, 0, "Loggly", "loggly", 36, true, 1024},
+    {961, 0, "LogzIO", "logz", 36, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -693,6 +697,44 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results results = test_scan(detector, &ctx, false, url, strlen(url));
         CHECK(results.len == 1 && results.items[0].raw.len == strlen(url));
         CHECK(results.items[0].extra_data && json_object_object_length(results.items[0].extra_data) == 1);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 490) {
+        char key[41], input[80];
+        memcpy(key, "live_", 5);
+        for (size_t i = 5; i < 40; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[40] = '\0';
+        snprintf(input, sizeof(input), "%s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].extra_data && json_object_object_length(results.items[0].extra_data) == 1);
+        br_json *value = NULL;
+        CHECK(json_object_object_get_ex(results.items[0].extra_data, "environment", &value) && !strcmp(json_object_get_string(value), "live"));
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 944) {
+        char key[37], input[140];
+        test_secret(key, 36, 0);
+        key[8] = key[13] = key[18] = key[23] = '-';
+        for (size_t i = 0; i < 36; ++i) if (i != 8 && i != 13 && i != 18 && i != 23 && key[i] > '9') key[i] = 'a';
+        snprintf(input, sizeof(input), "loggly %s\nbriar7.loggly.com", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw_v2.len == 54 && results.items[0].secret_parts && json_object_object_length(results.items[0].secret_parts) == 2);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 961) {
+        char key[37], input[80];
+        test_secret(key, 36, 0);
+        key[8] = key[13] = key[18] = key[23] = '-';
+        for (size_t i = 0; i < 36; ++i) if (i != 8 && i != 13 && i != 18 && i != 23 && key[i] > '9') key[i] = 'a';
+        snprintf(input, sizeof(input), "logz %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 36);
         br_results_clear(&results);
         return;
     }
@@ -2546,7 +2588,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 120 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || entry->type == 490 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
