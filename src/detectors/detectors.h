@@ -629,5 +629,9 @@ int br_posthog_init(const br_detector **out, char **error);
 int br_postmark_init(const br_detector **out, char **error);
 int br_powrbot_init(const br_detector **out, char **error);
 int br_prodpad_init(const br_detector **out, char **error);
+int br_paymongo_init(const br_detector **out, char **error);
+int br_paypaloauth_init(const br_detector **out, char **error);
+int br_paystack_init(const br_detector **out, char **error);
+int br_peopledatalabs_init(const br_detector **out, char **error);
 
 #endif

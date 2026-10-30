@@ -19412,6 +19412,42 @@
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_prodpad.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "paymongo/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/paymongo/paymongo.go",
+      "scope_notes": "Paymongo534/v0/default. Keyword paymongo. Prefixed 32-character capture. Nil context drops before Basic allocation. SANE POST https://api.paymongo.com/v1/payment_methods sends the static paymaya body, Content-Type application/json, then Basic authorization of the raw key and an empty password. Every 2xx verifies. No setter and no body read. Successful responses release last-success-first after publication. One release per attempt.",
+      "native_files": ["src/detectors/paymongo.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_paymongo.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "paypaloauth/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/paypaloauth/paypaloauth.go",
+      "scope_notes": "PaypalOauth31/v0/default. Keyword paypal. Neither pattern is prefixed. Every ID pairs with every key, including itself. Raw and the only secret part are the key. Basic authorization is built before the nil-context drop, and allocation failure is fatal. SANE POST https://api-m.sandbox.paypal.com/v1/oauth2/token sends grant_type=client_credentials with Accept, Accept-Language, Content-Type, then Authorization. Every 2xx verifies. No setter and no body read. The credential span is 1024 and is not a FromData filter. Successful responses release last-success-first after publication.",
+      "native_files": ["src/detectors/paypaloauth.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_paypaloauth.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "paystack/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/paystack/paystack.go",
+      "scope_notes": "Paystack77/v0/default. Keyword paystack. Unprefixed capture is sk_, one or more lowercase letters, an underscore, and 40 alphanumerics. Nil context drops before Authorization. SANE GET https://api.paystack.co/customer sends Bearer plus the raw key. Every 2xx verifies. No setter, no body read, and no live-key pattern. Successful responses release last-success-first after publication.",
+      "native_files": ["src/detectors/paystack.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_paystack.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "peopledatalabs/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/peopledatalabs/peopledatalabs.go",
+      "scope_notes": "PeopleDataLabs658/v0/default. Keyword peopledatalabs. Prefixed 64-character lowercase capture. Nil context drops before the header. SANE GET https://api.peopledatalabs.com/v5/person/enrich?min_likelihood=6&profile=https://linkedin.com/in/williamhgates sends canonical X-Api-Key. Every 2xx verifies. No setter and no body read. Successful responses release last-success-first after publication.",
+      "native_files": ["src/detectors/peopledatalabs.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_peopledatalabs.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     }
   },
   "components": {
