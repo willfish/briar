@@ -579,6 +579,12 @@ static const detector_factory named_factories[] = {
     br_route4me_init,
     br_polygon_init,
     br_sportsmonk_init,
+    br_yandex_init,
+    br_magnetic_init,
+    br_signupgenius_init,
+    br_veriphone_init,
+    br_splunkobservabilitytoken_init,
+    br_uptimerobot_init,
 };
 
 static int fail(char **error, const char *message)
@@ -739,6 +745,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 982: case 786: case 145: case 105: case 106:
         case 853: case 296: case 140: case 573: case 740: case 760: case 935: case 328: case 656: case 111: case 186: case 736: case 272: case 1021: case 1028: case 489: case 991: case 992: case 191: case 841: case 952: case 901: case 668: case 267: case 437: case 177: case 758: case 1000: case 176: case 438: case 735: case 165: case 10: case 774: case 700: case 682: case 669: case 657: case 820: case 753: case 246: case 157: case 995: case 623: case 207: case 896: case 543: case 966: case 121: case 698: case 909: case 261: case 688: case 748: case 216: case 268: case 691: case 531: case 950: case 297: case 737: case 503: case 490: case 129: case 944: case 961: case 50: case 1058: case 1064: case 1065: case 1066: case 1067: case 1068: case 655: case 396: case 797: case 835: case 986: case 273: case 213: case 847: case 481: case 336: case 468: case 104: case 544: case 266: case 635: case 337: case 716: case 134: case 504: case 357: case 622: case 262: case 494: case 535: case 1039: case 997: case 515: case 493: case 912: case 159: case 118: case 305: case 536: case 671: case 291: case 309: case 631: case 780: case 332: case 846: case 99: case 918: case 86:
     case 793: case 547: case 472: case 471: case 143: case 546: case 242: case 470:
+    case 279: case 240: case 593: case 550: case 128: case 782:
             return detector->version == 0;
         default: break;
         }
@@ -1291,6 +1298,12 @@ const char *br_detector_type_name(int32_t type)
     case 546: return "Route4me";
     case 242: return "Polygon";
     case 470: return "Sportsmonk";
+    case 279: return "Yandex";
+    case 240: return "Magnetic";
+    case 593: return "Signupgenius";
+    case 550: return "Veriphone";
+    case 128: return "SplunkOberservabilityToken";
+    case 782: return "UptimeRobot";
     case 329: return "Leadfeeder";
     case 450: return "LocationIQ";
     case 510: return "Loginradius";

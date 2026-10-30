@@ -583,6 +583,12 @@ static const registration expected[] = {
     {546, 0, "Route4me", "route4me", 32, true, -1},
     {242, 0, "Polygon", "polygon", 32, true, -1},
     {470, 0, "Sportsmonk", "sportsmonk", 60, true, -1},
+    {279, 0, "Yandex", "yandex", 83, true, -1},
+    {240, 0, "Magnetic", "magnetic", 36, true, -1},
+    {593, 0, "Signupgenius", "signupgenius", 32, true, -1},
+    {550, 0, "Veriphone", "veriphone", 32, true, -1},
+    {128, 0, "SplunkOberservabilityToken", "splunk", 22, true, -1},
+    {782, 0, "UptimeRobot", "uptimerobot", 34, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2087,6 +2093,19 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "AB12Z9"[i % 6];
     if (entry->type == 546)
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "AB12Z9"[i % 6];
+    if (entry->type == 240) {
+        memcpy(key, "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6", 36);
+        key[0] = 'A';
+    }
+    if (entry->type == 782) {
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "ab12Az"[i % 6];
+        key[9] = '-';
+    }
+    if (entry->type == 550)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "AB12Z9"[i % 6];
+    if (entry->type == 128 || entry->type == 279) {
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "ab12Az"[i % 6];
+    }
     if (entry->type == 86) {
         memcpy(key, "xkeysib-", 8);
         for (size_t i = 8; i < entry->key_len; ++i) key[i] = "ab12_A"[i % 6];

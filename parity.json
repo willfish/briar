@@ -5251,6 +5251,60 @@
       "evidence": ["tests/detectors/test_sportsmonk.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "yandex/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/yandex/yandex.go",
+      "scope_notes": "Yandex279/v0/default/no hints. Prefixed 83-byte digit/mixed-case/dot occurrences, key-only result and no setter. The complete literal request URL ending in the raw key precedes the nil-context drop; the GET adds no body and no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/yandex.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_yandex.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "magnetic/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/magnetic/magnetic.go",
+      "scope_notes": "Magnetic240/v0/default/no hints. Prefixed 8-4-4-4-12 hyphenated digit/capital-A/lowercase occurrences, key-only result and no setter. The complete literal request URL ending in the raw key precedes the nil-context drop; the GET adds no body and no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt. ORACLE ABSENCE: the pinned CLI emits no rows for magnetic even for its own upstream unit-test token under include-detectors=magnetic, so this identity carries focused native evidence plus a registry row and no CLI comparison.",
+      "native_files": ["src/detectors/magnetic.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_magnetic.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "signupgenius/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/signupgenius/signupgenius.go",
+      "scope_notes": "Signupgenius593/v0/default/no hints. Prefixed 32-byte mixed alphanumeric occurrences, key-only result and no setter. The complete literal request URL ending in the raw key precedes the nil-context drop; the GET adds no body and no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/signupgenius.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_signupgenius.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "veriphone/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/veriphone/veriphone.go",
+      "scope_notes": "Veriphone550/v0/default/no hints. Prefixed 32-byte UPPERCASE alphanumeric occurrences, key-only result and no setter. The complete literal request URL ending in the raw key precedes the nil-context drop; the GET adds no body and no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/veriphone.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_veriphone.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "splunkobservabilitytoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/splunkobservabilitytoken/splunkobservabilitytoken.go",
+      "scope_notes": "SplunkOberservabilityToken128/v0/default/no hints. Prefixed 22-byte mixed alphanumeric occurrences, key-only result and no setter. The fixed dashboard URL precedes the nil-context drop; the GET adds no body and no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/splunkobservabilitytoken.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_splunkobservabilitytoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "uptimerobot/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/uptimerobot/uptimerobot.go",
+      "scope_notes": "UptimeRobot782/v0/default/no hints. Prefixed 9 plus hyphen plus 24 mixed alphanumeric occurrences, key-only result and no setter. The complete literal request URL ending in the raw key precedes the nil-context drop; the POST adds no body and no explicit headers. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/uptimerobot.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_uptimerobot.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

@@ -579,5 +579,11 @@ int br_verimail_init(const br_detector **out, char **error);
 int br_route4me_init(const br_detector **out, char **error);
 int br_polygon_init(const br_detector **out, char **error);
 int br_sportsmonk_init(const br_detector **out, char **error);
+int br_yandex_init(const br_detector **out, char **error);
+int br_magnetic_init(const br_detector **out, char **error);
+int br_signupgenius_init(const br_detector **out, char **error);
+int br_veriphone_init(const br_detector **out, char **error);
+int br_splunkobservabilitytoken_init(const br_detector **out, char **error);
+int br_uptimerobot_init(const br_detector **out, char **error);
 
 #endif
