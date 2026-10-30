@@ -17,23 +17,35 @@ static int fail(char **error, const char *message)
     return -1;
 }
 
-static int set_error(br_result *result, const char *message, const char *email, char **error)
+static int own_cause(char **cause, const char *message, char **error)
 {
-    br_slice secret = {(const unsigned char *)email, strlen(email)};
-    if (br_result_set_verification_error(result, message, &secret, 1) != 0)
-        return fail(error, "cannot record ZipBooks verification error");
+    if (!cause) return 0;
+    *cause = strdup(message);
+    if (!*cause) return fail(error, "cannot record ZipBooks verification error");
     return 0;
 }
 
+/* Body is built before NewRequestWithContext and stays alive through the one
+ * release. A nil context is an ordinary constructor error, not a skipped setter. */
 static int verify_zipbooks(const br_scan_ctx *ctx, const char *email, const char *password,
-                           br_result *result, char **error)
+                           bool *verified, char **cause, char **error)
 {
-    if (!ctx) return set_error(result, "net/http: nil Context", email, error);
-    size_t need = strlen("{\"email\":\"\",\"password\":\"\"}") + strlen(email) + strlen(password) + 1;
+    *verified = false;
+    if (cause) *cause = NULL;
+    const char *fmt = "{\"email\": \"%s\", \"password\": \"%s\"}";
+    size_t need = strlen(fmt) - 4 + strlen(email) + strlen(password) + 1;
     char *body = malloc(need);
     if (!body) return fail(error, "cannot create ZipBooks body");
-    int n = snprintf(body, need, "{\"email\":\"%s\",\"password\":\"%s\"}", email, password);
-    if (n < 0 || (size_t)n >= need) { free(body); return fail(error, "cannot format ZipBooks body"); }
+    int n = snprintf(body, need, fmt, email, password);
+    if (n < 0 || (size_t)n >= need) {
+        free(body);
+        return fail(error, "cannot format ZipBooks body");
+    }
+    if (!ctx) {
+        int rc = own_cause(cause, "net/http: nil Context", error);
+        free(body);
+        return rc;
+    }
     const br_header headers[] = {{"Content-Type", "application/json"}};
     const br_http_request request = {
         .method = "POST", .url = "https://api.zipbooks.com/v2/auth/login",
@@ -43,18 +55,21 @@ static int verify_zipbooks(const br_scan_ctx *ctx, const char *email, const char
     br_http_response response = {0};
     char *send_error = NULL;
     int sent = br_http_send(ctx, &request, &response, &send_error);
-    free(body);
     int rc = 0;
-    if (sent != 0) rc = set_error(result, send_error, email, error);
-    else if (response.status == 200) result->verified = true;
+    if (sent != 0) {
+        if (cause) *cause = send_error;
+        else free(send_error);
+        send_error = NULL;
+    } else if (response.status == 200) *verified = true;
     else if (response.status != 401 && response.status != 404) {
         char message[64];
         int formatted = snprintf(message, sizeof(message), "unexpected status code: %d", response.status);
         if (formatted < 0 || (size_t)formatted >= sizeof(message))
             rc = fail(error, "cannot format ZipBooks status");
-        else rc = set_error(result, message, email, error);
+        else rc = own_cause(cause, message, error);
     }
     br_http_release(ctx, &response);
+    free(body);
     free(send_error);
     return rc;
 }
@@ -68,16 +83,29 @@ static int scan_zipbooks(const br_detector *detector, const br_scan_ctx *ctx, bo
     const br_regex *const *patterns = detector->state;
     size_t original_len = out->len;
     br_captures emails = {0}, passwords = {0};
+    /* Email is the unprefixed common pattern, unique after TrimSpace. Both
+     * classes exclude whitespace, so TrimSpace keeps the original capture. */
     int rc = br_captures_find(patterns[0], input, &emails, true, error);
     if (!rc) rc = br_captures_find(patterns[1], input, &passwords, false, error);
     for (size_t i = 0; rc == 0 && i < emails.len; ++i) {
         for (size_t j = 0; rc == 0 && j < passwords.len; ++j) {
             br_result result = {0};
-            /* Raw and the single part are the email, not the password. */
-            if (br_finding_key_bytes(&result, detector->type, br_captures_at(&emails, i), "email") != 0)
+            br_slice email = br_captures_at(&emails, i);
+            /* Raw is the email. The only secret part is literally "key". */
+            if (br_finding_key_bytes(&result, detector->type, email, "key") != 0)
                 rc = fail(error, "out of memory creating ZipBooks result");
-            else if (verify && verify_zipbooks(ctx, emails.items[i], passwords.items[j], &result, error) != 0)
-                rc = -1;
+            else if (verify) {
+                bool verified = false;
+                char *cause = NULL;
+                if (verify_zipbooks(ctx, emails.items[i], passwords.items[j], &verified, &cause, error) != 0)
+                    rc = -1;
+                else {
+                    result.verified = verified;
+                    if (br_result_set_verification_error(&result, cause, &email, 1) != 0)
+                        rc = fail(error, "cannot record ZipBooks verification error");
+                }
+                free(cause);
+            }
             if (rc == 0 && br_results_push(out, &result) != 0)
                 rc = fail(error, "cannot append ZipBooks result");
             br_result_clear(&result);
@@ -103,12 +131,11 @@ int br_zipbooks_init(const br_detector **out, char **error)
     if (error) *error = NULL;
     if (!out) return fail(error, "invalid ZipBooks detector output");
     *out = NULL;
-    if (!zipbooks_patterns[0] &&
-        br_regex_compile_prefixed(zipbooks_keywords, 1, br_email_pattern, &zipbooks_patterns[0], error) != 0)
+    if (!zipbooks_patterns[0] && br_regex_compile(br_email_pattern, &zipbooks_patterns[0], error) != 0)
         return -1;
     static const char *const password_keywords[] = {"zipbooks", "password"};
     if (!zipbooks_patterns[1] &&
-        br_regex_compile_prefixed(password_keywords, 2, "([a-zA-Z0-9!=@#$%^]{6,})",
+        br_regex_compile_prefixed(password_keywords, 2, "\\b([a-zA-Z0-9!=@#$%^]{8,})",
                                   &zipbooks_patterns[1], error) != 0)
         return -1;
     *out = &zipbooks_detector;
