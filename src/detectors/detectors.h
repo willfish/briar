@@ -615,5 +615,11 @@ int br_pagarme_init(const br_detector **out, char **error);
 int br_pagerdutyapikey_init(const br_detector **out, char **error);
 int br_pandadoc_init(const br_detector **out, char **error);
 int br_pandascore_init(const br_detector **out, char **error);
+int br_npmtoken_v1_init(const br_detector **out, char **error);
+int br_npmtoken_v2_init(const br_detector **out, char **error);
+int br_npmtokenv2_init(const br_detector **out, char **error);
+int br_okta_init(const br_detector **out, char **error);
+int br_omnisend_init(const br_detector **out, char **error);
+int br_onedesk_init(const br_detector **out, char **error);
 
 #endif

@@ -619,6 +619,11 @@ static const registration expected[] = {
     {32, 0, "PagerDutyApiKey", "pagerduty", 20, true, -1},
     {298, 0, "Pandadoc", "pandadoc", 40, true, -1},
     {731, 0, "PandaScore", "pandascore", 53, true, -1},
+    {49, 1, "NpmToken", "npm", 36, true, -1},
+    {49, 2, "NpmToken", "npm_", 40, true, -1},
+    {21, 0, "Okta", ".okta", 42, true, 1024},
+    {205, 0, "Omnisend", "omnisend", 75, true, -1},
+    {601, 0, "Onedesk", "onedesk", sizeof("briar7@offline.invalid") - 1, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2210,6 +2215,24 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 1052) memcpy(key, "da2-", 4);
     if (entry->type == 1047 || entry->type == 1046) strcpy(key, "MTIzNDU2Nzg5MDEyOmFiY2RlZmdoaWprbG1ub3BxcnN0");
     if (entry->type == 484) strcpy(key, "b7c9d2e5f6g-h3j4-k1m0-n2p4-q6r8s1t3u5v7");
+    if (entry->type == 49 && entry->version == 1) {
+        static const int groups[] = {8, 4, 4, 4, 12};
+        size_t at = 0;
+        for (size_t g = 0; g < 5; ++g) {
+            if (g) key[at++] = '-';
+            for (int i = 0; i < groups[g]; ++i) {
+                key[at] = "0123456789abcdef"[(at + i) % 16];
+                at++;
+            }
+        }
+        key[at] = '\0';
+    }
+    if (entry->type == 49 && entry->version == 2) memcpy(key, "npm_", 4);
+    if (entry->type == 21) {
+        memcpy(key, "00", 2);
+        test_secret(key + 2, 40, 0);
+    }
+    if (entry->type == 601) strcpy(key, "briar7@offline.invalid");
     if (entry->type == 588) {
         static const char header[] = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.";
         memcpy(key, header, sizeof(header) - 1);
@@ -2217,6 +2240,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     }
     const char *secondary = NULL, *secondary_name = NULL, *session = NULL;
     switch (entry->type) {
+    case 21:
+        secondary = "briar.okta.com";
+        secondary_name = "domain";
+        break;
     case 69:
         memcpy(key, "ya29.", 5);
         break;
@@ -2810,6 +2837,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else if (entry->type == 678) snprintf(input, sizeof(input), "freshdesk %s\nbriar86.freshdesk.com", key); /* Direct required host stays hidden. */
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);
     else if (entry->type == 712 || entry->type == 184) snprintf(input, sizeof(input), "%s %s\n", entry->keyword, key); /* Required consumed suffix, absent from Raw. */
+    else if (entry->type == 601) snprintf(input, sizeof(input), "%s\nonedesk b7c9d2e5", key);
     else snprintf(input, sizeof(input), "%s %s", entry->keyword, key);
 
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
@@ -2909,7 +2937,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
                            entry->type == 1032 || entry->type == 55 ? "client_secret" :
                            entry->type == 113 || entry->type == 375 || entry->type == 1014 || entry->type == 1015 ||
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
-                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 || entry->type == 62 || entry->type == 18 || entry->type == 1059 ? "token" : "key";
+                           entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 || entry->type == 62 || entry->type == 18 || entry->type == 1059 || entry->type == 21 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
     {
         const char *secret = key;
@@ -2943,7 +2971,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(json_object_object_get_ex(result->secret_parts, secondary_name, &part));
         CHECK(!strcmp(json_object_get_string(part), secondary));
         char raw_v2[sizeof(key) + sizeof(secondary_buffer) + sizeof(session_buffer) + 2];
-        if (entry->type == 5) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
+        if (entry->type == 5 || entry->type == 21) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", secondary, key);
         else if (entry->type == 386) snprintf(raw_v2, sizeof(raw_v2), "%s:%s", key, secondary);
         else if (entry->type == 1048) snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", secondary, key, cloudinary_secret);
         else if (entry->type == 648) snprintf(raw_v2, sizeof(raw_v2), "%s%sregion7q", key, secondary);
@@ -2959,6 +2987,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->raw_v2.len == strlen(raw_v2));
         CHECK(!memcmp(result->raw_v2.data, raw_v2, strlen(raw_v2)));
     } else CHECK(!result->raw_v2.data && !result->raw_v2.len);
+    if (entry->type == 49) {
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
+        CHECK(json_object_object_get_ex(result->extra_data, "rotation_guide", &part));
+        CHECK(!strcmp(json_object_get_string(part), "https://howtorotate.com/docs/tutorials/npm/"));
+    }
     br_results_clear(&results);
 }
 

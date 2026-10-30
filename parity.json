@@ -19295,6 +19295,51 @@
         "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
         "Full native HTTP/Reader and source-client lifecycle behavior"
       ]
+    },
+    "npmtoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/npmtoken/npmtoken.go",
+      "scope_notes": "NpmToken49/v1/default. Keyword npm. Prefixed capture is an 8-4-4-4-12 token whose first group is 0-9, A and a-f, with later groups lowercase hex only. Raw is the trimmed capture and the only secret part is key. ExtraData rotation_guide is set before verify, including NoV; metadata allocation failure is fatal. Nil context drops that candidate after metadata, with no send. GET https://registry.npmjs.org/-/whoami uses Authorization Bearer plus the raw key on SANE. Every 2xx verifies. No setter. Successful responses release LIFO at scanner return.",
+      "native_files": ["src/detectors/npmtoken.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_npmtoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "npmtokenv2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/npmtokenv2/npmtokenv2.go",
+      "scope_notes": "NpmToken49/v2/default. Keyword npm_. Unprefixed capture is npm_ plus 36 mixed alphanumerics, with no boundary and no trim. Description final word is NPM, distinct from v1. Raw, key part, rotation_guide, nil-context drop, whoami GET, Bearer header, 2xx verification, absent setter and scanner-return release match v1.",
+      "native_files": ["src/detectors/npmtoken.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_npmtoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "okta/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/okta/okta.go",
+      "scope_notes": "Okta21/v0/default/span 1024. Keyword .okta. Unique unprefixed token 00 plus 40 of the pinned class, and unique domain label.okta with optional preview or -emea before .com. Raw is the token; RawV2 is domain:token; parts are domain and token. Nil context retains net/http: nil Context after the URL is built. PUBLIC GET /api/v1/users/me sets Accept, Content-Type and Authorization SSWS. Status 200 verifies only when the body contains the activated marker, including a discarded read error; 401 is quiet false; other statuses use unexpected status code. The checked setter follows one release.",
+      "native_files": ["src/detectors/okta.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_okta.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "omnisend/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/omnisend/omnisend.go",
+      "scope_notes": "Omnisend205/v0/default. Keyword omnisend. Prefixed 75-character capture from the pinned class. Raw and key part only. Nil context drops before the header. SANE GET https://api.omnisend.com/v3/contacts?limit=100&offset=0 sends canonical X-Api-Key. Every 2xx verifies. No setter and no body inspection. Successful responses release LIFO at scanner return.",
+      "native_files": ["src/detectors/omnisend.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_omnisend.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "onedesk/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/onedesk/onedesk.go",
+      "scope_notes": "Onedesk601/v0/default/span 1024. Keyword onedesk. Unique emails and source-order passwords. Password grammar is prefixed, has no trailing boundary, and uses the pinned 8-64 class. Raw and the only secret part are the email; the password stays hidden. The literal JSON login body is built before a nil-context drop. SANE POST https://app.onedesk.com/rest/2.0/login/loginUser sends Content-Type application/json. A read error drops the pair. 2xx verifies only when the body contains the SUCCESS code. No setter. One release per attempt.",
+      "native_files": ["src/detectors/onedesk.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_onedesk.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     }
   },
   "components": {
