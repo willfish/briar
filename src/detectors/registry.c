@@ -558,6 +558,7 @@ static const detector_factory named_factories[] = {
     br_pdflayer_init,
     br_percy_init,
     br_pipedrive_init,
+    br_postman_init,
 };
 
 static int fail(char **error, const char *message)
@@ -716,7 +717,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 578: case 602: case 603: case 604: case 619: case 621: case 110: case 112: case 55: case 56: case 57: case 59: case 60: case 62: case 64: case 65: case 66: case 68: case 69: case 323: case 324: case 325: case 554: case 555: case 564: case 511: case 512: case 513: case 733: case 739: case 749: case 2: case 1052: case 959: case 960: case 962: case 963: case 980: case 988: case 990: case 993: case 947: case 953: case 954: case 957: case 971: case 1013: case 1007: case 1009: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975: case 1020: case 260: case 1036: case 1030: case 395: case 164: case 153: case 408: case 572: case 361: case 764: case 877: case 556: case 355: case 926: case 508: case 72: case 773: case 459: case 487: case 813: case 557: case 250: case 349: case 509: case 906: case 271: case 856: case 941: case 156: case 858: case 987: case 579: case 689: case 940: case 362: case 356: case 530:
         case 478: case 133: case 287: case 131: case 295: case 686: case 329: case 450: case 510: case 715: case 228:
         case 982: case 786: case 145: case 105: case 106:
-        case 853: case 296: case 140: case 573: case 740: case 760: case 935: case 328: case 656: case 111: case 186: case 736: case 272: case 1021: case 1028: case 489: case 991: case 992: case 191: case 841: case 952: case 901: case 668: case 267: case 437: case 177: case 758: case 1000: case 176: case 438: case 735: case 165: case 10: case 774: case 700: case 682: case 669: case 657: case 820: case 753: case 246: case 157: case 995: case 623: case 207: case 896: case 543: case 966: case 121: case 698: case 909: case 261: case 688: case 748: case 216: case 268: case 691: case 531: case 950: case 297: case 737: case 503: case 490: case 129: case 944: case 961: case 50: case 1058: case 1064: case 1065: case 1066: case 1067: case 1068: case 655: case 396: case 797: case 835: case 986: case 273: case 213: case 847: case 481: case 336: case 468: case 104: case 544: case 266: case 635: case 337: case 716: case 134: case 504: case 357: case 622: case 262: case 494: case 535: case 1039: case 997: case 515: case 493: case 912: case 159:
+        case 853: case 296: case 140: case 573: case 740: case 760: case 935: case 328: case 656: case 111: case 186: case 736: case 272: case 1021: case 1028: case 489: case 991: case 992: case 191: case 841: case 952: case 901: case 668: case 267: case 437: case 177: case 758: case 1000: case 176: case 438: case 735: case 165: case 10: case 774: case 700: case 682: case 669: case 657: case 820: case 753: case 246: case 157: case 995: case 623: case 207: case 896: case 543: case 966: case 121: case 698: case 909: case 261: case 688: case 748: case 216: case 268: case 691: case 531: case 950: case 297: case 737: case 503: case 490: case 129: case 944: case 961: case 50: case 1058: case 1064: case 1065: case 1066: case 1067: case 1068: case 655: case 396: case 797: case 835: case 986: case 273: case 213: case 847: case 481: case 336: case 468: case 104: case 544: case 266: case 635: case 337: case 716: case 134: case 504: case 357: case 622: case 262: case 494: case 535: case 1039: case 997: case 515: case 493: case 912: case 159: case 118:
             return detector->version == 0;
         default: break;
         }
@@ -1248,6 +1249,7 @@ const char *br_detector_type_name(int32_t type)
     case 493: return "PdfLayer";
     case 912: return "Percy";
     case 159: return "Pipedrive";
+    case 118: return "Postman";
     case 329: return "Leadfeeder";
     case 450: return "LocationIQ";
     case 510: return "Loginradius";

@@ -5035,6 +5035,15 @@
       "evidence": ["tests/detectors/test_pipedrive.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "postman/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/postman/postman.go",
+      "scope_notes": "Postman118/v0/default/no hints. The PMAK- plus 59 mixed alphanumeric-hyphen grammar is UNPREFIXED: the keyword is a dispatch hint only. Raw and the key part hold the 64-byte token. A nil context reports the missing-context cause without a send; otherwise the collections GET carries the raw token as x-api-key. 200 verifies, 401 stays unverified and other statuses format the numeric unexpected-status cause; whole send failures keep their borrowed diagnostic. The checked token-secret setter always runs after one release.",
+      "native_files": ["src/detectors/postman.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_postman.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

@@ -562,6 +562,7 @@ static const registration expected[] = {
     {493, 0, "PdfLayer", "pdflayer", 32, true, -1},
     {912, 0, "Percy", "percy", 64, true, -1},
     {159, 0, "Pipedrive", "pipedrive", 40, true, -1},
+    {118, 0, "Postman", "PMAK-", 64, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -1053,6 +1054,18 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 64 && !memcmp(results.items[0].raw.data, key, 64));
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 118) {
+        char key[65], input[90];
+        memcpy(key, "PMAK-", 5);
+        for (size_t i = 5; i < 64; ++i) key[i] = "ab12-AB"[i % 7];
+        key[64] = '\0';
+        snprintf(input, sizeof(input), "%s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 64);
         br_results_clear(&results);
         return;
     }
