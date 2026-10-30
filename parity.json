@@ -5377,6 +5377,15 @@
       "evidence": ["tests/detectors/test_pepipost.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "nylas/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nylas/nylas.go",
+      "scope_notes": "Nylas617/v0/default/no hints. Prefixed 30-byte alphanumeric occurrences in order WITH duplicates, key-only result and no setter on any path. The bodyless account GET is constructed before the ordered Accept (application/vnd.nylas+json; version=3) and Bearer authorization headers. A nil context is the constructor's only ordinary error and DROPS that occurrence; whole preparation/Do failures stay unverified with the consumed cause independent of diagnostics. 2xx verifies, bodies and read errors are ignored, and one release follows each attempt. Landed from the Sol2 lane freeze 4620b625/f6c41655 after the parent read the complete pair and re-ran 2194 assertions locally.",
+      "native_files": ["src/detectors/nylas.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_nylas.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

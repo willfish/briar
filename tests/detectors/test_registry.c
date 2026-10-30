@@ -597,6 +597,7 @@ static const registration expected[] = {
     {576, 0, "PureStake", "purestake", 40, true, -1},
     {787, 0, "Stormboard", "stormboard", 40, true, -1},
     {117, 0, "Pepipost", "pepipost", 32, true, -1},
+    {617, 0, "Nylas", "nylas", 30, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */

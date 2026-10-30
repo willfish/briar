@@ -593,5 +593,6 @@ int br_workstack_init(const br_detector **out, char **error);
 int br_purestake_init(const br_detector **out, char **error);
 int br_stormboard_init(const br_detector **out, char **error);
 int br_pepipost_init(const br_detector **out, char **error);
+int br_nylas_init(const br_detector **out, char **error);
 
 #endif
