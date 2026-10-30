@@ -19140,6 +19140,161 @@
         "Missing version triplet uses explicit unsupported scan error and invocation-only rollback rather than upstream panic recovery",
         "Complete process/URL diagnostics, concurrent configuration/cache lifecycle and shared source-engine/regexp behavior"
       ]
+    },
+    "nugetapikey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nugetapikey/nugetapikey.go",
+      "scope_notes": "NuGetApiKey916/v0/default/no hints. Prefixed 46-byte digit/lowercase occurrences, key-only result and no setter. The fixed PUT https://www.nuget.org/api/v2/package URL and Content-Length: 0 plus canonical X-Nuget-Apikey precede the nil-context drop. Exactly status 400 verifies; every other status stays unverified. Body and read errors are ignored. Each successful response is retained and released once after publication.",
+      "native_files": [
+        "src/detectors/nugetapikey.c",
+        "src/detectors/captures.c",
+        "src/detectors/findings.c",
+        "src/http.c",
+        "src/detectors/registry.c"
+      ],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "partial",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": [
+        "tests/detectors/test_nugetapikey.c",
+        "tests/detectors/test_registry.c",
+        "tests/cli_reference.py",
+        "docs/ACCEPTANCE.md"
+      ],
+      "remaining": [
+        "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
+        "Full native HTTP/Reader and source-client lifecycle behavior"
+      ]
+    },
+    "pagarme/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/pagarme/pagarme.go",
+      "scope_notes": "Pagarme985/v0/default/no hints. UNPREFIXED literal ak_live_ plus 30 mixed alphanumerics (ak_live_ is only the dispatch keyword), unique first-seen keys, key-only result and a mandatory setter. The JSON body is allocated before the nil-context setter. GET https://api.pagar.me/1/balance carries Content-Type: application/json and that body. Every 2xx verifies, exact 401 is determinate false, and every other status sets unexpected HTTP response status. The response closes before the setter; a reached NULL cause still calls it.",
+      "native_files": [
+        "src/detectors/pagarme.c",
+        "src/detectors/captures.c",
+        "src/detectors/findings.c",
+        "src/http.c",
+        "src/detectors/registry.c"
+      ],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "partial",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": [
+        "tests/detectors/test_pagarme.c",
+        "tests/detectors/test_registry.c",
+        "tests/cli_reference.py",
+        "docs/ACCEPTANCE.md"
+      ],
+      "remaining": [
+        "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
+        "Full native HTTP/Reader and source-client lifecycle behavior"
+      ]
+    },
+    "pagerdutyapikey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/pagerdutyapikey/pagerdutyapikey.go",
+      "scope_notes": "PagerDutyApiKey32/v0/default/no hints. Four-keyword prefixed literal u+ plus 18 members of the pinned class, key-only result and a mandatory setter. Nil context sets net/http: nil Context without sending. GET https://api.pagerduty.com/users carries Accept: application/vnd.pagerduty+json;version=2, Content-Type: application/json, then Authorization: Token plus the raw key. Statuses 200, 403 and 402 verify; 401, 400 and 404 are determinate false; 429 sets PagerDuty rate limit reached; every other status sets unexpected HTTP response status. One release precedes the setter, including a reached NULL cause.",
+      "native_files": [
+        "src/detectors/pagerdutyapikey.c",
+        "src/detectors/captures.c",
+        "src/detectors/findings.c",
+        "src/http.c",
+        "src/detectors/registry.c"
+      ],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "partial",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": [
+        "tests/detectors/test_pagerdutyapikey.c",
+        "tests/detectors/test_registry.c",
+        "tests/cli_reference.py",
+        "docs/ACCEPTANCE.md"
+      ],
+      "remaining": [
+        "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
+        "Full native HTTP/Reader and source-client lifecycle behavior"
+      ]
+    },
+    "pandadoc/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/pandadoc/pandadoc.go",
+      "scope_notes": "Pandadoc298/v0/default/no hints. Prefixed 40-byte mixed alphanumeric occurrences, key-only result and no setter. The fixed GET https://api.pandadoc.com/public/v1/documents URL precedes the nil-context drop. Authorization is API-Key plus the raw key, not Bearer. Every 2xx verifies, other statuses and transport failures stay unverified, and successful responses release once after publication.",
+      "native_files": [
+        "src/detectors/pandadoc.c",
+        "src/detectors/captures.c",
+        "src/detectors/findings.c",
+        "src/http.c",
+        "src/detectors/registry.c"
+      ],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "partial",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": [
+        "tests/detectors/test_pandadoc.c",
+        "tests/detectors/test_registry.c",
+        "tests/cli_reference.py",
+        "docs/ACCEPTANCE.md"
+      ],
+      "remaining": [
+        "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
+        "Full native HTTP/Reader and source-client lifecycle behavior"
+      ]
+    },
+    "pandascore/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/pandascore/pandascore.go",
+      "scope_notes": "PandaScore731/v0/default/no hints. Prefixed source capture with optional leading space or carriage return, 51 members of the pinned class, and a mandatory trailing space or carriage return; the published key is trimmed and there is no setter. Nil context drops before Authorization allocation. GET https://api.pandascore.co/videogames carries Accept: application/json then Authorization: Bearer plus the trimmed key. Every 2xx verifies and every reached non-2xx is explicitly unverified. Successful responses release once after publication.",
+      "native_files": [
+        "src/detectors/pandascore.c",
+        "src/detectors/captures.c",
+        "src/detectors/findings.c",
+        "src/http.c",
+        "src/detectors/registry.c"
+      ],
+      "aspects": {
+        "extraction": "partial",
+        "filtering": "partial",
+        "verification": "partial",
+        "result_metadata": "verified",
+        "versioning": "verified",
+        "registry_behavior": "verified",
+        "acceptance_evidence": "partial"
+      },
+      "evidence": [
+        "tests/detectors/test_pandascore.c",
+        "tests/detectors/test_registry.c",
+        "tests/cli_reference.py",
+        "docs/ACCEPTANCE.md"
+      ],
+      "remaining": [
+        "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior",
+        "Full native HTTP/Reader and source-client lifecycle behavior"
+      ]
     }
   },
   "components": {

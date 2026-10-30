@@ -614,6 +614,11 @@ static const registration expected[] = {
     {778, 0, "TimeCamp", "timecamp", 26, true, -1},
     {124, 0, "PushBulletApiKey", "pushbullet", 34, true, -1},
     {445, 0, "TatumIO", "tatum", 36, true, -1},
+    {916, 0, "NuGetApiKey", "nuget", 46, true, -1},
+    {985, 0, "Pagarme", "ak_live_", 38, true, -1},
+    {32, 0, "PagerDutyApiKey", "pagerduty", 20, true, -1},
+    {298, 0, "Pandadoc", "pandadoc", 40, true, -1},
+    {731, 0, "PandaScore", "pandascore", 53, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2149,6 +2154,21 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         memcpy(key, "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6", 36);
         key[0] = 'A';
     }
+    if (entry->type == 916)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[i % 36];
+    if (entry->type == 985) {
+        memcpy(key, "ak_live_", 8);
+        for (size_t i = 8; i < entry->key_len; ++i) key[i] = "ab12Az"[i % 6];
+    }
+    if (entry->type == 32) {
+        memcpy(key, "u+", 2);
+        for (size_t i = 2; i < entry->key_len; ++i) key[i] = "ab12Az"[i % 6];
+    }
+    if (entry->type == 731) {
+        key[0] = ' ';
+        for (size_t i = 1; i < entry->key_len; ++i) key[i] = "ab12Az"[i % 6];
+        key[entry->key_len - 1] = '\n';
+    }
     if (entry->type == 782) {
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "ab12Az"[i % 6];
         key[9] = '-';
@@ -2796,7 +2816,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     CHECK(results.len == (entry->type == 416 || entry->type == 454 ? 4u : entry->type == 42 || entry->type == 56 || entry->type == 386 || entry->type == 180 || entry->type == 282 || entry->type == 993 || entry->type == 191 ? 2u : 1u));
     const br_result *result = &results.items[0];
     CHECK(result->detector_type == entry->type);
-    CHECK(result->raw.len == entry->key_len && !memcmp(result->raw.data, key, entry->key_len));
+    {
+        const char *raw = key;
+        size_t raw_len = entry->key_len;
+        if (entry->type == 731) { raw += 1; raw_len -= 2; }
+        CHECK(result->raw.len == raw_len && !memcmp(result->raw.data, raw, raw_len));
+    }
     CHECK(!result->verified && !result->verification_error);
     if (entry->type == 456) {
         CHECK(!result->primary_secret.data && !result->primary_secret.len);
@@ -2886,7 +2911,12 @@ static void check_dispatch(const br_detector *detector, const registration *entr
                            entry->type == 181 || entry->type == 1042 || entry->type == 110 ||
                            entry->type == 1047 || entry->type == 1046 || entry->type == 1053 || entry->type == 524 || entry->type == 62 || entry->type == 18 || entry->type == 1059 ? "token" : "key";
     CHECK(json_object_object_get_ex(result->secret_parts, key_name, &part));
-    CHECK(!strcmp(json_object_get_string(part), key));
+    {
+        const char *secret = key;
+        size_t secret_len = strlen(key);
+        if (entry->type == 731) { secret += 1; secret_len -= 2; }
+        CHECK((size_t)json_object_get_string_len(part) == secret_len && !memcmp(json_object_get_string(part), secret, secret_len));
+    }
     CHECK(json_object_object_length(result->secret_parts) == (session || entry->type == 1025 || entry->type == 648 || entry->type == 739 || entry->type == 1048 ? 3 : secondary ? 2 : 1));
     if (entry->type == 1048) {
         CHECK(json_object_object_get_ex(result->secret_parts, "api_secret", &part));
@@ -3031,7 +3061,7 @@ int main(void)
         CHECK(!strcmp(br_detector_type_name(detector->type), entry->name));
         CHECK(detector->description && detector->description[0]);
         CHECK(detector->custom_name && !detector->custom_name[0]);
-        CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
+        CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) || entry->type == 32 ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 120 || entry->type == 1039 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
               entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || entry->type == 490 || entry->type == 631 || entry->type == 117 || entry->type == 1039 || entry->type == 716 || (entry->type == 96 && entry->version == 1) || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));

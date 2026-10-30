@@ -610,5 +610,10 @@ int br_skrappio_init(const br_detector **out, char **error);
 int br_timecamp_init(const br_detector **out, char **error);
 int br_pushbulletapikey_init(const br_detector **out, char **error);
 int br_tatumio_init(const br_detector **out, char **error);
+int br_nugetapikey_init(const br_detector **out, char **error);
+int br_pagarme_init(const br_detector **out, char **error);
+int br_pagerdutyapikey_init(const br_detector **out, char **error);
+int br_pandadoc_init(const br_detector **out, char **error);
+int br_pandascore_init(const br_detector **out, char **error);
 
 #endif
