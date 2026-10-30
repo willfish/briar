@@ -544,6 +544,9 @@ static const registration expected[] = {
     {104, 0, "MapBox", "mapbox", 84, true, 1024},
     {96, 1, "MaxMindLicense", "maxmind", 16, true, 1024},
     {96, 2, "MaxMindLicense", "_mmk", 40, true, -1},
+    {544, 0, "Nicereply", "nicereply", 40, true, -1},
+    {266, 0, "Nimble", "nimble", 30, true, -1},
+    {635, 0, "Oanda", "oanda", 24, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -953,6 +956,17 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 40 && results.items[0].extra_data);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 544) {
+        char key[41], input[70];
+        for (size_t i = 0; i < 40; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[40] = '\0';
+        snprintf(input, sizeof(input), "nicereply %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 40);
         br_results_clear(&results);
         return;
     }

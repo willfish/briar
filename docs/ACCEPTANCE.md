@@ -39,7 +39,7 @@ Core tests cover result ownership, matching and decoder behavior. CLI checks cov
 
 `tools/latency.py` runs both CLIs over the same immutable fixture corpus with the same detector selection and verification disabled, one warmup plus repeated measured runs, and reports startup-inclusive wall time, peak RSS and the finding count from each side so a timing run cannot compare different work. It refuses to present a sampled corpus as final and writes a labelled JSON record. Smoke validation on 12 and 60 committed fixtures produced identical finding counts with reference/native medians of 982.9/20.4 ms and 1036.8/42.0 ms; these are harness checks, not the final full-scope latency result, which stays pending until every identity is ported.
 
-The current ledger has 533 partial identities across 505 named provider modules and 1,988 incremental reference fixtures. These are accumulated selected comparisons, not a fresh full-oracle run or full parity.
+The current ledger has 536 partial identities across 508 named provider modules and 1,994 incremental reference fixtures. These are accumulated selected comparisons, not a fresh full-oracle run or full parity.
 
 Pinned-reference comparisons check complete JSON rows for selected cases, not the entire upstream engine. Filesystem fixtures check original bytes immediately after each scanner. Named duplicate fixtures permit only observed decoder-label alternatives at otherwise identical identities and fields; native decoder ordering is deterministic. Full concurrency parity is not established.
 

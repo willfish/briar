@@ -4873,6 +4873,33 @@
       "evidence": ["tests/detectors/test_maxmindlicense.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "nicereply/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nicereply/nicereply.go",
+      "scope_notes": "Nicereply544/v0/default/no hints. Prefixed 40-byte lowercase-hex occurrences keep duplicates. Basic authentication over an empty username and the raw key is encoded BEFORE the nil-context drop, so an encoder failure is fatal even when nil would skip; a successful encode with a nil context drops the candidate. Reached sends stay unverified for every cause without publishing transport text, successful-send 2xx verifies regardless of read errors, and each attempt releases once before the authorization value dies.",
+      "native_files": ["src/detectors/nicereply.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_nicereply.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Server lifecycle behavior"]
+    },
+    "nimble/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nimble/nimble.go",
+      "scope_notes": "Nimble266/v0/default/no hints. Prefixed 30-byte mixed-alphanumeric occurrences, key-only result and no setter. Finding construction precedes the nil-context constructor drop; Bearer authorization and the myself GET follow it. Reached sends stay unverified without published transport text, successful-send 2xx verifies regardless of body or read error, one release follows each attempt, and owned failures are fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/nimble.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_nimble.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Server lifecycle behavior"]
+    },
+    "oanda/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/oanda/oanda.go",
+      "scope_notes": "Oanda635/v0/default/no hints. Prefixed 24-byte mixed-alphanumeric keys keep duplicates; the finding precedes the nil-context constructor drop, after which Bearer authorization and the currencies GET are allocated. Whole shared preparation/Do failures are suppressed without a setter, successful-send 2xx verifies while bodies and read errors are ignored, successful responses release LIFO after publication and failed attempts release immediately once with original request storage alive.",
+      "native_files": ["src/detectors/oanda.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_oanda.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Server lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

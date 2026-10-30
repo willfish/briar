@@ -540,5 +540,8 @@ int br_mavenlink_init(const br_detector **out, char **error);
 int br_mapbox_init(const br_detector **out, char **error);
 int br_maxmindlicense_v1_init(const br_detector **out, char **error);
 int br_maxmindlicense_v2_init(const br_detector **out, char **error);
+int br_nicereply_init(const br_detector **out, char **error);
+int br_nimble_init(const br_detector **out, char **error);
+int br_oanda_init(const br_detector **out, char **error);
 
 #endif
