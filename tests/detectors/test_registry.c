@@ -484,6 +484,15 @@ static const registration expected[] = {
     {735, 0, "Livestorm", "livestorm", 243, true, -1},
     {165, 0, "LiveAgent", "liveagent", 32, true, 1024},
     {10, 0, "JDBC", "jdbc", 28, true, 1024},
+    {774, 0, "Miro", "miro", 27, true, -1},
+    {700, 0, "Mixmax", "mixmax", 36, true, -1},
+    {371, 0, "Mixpanel", "mixpanel", 32, false, 1024},
+    {682, 0, "Mite", "mite", 16, true, 1024},
+    {669, 0, "Moderation", "moderation", 196, true, -1},
+    {657, 0, "Mindmeister", "mindmeister", 43, true, -1},
+    {820, 0, "MonkeyLearn", "monkeylearn", 40, true, -1},
+    {753, 0, "Mockaroo", "mockaroo", 8, true, -1},
+    {246, 0, "Monday", "monday", 178, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -1792,6 +1801,25 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789abcdef"[i % 16];
         secondary = "briar7@fixture.invalid"; /* Required email is hidden from results. */
         break;
+    case 669:
+        /* Exactly 36.115.43 lowercase-alnum segments, separated by literal dots. */
+        test_secret(key, 196, 0);
+        key[36] = '.';
+        key[152] = '.';
+        break;
+    case 820:
+        for (size_t i = 0; i < 40; ++i) key[i] = "0123456789abcdef"[i % 16];
+        break;
+    case 246:
+        /* JWT-shaped head/middle/signature with the required literal prefixes. */
+        memcpy(key, "eyJ", 3);
+        test_secret(key + 3, 20, 3);
+        key[23] = '.';
+        memcpy(key + 24, "eyJ", 3);
+        test_secret(key + 27, 120, 5);
+        key[147] = '.';
+        test_secret(key + 148, 30, 9);
+        break;
     case 5:
         /* Public scalar ONE, short SEC1 scalar and no supplied public point. */
         strcpy(key, "-----BEGIN EC PRIVATE KEY-----\nMBICAQEEAQGgCgYIKoZIzj0DAQc=\n-----END EC PRIVATE KEY-----");
@@ -2063,6 +2091,7 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     else if (entry->type == 808) snprintf(input, sizeof(input), "fibery %s\nhttps://Briar79.fibery.io/", key);
     else if (entry->type == 839) snprintf(input, sizeof(input), "formsite %s\nformsite fs1\nformsite AbC123", key); /* Both required fields stay hidden. */
     else if (entry->type == 681) snprintf(input, sizeof(input), "freshbooks %s\nfreshbooks https://www.Briar85.com", key); /* Required URI stays hidden. */
+    else if (entry->type == 682) snprintf(input, sizeof(input), "mite %s\nbriar-mite.mite.yo.lk", key);
     else if (entry->type == 678) snprintf(input, sizeof(input), "freshdesk %s\nbriar86.freshdesk.com", key); /* Direct required host stays hidden. */
     else if (entry->type == 390) snprintf(input, sizeof(input), "%s", key);
     else if (entry->type == 712 || entry->type == 184) snprintf(input, sizeof(input), "%s %s\n", entry->keyword, key); /* Required consumed suffix, absent from Raw. */

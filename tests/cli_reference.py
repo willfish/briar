@@ -1682,6 +1682,14 @@ def fixtures():
         ("liveagent_missing_domain", 165, b"liveagent " + liveagent_key),
         ("jdbc_example", 10, b"jdbc:sqlite:/data/example.db"),
         ("jdbc_postgres", 10, b"jdbc:postgresql://BriarU:BriarP@192.0.2.7:5432/BriarDb"),
+        ("miro", 774, b"miro " + alnum("miro-key", 27)),
+        ("mixmax", 700, b"mixmax " + alnum("mixmax-key", 36)),
+        ("mindmeister", 657, b"mindmeister " + alnum("mindmeister-key", 43)),
+        ("moderation", 669, b"moderation " + alnum("moderation-head", 36) + b"." + alnum("moderation-middle", 115) + b"." + alnum("moderation-tail", 43)),
+        ("monkeylearn", 820, b"monkeylearn " + synthetic("monkeylearn-key", 40)),
+        ("mockaroo", 753, b"mockaroo " + synthetic("mockaroo-key", 8)),
+        ("mite", 682, b"mite " + synthetic("mite-key", 16) + b"\nbriar-mite.mite.yo.lk"),
+        ("monday", 246, b"monday " + b"eyJ" + alnum("monday-head", 20) + b".eyJ" + alnum("monday-middle", 120) + b"." + alnum("monday-signature", 30)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2098,6 +2106,9 @@ def compare(native, reference, case):
             raise AssertionError(name + ": LiveAgent still requires independent key and domain captures without verification")
     if name.startswith("jdbc_") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": JDBC custom false-positive policy retains example paths and parsed connection metadata without verification")
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_")):
+        if len(actual) != 1 or len(expected) != 1:
+            raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
         raise AssertionError(name + ": Gengo must retain all four directed occurrence products")
     if name.startswith("gengo_no_suffix_") and (actual or expected):

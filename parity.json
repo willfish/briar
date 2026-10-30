@@ -4333,6 +4333,87 @@
       "evidence": ["tests/detectors/test_jdbc.c", "tests/detectors/test_jdbc_private.c", "tests/detectors/test_jdbc_mysql_dsn.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete standard-Go regexp/arbitrary-byte and shared decoder/engine/output behavior", "Native SQL drivers, configurable ignore patterns, complete driver/parser/error-chain/runtime behavior and context lifecycle", "Reached final Redacted/SQL diagnostic NUL values are explicit ABI1 unsupported boundaries; named MySQL timezone and removed strict-mode panic boundaries remain unsupported"]
     },
+    "miro/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/miro/miro.go",
+      "scope_notes": "Miro774/v0/default/no hints. Prefixed 27-byte mixed-alphanumeric occurrences, key-only result, no setter. Fixed user URL with literal Accept then Bearer after the nil-context constructor drop. SANE/common UA. Whole mixed preparation/Do failures stay unverified with no diagnostic classification; successful 2xx verifies ignoring body/read errors. Successful closes are scan-deferred LIFO after publication with original authorization/key storage alive; failed attempts release immediately once. Owned allocation/finding/push nonzero fatal before ordinary outcomes with invocation-only caller rollback.",
+      "native_files": ["src/detectors/miro.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_miro.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client sharing/lifetime behavior"]
+    },
+    "mixmax/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mixmax/mixmax.go",
+      "scope_notes": "Mixmax700/v0/default/no hints. Prefixed 36-byte mixed-alphanumeric-underscore-hyphen occurrences, key-only result, no setter. Canonical X-Api-Token after the nil-context drop; the provider wraps its SANE client in a request-coalescing transport, so this module keeps its own native owned-client identity with the complete 700-prefixed 40-byte key namespace and buffered replay instead of aliasing another client. Whole shared preparation/Do domain including buffering failures is suppressed without text classification. Successful 2xx verifies ignoring bodies/read errors; successful responses release LIFO after publication with provider storage alive, failed attempts release immediately once, and all owned nonzero including +1 are fatal with invocation-only caller rollback.",
+      "native_files": ["src/detectors/mixmax.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/http_native.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mixmax.c", "tests/core/test_http_native.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Go package-global client sharing, complete redirect/Reader/cancellation lifecycle and native-equivalence for coalesced replay"]
+    },
+    "mixpanel/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mixpanel/mixpanel.go",
+      "scope_notes": "Mixpanel371/v0/span1024 engine hint, source-DISABLED in defaults so numeric and named selectors cannot enable it. Independent prefixed 32-byte key and 30-40-byte ID occurrence lists form key-major overlapping/self products; the ID is hidden and participates only in Basic authentication and NoV cardinality. Fixed user URL, real Basic(ID,key) after the nil-context constructor drop, SANE5/common UA. Whole shared preparation/Do domain suppressed with no setter; successful 2xx verifies ignoring bodies/read errors. Successful closes are scan-wide LIFO after publication with original Basic/ID/key storage alive; reached module-owned Basic failures stay fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/mixpanel.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mixpanel.c", "tests/detectors/test_registry.c", "tests/core/e2e.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Disabled upstream constructor has no CLI oracle execution; direct native behavior is covered by source-derived fixtures", "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "mite/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mite/mite.go",
+      "scope_notes": "Mite682/v0/span1024 engine hint. Prefixed 16-byte lowercase-alphanumeric keys and an unprefixed bare URL pattern form unlimited key-major products; the URL stays hidden. The complete https target is built before the nil-context constructor drop, then projected with the pinned Go URL rules: raw encoded path and fragment exceptions, decoded fallback, empty-port removal and implicit Basic only when userinfo is present. DetectorHttpClientWithNoLocalAddresses maps to PUBLIC with the ten-second default, no redirects and the retained native pre-I/O guard. Whole mixed preparation/Do errors are suppressed with no setter; successful 2xx verifies ignoring bodies/read errors. Successful closes are scan-wide LIFO after publication with all original, parsed, decoded and rendered values alive; owned nonzero fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/mite.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/go_url.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mite.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Complete Go URL projection for forms outside the fixed-https target", "Full native PUBLIC HTTP remains guarded before I/O; complete Reader/lifecycle behavior"]
+    },
+    "moderation/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/moderation/moderation.go",
+      "scope_notes": "Moderation669/v0/default/no hints. Exact 196-byte three-segment alphanumeric grammar, key-only result, no setter. The exact 36-byte JSON body exists before the nil-context constructor drop; Bearer then Content-Type follow it. SANE with a five-second request-local timeout instead of mutating a shared client; no dedup. Whole mixed preparation/Do domain suppressed with no text classification; successful 2xx verifies ignoring bodies/read errors, including non-2xx responses retained until release. Successful closes are scan-wide LIFO after publication with original body/authorization/key storage alive; failed attempts release immediately once and all owned nonzero fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/moderation.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_moderation.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-global client-timeout mutation behavior"]
+    },
+    "mindmeister/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mindmeister/mindmeister.go",
+      "scope_notes": "Mindmeister657/v0/default/no hints. Prefixed 43-byte mixed-alphanumeric occurrences, key-only result, no setter. Fixed maps URL with Bearer built after the nil-context drop. The whole body is read before any search or status decision, so any read error defeats every byte including a valid marker; only a completed read installs the source's deferred close and searches the literal stat-ok marker, which gates 2xx verification. Failed sends and read-error responses stay unverified with no setter. ABI1 releases every attempted send exactly once while the upstream read-error path leaks its body, an explicit resource-timing gap. Completed reads release LIFO after publication with provider originals alive; all owned nonzero fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/mindmeister.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mindmeister.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and upstream read-error resource-leak equivalence"]
+    },
+    "monkeylearn/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/monkeylearn/monkeylearn.go",
+      "scope_notes": "MonkeyLearn820/v0/default/no hints. Prefixed 40-byte lowercase-hex occurrences, key-only result, no setter. Fixed classifiers URL with Accept then Token authorization after the nil-context drop; SANE/common UA. Whole shared preparation/Do domain including buffering errors is suppressed without classification; successful 2xx verifies ignoring bodies and read errors. Successful closes are scan-wide LIFO after publication with provider storage alive; failed attempts release immediately once and every owned nonzero including +1 is fatal with invocation-only caller rollback.",
+      "native_files": ["src/detectors/monkeylearn.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_monkeylearn.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "mockaroo/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mockaroo/mockaroo.go",
+      "scope_notes": "Mockaroo753/v0/default/no hints. Prefixed 8-byte lowercase-alphanumeric keys, key-only result, no setter. The complete key query URL is allocated before the nil-context constructor drop. Only 2xx decodes one first document with the source typed types array: ordered rows, folded field names, null and wrong-kind handling, reused row slots and numeric scalars visited for float64 representability including overwritten duplicates. Ordinary overflow stays sticky while later reached callbacks still run; only the decoder's documented +1 is an ordinary decode error, and every projection or callback nonzero is fatal. Whole shared preparation/Do domain suppressed; successful Do closes are LIFO after publication regardless of status or ordinary decode errors, with invocation-only caller rollback.",
+      "native_files": ["src/detectors/mockaroo.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mockaroo.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Complete typed JSON Reader/diagnostic behavior and full native HTTP lifecycle"]
+    },
+    "monday/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/monday/monday.go",
+      "scope_notes": "Monday246/v0/default/no hints. Prefixed JWT-shaped occurrences with literal eyJ heads, key-only result preserved even without verification. The exact GraphQL body is built before the nil-context constructor drop and reported as the literal missing-context cause; Content-Type then raw Authorization (not Bearer) follow it. SANE5/common UA POST. Only 200 verifies, 401 stays quietly unverified, every other status uses the numeric unexpected-status cause, and whole Do failures propagate the borrowed diagnostic unchanged. The helper drains and closes before the mandatory checked zero-secret setter, including a NULL cause; token echoes stay unredacted as the source requires. Every owned nonzero including setter +1 is fatal with invocation-only caller rollback.",
+      "native_files": ["src/detectors/monday.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_monday.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader, drain failure and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

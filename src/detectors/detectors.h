@@ -480,5 +480,14 @@ int br_linkpreview_init(const br_detector **out, char **error);
 int br_livestorm_init(const br_detector **out, char **error);
 int br_liveagent_init(const br_detector **out, char **error);
 int br_jdbc_init(const br_detector **out, char **error);
+int br_miro_init(const br_detector **out, char **error);
+int br_mixmax_init(const br_detector **out, char **error);
+int br_mixpanel_init(const br_detector **out, char **error);
+int br_mite_init(const br_detector **out, char **error);
+int br_moderation_init(const br_detector **out, char **error);
+int br_mindmeister_init(const br_detector **out, char **error);
+int br_monkeylearn_init(const br_detector **out, char **error);
+int br_mockaroo_init(const br_detector **out, char **error);
+int br_monday_init(const br_detector **out, char **error);
 
 #endif

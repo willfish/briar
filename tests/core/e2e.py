@@ -1145,6 +1145,10 @@ check(not rows[0]["Verified"] and "VerificationError" not in rows[0], "LiveAgent
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=165"], ("liveagent " + key32).encode())
 check(not rows, "LiveAgent still needs the independent domain without verification")
 
+for selector in ("371", "Mixpanel"):
+    proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=" + selector], ("mixpanel " + key32).encode(), code=1)
+    check(not rows and b"no enabled implemented detectors selected" in proc.stderr, "Explicit selectors cannot enable source-disabled Mixpanel")
+
 jdbc_example = "jdbc:sqlite:/data/example.db"
 _, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=JDBC"], jdbc_example.encode())
 check(len(rows) == 1 and rows[0]["DetectorType"] == 10 and rows[0]["Raw"] == jdbc_example, "JDBC always-false custom filtering retains example paths")

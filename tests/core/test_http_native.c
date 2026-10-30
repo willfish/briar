@@ -34,6 +34,7 @@ int main(void)
         {br_hashicorpvaulttoken_init, 1062, BR_HTTP_DETECTOR_PUBLIC},
         {br_loadmill_init, 758, BR_HTTP_SANE},
         {br_meraki_init, 1000, BR_HTTP_SANE},
+        {br_mixmax_init, 700, BR_HTTP_SANE},
     };
     char *error = NULL;
     CHECK(br_native_http_init(NULL, &error) && error);

@@ -26,6 +26,7 @@ static const struct {
     {br_hashicorpvaulttoken_init, BR_HTTP_DETECTOR_PUBLIC},
     {br_loadmill_init, BR_HTTP_SANE},
     {br_meraki_init, BR_HTTP_SANE},
+    {br_mixmax_init, BR_HTTP_SANE},
 };
 #define SOURCE_CLIENT_COUNT (sizeof(source_clients) / sizeof(*source_clients))
 
