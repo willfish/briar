@@ -559,5 +559,7 @@ int br_pdflayer_init(const br_detector **out, char **error);
 int br_percy_init(const br_detector **out, char **error);
 int br_pipedrive_init(const br_detector **out, char **error);
 int br_postman_init(const br_detector **out, char **error);
+int br_rawg_init(const br_detector **out, char **error);
+int br_rebrandly_init(const br_detector **out, char **error);
 
 #endif

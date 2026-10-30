@@ -5044,6 +5044,24 @@
       "evidence": ["tests/detectors/test_postman.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "rawg/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/rawg/rawg.go",
+      "scope_notes": "Rawg305/v0/default/no hints. Prefixed 32-byte digit/capital-A/lowercase alphabet occurrences, key-only result and no setter. The complete literal platforms URL carrying the raw key is built before the nil-context drop; no headers, body or encoding are added. Whole preparation/Do failures stay unverified, every successful-send 2xx verifies while bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/rawg.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_rawg.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "rebrandly/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/rebrandly/rebrandly.go",
+      "scope_notes": "Rebrandly536/v0/default/no hints. Prefixed 32-byte mixed alphanumeric-underscore occurrences, key-only result and no setter. The fixed account URL precedes the nil-context constructor drop; the raw key is sent as the literal lowercase apikey header on a SANE request. Whole preparation/Do failures stay unverified, every successful-send 2xx verifies while bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/rebrandly.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_rebrandly.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

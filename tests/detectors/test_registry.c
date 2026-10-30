@@ -563,6 +563,8 @@ static const registration expected[] = {
     {912, 0, "Percy", "percy", 64, true, -1},
     {159, 0, "Pipedrive", "pipedrive", 40, true, -1},
     {118, 0, "Postman", "PMAK-", 64, true, -1},
+    {305, 0, "Rawg", "rawg", 32, true, -1},
+    {536, 0, "Rebrandly", "rebrandly", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
