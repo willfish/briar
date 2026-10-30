@@ -1778,6 +1778,14 @@ def fixtures():
         ("route4me", 546, b"route4me " + alupper("route4me-key", 32)),
         ("polygon", 242, b"polygon " + synthetic("polygon-key", 32)),
         ("sportsmonk", 470, b"sportsmonk " + synthetic("sportsmonk-key", 60)),
+        ("vyte", 616, b"vyte " + synthetic("vyte-key", 50)),
+        ("ubidots", 178, b"BBFF-" + alnum("ubidots-key", 30)),
+        ("rubygems", 200, b"rubygems_" + synthetic("rubygems-key", 48)),
+        ("statuspal", 776, b"statuspal " + alnum("statuspal-key", 32)),
+        ("skrappio", 245, b"skrapp " + alnum("skrappio-key", 42)),
+        ("timecamp", 778, b"timecamp " + synthetic("timecamp-key", 26)),
+        ("pushbulletapikey", 124, b"pushbullet " + alnum("pushbullet-key", 34)),
+        ("tatumio", 445, b"tatum " + synthetic("tatumio-key", 36)),
         ("tyntec", 321, b"tyntec " + alnum("tyntec-key", 32)),
         ("scalewaykey", 85, b"scaleway " + synthetic("scaleway-a", 8) + b"-" + synthetic("scaleway-b", 4) + b"-" + synthetic("scaleway-c", 4) + b"-" + synthetic("scaleway-d", 4) + b"-" + synthetic("scaleway-e", 12)),
         ("scrutinizerci", 766, b"scrutinizer " + synthetic("scrutinizer-key", 64)),
@@ -2249,7 +2257,7 @@ def compare(native, reference, case):
         # source-valid unit-test input, so the oracle agrees only on absence.
         if actual or expected:
             raise AssertionError(name + ": the CLI oracle emits no Mrticktock rows; native must match that absence")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_", "nicereply_", "nimble_", "oanda_", "noticeable_", "nozbeteams_", "notion_", "openuv_", "owlbot_", "meaningcloud_", "openweather_", "pixabay_", "positionstack_", "jwt_", "nvapi_", "pdfshift_", "pdflayer_", "percy_", "pipedrive_", "postman_", "rawg_", "rebrandly_", "podio_", "vpnapi_", "tomtom_", "theoddsapi_", "wistia_", "uplead_", "vbout_", "rapidapi_", "prefect_", "paydirtapp_", "scrapeowl_", "unsplash_", "stockdata_", "verimail_", "route4me_", "polygon_", "sportsmonk_", "yandex_", "signupgenius_", "veriphone_", "splunkobservabilitytoken_", "uptimerobot_", "urlscan_", "pollsapi_", "simplesat_", "stormglass_", "workstack_", "purestake_", "stormboard_", "pepipost_", "nylas_", "tyntec_", "scalewaykey_", "scrutinizerci_", "securitytrails_", "versioneye_", "postageapp_", "salesblink_", "rocketreach_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_", "nicereply_", "nimble_", "oanda_", "noticeable_", "nozbeteams_", "notion_", "openuv_", "owlbot_", "meaningcloud_", "openweather_", "pixabay_", "positionstack_", "jwt_", "nvapi_", "pdfshift_", "pdflayer_", "percy_", "pipedrive_", "postman_", "rawg_", "rebrandly_", "podio_", "vpnapi_", "tomtom_", "theoddsapi_", "wistia_", "uplead_", "vbout_", "rapidapi_", "prefect_", "paydirtapp_", "scrapeowl_", "unsplash_", "stockdata_", "verimail_", "route4me_", "polygon_", "sportsmonk_", "yandex_", "signupgenius_", "veriphone_", "splunkobservabilitytoken_", "uptimerobot_", "urlscan_", "pollsapi_", "simplesat_", "stormglass_", "workstack_", "purestake_", "stormboard_", "pepipost_", "nylas_", "tyntec_", "scalewaykey_", "scrutinizerci_", "securitytrails_", "versioneye_", "postageapp_", "salesblink_", "rocketreach_", "vyte_", "ubidots_", "rubygems_", "statuspal_", "skrappio_", "timecamp_", "pushbulletapikey_", "tatumio_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):

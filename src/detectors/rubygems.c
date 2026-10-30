@@ -44,7 +44,7 @@ static int rubygems_scan(const br_detector *detector, const br_scan_ctx *ctx, bo
             br_http_response response = {0};
             char *send_error = NULL;
             if (br_http_send(ctx, &request, &response, &send_error) == 0)
-                result.verified = response.status >= 200 && response.status < 300;
+                result.verified = (response.status >= 200 && response.status < 300) || response.status == 403;
             br_http_release(ctx, &response);
             free(send_error);
         }

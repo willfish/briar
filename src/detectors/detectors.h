@@ -602,5 +602,13 @@ int br_versioneye_init(const br_detector **out, char **error);
 int br_postageapp_init(const br_detector **out, char **error);
 int br_salesblink_init(const br_detector **out, char **error);
 int br_rocketreach_init(const br_detector **out, char **error);
+int br_vyte_init(const br_detector **out, char **error);
+int br_ubidots_init(const br_detector **out, char **error);
+int br_rubygems_init(const br_detector **out, char **error);
+int br_statuspal_init(const br_detector **out, char **error);
+int br_skrappio_init(const br_detector **out, char **error);
+int br_timecamp_init(const br_detector **out, char **error);
+int br_pushbulletapikey_init(const br_detector **out, char **error);
+int br_tatumio_init(const br_detector **out, char **error);
 
 #endif

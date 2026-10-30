@@ -606,6 +606,14 @@ static const registration expected[] = {
     {575, 0, "PostageApp", "postageapp", 32, true, -1},
     {252, 0, "Salesblink", "salesblink", 68, true, -1},
     {331, 0, "RocketReach", "rocketreach", 39, true, -1},
+    {616, 0, "Vyte", "vyte", 50, true, -1},
+    {178, 0, "Ubidots", "BBFF-", 35, true, -1},
+    {200, 0, "RubyGems", "rubygems", 57, true, -1},
+    {776, 0, "Statuspal", "statuspal", 32, true, -1},
+    {245, 0, "Skrappio", "skrapp", 42, true, -1},
+    {778, 0, "TimeCamp", "timecamp", 26, true, -1},
+    {124, 0, "PushBulletApiKey", "pushbullet", 34, true, -1},
+    {445, 0, "TatumIO", "tatum", 36, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2110,6 +2118,14 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "AB12Z9"[i % 6];
     if (entry->type == 546)
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "AB12Z9"[i % 6];
+    if (entry->type == 178) {
+        memcpy(key, "BBFF-", 5);
+        for (size_t i = 5; i < entry->key_len; ++i) key[i] = "ab12Az"[i % 6];
+    }
+    if (entry->type == 200) {
+        memcpy(key, "rubygems_", 9);
+        for (size_t i = 9; i < entry->key_len; ++i) key[i] = "ab12z9"[i % 6];
+    }
     if (entry->type == 85) {
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "ab12z9"[i % 6];
         key[8] = key[13] = key[18] = key[23] = '-';

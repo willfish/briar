@@ -78,7 +78,7 @@ static void exercise(const br_detector *detector)
     snprintf(request_double, sizeof(request_double), "%s", "https://rubygems.org/api/v1/gems.json");
     http.inspect = inspect;
     http.user = request_double;
-    const struct { int status; bool verified; } cases[] = {{200, true}, {201, true}, {299, true}, {300, false}, {401, false}, {500, false}};
+    const struct { int status; bool verified; } cases[] = {{200, true}, {201, true}, {299, true}, {300, false}, {401, false}, {403, true}, {500, false}};
     for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
         http.calls = http.releases = 0;
         http.send_rc = 0;

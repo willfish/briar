@@ -602,6 +602,14 @@ static const detector_factory named_factories[] = {
     br_postageapp_init,
     br_salesblink_init,
     br_rocketreach_init,
+    br_vyte_init,
+    br_ubidots_init,
+    br_rubygems_init,
+    br_statuspal_init,
+    br_skrappio_init,
+    br_timecamp_init,
+    br_pushbulletapikey_init,
+    br_tatumio_init,
 };
 
 static int fail(char **error, const char *message)
@@ -765,6 +773,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
     case 279: case 240: case 593: case 550: case 128: case 782:
     case 583: case 850: case 232: case 308: case 292: case 576: case 787: case 117: case 617:
     case 321: case 85: case 766: case 413: case 638: case 575: case 252: case 331:
+    case 616: case 178: case 200: case 776: case 245: case 778: case 124: case 445:
             return detector->version == 0;
         default: break;
         }
@@ -1340,6 +1349,14 @@ const char *br_detector_type_name(int32_t type)
     case 575: return "PostageApp";
     case 252: return "Salesblink";
     case 331: return "RocketReach";
+    case 616: return "Vyte";
+    case 178: return "Ubidots";
+    case 200: return "RubyGems";
+    case 776: return "Statuspal";
+    case 245: return "Skrappio";
+    case 778: return "TimeCamp";
+    case 124: return "PushBulletApiKey";
+    case 445: return "TatumIO";
     case 329: return "Leadfeeder";
     case 450: return "LocationIQ";
     case 510: return "Loginradius";
