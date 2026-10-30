@@ -494,11 +494,44 @@ static const registration expected[] = {
     {753, 0, "Mockaroo", "mockaroo", 8, true, -1},
     {246, 0, "Monday", "monday", 178, true, -1},
     {157, 0, "Mailmodo", "mailmodo", 31, true, -1},
+    {995, 0, "Netsuite", "netsuite", 64, true, 1024},
+    {623, 0, "NeutrinoApi", "neutrinoapi", 48, true, 1024},
+    {207, 0, "Newsapi", "newsapi", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 995) {
+        char ck[65], cs[65], tk[65], ts[65], account[16], input[420];
+        test_secret(ck, 64, 0); test_secret(cs, 64, 7); test_secret(tk, 64, 13); test_secret(ts, 64, 19);
+        test_secret(account, 10, 3);
+        snprintf(input, sizeof(input),
+                 "netsuite consumer key %s\nnetsuite consumer secret %s\nnetsuite token key %s\nnetsuite token secret %s\nnetsuite account id %s",
+                 ck, cs, tk, ts, account);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        /* PrefixRegex alternates the three keywords, so each grammar can match
+         * more than one candidate in a realistic multi-line credential blob. */
+        CHECK(results.len >= 1 && results.items[0].detector_type == 995);
+        const br_result *r = &results.items[0];
+        CHECK(r->raw.len == 64);
+        CHECK(r->raw_v2.len == 128 && !memcmp(r->raw_v2.data, r->raw.data, 64));
+        CHECK(r->secret_parts && json_object_object_length(r->secret_parts) == 2);
+        CHECK(!r->verified && !r->verification_error && !r->extra_data);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 623) {
+        char key[49], id[13], input[128]; test_secret(key, 48, 0); test_secret(id, 12, 5);
+        snprintf(input, sizeof(input), "neutrinoapi %s\nneutrinoapi %s", key, id);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len >= 1 && results.items[0].detector_type == 623);
+        test_key_result(&results.items[0], 623, key, "key");
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 10) {
         const char *connection = "jdbc:sqlite:/data/example.db";
         br_scan_ctx ctx = {0};

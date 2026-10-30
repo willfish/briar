@@ -490,5 +490,8 @@ int br_monkeylearn_init(const br_detector **out, char **error);
 int br_mockaroo_init(const br_detector **out, char **error);
 int br_monday_init(const br_detector **out, char **error);
 int br_mailmodo_init(const br_detector **out, char **error);
+int br_netsuite_init(const br_detector **out, char **error);
+int br_neutrinoapi_init(const br_detector **out, char **error);
+int br_newsapi_init(const br_detector **out, char **error);
 
 #endif

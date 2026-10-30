@@ -1693,6 +1693,8 @@ def fixtures():
         ("mite", 682, b"mite " + synthetic("mite-key", 16) + b"\nbriar-mite.mite.yo.lk"),
         ("monday", 246, b"monday " + b"eyJ" + alnum("monday-head", 20) + b".eyJ" + alnum("monday-middle", 120) + b"." + alnum("monday-signature", 30)),
         ("mailmodo", 157, b"mailmodo " + mailmodo_key),
+        ("neutrinoapi", 623, b"neutrinoapi " + alnum("neutrinoapi-key", 48) + b"\nneutrinoapi " + alnum("neutrinoapi-id", 12)),
+        ("newsapi", 207, b"newsapi " + synthetic("newsapi-key", 32)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2109,7 +2111,7 @@ def compare(native, reference, case):
             raise AssertionError(name + ": LiveAgent still requires independent key and domain captures without verification")
     if name.startswith("jdbc_") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": JDBC custom false-positive policy retains example paths and parsed connection metadata without verification")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
