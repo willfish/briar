@@ -1747,6 +1747,8 @@ def fixtures():
         ("noticeable", 337, b"noticeable " + alnum("noticeable-key", 20)),
         ("nozbeteams", 716, b"nozbe " + alnum("nozbeteams-key", 16) + b"_" + alnum("nozbeteams-tail", 64) + b" "),
         ("notion", 134, b"notion secret_" + alnum("notion-key", 43)),
+        ("pdfshift", 515, b"pdfshift " + synthetic("pdfshift-key", 32)),
+        ("pdflayer", 493, b"pdflayer " + synthetic("pdflayer-key", 32)),
         ("nvapi", 997, b"nvapi- nvapi-" + alnum("nvapi-key", 64)),
         ("jwt", 1039, b"jwt eyJhbGciOiJub25lIn0.eyJpc3MiOiJodHRwczovL2lzc3Vlci5leGFtcGxlIn0.YWJjZGVmZ2hpamts"),
         ("openweather", 262, b"openweather " + synthetic("openweather-key", 32)),
@@ -2183,7 +2185,7 @@ def compare(native, reference, case):
         # source-valid unit-test input, so the oracle agrees only on absence.
         if actual or expected:
             raise AssertionError(name + ": the CLI oracle emits no Mrticktock rows; native must match that absence")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_", "nicereply_", "nimble_", "oanda_", "noticeable_", "nozbeteams_", "notion_", "openuv_", "owlbot_", "meaningcloud_", "openweather_", "pixabay_", "positionstack_", "jwt_", "nvapi_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_", "nicereply_", "nimble_", "oanda_", "noticeable_", "nozbeteams_", "notion_", "openuv_", "owlbot_", "meaningcloud_", "openweather_", "pixabay_", "positionstack_", "jwt_", "nvapi_", "pdfshift_", "pdflayer_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):

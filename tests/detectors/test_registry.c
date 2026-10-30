@@ -558,6 +558,8 @@ static const registration expected[] = {
     {535, 0, "PositionStack", "positionstack", 32, true, -1},
     {1039, 0, "JWT", "ewogIC", 78, true, -1},
     {997, 0, "NVAPI", "nvapi-", 70, true, -1},
+    {515, 0, "PdfShift", "pdfshift", 32, true, -1},
+    {493, 0, "PdfLayer", "pdflayer", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -1026,6 +1028,17 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 70);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 515) {
+        char key[33], input[60];
+        for (size_t i = 0; i < 32; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[32] = '\0';
+        snprintf(input, sizeof(input), "pdfshift %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 32);
         br_results_clear(&results);
         return;
     }
