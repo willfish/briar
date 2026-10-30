@@ -633,5 +633,9 @@ int br_paymongo_init(const br_detector **out, char **error);
 int br_paypaloauth_init(const br_detector **out, char **error);
 int br_paystack_init(const br_detector **out, char **error);
 int br_peopledatalabs_init(const br_detector **out, char **error);
+int br_pipedream_init(const br_detector **out, char **error);
+int br_pivotaltracker_init(const br_detector **out, char **error);
+int br_plaidkey_init(const br_detector **out, char **error);
+int br_planetscale_init(const br_detector **out, char **error);
 
 #endif

@@ -19448,6 +19448,42 @@
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_peopledatalabs.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "pipedream/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/pipedream/pipedream.go",
+      "scope_notes": "Pipedream724/v0/default, not Pipedrive. Keyword pipedream. Prefixed 32-character lowercase capture with word boundaries. Duplicates and source order are retained. Nil context drops after the finding and before request allocation, with no setter and no published error. SANE GET https://api.pipedream.com/v1/users/me sends canonical Bearer and this request's 15-second timeout. Every 2xx verifies despite body errors. No setter. Successful responses release scan-wide LIFO after publication. Failed attempts release once immediately. No new HTTP client.",
+      "native_files": ["src/detectors/pipedream.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_pipedream.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "pivotaltracker/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/pivotaltracker/pivotaltracker.go",
+      "scope_notes": "PivotalTracker23/v0/default. Keyword pivotal. Prefixed 32-character lowercase capture with no word boundaries. Nil context drops after the finding and before request allocation, with no setter and no published error. SANE GET https://www.pivotaltracker.com/services/v5/me uses the ordinary 5-second timeout. Headers are Content-Type application/json; charset=utf-8 then canonical X-Trackertoken. Every 2xx verifies. No setter and no body read. Every attempted send closes once immediately before the status decision. No new HTTP client.",
+      "native_files": ["src/detectors/pivotaltracker.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_pivotaltracker.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "plaidkey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/plaidkey/plaidkey.go",
+      "scope_notes": "PlaidKey79/v0/default, not PlaidToken. Keyword plaid. Span 1024 is an engine hint only. Three prefixed captures: 30-hex secret, 24-hex id, and access-sandbox or access-production token. Skip only when ASCII Shannon entropy is strictly below 3. Unique product is secret outer, id middle, token inner. Raw is the secret. RawV2 is secret:id:token. NoV leaves ExtraData absent and calls no setter. Verification POST https://ENV.plaid.com/item/get uses concatenated JSON, SANE, and 5 seconds. ExtraData is https://ENV.plaid.com with no path. Status 200 verifies. Status 400 is quiet. Other completed statuses and transport errors set a cause and redact id and secret, never the token. Nil context publishes net/http: nil Context. One close per attempted send before the setter. No new HTTP client.",
+      "native_files": ["src/detectors/plaidkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/falsepositives.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_plaidkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "planetscale/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/planetscale/planetscale.go",
+      "scope_notes": "PlanetScale195/v0/default, not PlanetScaleDb. Keyword pscale_tkn_. Span 1024 is an engine hint, not a scan cap. Unprefixed username and token patterns retain duplicates and source order. Username is outer and token is inner. Raw is username:password. Parts are id and token. No RawV2 or ExtraData. Nil context drops before send, with no setter and no published error. SANE GET https://api.planetscale.com/v1/organizations sends the literal username:password Authorization, not Basic, then canonical Accept. Every 2xx verifies with no setter. Status 401 is false with no setter. Other completed statuses and transport failures call the password-only setter and still append. Successful responses release scan-wide LIFO after the setter and publication. Failed sends release immediately. No new HTTP client. Default CLI results drop every finding because the wordlist term scale is inside pscale; the comparison uses filtered_unverified.",
+      "native_files": ["src/detectors/planetscale.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_planetscale.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     }
   },
   "components": {

@@ -636,6 +636,10 @@ static const registration expected[] = {
     {31, 0, "PaypalOauth", "paypal", 80, true, 1024},
     {77, 0, "Paystack", "paystack", 45, true, -1},
     {658, 0, "PeopleDataLabs", "peopledatalabs", 64, true, -1},
+    {724, 0, "Pipedream", "pipedream", 32, true, -1},
+    {23, 0, "PivotalTracker", "pivotal", 32, true, -1},
+    {79, 0, "PlaidKey", "plaid", 30, true, 1024},
+    {195, 0, "PlanetScale", "pscale_tkn_", 54, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -1998,6 +2002,49 @@ static void check_dispatch(const br_detector *detector, const registration *entr
             CHECK(json_object_object_get_ex(result->secret_parts, names[i], &part));
             CHECK(json_object_is_type(part, json_type_string) && !strcmp(json_object_get_string(part), values[i]));
         }
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 79) {
+        static const char secret[] = "0123456789abcdef0123456789abcd";
+        static const char id[] = "fedcba9876543210fedcba98";
+        static const char token[] = "access-sandbox-01234567-89ab-cdef-0123-456789abcdef";
+        static const char input[] =
+            "plaid 0123456789abcdef0123456789abcd\n"
+            "plaid fedcba9876543210fedcba98\n"
+            "plaid access-sandbox-01234567-89ab-cdef-0123-456789abcdef";
+        char raw_v2[128];
+        int raw_v2_len = snprintf(raw_v2, sizeof(raw_v2), "%s:%s:%s", secret, id, token);
+        br_results results = test_scan(detector, NULL, false, input, sizeof(input) - 1);
+        CHECK(results.len == 1 && raw_v2_len == 107);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 79 && result->raw.len == 30 && !memcmp(result->raw.data, secret, 30));
+        CHECK(result->raw_v2.len == 107 && !memcmp(result->raw_v2.data, raw_v2, 107));
+        CHECK(!result->verified && !result->verification_error && !result->redacted && !result->extra_data && !result->structured_data && !result->verification_from_cache);
+        CHECK(!result->primary_secret.data && !result->primary_secret.len && !result->primary_line && !result->chunk_offset_set);
+        br_json *part = NULL;
+        CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 3);
+        CHECK(json_object_object_get_ex(result->secret_parts, "secret", &part) && !strcmp(json_object_get_string(part), secret));
+        CHECK(json_object_object_get_ex(result->secret_parts, "id", &part) && !strcmp(json_object_get_string(part), id));
+        CHECK(json_object_object_get_ex(result->secret_parts, "token", &part) && !strcmp(json_object_get_string(part), token));
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 195) {
+        static const char user[] = "b7c9d2e5f6g8";
+        static const char token[] = "pscale_tkn_0123456789abcdef0123456789abcdef0123456789a";
+        static const char input[] = "b7c9d2e5f6g8 pscale_tkn_0123456789abcdef0123456789abcdef0123456789a";
+        char raw[80];
+        int raw_len = snprintf(raw, sizeof(raw), "%s:%s", user, token);
+        br_results results = test_scan(detector, NULL, false, input, sizeof(input) - 1);
+        CHECK(results.len == 1 && raw_len == 67);
+        const br_result *result = &results.items[0];
+        CHECK(result->detector_type == 195 && result->raw.len == 67 && !memcmp(result->raw.data, raw, 67));
+        CHECK(!result->raw_v2.data && !result->raw_v2.len && !result->verified && !result->verification_error && !result->extra_data);
+        br_json *part = NULL;
+        CHECK(result->secret_parts && json_object_object_length(result->secret_parts) == 2);
+        CHECK(json_object_object_get_ex(result->secret_parts, "id", &part) && !strcmp(json_object_get_string(part), user));
+        CHECK(json_object_object_get_ex(result->secret_parts, "token", &part) && !strcmp(json_object_get_string(part), token));
         br_results_clear(&results);
         return;
     }
