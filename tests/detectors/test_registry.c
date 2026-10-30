@@ -570,6 +570,8 @@ static const registration expected[] = {
     {309, 0, "Tomtom", "tomtom", 32, true, -1},
     {631, 0, "TheOddsApi", "theoddsapi", 32, true, -1},
     {780, 0, "Wistia", "wistia", 64, true, -1},
+    {332, 0, "Uplead", "uplead", 32, true, -1},
+    {846, 0, "Vbout", "vbout", 25, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2056,8 +2058,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     }
     if (entry->type == 838 || entry->type == 360 || entry->type == 631)
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
-    if (entry->type == 780)
+    if (entry->type == 780 || entry->type == 332)
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[i % 36];
+    if (entry->type == 846)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789"[i % 10];
     if (entry->type == 897) {
         memcpy(key, "dop_v1_", 7);
         for (size_t i = 7; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];

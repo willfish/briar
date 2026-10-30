@@ -566,5 +566,7 @@ int br_vpnapi_init(const br_detector **out, char **error);
 int br_tomtom_init(const br_detector **out, char **error);
 int br_theoddsapi_init(const br_detector **out, char **error);
 int br_wistia_init(const br_detector **out, char **error);
+int br_uplead_init(const br_detector **out, char **error);
+int br_vbout_init(const br_detector **out, char **error);
 
 #endif

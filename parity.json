@@ -5107,6 +5107,24 @@
       "evidence": ["tests/detectors/test_wistia.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "uplead/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/uplead/uplead.go",
+      "scope_notes": "Uplead332/v0/default/no hints. Prefixed 32-byte digit/lowercase/hyphen occurrences, key-only result and no setter. The fixed credits URL precedes the nil-context drop, and the raw key is the whole Authorization header value on a SANE request. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/uplead.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_uplead.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "vbout/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/vbout/vbout.go",
+      "scope_notes": "Vbout846/v0/default/no hints. Prefixed 25-DIGIT occurrences, key-only result and no setter. The complete literal me.json URL carrying the raw key precedes the nil-context drop; no explicit headers. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/vbout.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_vbout.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
