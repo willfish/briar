@@ -5062,6 +5062,33 @@
       "evidence": ["tests/detectors/test_rebrandly.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "podio/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/podio/podio.go",
+      "scope_notes": "Podio671/v0/default/no hints. Prefixed 32-byte digit/lowercase occurrences, key-only result and no setter. The fixed user URL precedes the nil-context drop, and the raw key follows the literal \"Bearer \" prefix in the Authorization header of a SANE request. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/podio.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_podio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "vpnapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/vpnapi/vpnapi.go",
+      "scope_notes": "Vpnapi291/v0/default/no hints. Prefixed 32-byte mixed-alphanumeric occurrences, key-only result and no setter. The complete literal lookup URL carrying the raw key precedes the nil-context drop; the SANE request adds no explicit headers. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/vpnapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_vpnapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "tomtom/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/tomtom/tomtom.go",
+      "scope_notes": "Tomtom309/v0/default/no hints. Prefixed 32-byte digit/mixed-case occurrences, key-only result and no setter. The complete literal tile URL, including Unifed view and raw key, precedes the nil-context drop; no explicit headers are added. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/tomtom.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_tomtom.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

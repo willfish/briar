@@ -561,5 +561,8 @@ int br_pipedrive_init(const br_detector **out, char **error);
 int br_postman_init(const br_detector **out, char **error);
 int br_rawg_init(const br_detector **out, char **error);
 int br_rebrandly_init(const br_detector **out, char **error);
+int br_podio_init(const br_detector **out, char **error);
+int br_vpnapi_init(const br_detector **out, char **error);
+int br_tomtom_init(const br_detector **out, char **error);
 
 #endif

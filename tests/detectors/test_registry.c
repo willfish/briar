@@ -565,6 +565,9 @@ static const registration expected[] = {
     {118, 0, "Postman", "PMAK-", 64, true, -1},
     {305, 0, "Rawg", "rawg", 32, true, -1},
     {536, 0, "Rebrandly", "rebrandly", 32, true, -1},
+    {671, 0, "Podio", "podio", 32, true, -1},
+    {291, 0, "Vpnapi", "vpnapi", 32, true, -1},
+    {309, 0, "Tomtom", "tomtom", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
