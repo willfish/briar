@@ -523,6 +523,13 @@ static const registration expected[] = {
     {129, 0, "LokaliseToken", "lokalise", 40, true, -1},
     {944, 0, "Loggly", "loggly", 36, true, 1024},
     {961, 0, "LogzIO", "logz", 36, true, -1},
+    {1065, 0, "NewRelicBrowserKey", "nrbr-", 24, true, -1},
+    {1058, 0, "NewRelicInsightsInsertKey", "nrii-", 30, true, -1},
+    {1067, 0, "NewRelicInsightsQueryKey", "nriq-", 30, true, 1024},
+    {1064, 0, "NewRelicLicenseKey", "ffffnral", 40, true, -1},
+    {1068, 0, "NewRelicMobileAppToken", "-nrma", 47, true, -1},
+    {50, 0, "NewRelicPersonalApiKey", "newrelic", 47, true, -1},
+    {1066, 0, "NewRelicUserKey", "nrak-", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -735,6 +742,82 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 36);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 50) {
+        char key[48], input[90];
+        for (size_t i = 0; i < 4; ++i) key[i] = "ABCD"[i % 4];
+        key[4] = '-';
+        for (size_t i = 5; i < 47; ++i) key[i] = "ab12"[i % 4];
+        key[47] = '\0';
+        snprintf(input, sizeof(input), "newrelic %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 47);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 1058 || entry->type == 1067) {
+        char key[31], input[80];
+        const char *prefix = entry->type == 1058 ? "NRII-" : "NRIQ-";
+        memcpy(key, prefix, 5);
+        for (size_t i = 5; i < 30; ++i) key[i] = "ab12"[i % 4];
+        key[30] = '\0';
+        if (entry->type == 1058) snprintf(input, sizeof(input), "nrii- %s", key);
+        else snprintf(input, sizeof(input), "nriq- %s\nrelic account id 12345", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len >= 1 && results.items[0].raw.len == 30);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 1064) {
+        char key[41], input[80];
+        for (size_t i = 0; i < 32; ++i) key[i] = "0123456789abcdef"[i % 16];
+        memcpy(key + 32, "FFFFNRAL", 8);
+        key[40] = '\0';
+        snprintf(input, sizeof(input), "ffffnral %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 40);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 1065) {
+        char key[25], input[70];
+        memcpy(key, "NRBR-", 5);
+        for (size_t i = 5; i < 24; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[24] = '\0';
+        snprintf(input, sizeof(input), "nrbr- %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 24);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 1066) {
+        char key[33], input[80];
+        memcpy(key, "NRAK-", 5);
+        for (size_t i = 5; i < 32; ++i) key[i] = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[i % 30];
+        key[32] = '\0';
+        snprintf(input, sizeof(input), "nrak- %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 32);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 1068) {
+        char key[48], input[90];
+        key[0] = 'A'; key[1] = 'A';
+        for (size_t i = 2; i < 42; ++i) key[i] = "0123456789abcdef"[i % 16];
+        memcpy(key + 42, "-NRMA", 5);
+        key[47] = '\0';
+        snprintf(input, sizeof(input), "-nrma %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 47);
         br_results_clear(&results);
         return;
     }

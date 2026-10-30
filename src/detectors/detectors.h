@@ -519,5 +519,12 @@ int br_lob_init(const br_detector **out, char **error);
 int br_lokalisetoken_init(const br_detector **out, char **error);
 int br_loggly_init(const br_detector **out, char **error);
 int br_logzio_init(const br_detector **out, char **error);
+int br_newrelicbrowserkey_init(const br_detector **out, char **error);
+int br_newrelicinsightsinsertkey_init(const br_detector **out, char **error);
+int br_newrelicinsightsquerykey_init(const br_detector **out, char **error);
+int br_newreliclicensekey_init(const br_detector **out, char **error);
+int br_newrelicmobileapptoken_init(const br_detector **out, char **error);
+int br_newrelicpersonalapikey_init(const br_detector **out, char **error);
+int br_newrelicuserkey_init(const br_detector **out, char **error);
 
 #endif

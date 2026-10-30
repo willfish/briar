@@ -4684,6 +4684,69 @@
       "evidence": ["tests/detectors/test_logzio.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "newrelicbrowserkey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/newrelicbrowserkey/newrelicbrowserkey.go",
+      "scope_notes": "NewRelicBrowserKey1065/v0/default with the nrbr- keyword. Uppercase NRBR plus nineteen lowercase-hex characters form a key-only result; verification tries the US then EU endpoints and stops at the first 400, keeps 403 quiet and joins region errors with a single newline. Released before the mandatory checked setter.",
+      "native_files": ["src/detectors/newrelicbrowserkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_newrelicbrowserkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "newrelicinsightsinsertkey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/newrelicinsightsinsertkey/newrelicinsightsinsertkey.go",
+      "scope_notes": "NewRelicInsightsInsertKey1058/v0/default with the nrii- keyword. NRII plus twenty-five mixed characters are captured without a trailing word boundary; region is metadata only and the literal backtick URLs are kept verbatim.",
+      "native_files": ["src/detectors/newrelicinsightsinsertkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_newrelicinsightsinsertkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "newrelicinsightsquerykey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/newrelicinsightsquerykey.c",
+      "scope_notes": "NewRelicInsightsQueryKey1067/v0/span1024 with the nriq- keyword. NRIQ plus twenty-five mixed characters pair with first-seen-unique numeric account IDs from relic/account/id prefixes; the query keeps a single percent-encoded space and region is copied into secret parts only after verification.",
+      "native_files": ["src/detectors/newrelicinsightsquerykey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_newrelicinsightsquerykey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "newreliclicensekey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/newreliclicensekey/newreliclicensekey.go",
+      "scope_notes": "NewRelicLicenseKey1064/v0/default with the ffffnral keyword. A lowercase-hex 32-byte or eu01xx-prefixed 26-byte region body plus the literal FFFFFNRAL suffix forms a forty-byte key. The corrected formatter runs before release; a negative or truncated format releases once without a verdict or setter, while 202 and 403 still call the setter with a NULL cause.",
+      "native_files": ["src/detectors/newreliclicensekey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_newreliclicensekey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "newrelicmobileapptoken/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/newrelicmobileapptoken/newrelicmobileapptoken.go",
+      "scope_notes": "NewRelicMobileAppToken1068/v0/default with the -nrma keyword. AA plus forty lowercase-hex bytes or the eu01xx variant plus the literal -NRMA suffix forms a forty-seven-byte key. Status 400 verifies, 401 calls the setter with a NULL cause, unexpected statuses format before release, and a reached NULL send cause still calls the setter.",
+      "native_files": ["src/detectors/newrelicmobileapptoken.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_newrelicmobileapptoken.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "newrelicpersonalapikey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/newrelicpersonalapikey/newrelicpersonalapikey.go",
+      "scope_notes": "NewRelicPersonalApiKey50/v0/default with the newrelic keyword. A four-character prefix, hyphen and forty-two mixed characters form a forty-seven-byte key; the mandatory setter stores the source cause and release precedes it.",
+      "native_files": ["src/detectors/newrelicpersonalapikey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_newrelicpersonalapikey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "newrelicuserkey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/newrelicuserkey/newrelicuserkey.go",
+      "scope_notes": "NewRelicUserKey1066/v0/default with the nrak- keyword. NRAK plus twenty-seven uppercase-alphanumeric characters form a thirty-two-byte key. The later-assignment correction keeps the first typed cause including a number diagnostic without a lexeme, still stores a later valid value, treats a later copy failure as fatal without publishing the ordinary cause, and does not verify or publish user_id after a decode error.",
+      "native_files": ["src/detectors/newrelicuserkey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_newrelicuserkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
