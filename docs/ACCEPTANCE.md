@@ -35,7 +35,7 @@ Selected JSON helpers use offset-preserving validation shadows for json-c intege
 
 Core tests cover result ownership, matching and decoder behavior. CLI checks cover source boundaries, multipart windows, decoded locations and selection. The source-window counterexamples distinguish correct credential pairing from unsafe whole-file merging. Loopback-only HTTP fixtures cover implemented profile/body handling and the CONNECT-success-followed-by-TLS-failure regression.
 
-The current ledger has 501 partial identities across 475 named provider modules and 1,924 incremental reference fixtures. These are accumulated selected comparisons, not a fresh full-oracle run or full parity.
+The current ledger has 508 partial identities across 481 named provider modules and 1,938 incremental reference fixtures. These are accumulated selected comparisons, not a fresh full-oracle run or full parity.
 
 Pinned-reference comparisons check complete JSON rows for selected cases, not the entire upstream engine. Filesystem fixtures check original bytes immediately after each scanner. Named duplicate fixtures permit only observed decoder-label alternatives at otherwise identical identities and fields; native decoder ordering is deterministic. Full concurrency parity is not established.
 

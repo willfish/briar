@@ -508,5 +508,12 @@ int br_nethunt_init(const br_detector **out, char **error);
 int br_mrticktock_init(const br_detector **out, char **error);
 int br_netlify_v1_init(const br_detector **out, char **error);
 int br_netlify_v2_init(const br_detector **out, char **error);
+int br_mediastack_init(const br_detector **out, char **error);
+int br_metabase_init(const br_detector **out, char **error);
+int br_metrilo_init(const br_detector **out, char **error);
+int br_metaapi_init(const br_detector **out, char **error);
+int br_mesibo_init(const br_detector **out, char **error);
+int br_microsoftteamswebhook_v1_init(const br_detector **out, char **error);
+int br_microsoftteamswebhook_v2_init(const br_detector **out, char **error);
 
 #endif

@@ -1710,6 +1710,13 @@ def fixtures():
         ("nethunt", 268, b"nethunt " + alnum("nethunt-key", 36) + b"\nnethunt " + alnum("nethunt-id", 26)),
         ("netlify_v1", 74, b"netlify " + alnum("netlify-v1-key", 44)),
         ("netlify_v2", 74, b"netlify nfp_" + alnum("netlify-v2-key", 36)),
+        ("mediastack", 531, b"mediastack " + synthetic("mediastack-key", 32)),
+        ("metabase", 950, b"metabase " + alnum("metabase-key", 36) + b"\nmetabase https://briar7.example.com"),
+        ("metrilo", 297, b"metrilo " + synthetic("metrilo-key", 16)),
+        ("metaapi", 737, b"metaapi " + synthetic("metaapi-spell", 24) + b"\nmetaapi " + synthetic("metaapi-key", 64)),
+        ("mesibo", 503, b"mesibo " + alnum("mesibo-key", 64)),
+        ("microsoftteamswebhook_v1", 114, b"https://briar7.webhook.office.com/webhookb2/b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3@b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3/IncomingWebhook/0123456789abcdef0123456789abcdef/b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3"),
+        ("microsoftteamswebhook_v2", 114, b"https://default1234.5.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/0123456789abcdef0123456789abcdef/triggers/manual/paths/invoke?api-version=1&sig=k7m2q9x4z1"),
         ("moosend", 261, b"moosend A" + synthetic("moosend-key", 7) + b"-" + synthetic("moosend-b", 4) + b"-" + synthetic("moosend-c", 4) + b"-" + synthetic("moosend-d", 4) + b"-" + synthetic("moosend-e", 12)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
@@ -2127,12 +2134,17 @@ def compare(native, reference, case):
             raise AssertionError(name + ": LiveAgent still requires independent key and domain captures without verification")
     if name.startswith("jdbc_") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": JDBC custom false-positive policy retains example paths and parsed connection metadata without verification")
+    if name.startswith("microsoftteamswebhook_v1_"):
+        # The pinned CLI engine emits no v1 rows for a source-grammar URL, so the
+        # oracle comparison is an absence check only; v2 is the positive case.
+        if actual or expected:
+            raise AssertionError(name + ": the CLI oracle emits no Teams v1 rows; native must match that absence")
     if name.startswith("mrticktock_"):
         # The pinned CLI engine emits nothing for this detector even for its own
         # source-valid unit-test input, so the oracle agrees only on absence.
         if actual or expected:
             raise AssertionError(name + ": the CLI oracle emits no Mrticktock rows; native must match that absence")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):

@@ -512,6 +512,13 @@ static const registration expected[] = {
     {691, 0, "Mrticktock", "mrticktock", 20, true, 1024},
     {74, 1, "Netlify", "netlify", 44, true, -1},
     {74, 2, "Netlify", "netlify", 40, true, -1},
+    {531, 0, "MediaStack", "mediastack", 32, true, -1},
+    {950, 0, "Metabase", "metabase", 36, true, 1024},
+    {297, 0, "Metrilo", "metrilo", 16, true, -1},
+    {737, 0, "MetaAPI", "metaapi", 64, true, 1024},
+    {503, 0, "Mesibo", "mesibo", 64, true, -1},
+    {114, 1, "MicrosoftTeamsWebhook", "webhook.office.com", 384, true, 1024},
+    {114, 2, "MicrosoftTeamsWebhook", "environment.api.powerplatform.com", 270, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -634,6 +641,58 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 40 && results.items[0].extra_data);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 737) {
+        char key[65], spell[25], input[120];
+        for (size_t i = 0; i < 64; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[64] = '\0';
+        for (size_t i = 0; i < 24; ++i) spell[i] = "0123456789abcdef"[(i + 5) % 16];
+        spell[24] = '\0';
+        snprintf(input, sizeof(input), "metaapi %s\nmetaapi %s", spell, key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 64 && !memcmp(results.items[0].raw.data, key, 64));
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 503) {
+        char key[65], input[90];
+        for (size_t i = 0; i < 64; ++i) key[i] = "0123456789ABCDEFabcdef"[i % 22];
+        key[64] = '\0';
+        snprintf(input, sizeof(input), "mesibo %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 64);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 950) {
+        char key[37], input[140];
+        test_secret(key, 36, 0);
+        snprintf(input, sizeof(input), "metabase %s\nmetabase https://briar7.example.com", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw_v2.len == 62);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 114 && entry->version == 1) {
+        const char *url = "https://briar7.webhook.office.com/webhookb2/b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3@b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3/IncomingWebhook/0123456789abcdef0123456789abcdef/b7c9d2e5-f6a8-b3c4-d1e0-f2a4b6c8d1e3";
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, url, strlen(url));
+        CHECK(results.len == 1 && results.items[0].raw.len == strlen(url));
+        CHECK(results.items[0].extra_data && json_object_object_length(results.items[0].extra_data) == 2);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 114 && entry->version == 2) {
+        const char *url = "https://default1234.5.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/0123456789abcdef0123456789abcdef/triggers/manual/paths/invoke?api-version=1&sig=k7m2q9x4z1";
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, url, strlen(url));
+        CHECK(results.len == 1 && results.items[0].raw.len == strlen(url));
+        CHECK(results.items[0].extra_data && json_object_object_length(results.items[0].extra_data) == 1);
         br_results_clear(&results);
         return;
     }
@@ -2487,7 +2546,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 120 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;
@@ -2621,6 +2680,10 @@ int main(void)
             CHECK(detector->false_positive && detector->false_positive(detector, &candidate, &reason));
             CHECK(reason && !*reason);
             free(reason);
+        } else if (entry->type == 114 && entry->version == 2) {
+            br_result candidate = {0};
+            char *reason = NULL;
+            CHECK(detector->false_positive && !detector->false_positive(detector, &candidate, &reason) && !reason);
         } else CHECK(!detector->false_positive);
         if (entry->type == 2 || entry->type == 959) CHECK(detector->clean && detector->clean_always);
         else CHECK(!detector->clean && !detector->clean_always);

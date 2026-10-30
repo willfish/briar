@@ -4585,6 +4585,69 @@
       "evidence": ["tests/detectors/test_netlify.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "mediastack/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mediastack/mediastack.go",
+      "scope_notes": "MediaStack531/v0/default/no hints. Prefixed 32-byte lowercase-alphanumeric occurrences, key-only result and no setter. The complete literal news URL is built before the nil-context drop, and the source ten-second client timeout is projected request-locally on a SANE request rather than mutating a shared client. Whole preparation/Do failures stay unverified and every successful-send 2xx verifies while bodies and read errors are ignored; each attempted send releases once.",
+      "native_files": ["src/detectors/mediastack.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mediastack.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "metabase/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/metabase/metabase.go",
+      "scope_notes": "Metabase950/v0/span1024 engine hint. Prefixed 36-byte mixed alphanumeric-hyphen session tokens pair with prefixed http(s) host captures into key-major products whose hidden URL supplies RawV2 without a separator. The URL is parsed and its userinfo/fragment decoded before any finding, including without verification, and the narrow Go URL.String projection plus /api/user/current path is built before the nil-context drop. Verification is a LOCAL ten-second GET with the X-Metabase-Session header: whole preparation/Do failures are suppressed, any read error drops the candidate at every status, only 200 with a JSON-valid body verifies, and other statuses stay unverified without a setter. One release follows every attempted send before drop/publication.",
+      "native_files": ["src/detectors/metabase.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/go_url.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_metabase.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "metrilo/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/metrilo/metrilo.go",
+      "scope_notes": "Metrilo297/v0/default/no hints. Prefixed 16-byte lowercase-alphanumeric occurrences, key-only result and no setter. The exact 191-byte JSON payload is concatenated after the finding but before the nil-context drop, and the request keeps the source logical Content-Length zero header plus Content-Type and the complete body on a SANE POST. Whole preparation/Do failures stay unverified and every successful-send 2xx verifies while bodies and read errors are ignored. Native framing derives wire length from the body, a documented deviation from the source header.",
+      "native_files": ["src/detectors/metrilo.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_metrilo.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "metaapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/metaapi/metaapi.go",
+      "scope_notes": "MetaAPI737/v0/span1024 engine hint with metaapi and meta-api keywords. Independent 64-byte and 24-byte lowercase-hex grammars form spell-outer, key-inner products with duplicates preserved and only the key published. The complete spells runSync URL and canonical Content-Type then Apikey headers are built before the nil-context drop. A successful send is followed by read-first handling: a present read error retains false without dropping, a reached invalid body slice is fatal, and verification requires the exact success marker and a 2xx status. Whole send failures are suppressed with no setter and one release per attempt.",
+      "native_files": ["src/detectors/metaapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_metaapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "mesibo/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mesibo/mesibo.go",
+      "scope_notes": "Mesibo503/v0/default/no hints. Prefixed 64-byte mixed-alphanumeric occurrences, key-only result and a conditional full-key setter. The exact 91-byte sorted useradd payload and Content-Type header precede the nil-context cause, and the SANE backend POST is followed by an explicit precedence chain: send failure, non-200 status, read error, invalid slice, then whole-JSON decoding of the code field with Go int64 token semantics, sticky first type error and continued later visits. Only a decoded code of 400 verifies, 401 stays unverified and other codes report their numeric value; wrappers are retained but the source setter stores the explicit leaf.",
+      "native_files": ["src/detectors/mesibo.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mesibo.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "microsoftteamswebhook/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/microsoftteamswebhook/v1/microsoftteamswebhook.go",
+      "scope_notes": "MicrosoftTeamsWebhook114/v1/span1024 with the webhook.office.com keyword. The exact v1 URL grammar, literal single-quoted payload, Content-Type and PUBLIC POST are preserved, with binary marker/status rules (400 plus the Text-is-required marker verifies, 401 quiet, 4xx/5xx status causes), constructed cause wrappers whose leaf is stored by the checked setter, and an explicit fatal boundary when a binary cause cannot be represented as an ABI1 string. The pinned CLI emits no v1 rows for a source-grammar URL, so only a negative oracle comparison is claimed.",
+      "native_files": ["src/detectors/microsoftteamswebhook.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/go_url.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_microsoftteamswebhook.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "microsoftteamswebhook/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/microsoftteamswebhook/v2/microsoftteamswebhook.go",
+      "scope_notes": "MicrosoftTeamsWebhook114/v2/default with the environment.api.powerplatform.com keyword and an always-false custom checker. The RE2 query-extension unit semantics, signature requirement, Go whitespace trim, fragment projection, JSON payload and PUBLIC POST are preserved: 202 verifies, 400 and 401 stay unverified, other statuses report a numeric cause, and constructed wrappers store their explicit leaf through the checked setter.",
+      "native_files": ["src/detectors/microsoftteamswebhook.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/go_url.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_microsoftteamswebhook.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
