@@ -4927,6 +4927,24 @@
       "evidence": ["tests/detectors/test_notion.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "openuv/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/openuv/openuv.go",
+      "scope_notes": "Openuv504/v0/default/no hints. Prefixed 32-byte lowercase-alphanumeric occurrences, key-only result and no setter. The nil-context constructor drop precedes the x-access-token header and the UV query GET on a SANE request. Whole mixed preparation/Do failures stay unverified, every successful-send 2xx verifies while bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/openuv.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_openuv.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "owlbot/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/owlbot/owlbot.go",
+      "scope_notes": "Owlbot357/v0/default/no hints. Prefixed 40-byte lowercase-alphanumeric occurrences, key-only result and no setter. The nil-context constructor drop precedes the Token authorization header and the dictionary GET on a SANE request. Whole mixed preparation/Do failures stay unverified, every successful-send 2xx verifies while bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/owlbot.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_owlbot.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

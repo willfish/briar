@@ -546,5 +546,7 @@ int br_oanda_init(const br_detector **out, char **error);
 int br_noticeable_init(const br_detector **out, char **error);
 int br_nozbeteams_init(const br_detector **out, char **error);
 int br_notion_init(const br_detector **out, char **error);
+int br_openuv_init(const br_detector **out, char **error);
+int br_owlbot_init(const br_detector **out, char **error);
 
 #endif

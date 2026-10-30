@@ -550,6 +550,8 @@ static const registration expected[] = {
     {337, 0, "Noticeable", "noticeable", 20, true, -1},
     {716, 0, "NozbeTeams", "nozbe", 81, true, -1},
     {134, 0, "Notion", "notion", 50, true, -1},
+    {504, 0, "Openuv", "openuv", 32, true, -1},
+    {357, 0, "Owlbot", "owlbot", 40, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
