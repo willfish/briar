@@ -589,6 +589,14 @@ static const registration expected[] = {
     {550, 0, "Veriphone", "veriphone", 32, true, -1},
     {128, 0, "SplunkOberservabilityToken", "splunk", 22, true, -1},
     {782, 0, "UptimeRobot", "uptimerobot", 34, true, -1},
+    {583, 0, "Urlscan", "urlscan", 36, true, -1},
+    {850, 0, "PollsAPI", "pollsapi", 28, true, -1},
+    {232, 0, "Simplesat", "simplesat", 40, true, -1},
+    {308, 0, "Stormglass", "stormglass", 73, true, -1},
+    {292, 0, "Workstack", "workstack", 60, true, -1},
+    {576, 0, "PureStake", "purestake", 40, true, -1},
+    {787, 0, "Stormboard", "stormboard", 40, true, -1},
+    {117, 0, "Pepipost", "pepipost", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2093,6 +2101,15 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "AB12Z9"[i % 6];
     if (entry->type == 546)
         for (size_t i = 0; i < entry->key_len; ++i) key[i] = "AB12Z9"[i % 6];
+    if (entry->type == 583 || entry->type == 308 || entry->type == 117)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "ab12-9"[i % 6];
+    if (entry->type == 850)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "AB12Z9"[i % 6];
+    if (entry->type == 232 || entry->type == 787 || entry->type == 576 || entry->type == 292) {
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "ab12z9"[i % 6];
+        if (entry->type == 787)
+            for (size_t i = 0; i < entry->key_len; ++i) key[i] = "abcdef"[i % 6];
+    }
     if (entry->type == 240) {
         memcpy(key, "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6", 36);
         key[0] = 'A';
@@ -2981,7 +2998,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 120 || entry->type == 1039 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || entry->type == 490 || entry->type == 631 || entry->type == 1039 || entry->type == 716 || (entry->type == 96 && entry->version == 1) || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || entry->type == 490 || entry->type == 631 || entry->type == 117 || entry->type == 1039 || entry->type == 716 || (entry->type == 96 && entry->version == 1) || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;

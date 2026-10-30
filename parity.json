@@ -5305,6 +5305,78 @@
       "evidence": ["tests/detectors/test_uptimerobot.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "urlscan/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/urlscan/urlscan.go",
+      "scope_notes": "Urlscan583/v0/default/no hints. Prefixed 36-byte digit/lowercase/hyphen occurrences, key-only result and no setter. The fixed https://urlscan.io/user/quotas URL precedes the nil-context drop, and the raw key is the literal API-Key header on a SANE GET. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/urlscan.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_urlscan.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "pollsapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/pollsapi/pollsapi.go",
+      "scope_notes": "PollsAPI850/v0/default/no hints. Prefixed 28-byte UPPERCASE alphanumeric occurrences, key-only result and no setter. The fixed https://api.pollsapi.com/v1/get/polls?offset=0&limit=10 URL precedes the nil-context drop, and the raw key is the literal api-key header on a SANE GET. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/pollsapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_pollsapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "simplesat/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/simplesat/simplesat.go",
+      "scope_notes": "Simplesat232/v0/default/no hints. Prefixed 40-byte digit/lowercase (no trailing boundary) occurrences (the pattern has NO trailing word boundary, so a keyword-adjacent longer run still yields the leading 40 bytes), key-only result and no setter. The fixed answers URL precedes the nil-context drop, and the raw key is the literal X-Simplesat-Token header. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/simplesat.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_simplesat.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "stormglass/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/stormglass/stormglass.go",
+      "scope_notes": "Stormglass308/v0/default/no hints. Prefixed 73-byte digit/capital-A/lowercase/hyphen occurrences, key-only result and no setter. The fixed https://api.stormglass.io/v2/weather/point?lat=58.7984&lng=17.8081&params=windSpeed URL precedes the nil-context drop, and the raw key is the literal Authorization header on a SANE GET. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/stormglass.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_stormglass.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "workstack/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/workstack/workstack.go",
+      "scope_notes": "Workstack292/v0/default/no hints. Prefixed 60-byte mixed alphanumeric occurrences, key-only result and no setter. The token is appended to the literal team URL before the nil-context drop, and the SANE GET adds only Accept: application/json. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/workstack.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_workstack.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "purestake/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/purestake/purestake.go",
+      "scope_notes": "PureStake576/v0/default/no hints. Prefixed 40-byte mixed alphanumeric occurrences, key-only result and no setter. The fixed https://testnet-algorand.api.purestake.io/idx2/health URL precedes the nil-context drop, and the raw key is the literal x-api-key header on a SANE GET. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/purestake.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_purestake.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "stormboard/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/stormboard/stormboard.go",
+      "scope_notes": "Stormboard787/v0/default/no hints. Prefixed 40-byte lowercase hex occurrences, key-only result and no setter. The fixed https://api.stormboard.com/users/profile URL precedes the nil-context drop, and the raw key is the literal X-API-Key header on a SANE GET. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/stormboard.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_stormboard.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "pepipost/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/pepipost/pepipost.go",
+      "scope_notes": "Pepipost117/v0/default/no hints. TWO shared keywords (pepipost and netcore) prefix the 32-byte mixed alphanumeric with hyphens (pepipost and netcore keywords) grammar, and both prefixed occurrences dispatch. Key-only result and no setter. The fixed getDomains URL precedes the nil-context drop, and the raw key is the literal api_key header. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/pepipost.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_pepipost.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

@@ -585,5 +585,13 @@ int br_signupgenius_init(const br_detector **out, char **error);
 int br_veriphone_init(const br_detector **out, char **error);
 int br_splunkobservabilitytoken_init(const br_detector **out, char **error);
 int br_uptimerobot_init(const br_detector **out, char **error);
+int br_urlscan_init(const br_detector **out, char **error);
+int br_pollsapi_init(const br_detector **out, char **error);
+int br_simplesat_init(const br_detector **out, char **error);
+int br_stormglass_init(const br_detector **out, char **error);
+int br_workstack_init(const br_detector **out, char **error);
+int br_purestake_init(const br_detector **out, char **error);
+int br_stormboard_init(const br_detector **out, char **error);
+int br_pepipost_init(const br_detector **out, char **error);
 
 #endif

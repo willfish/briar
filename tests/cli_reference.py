@@ -1778,6 +1778,14 @@ def fixtures():
         ("route4me", 546, b"route4me " + alupper("route4me-key", 32)),
         ("polygon", 242, b"polygon " + synthetic("polygon-key", 32)),
         ("sportsmonk", 470, b"sportsmonk " + synthetic("sportsmonk-key", 60)),
+        ("urlscan", 583, b"urlscan " + synthetic("urlscan-key", 32) + b"-abc"),
+        ("pollsapi", 850, b"pollsapi " + alupper("pollsapi-key", 28)),
+        ("simplesat", 232, b"simplesat " + synthetic("simplesat-key", 40) + b"x"),
+        ("stormglass", 308, b"stormglass " + synthetic("stormglass-key", 69) + b"a-9z"),
+        ("workstack", 292, b"workstack " + alnum("workstack-key", 60)),
+        ("purestake", 576, b"purestake " + alnum("purestake-key", 40)),
+        ("stormboard", 787, b"stormboard " + synthetic("stormboard-key", 40)),
+        ("pepipost", 117, b"pepipost " + alnum("pepipost-key", 28) + b"-ab2"),
         ("yandex", 279, b"yandex " + alnum("yandex-key", 83)),
         ("signupgenius", 593, b"signupgenius " + alnum("signupgenius-key", 32)),
         ("veriphone", 550, b"veriphone " + alupper("veriphone-key", 32)),
@@ -2232,7 +2240,7 @@ def compare(native, reference, case):
         # source-valid unit-test input, so the oracle agrees only on absence.
         if actual or expected:
             raise AssertionError(name + ": the CLI oracle emits no Mrticktock rows; native must match that absence")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_", "nicereply_", "nimble_", "oanda_", "noticeable_", "nozbeteams_", "notion_", "openuv_", "owlbot_", "meaningcloud_", "openweather_", "pixabay_", "positionstack_", "jwt_", "nvapi_", "pdfshift_", "pdflayer_", "percy_", "pipedrive_", "postman_", "rawg_", "rebrandly_", "podio_", "vpnapi_", "tomtom_", "theoddsapi_", "wistia_", "uplead_", "vbout_", "rapidapi_", "prefect_", "paydirtapp_", "scrapeowl_", "unsplash_", "stockdata_", "verimail_", "route4me_", "polygon_", "sportsmonk_", "yandex_", "signupgenius_", "veriphone_", "splunkobservabilitytoken_", "uptimerobot_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_", "nicereply_", "nimble_", "oanda_", "noticeable_", "nozbeteams_", "notion_", "openuv_", "owlbot_", "meaningcloud_", "openweather_", "pixabay_", "positionstack_", "jwt_", "nvapi_", "pdfshift_", "pdflayer_", "percy_", "pipedrive_", "postman_", "rawg_", "rebrandly_", "podio_", "vpnapi_", "tomtom_", "theoddsapi_", "wistia_", "uplead_", "vbout_", "rapidapi_", "prefect_", "paydirtapp_", "scrapeowl_", "unsplash_", "stockdata_", "verimail_", "route4me_", "polygon_", "sportsmonk_", "yandex_", "signupgenius_", "veriphone_", "splunkobservabilitytoken_", "uptimerobot_", "urlscan_", "pollsapi_", "simplesat_", "stormglass_", "workstack_", "purestake_", "stormboard_", "pepipost_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
