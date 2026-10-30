@@ -796,6 +796,8 @@ def fixtures():
     linenotify_key = alnum("linenotify-key", 43)
     linkpreview_key = alnum("linkpreview-key", 32)
     liveagent_key = alnum("liveagent-key", 32)
+    mailmodo_material = synthetic("mailmodo-key", 28).upper()
+    mailmodo_key = b"-".join(mailmodo_material[i:i + 7] for i in range(0, 28, 7))
     livestorm_key = b"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhcGkubGl2ZXN0b3JtLmNvIiwianRpIjoi" + alnum("livestorm-middle", 134) + b"." + alnum("livestorm-signature", 43)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
     gcp_fallback = b'{"project_id":"sample","unknown":1e9999,"auth_provider_x509_cert_url":"unused"}'
@@ -1690,6 +1692,7 @@ def fixtures():
         ("mockaroo", 753, b"mockaroo " + synthetic("mockaroo-key", 8)),
         ("mite", 682, b"mite " + synthetic("mite-key", 16) + b"\nbriar-mite.mite.yo.lk"),
         ("monday", 246, b"monday " + b"eyJ" + alnum("monday-head", 20) + b".eyJ" + alnum("monday-middle", 120) + b"." + alnum("monday-signature", 30)),
+        ("mailmodo", 157, b"mailmodo " + mailmodo_key),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2106,7 +2109,7 @@ def compare(native, reference, case):
             raise AssertionError(name + ": LiveAgent still requires independent key and domain captures without verification")
     if name.startswith("jdbc_") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": JDBC custom false-positive policy retains example paths and parsed connection metadata without verification")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):

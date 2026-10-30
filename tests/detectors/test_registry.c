@@ -493,6 +493,7 @@ static const registration expected[] = {
     {820, 0, "MonkeyLearn", "monkeylearn", 40, true, -1},
     {753, 0, "Mockaroo", "mockaroo", 8, true, -1},
     {246, 0, "Monday", "monday", 178, true, -1},
+    {157, 0, "Mailmodo", "mailmodo", 31, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -1800,6 +1801,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     case 711:
         for (size_t i = 0; i < 32; ++i) key[i] = "0123456789abcdef"[i % 16];
         secondary = "briar7@fixture.invalid"; /* Required email is hidden from results. */
+        break;
+    case 157:
+        /* Seven-uppercase-alphanumeric groups joined by three literal hyphens. */
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = (i % 8 == 7) ? '-' : 'A';
         break;
     case 669:
         /* Exactly 36.115.43 lowercase-alnum segments, separated by literal dots. */

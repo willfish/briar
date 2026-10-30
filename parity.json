@@ -4414,6 +4414,15 @@
       "evidence": ["tests/detectors/test_monday.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader, drain failure and source-client lifecycle behavior"]
     },
+    "mailmodo/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mailmodo/mailmodo.go",
+      "scope_notes": "Mailmodo157/v0/default/no hints. Prefixed seven-by-four uppercase-alphanumeric hyphen groups, occurrences without uniqueness, key-only result, no setter. Constant campaigns URL with canonical Content-Type then Mmapikey built only after successful constructor; nil context drops after capture and finding without send or release. Any 2xx verifies without reading the body; whole preparation/Do failures stay unverified. Owned allocation/finding/push nonzero fatal with invocation-only caller rollback. Known deviation: ABI1 releases each successful response once as it completes rather than deferring all closes to scanner return, so close order differs from the source without affecting findings, verdicts or metadata.",
+      "native_files": ["src/detectors/mailmodo.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mailmodo.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Successful-response close order differs from the source deferral; resource timing only", "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
