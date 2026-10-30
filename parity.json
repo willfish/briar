@@ -5017,6 +5017,15 @@
       "evidence": ["tests/detectors/test_pdflayer.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "percy/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/percy/percy.go",
+      "scope_notes": "Percy912/v0/default/no hints. The prefixed grammar requires the literal PERCY_TOKEN= followed by 64 mixed alphanumeric-with-capital-A bytes, so a bare value is not a finding. Raw and the key part hold the captured value only. The fixed projects URL precedes the nil-context constructor drop; Accept then Token authorization follow it on a SANE request. Whole preparation/Do failures stay unverified, every successful-send 2xx verifies while bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/percy.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_percy.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

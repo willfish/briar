@@ -560,6 +560,7 @@ static const registration expected[] = {
     {997, 0, "NVAPI", "nvapi-", 70, true, -1},
     {515, 0, "PdfShift", "pdfshift", 32, true, -1},
     {493, 0, "PdfLayer", "pdflayer", 32, true, -1},
+    {912, 0, "Percy", "percy", 64, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -1039,6 +1040,18 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 32);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 912) {
+        char key[65], captured[90], input[130];
+        for (size_t i = 0; i < 64; ++i) key[i] = "0123456789AaFf"[i % 12];
+        key[64] = '\0';
+        snprintf(captured, sizeof(captured), "PERCY_TOKEN=%s", key);
+        snprintf(input, sizeof(input), "percy %s", captured);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 64 && !memcmp(results.items[0].raw.data, key, 64));
         br_results_clear(&results);
         return;
     }
