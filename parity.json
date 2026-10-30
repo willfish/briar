@@ -5386,6 +5386,78 @@
       "evidence": ["tests/detectors/test_nylas.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "tyntec/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/tyntec/tyntec.go",
+      "scope_notes": "Tyntec321/v0/default/no hints. Prefixed 32-byte mixed alphanumeric occurrences, key-only result and no setter. The fixed URL precedes the nil-context drop, and the SANE GET carries the raw key as the literal apiKey header with no body. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/tyntec.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_tyntec.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "scalewaykey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/scalewaykey/scalewaykey.go",
+      "scope_notes": "ScalewayKey85/v0/default/no hints. Prefixed 8-4-4-4-12 hyphenated digit/lowercase occurrences, key-only result and no setter. The fixed URL precedes the nil-context drop, and the SANE GET carries the raw key as the literal X-Auth-Token header with no body. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/scalewaykey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_scalewaykey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "scrutinizerci/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/scrutinizerci/scrutinizerci.go",
+      "scope_notes": "ScrutinizerCi766/v0/default/no hints. Prefixed 64-byte digit/lowercase occurrences, key-only result and no setter. The complete literal URL ending in the raw key precedes the nil-context drop, and the SANE GET carries the literal Content-Type: application/json header with no body. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/scrutinizerci.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_scrutinizerci.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "securitytrails/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/securitytrails/securitytrails.go",
+      "scope_notes": "SecurityTrails413/v0/default/no hints. Prefixed 32-byte mixed alphanumeric occurrences, key-only result and no setter. The fixed URL precedes the nil-context drop, and the SANE GET carries the raw key as the literal APIKEY header with no body. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/securitytrails.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_securitytrails.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "versioneye/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/versioneye/versioneye.go",
+      "scope_notes": "VersionEye638/v0/default/no hints. Prefixed 40-byte mixed alphanumeric with hyphens occurrences, key-only result and no setter. The fixed URL precedes the nil-context drop, and the SANE GET carries the raw key as the literal apiKey header with no body. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/versioneye.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_versioneye.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "postageapp/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/postageapp/postageapp.go",
+      "scope_notes": "PostageApp575/v0/default/no hints. Prefixed 32-byte mixed alphanumeric occurrences, key-only result and no setter. The complete literal URL ending in the raw key precedes the nil-context drop, and the SANE POST carries the literal Content-Transfer-Encoding: application/json header with no body. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/postageapp.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_postageapp.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "salesblink/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/salesblink/salesblink.go",
+      "scope_notes": "Salesblink252/v0/default/no hints. Prefixed literal key- plus 64 mixed alphanumerics occurrences, key-only result and no setter. The fixed URL precedes the nil-context drop, and the SANE GET carries the raw key as the literal Authorization header with no body. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/salesblink.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_salesblink.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "rocketreach/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/rocketreach/rocketreach.go",
+      "scope_notes": "RocketReach331/v0/default/no hints. Prefixed 39-byte digit/lowercase/hyphen occurrences, key-only result and no setter. The fixed URL precedes the nil-context drop, and the SANE GET carries the raw key as the literal Api-Key header with no body. Whole send failures stay unverified, every 2xx verifies, bodies and read errors are ignored, and one release follows each attempt.",
+      "native_files": ["src/detectors/rocketreach.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_rocketreach.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

@@ -594,5 +594,13 @@ int br_purestake_init(const br_detector **out, char **error);
 int br_stormboard_init(const br_detector **out, char **error);
 int br_pepipost_init(const br_detector **out, char **error);
 int br_nylas_init(const br_detector **out, char **error);
+int br_tyntec_init(const br_detector **out, char **error);
+int br_scalewaykey_init(const br_detector **out, char **error);
+int br_scrutinizerci_init(const br_detector **out, char **error);
+int br_securitytrails_init(const br_detector **out, char **error);
+int br_versioneye_init(const br_detector **out, char **error);
+int br_postageapp_init(const br_detector **out, char **error);
+int br_salesblink_init(const br_detector **out, char **error);
+int br_rocketreach_init(const br_detector **out, char **error);
 
 #endif
