@@ -500,5 +500,13 @@ int br_nexmoapikey_init(const br_detector **out, char **error);
 int br_moonclerk_init(const br_detector **out, char **error);
 int br_moralis_init(const br_detector **out, char **error);
 int br_moosend_init(const br_detector **out, char **error);
+int br_myintervals_init(const br_detector **out, char **error);
+int br_nasdaqdatalink_init(const br_detector **out, char **error);
+int br_mux_init(const br_detector **out, char **error);
+int br_myfreshworks_init(const br_detector **out, char **error);
+int br_nethunt_init(const br_detector **out, char **error);
+int br_mrticktock_init(const br_detector **out, char **error);
+int br_netlify_v1_init(const br_detector **out, char **error);
+int br_netlify_v2_init(const br_detector **out, char **error);
 
 #endif

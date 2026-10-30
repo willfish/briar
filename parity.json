@@ -4513,6 +4513,78 @@
       "evidence": ["tests/detectors/test_moosend.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "myintervals/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/myintervals/myintervals.go",
+      "scope_notes": "MyIntervals688/v0/default/no hints. Prefixed 11-byte lowercase-alphanumeric occurrences, key-only result and no setter. Basic authentication over key:X is built after the nil-context constructor drop and stays alive through the SANE five-second request; whole preparation/Do failures stay unverified and every successful-send 2xx verifies while bodies and read errors are ignored. Each attempted send releases exactly once before the response status is used.",
+      "native_files": ["src/detectors/myintervals.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_myintervals.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "nasdaqdatalink/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nasdaqdatalink/nasdaqdatalink.go",
+      "scope_notes": "NasdaqDataLink532/v0/default/no hints but source-DISABLED in defaults, so selectors cannot enable it. Prefixed 20-byte mixed alphanumeric-underscore-hyphen occurrences, key-only result and no setter. The complete literal FRED/GDP query URL is built after the nil-context drop and the request keeps the source ten-second client timeout locally rather than mutating a shared client. Whole preparation/Do failures stay unverified and every successful-send 2xx verifies while bodies and read errors are ignored.",
+      "native_files": ["src/detectors/nasdaqdatalink.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_nasdaqdatalink.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "mux/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mux/mux.go",
+      "scope_notes": "Mux748/v0/span1024 engine hint. Prefixed lowercase-hex UUID keys and a 75-byte secret grammar carrying one optional leading and one required trailing space/CR/LF form key-major products; the secret is trimmed with Go whitespace semantics before use and RawV2 concatenates key and secret with no separator. Basic authentication follows the nil-context constructor drop, and the SANE five-second GET uses only Content-Type and Authorization. Whole preparation/Do failures stay unverified and every successful-send 2xx verifies while bodies and read errors are ignored.",
+      "native_files": ["src/detectors/mux.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/go_unicode.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mux.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "myfreshworks/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/myfreshworks/myfreshworks.go",
+      "scope_notes": "Myfreshworks216/v0/span1024 engine hint. Prefixed 22-byte key and 2-20 byte account-ID occurrences form key-major products with the ID hidden. The host URL and Token token= authorization follow the nil-context constructor drop, which reports the missing-context cause through the mandatory checked token-secret setter. A 200 with a read error reports that read error, a 200 without one verifies only when the whole body is valid JSON, 401 and 403 stay quietly unverified, and every other status reports the numeric unexpected-status cause. Release precedes the setter, and every owned nonzero is fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/myfreshworks.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_myfreshworks.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "nethunt/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nethunt/nethunt.go",
+      "scope_notes": "Nethunt268/v0/span1024 engine hint. Prefixed 36-byte non-whitespace keys (RE2 \\\\S semantics including VT) and 25-30 byte ID occurrences form key-major products with the ID hidden. Basic authentication over username=ID and password=key follows the nil-context constructor drop, and the exact zapier triggers URL uses the SANE five-second client. Whole preparation/Do failures stay unverified with no setter and every successful-send 2xx verifies while bodies and read errors are ignored; one release follows every attempted send.",
+      "native_files": ["src/detectors/nethunt.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_nethunt.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "mrticktock/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mrticktock/mrticktock.go",
+      "scope_notes": "Mrticktock691/v0/span1024 engine hint. The shared email pattern supplies first-seen unique addresses and a prefixed 1-50 byte password grammar supplies occurrences, forming email-major products with the password hidden. The complete email/password form body is owned before the nil-context drop. Setup/Do failures stay unverified without a cause, a successful send is registered before the verdict, a present read error drops the candidate, a reached invalid body slice is fatal, and verification requires a 2xx body containing the errors marker. Successful responses, including later-dropped reads, release LIFO after publication; every owned nonzero including +1 is fatal with invocation-only rollback. The pinned CLI engine emits no rows for this detector even for its own source-valid unit-test input, so only a negative CLI comparison is claimed.",
+      "native_files": ["src/detectors/mrticktock.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mrticktock.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "netlify/v1/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/netlify/v1/netlify.go",
+      "scope_notes": "Netlify74/v1/default/no hints. Prefixed 43-45 byte mixed alphanumeric-underscore-hyphen tokens are de-duplicated first-seen and always carry rotation-guide and version-one metadata even without verification. The Source never trims this version. Bearer authorization follows the nil-context constructor drop, which reports the missing-context cause through the mandatory checked key setter. Only 200 verifies, 401 is quietly unverified, other statuses report the numeric unexpected-status cause and whole Do failures keep their diagnostic. Release precedes the setter and every owned nonzero is fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/netlify.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_netlify.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "netlify/v2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/netlify/v2/netlify.go",
+      "scope_notes": "Netlify74/v2/default/no hints. Prefixed nfp_ plus 36 mixed alphanumeric-underscore tokens require the exact forty-byte length, are de-duplicated first-seen and always carry rotation-guide and version-two metadata. Verification, setter and cleanup rules are shared with version one.",
+      "native_files": ["src/detectors/netlify.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_netlify.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

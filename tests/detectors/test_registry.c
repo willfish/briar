@@ -504,6 +504,14 @@ static const registration expected[] = {
     {698, 0, "Moonclerk", "moonclerk", 32, true, -1},
     {909, 0, "Moralis", "moralis", 64, true, -1},
     {261, 0, "Moosend", "moosend", 36, true, -1},
+    {688, 0, "MyIntervals", "myintervals", 11, true, -1},
+    {532, 0, "NasdaqDataLink", "nasdaq", 20, false, -1},
+    {748, 0, "Mux", "mux", 36, true, 1024},
+    {216, 0, "Myfreshworks", "freshworks", 22, true, 1024},
+    {268, 0, "Nethunt", "nethunt", 36, true, 1024},
+    {691, 0, "Mrticktock", "mrticktock", 20, true, 1024},
+    {74, 1, "Netlify", "netlify", 44, true, -1},
+    {74, 2, "Netlify", "netlify", 40, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -569,6 +577,63 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 8 && !memcmp(results.items[0].raw.data, key, 8));
         CHECK(results.items[0].raw_v2.len == 24 && !memcmp(results.items[0].raw_v2.data, key, 8) && !memcmp(results.items[0].raw_v2.data + 8, secret, 16));
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 748) {
+        char key[37], secret[76], input[140];
+        test_secret(key, 36, 0);
+        for (size_t i = 0; i < 36; ++i) if (key[i] > 'f') key[i] = 'a';
+        key[8] = key[13] = key[18] = key[23] = '-';
+        test_secret(secret, 75, 0);
+        snprintf(input, sizeof(input), "mux %s\nmux %s ", key, secret);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw_v2.len == 111);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 216) {
+        char key[23], id[13], input[80];
+        test_secret(key, 22, 0); test_secret(id, 12, 5);
+        snprintf(input, sizeof(input), "freshworks %s\nfreshworks %s", key, id);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 22 && !memcmp(results.items[0].raw.data, key, 22));
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 268) {
+        char key[37], id[27], input[90];
+        test_secret(key, 36, 0); test_secret(id, 26, 5);
+        snprintf(input, sizeof(input), "nethunt %s\nnethunt %s", key, id);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 36 && !memcmp(results.items[0].raw.data, key, 36));
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 691) {
+        /* The keyword must not also appear inside the address, or its own
+         * prefixed password grammar yields a second, still source-valid pair. */
+        const char *email = "briar7@fixture.invalid";
+        char input[110];
+        snprintf(input, sizeof(input), "%s\nmrticktock Hunter2Pass", email);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == strlen(email) && !memcmp(results.items[0].raw.data, email, strlen(email)));
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 74 && entry->version == 2) {
+        char key[41], input[80];
+        memcpy(key, "nfp_", 4);
+        for (size_t i = 4; i < 40; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[40] = '\0';
+        snprintf(input, sizeof(input), "netlify %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 40 && results.items[0].extra_data);
         br_results_clear(&results);
         return;
     }

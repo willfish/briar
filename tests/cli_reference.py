@@ -797,6 +797,8 @@ def fixtures():
     linkpreview_key = alnum("linkpreview-key", 32)
     liveagent_key = alnum("liveagent-key", 32)
     mailmodo_material = synthetic("mailmodo-key", 28).upper()
+    mux_key = b"7f3a1c2d-4e5f-4a6b-8c9d-0e1f2a3b4c5d"
+    mux_secret = alnum("mux-secret", 75)
     mailmodo_key = b"-".join(mailmodo_material[i:i + 7] for i in range(0, 28, 7))
     livestorm_key = b"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhcGkubGl2ZXN0b3JtLmNvIiwianRpIjoi" + alnum("livestorm-middle", 134) + b"." + alnum("livestorm-signature", 43)
     gcp_payload = json.dumps({"type": "service_account", "client_email": "briar87@offline.invalid", "project_id": "offline87", "private_key": "not-a-key", "auth_provider_x509_cert_url": "unused", "token_uri": "https://oauth2.googleapis.com/token"}, separators=(",", ":")).encode()
@@ -1699,8 +1701,15 @@ def fixtures():
         ("newscatcher", 543, b"newscatcher " + alnum("newscatcher-key", 43)),
         ("ngrok", 966, b"ngrok " + b"2" + alnum("ngrok-key", 26) + b"_7" + alnum("ngrok-tail", 20)),
         ("nexmoapikey", 121, b"nexmo " + alnum("nexmo-key", 8) + b"\nnexmo " + alnum("nexmo-secret", 16)),
+        ("mrticktock", 691, b"briar7@fixture.invalid\nmrticktock Hunter2Pass"),
         ("moonclerk", 698, b"moonclerk " + synthetic("moonclerk-key", 32).lower()),
         ("moralis", 909, b"moralis " + alnum("moralis-key", 64)),
+        ("myintervals", 688, b"myintervals " + synthetic("myintervals-key", 11)),
+        ("mux", 748, b"mux " + mux_key + b"\nmux " + mux_secret + b" "),
+        ("myfreshworks", 216, b"freshworks " + alnum("freshworks-key", 22) + b"\nfreshworks " + alnum("freshworks-id", 12)),
+        ("nethunt", 268, b"nethunt " + alnum("nethunt-key", 36) + b"\nnethunt " + alnum("nethunt-id", 26)),
+        ("netlify_v1", 74, b"netlify " + alnum("netlify-v1-key", 44)),
+        ("netlify_v2", 74, b"netlify nfp_" + alnum("netlify-v2-key", 36)),
         ("moosend", 261, b"moosend A" + synthetic("moosend-key", 7) + b"-" + synthetic("moosend-b", 4) + b"-" + synthetic("moosend-c", 4) + b"-" + synthetic("moosend-d", 4) + b"-" + synthetic("moosend-e", 12)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
@@ -2118,7 +2127,12 @@ def compare(native, reference, case):
             raise AssertionError(name + ": LiveAgent still requires independent key and domain captures without verification")
     if name.startswith("jdbc_") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": JDBC custom false-positive policy retains example paths and parsed connection metadata without verification")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_")):
+    if name.startswith("mrticktock_"):
+        # The pinned CLI engine emits nothing for this detector even for its own
+        # source-valid unit-test input, so the oracle agrees only on absence.
+        if actual or expected:
+            raise AssertionError(name + ": the CLI oracle emits no Mrticktock rows; native must match that absence")
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):

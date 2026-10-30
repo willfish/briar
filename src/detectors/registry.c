@@ -500,6 +500,14 @@ static const detector_factory named_factories[] = {
     br_moonclerk_init,
     br_moralis_init,
     br_moosend_init,
+    br_myintervals_init,
+    br_nasdaqdatalink_init,
+    br_mux_init,
+    br_myfreshworks_init,
+    br_nethunt_init,
+    br_mrticktock_init,
+    br_netlify_v1_init,
+    br_netlify_v2_init,
 };
 
 static int fail(char **error, const char *message)
@@ -647,7 +655,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
         case 9: case 113: return detector->version >= 1 && detector->version <= 3;
-        case 3: case 4: case 8: case 19: case 107: case 142: case 190: case 303: case 333: case 394: case 430: case 708: case 921: case 994: case 1008: case 120: return detector->version == 1 || detector->version == 2;
+        case 3: case 4: case 8: case 19: case 107: case 142: case 190: case 303: case 333: case 394: case 430: case 708: case 921: case 994: case 1008: case 120: case 74: return detector->version == 1 || detector->version == 2;
         case 0: case 5: case 6: case 983: case 696: case 876: case 529: case 486: case 542: case 18: case 36: case 39: case 40: case 138: case 192: case 196: case 149: case 150: case 158: case 237: case 238: case 239: case 249: case 254: case 255: case 256: case 258: case 259: case 265: case 521: case 390: case 431: case 432: case 433: case 434: case 436: case 678: case 681: case 683: case 684: case 685: case 692: case 334: case 335: case 343: case 693: case 197: case 199: case 802: case 805: case 808:
         case 125: case 126: case 130: case 135: case 277: case 1014: case 1015: case 498: case 499: case 501: case 506: case 507: case 910: case 917: case 919: case 920: case 923: case 924: case 905: case 907:
         case 302: case 565: case 566: case 567: case 568: case 569: case 707: case 709: case 710: case 711: case 712: case 713: case 714: case 721: case 723: case 726: case 727: case 756: case 762: case 763: case 828: case 829: case 830: case 831: case 833: case 834: case 838: case 839: case 861: case 863: case 844: case 845: case 848: case 354: case 358: case 359: case 360: case 366: case 375: case 379: case 380: case 381: case 382: case 383: case 522: case 523: case 524: case 525: case 526: case 527: case 528: case 170: case 173: case 163: case 399: case 467: case 473: case 474: case 477: case 453:
@@ -658,7 +666,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
         case 578: case 602: case 603: case 604: case 619: case 621: case 110: case 112: case 55: case 56: case 57: case 59: case 60: case 62: case 64: case 65: case 66: case 68: case 69: case 323: case 324: case 325: case 554: case 555: case 564: case 511: case 512: case 513: case 733: case 739: case 749: case 2: case 1052: case 959: case 960: case 962: case 963: case 980: case 988: case 990: case 993: case 947: case 953: case 954: case 957: case 971: case 1013: case 1007: case 1009: case 931: case 1018: case 1019: case 1025: case 1029: case 958: case 972: case 976: case 977: case 1024: case 975: case 1020: case 260: case 1036: case 1030: case 395: case 164: case 153: case 408: case 572: case 361: case 764: case 877: case 556: case 355: case 926: case 508: case 72: case 773: case 459: case 487: case 813: case 557: case 250: case 349: case 509: case 906: case 271: case 856: case 941: case 156: case 858: case 987: case 579: case 689: case 940: case 362: case 356: case 530:
         case 478: case 133: case 287: case 131: case 295: case 686: case 329: case 450: case 510: case 715: case 228:
         case 982: case 786: case 145: case 105: case 106:
-        case 853: case 296: case 140: case 573: case 740: case 760: case 935: case 328: case 656: case 111: case 186: case 736: case 272: case 1021: case 1028: case 489: case 991: case 992: case 191: case 841: case 952: case 901: case 668: case 267: case 437: case 177: case 758: case 1000: case 176: case 438: case 735: case 165: case 10: case 774: case 700: case 682: case 669: case 657: case 820: case 753: case 246: case 157: case 995: case 623: case 207: case 896: case 543: case 966: case 121: case 698: case 909: case 261:
+        case 853: case 296: case 140: case 573: case 740: case 760: case 935: case 328: case 656: case 111: case 186: case 736: case 272: case 1021: case 1028: case 489: case 991: case 992: case 191: case 841: case 952: case 901: case 668: case 267: case 437: case 177: case 758: case 1000: case 176: case 438: case 735: case 165: case 10: case 774: case 700: case 682: case 669: case 657: case 820: case 753: case 246: case 157: case 995: case 623: case 207: case 896: case 543: case 966: case 121: case 698: case 909: case 261: case 688: case 748: case 216: case 268: case 691:
             return detector->version == 0;
         default: break;
         }
@@ -1135,6 +1143,13 @@ const char *br_detector_type_name(int32_t type)
     case 698: return "Moonclerk";
     case 909: return "Moralis";
     case 261: return "Moosend";
+    case 688: return "MyIntervals";
+    case 532: return "NasdaqDataLink";
+    case 748: return "Mux";
+    case 216: return "Myfreshworks";
+    case 268: return "Nethunt";
+    case 691: return "Mrticktock";
+    case 74: return "Netlify";
     case 329: return "Leadfeeder";
     case 450: return "LocationIQ";
     case 510: return "Loginradius";
