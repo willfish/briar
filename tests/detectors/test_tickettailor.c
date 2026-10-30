@@ -3,9 +3,36 @@
 #include "../../src/http_internal.h"
 #include "../support/detector_test.h"
 
-int br_tickettailor_init(const br_detector **out, char **error);
+static const char key[] = "sk_1234_123456_0123456789abcdef0123456789abcdef";
+static const char *live_authorization;
 
-static const char key[] = "sk_test_abc123_0123456789abcdef0123456789abcdef";
+static int capture_send(const br_scan_ctx *ctx, const br_http_request *request,
+                        br_http_response *response, char **error)
+{
+    CHECK(!live_authorization);
+    for (size_t i = 0; i < request->nheaders; ++i)
+        if (!strcmp(request->headers[i].name, "Authorization"))
+            live_authorization = request->headers[i].value;
+    CHECK(live_authorization);
+    return br_http_send(ctx, request, response, error);
+}
+
+static void capture_release(const br_scan_ctx *ctx, br_http_response *response)
+{
+    char *expected = NULL;
+    CHECK(br_http_basic_auth((br_slice){(const unsigned char *)key, sizeof(key) - 1},
+                            (br_slice){0}, &expected, NULL) == 0);
+    CHECK(live_authorization && !strcmp(live_authorization, expected));
+    free(expected);
+    br_http_release(ctx, response);
+    live_authorization = NULL;
+}
+
+#define br_http_send capture_send
+#define br_http_release capture_release
+#include "../../src/detectors/tickettailor.c"
+#undef br_http_send
+#undef br_http_release
 
 static int owned_send(void *user, const br_scan_ctx *ctx, const br_http_request *request,
                        br_http_response *response, char **error)
@@ -45,6 +72,17 @@ int main(void)
         "Tickettailor is an online ticketing platform that allows event organizers to sell tickets. Tickettailor API keys can be used to manage events, orders, and tickets programmatically."));
     CHECK(br_tickettailor_init(NULL, &error) != 0 && error); free(error);
     char input[160];
+    static const char *const invalid[] = {
+        "sk_test_123456_0123456789abcdef0123456789abcdef",
+        "sk_1234_abc123_0123456789abcdef0123456789abcdef",
+        "sk_1234_123456_0123456789ABCDEF0123456789ABCDEF",
+    };
+    for (size_t i = 0; i < sizeof(invalid) / sizeof(*invalid); ++i) {
+        snprintf(input, sizeof(input), "tickettailor %s", invalid[i]);
+        br_results rejected = test_scan(detector, NULL, false, input, strlen(input));
+        CHECK(!rejected.len);
+        br_results_clear(&rejected);
+    }
     snprintf(input, sizeof(input), "tickettailor %s", key);
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
     CHECK(results.len == 1); test_key_result(&results.items[0], 840, key, "key");

@@ -41,7 +41,6 @@ static int verify_tickettailor(const br_scan_ctx *ctx, const char *key, br_resul
     br_http_response response = {0};
     char *send_error = NULL;
     int sent = br_http_send(ctx, &request, &response, &send_error);
-    free(authorization);
     free(send_error);
     int rc = 0;
     if (sent == 0 && response.status == 200) result->verified = true;
@@ -53,6 +52,7 @@ static int verify_tickettailor(const br_scan_ctx *ctx, const char *key, br_resul
         else rc = set_error(result, message, error);
     }
     br_http_release(ctx, &response);
+    free(authorization);
     return rc;
 }
 
@@ -95,7 +95,7 @@ int br_tickettailor_init(const br_detector **out, char **error)
     if (!out) return fail(error, "invalid TicketTailor detector output");
     *out = NULL;
     /* No trailing boundary: a longer hex run still captures the first 32. */
-    if (br_key_pattern_init(&tickettailor_detector, "\\b(sk_[a-zA-Z0-9]{4}_[a-zA-Z0-9]{6}_[a-zA-Z0-9]{32})", error) != 0)
+    if (br_key_pattern_init(&tickettailor_detector, "\\b(sk_[0-9]{4}_[0-9]{6}_[a-f0-9]{32})", error) != 0)
         return -1;
     *out = &tickettailor_detector;
     return 0;
