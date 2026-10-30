@@ -553,5 +553,6 @@ int br_openweather_init(const br_detector **out, char **error);
 int br_pixabay_init(const br_detector **out, char **error);
 int br_positionstack_init(const br_detector **out, char **error);
 int br_jwt_init(const br_detector **out, char **error);
+int br_nvapi_init(const br_detector **out, char **error);
 
 #endif

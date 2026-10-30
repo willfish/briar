@@ -557,6 +557,7 @@ static const registration expected[] = {
     {494, 0, "Pixabay", "pixabay", 34, true, -1},
     {535, 0, "PositionStack", "positionstack", 32, true, -1},
     {1039, 0, "JWT", "ewogIC", 78, true, -1},
+    {997, 0, "NVAPI", "nvapi-", 70, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -1013,6 +1014,18 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results results = test_scan(detector, &ctx, false, token, strlen(token));
         CHECK(results.len == 1 && results.items[0].raw.len == strlen(token));
         CHECK(results.items[0].extra_data && json_object_object_length(results.items[0].extra_data) == 4);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 997) {
+        char key[71], input[100];
+        memcpy(key, "nvapi-", 6);
+        for (size_t i = 6; i < 70; ++i) key[i] = "ab12_-"[i % 6];
+        key[70] = '\0';
+        snprintf(input, sizeof(input), "nvapi- %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 70);
         br_results_clear(&results);
         return;
     }

@@ -4990,6 +4990,15 @@
       "evidence": ["tests/detectors/test_jwt.c", "tests/core/test_go_time.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Non-200 HTTP status text and non-ASCII URL quoting are explicit unsupported boundaries", "Reached private/foreign-curve JWK export forms remain explicit unsupported fatals", "Complete JWKS/Reader/diagnostic and native HTTP lifecycle parity"]
     },
+    "nvapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nvapi/nvapi.go",
+      "scope_notes": "NVAPI997/v0/default/no hints. The unprefixed nvapi- plus 64 mixed alphanumeric-underscore-hyphen grammar is collected as a complete byte-unique set before findings, and Raw is the 70-byte key. The complete 82-byte credentials form body is built before the nil-context cause, then Content-Type is added for the SANE POST. 200 verifies, 401 stays unverified and other statuses format a numeric unexpected-status cause; whole preparation/Do failures keep their optional owned leaf even when NULL. The mandatory checked setter runs with the full token after helper release, including on 200/401, and no extra metadata is invented. Release happens exactly once per attempt with the original URL/header/body/key alive.",
+      "native_files": ["src/detectors/nvapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_nvapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Map iteration order is projected as first-seen order", "Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
