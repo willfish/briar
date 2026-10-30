@@ -4981,6 +4981,15 @@
       "evidence": ["tests/detectors/test_positionstack.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "jwt/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/jwt/jwt.go",
+      "scope_notes": "JWT1039/v0/default with ewogIC/ewoid/eyJ engine hints and max_secret_size4096 as an engine hint only. Unprefixed token grammar, exact-string uniqueness and first-seen order; ParseUnverified drops malformed segments, wrong segment counts, unknown or missing alg, HMAC algorithms and undecodable signatures. Header kid string typing, MapClaims float64 numbers with ordered duplicate/null rules and presence-before-truncation NumericDate handling include the 518-byte finite literal and nonzero fractions truncating to Unix 0, formatted through the frozen Go time helper. Claims validation uses one-minute leeway; issuer https/JoinPath gating and kid presence precede any request. Discovery and JWKS each read one first document under a 1 MiB cap with read-error precedence; the length-bearing jwks_uri must parse as https with a matching host and the raw URI is reused. JWK parsing validates alg and key_ops for EVERY key with source messages but adds no selection filter, treats present-empty base64 as an empty slice, appends keys from every keys array, accepts keys:null as empty and matches the first exact kid. Export precedes private/type/width skips; Ed25519 non-32-byte keys export then verify determinately false without a setter, padded leading-zero RSA exponents remain valid, and ECDSA signature width comes from the JWT algorithm while the curve comes from the JWK. PSS salt length is AUTO. Statuses other than 200 are explicit unsupported text boundaries; do/read failures wrap and reach the mandatory full-match setter before publication.",
+      "native_files": ["src/detectors/jwt.c", "src/go_time.c", "src/go_url.c", "src/detectors/json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_jwt.c", "tests/core/test_go_time.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Non-200 HTTP status text and non-ASCII URL quoting are explicit unsupported boundaries", "Reached private/foreign-curve JWK export forms remain explicit unsupported fatals", "Complete JWKS/Reader/diagnostic and native HTTP lifecycle parity"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
