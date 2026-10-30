@@ -46,7 +46,7 @@ static const br_detector *open_detector(int (*init)(const br_detector **, char *
     CHECK(init(NULL, &error) != 0 && error && !strcmp(error, "invalid Rapidapi detector output"));
     free(error);
     CHECK(init(&detector, &error) == 0 && detector && !error);
-    CHECK(detector->type == 99 && detector->version == 0 && !strcmp(detector->name, "Rapidapi"));
+    CHECK(detector->type == 99 && detector->version == 0 && !strcmp(detector->name, "RapidApi"));
     CHECK(!strcmp(detector->description, "RapidAPI is a platform for connecting to thousands of APIs. RapidAPI keys can be used to access and interact with these APIs."));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "rapidapi"));
     CHECK(detector->max_secret_size == -1 && detector->start_offset == -1 && detector->max_credential_span == -1);
@@ -133,5 +133,5 @@ int main(void)
     key[50] = other[50] = '\0';
     CHECK(strlen(key) == 50 && strlen(other) == 50);
     exercise(open_detector(br_rapidapi_init));
-    return test_finish("Rapidapi");
+    return test_finish("RapidApi");
 }

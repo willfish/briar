@@ -568,5 +568,8 @@ int br_theoddsapi_init(const br_detector **out, char **error);
 int br_wistia_init(const br_detector **out, char **error);
 int br_uplead_init(const br_detector **out, char **error);
 int br_vbout_init(const br_detector **out, char **error);
+int br_rapidapi_init(const br_detector **out, char **error);
+int br_prefect_init(const br_detector **out, char **error);
+int br_sendinbluev2_init(const br_detector **out, char **error);
 
 #endif

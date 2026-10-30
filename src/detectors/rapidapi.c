@@ -60,7 +60,7 @@ static int rapidapi_scan(const br_detector *detector, const br_scan_ctx *ctx, bo
 
 static const char *const rapidapi_keywords[] = {"rapidapi"};
 static br_detector rapidapi_detector = {
-    .type = 99, .version = 0, .name = "Rapidapi", .custom_name = "",
+    .type = 99, .version = 0, .name = "RapidApi", .custom_name = "",
     .description = "RapidAPI is a platform for connecting to thousands of APIs. RapidAPI keys can be used to access and interact with these APIs.",
     .keywords = rapidapi_keywords, .nkeywords = 1,
     .max_secret_size = -1, .start_offset = -1, .max_credential_span = -1,

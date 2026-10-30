@@ -5125,6 +5125,60 @@
       "evidence": ["tests/detectors/test_vbout.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "rapidapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/rapidapi/rapidapi.go",
+      "scope_notes": "RapidApi99/v0/default/no hints. Prefixed 50-byte mixed-case alphanumeric/underscore/hyphen occurrences, key-only result and no setter. The fixed covid tracking URL precedes the nil-context drop, and the raw key is the literal x-rapidapi-key header on a SANE request. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/rapidapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_rapidapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "prefect/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/prefect/prefect.go",
+      "scope_notes": "Prefect918/v0/default/no hints. The grammar is UNPREFIXED (literal pnu_ plus 36 mixed alphanumerics) while pnu_ is only the dispatch keyword. Raw and the key part carry all 40 bytes. The fixed login URL precedes the nil-context drop, and the key follows the literal \"Bearer \" prefix in Authorization on a SANE request. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/prefect.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_prefect.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "sendinbluev2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/sendinbluev2/sendinbluev2.go",
+      "scope_notes": "SendinBlueV2/v0(86)/default/no hints. The grammar is UNPREFIXED: literal xkeysib- plus 81 mixed alphanumeric/underscore/hyphen bytes, with xkeysib only as the dispatch keyword. Because the trailing class admits non-word bytes, a token ending on a hyphen has no word boundary and is not matched. The fixed account URL precedes the nil-context drop, and the raw key is the literal api-key header on a SANE request. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/sendinbluev2.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_sendinbluev2.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "rapidapi/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/rapidapi/rapidapi.go",
+      "scope_notes": "RapidApi99/v0/default/no hints. The type name is RapidApi, not Rapidapi. Prefixed 50-byte mixed-case alphanumeric/underscore/hyphen occurrences, key-only result and no setter. The fixed covid tracking URL precedes the nil-context drop, and the raw key is the literal x-rapidapi-key header on a SANE request. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/rapidapi.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_rapidapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "prefect/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/prefect/prefect.go",
+      "scope_notes": "Prefect918/v0/default/no hints. The grammar is UNPREFIXED (literal pnu_ plus 36 mixed alphanumerics) while pnu_ is only the dispatch keyword. Raw and the key part carry all 40 bytes. The fixed login URL precedes the nil-context drop, and the key follows the literal \"Bearer \" prefix in Authorization on a SANE request. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt.",
+      "native_files": ["src/detectors/prefect.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_prefect.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "sendinbluev2/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/sendinbluev2/sendinbluev2.go",
+      "scope_notes": "SendinBlueV2/v0/86/default/no hints. The grammar is UNPREFIXED: literal xkeysib- plus 81 mixed alphanumeric/underscore/hyphen bytes, with xkeysib only as the dispatch keyword. Because the trailing class admits non-word bytes, a token ending on a hyphen has no word boundary and is not matched. The fixed account URL precedes the nil-context drop, and the raw key is the literal api-key header on a SANE request. Whole send failures stay unverified, every 2xx verifies, and one release follows each attempt. ORACLE ABSENCE: the pinned CLI emits no rows for this detector even for its own upstream unit-test token under include-detectors=sendinbluev2, SendinBlueV2, 86 or all, so this identity carries focused native evidence plus a registry row and no CLI comparison.",
+      "native_files": ["src/detectors/sendinbluev2.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_sendinbluev2.c", "tests/detectors/test_registry.c", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
