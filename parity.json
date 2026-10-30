@@ -19376,6 +19376,42 @@
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_parsers.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "posthog/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/posthog/posthog.go",
+      "scope_notes": "PosthogApp161/v0/default. Keyword phx_. Unprefixed capture is phx_ plus 43 to 48 of the pinned class with word boundaries. TrimSpace does not change that class. Both URLs are built before a nil-context drop. SANE GET https://app.posthog.com/api/event/?personal_api_key= and https://eu.posthog.com/api/event/?personal_api_key= send Content-Type application/json. US 2xx verifies and does not call EU. Exact US 401 calls EU. A US transport error does not call EU. EU 2xx verifies. No setter and no body read. One release per attempt; the US response is released before an EU send.",
+      "native_files": ["src/detectors/posthog.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_posthog.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "postmark/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/postmark/postmark.go",
+      "scope_notes": "Postmark81/v0/default. Keyword postmark. Prefixed lowercase UUID capture. A nil context keeps the finding and retains net/http: nil Context for both constructors, joined with a newline. The server endpoint is tried first. Exact HTTP 200 verifies as type server and does not call account or set an error. Every other server outcome still tries the account endpoint. Account 200 verifies as type account and discards the server error. 401 is quiet. Other statuses use unexpected status code. Headers are Accept, Content-Type, then X-Postmark-Server-Token or X-Postmark-Account-Token. SANE GET https://api.postmarkapp.com/deliverystats and https://api.postmarkapp.com/domains?count=10&offset=0. One release per attempt.",
+      "native_files": ["src/detectors/postmark.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_postmark.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "powrbot/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/powrbot/powrbot.go",
+      "scope_notes": "Powrbot243/v0/default. Keyword powrbot. Prefixed 40-character capture. Nil context drops before Authorization. SANE GET https://powrbot.com/api/v1/search/single/?company=Apple sends Authorization secret-key plus the raw key. Every 2xx verifies. No setter and no body read. One release per attempt.",
+      "native_files": ["src/detectors/powrbot.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_powrbot.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "prodpad/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/prodpad/prodpad.go",
+      "scope_notes": "Prodpad842/v0/default. Keyword prodpad. Prefixed 64-character lowercase hex capture. Nil context drops before the headers. SANE GET https://api.prodpad.com/v1/tags sends canonical Accept then Authorization Bearer plus the raw key. Every 2xx verifies. No setter and no body read. One release per attempt.",
+      "native_files": ["src/detectors/prodpad.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_prodpad.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     }
   },
   "components": {

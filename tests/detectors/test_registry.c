@@ -628,6 +628,10 @@ static const registration expected[] = {
     {479, 0, "ParallelDots", "paralleldots", 43, true, -1},
     {803, 0, "Parsehub", "parsehub", 12, true, -1},
     {765, 0, "Parsers", "parsers", 64, true, -1},
+    {161, 0, "PosthogApp", "phx_", 47, true, -1},
+    {81, 0, "Postmark", "postmark", 36, true, -1},
+    {243, 0, "Powrbot", "powrbot", 40, true, -1},
+    {842, 0, "Prodpad", "prodpad", 64, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2240,6 +2244,16 @@ static void check_dispatch(const br_detector *detector, const registration *entr
     if (entry->type == 765)
         for (size_t i = 0; i < entry->key_len; ++i)
             if (key[i] >= 'A' && key[i] <= 'Z') key[i] = (char)(key[i] - 'A' + 'a');
+    if (entry->type == 161) {
+        memcpy(key, "phx_", 4);
+        for (size_t i = 4; i < entry->key_len; ++i) key[i] = "ab12Az"[i % 6];
+    }
+    if (entry->type == 81) {
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[8] = key[13] = key[18] = key[23] = '-';
+    }
+    if (entry->type == 842)
+        for (size_t i = 0; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
     if (entry->type == 588) {
         static const char header[] = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.";
         memcpy(key, header, sizeof(header) - 1);
