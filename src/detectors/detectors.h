@@ -641,5 +641,8 @@ int br_partnerstack_init(const br_detector **out, char **error);
 int br_paymoapp_init(const br_detector **out, char **error);
 int br_oopspam_init(const br_detector **out, char **error);
 int br_photoroom_init(const br_detector **out, char **error);
+int br_opencagedata_init(const br_detector **out, char **error);
+int br_mailchimp_init(const br_detector **out, char **error);
+int br_numverify_init(const br_detector **out, char **error);
 
 #endif

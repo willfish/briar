@@ -8,6 +8,7 @@ synthetic; mismatch messages never print candidate values.
 
 import argparse
 import base64
+import copy
 import hashlib
 import json
 import os
@@ -1816,6 +1817,9 @@ def fixtures():
         ("paymoapp", 699, b"paymoapp " + synthetic("paymoapp-key", 44)),
         ("oopspam", 410, b"oopspam " + synthetic("oopspam-key", 40)),
         ("photoroom", 1038, b"photoroom sk_pr_" + synthetic("photoroom-mid", 8) + b"_" + synthetic("photoroom-hex", 40)),
+        ("opencagedata", 533, b"opencagedata " + synthetic("opencagedata-key", 32)),
+        ("mailchimp", 20, synthetic("mailchimp-key", 32) + b"-us12"),
+        ("numverify", 439, b"numverify " + synthetic("numverify-key", 32)),
         ("tyntec", 321, b"tyntec " + alnum("tyntec-key", 32)),
         ("scalewaykey", 85, b"scaleway " + synthetic("scaleway-a", 8) + b"-" + synthetic("scaleway-b", 4) + b"-" + synthetic("scaleway-c", 4) + b"-" + synthetic("scaleway-d", 4) + b"-" + synthetic("scaleway-e", 12)),
         ("scrutinizerci", 766, b"scrutinizer " + synthetic("scrutinizer-key", 64)),
@@ -1958,6 +1962,25 @@ def reference_matches(case, actual, expected):
     name, source, _, kind, _ = case
     if len(actual) != len(expected):
         return False
+    if name == "azure_appconfig_whole_identity_filesystem" and len(actual) == 2:
+        # The detector iterates a Go map of full connection strings. Both
+        # identities share the primary ID, so AssignDuplicateLineOffsets can
+        # assign their two occurrences in either order. Preserve every other
+        # field and require the exact same two source lines, not arbitrary lines.
+        if len({row["Raw"] for row in actual + expected}) != 1:
+            return False
+        lines = []
+        for rows in (actual, expected):
+            lines.append(sorted(row["SourceMetadata"]["Data"]["Filesystem"]["line"] for row in rows))
+        if lines != [[2, 3], [2, 3]]:
+            return False
+        for got, want in zip(actual, expected):
+            left, right = copy.deepcopy(got), copy.deepcopy(want)
+            del left["SourceMetadata"]["Data"]["Filesystem"]["line"]
+            del right["SourceMetadata"]["Data"]["Filesystem"]["line"]
+            if left != right:
+                return False
+        return True
     for got, want in zip(actual, expected):
         if got == want:
             continue
@@ -1979,6 +2002,25 @@ def reference_matches(case, actual, expected):
         if {key: value for key, value in got.items() if key != "DecoderName"} != {key: value for key, value in want.items() if key != "DecoderName"}:
             return False
     return True
+
+
+def check_reference_line_order():
+    case = ("azure_appconfig_whole_identity_filesystem", b"", "1025", "filesystem", False)
+    rows = [{"Raw": "shared-id", "RawV2": identity, "DecoderName": "PLAIN",
+             "SourceMetadata": {"Data": {"Filesystem": {"file": "fixture.txt", "line": line}}}}
+            for identity, line in (("first", 2), ("second", 3))]
+    swapped = copy.deepcopy(rows)
+    for row, line in zip(swapped, (3, 2)):
+        row["SourceMetadata"]["Data"]["Filesystem"]["line"] = line
+    assert reference_matches(case, rows, swapped)
+    for field, value in (("line", 4), ("file", "other.txt")):
+        changed = copy.deepcopy(swapped)
+        changed[0]["SourceMetadata"]["Data"]["Filesystem"][field] = value
+        assert not reference_matches(case, rows, changed)
+    changed = copy.deepcopy(swapped)
+    changed[0]["RawV2"] = "other-identity"
+    assert not reference_matches(case, rows, changed)
+    assert not reference_matches(("other_fixture", *case[1:]), rows, swapped)
 
 
 def compare(native, reference, case):
@@ -2295,7 +2337,7 @@ def compare(native, reference, case):
         # before that capture can complete, so both CLIs emit nothing.
         if actual or expected:
             raise AssertionError(name + ": the default keyword window clips a minimum Paperform key; native must match that absence")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_", "nicereply_", "nimble_", "oanda_", "noticeable_", "nozbeteams_", "notion_", "openuv_", "owlbot_", "meaningcloud_", "openweather_", "pixabay_", "positionstack_", "jwt_", "nvapi_", "pdfshift_", "pdflayer_", "percy_", "pipedrive_", "postman_", "rawg_", "rebrandly_", "podio_", "vpnapi_", "tomtom_", "theoddsapi_", "wistia_", "uplead_", "vbout_", "rapidapi_", "prefect_", "paydirtapp_", "scrapeowl_", "unsplash_", "stockdata_", "verimail_", "route4me_", "polygon_", "sportsmonk_", "yandex_", "signupgenius_", "veriphone_", "splunkobservabilitytoken_", "uptimerobot_", "urlscan_", "pollsapi_", "simplesat_", "stormglass_", "workstack_", "purestake_", "stormboard_", "pepipost_", "nylas_", "tyntec_", "scalewaykey_", "scrutinizerci_", "securitytrails_", "versioneye_", "postageapp_", "salesblink_", "rocketreach_", "vyte_", "ubidots_", "rubygems_", "statuspal_", "skrappio_", "timecamp_", "pushbulletapikey_", "tatumio_", "nugetapikey_", "pagarme_", "pagerdutyapikey_", "pandadoc_", "pandascore_", "npmtoken_", "okta_", "omnisend_", "onedesk_", "paralleldots_", "parsehub_", "parsers_", "posthog_", "postmark_", "powrbot_", "prodpad_", "paymongo_", "paypaloauth_", "paystack_", "peopledatalabs_", "pipedream_", "pivotaltracker_", "plaidkey_", "planetscale_", "partnerstack_", "paymoapp_", "oopspam_", "photoroom_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_", "onesignal_", "onfleet_", "onepagecrm_", "nftport_", "nightfall_", "mailsac_", "mapquest_", "mavenlink_", "mapbox_", "maxmind_", "nicereply_", "nimble_", "oanda_", "noticeable_", "nozbeteams_", "notion_", "openuv_", "owlbot_", "meaningcloud_", "openweather_", "pixabay_", "positionstack_", "jwt_", "nvapi_", "pdfshift_", "pdflayer_", "percy_", "pipedrive_", "postman_", "rawg_", "rebrandly_", "podio_", "vpnapi_", "tomtom_", "theoddsapi_", "wistia_", "uplead_", "vbout_", "rapidapi_", "prefect_", "paydirtapp_", "scrapeowl_", "unsplash_", "stockdata_", "verimail_", "route4me_", "polygon_", "sportsmonk_", "yandex_", "signupgenius_", "veriphone_", "splunkobservabilitytoken_", "uptimerobot_", "urlscan_", "pollsapi_", "simplesat_", "stormglass_", "workstack_", "purestake_", "stormboard_", "pepipost_", "nylas_", "tyntec_", "scalewaykey_", "scrutinizerci_", "securitytrails_", "versioneye_", "postageapp_", "salesblink_", "rocketreach_", "vyte_", "ubidots_", "rubygems_", "statuspal_", "skrappio_", "timecamp_", "pushbulletapikey_", "tatumio_", "nugetapikey_", "pagarme_", "pagerdutyapikey_", "pandadoc_", "pandascore_", "npmtoken_", "okta_", "omnisend_", "onedesk_", "paralleldots_", "parsehub_", "parsers_", "posthog_", "postmark_", "powrbot_", "prodpad_", "paymongo_", "paypaloauth_", "paystack_", "peopledatalabs_", "pipedream_", "pivotaltracker_", "plaidkey_", "planetscale_", "partnerstack_", "paymoapp_", "oopspam_", "photoroom_", "opencagedata_", "mailchimp_", "numverify_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):
@@ -2483,6 +2525,7 @@ def main():
     (ROOT / "state").mkdir(exist_ok=True)
     check_reference_version(args.reference)
     cases = fixtures()
+    check_reference_line_order()
     suite = unittest.TestSuite()
     for case in cases:
         suite.addTest(unittest.FunctionTestCase(lambda case=case: compare(args.native.resolve(), args.reference.resolve(), case), description=case[0]))

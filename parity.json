@@ -19520,6 +19520,33 @@
       "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "partial", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
       "evidence": ["tests/detectors/test_photoroom.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "opencagedata/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/opencagedata/opencagedata.go",
+      "scope_notes": "OpenCageData533/v0/default. Keyword opencagedata. Prefixed 32-character lowercase capture retains duplicates. Raw is the key. The complete geocode URL is built before the nil-context drop. Nil context drops the finding before send. DoWithDedup key is the exact 533:KEY bytes. Every 2xx verifies. Transport failures, including the borrowed-client coalescing rejection, stay unverified with no setter. Successful-response close before publication is a non-material resource-timing deviation. No new HTTP client.",
+      "native_files": ["src/detectors/opencagedata.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/http_coalescing.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_opencagedata.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior", "Owned-client DoWithDedup replay remains a shared runtime gap"]
+    },
+    "mailchimp/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/mailchimp/mailchimp.go",
+      "scope_notes": "Mailchimp20/v0/default. Keyword -us. Unprefixed pattern is 32 hex, -us, then one or two digits. Raw is the full match. ExtraData rotation_guide is set before verification. Nil context drops after the datacenter URL is complete and before Basic auth. SANE GET https://DATACENTER.api.mailchimp.com/3.0/ uses Basic anystring and the raw key, then canonical Accept. Every 2xx verifies. Transport failures stay unverified with no setter. No new HTTP client.",
+      "native_files": ["src/detectors/mailchimp.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_mailchimp.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "numverify/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/numverify/numverify.go",
+      "scope_notes": "Numverify439/v0/default. Keyword numverify. Prefixed 32-character lowercase capture retains duplicates. Raw is the key. The complete validate URL is built before the nil-context drop. Nil context drops the finding. SANE GET uses the key and the fixed number. A 2xx verifies only when the body contains country_code or the exact HTTPS restriction text. Other outcomes stay unverified with no setter. Failed sends release immediately. Successful responses release scan-wide LIFO after publication. No new HTTP client.",
+      "native_files": ["src/detectors/numverify.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/key_scan.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_numverify.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     }
   },
   "components": {

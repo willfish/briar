@@ -645,6 +645,9 @@ static const detector_factory named_factories[] = {
     br_paymoapp_init,
     br_oopspam_init,
     br_photoroom_init,
+    br_opencagedata_init,
+    br_mailchimp_init,
+    br_numverify_init,
 };
 
 static int fail(char **error, const char *message)
@@ -809,7 +812,7 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
     case 583: case 850: case 232: case 308: case 292: case 576: case 787: case 117: case 617:
     case 321: case 85: case 766: case 413: case 638: case 575: case 252: case 331:
     case 616: case 178: case 200: case 776: case 245: case 778: case 124: case 445:
-    case 916: case 985: case 32: case 298: case 731: case 21: case 205: case 601: case 791: case 479: case 803: case 765: case 161: case 81: case 243: case 842: case 534: case 31: case 77: case 658: case 724: case 23: case 79: case 195: case 545: case 699: case 410: case 1038:
+    case 916: case 985: case 32: case 298: case 731: case 21: case 205: case 601: case 791: case 479: case 803: case 765: case 161: case 81: case 243: case 842: case 534: case 31: case 77: case 658: case 724: case 23: case 79: case 195: case 545: case 699: case 410: case 1038: case 533: case 20: case 439:
             return detector->version == 0;
         default: break;
         }
@@ -1422,6 +1425,9 @@ const char *br_detector_type_name(int32_t type)
     case 699: return "Paymoapp";
     case 410: return "OOPSpam";
     case 1038: return "Photoroom";
+    case 533: return "OpenCageData";
+    case 20: return "Mailchimp";
+    case 439: return "Numverify";
     case 329: return "Leadfeeder";
     case 450: return "LocationIQ";
     case 510: return "Loginradius";

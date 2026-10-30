@@ -644,6 +644,9 @@ static const registration expected[] = {
     {699, 0, "Paymoapp", "paymoapp", 44, true, -1},
     {410, 0, "OOPSpam", "oopspam", 40, true, -1},
     {1038, 0, "Photoroom", "photoroom", 48, true, -1},
+    {533, 0, "OpenCageData", "opencagedata", 32, true, -1},
+    {20, 0, "Mailchimp", "-us", 36, true, -1},
+    {439, 0, "Numverify", "numverify", 32, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -2865,6 +2868,10 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         for (size_t i = 8; i < entry->key_len; ++i) key[i] = "0123456789abcdef"[i % 16];
         key[entry->key_len] = '\0';
     }
+    if (entry->type == 20) {
+        memcpy(key, "0123456789abcdef0123456789abcdef-us1", 36);
+        key[36] = '\0';
+    }
     if (entry->type == 256)
         snprintf(input, sizeof(input), "%s %s", entry->keyword, key); /* One occurrence, both patterns. */
     else if (entry->type == 456)
@@ -3082,6 +3089,11 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
         CHECK(json_object_object_get_ex(result->extra_data, "rotation_guide", &part));
         CHECK(!strcmp(json_object_get_string(part), "https://howtorotate.com/docs/tutorials/npm/"));
+    }
+    if (entry->type == 20) {
+        CHECK(result->extra_data && json_object_object_length(result->extra_data) == 1);
+        CHECK(json_object_object_get_ex(result->extra_data, "rotation_guide", &part));
+        CHECK(!strcmp(json_object_get_string(part), "https://howtorotate.com/docs/tutorials/mailchimp/"));
     }
     br_results_clear(&results);
 }
