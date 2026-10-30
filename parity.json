@@ -4450,6 +4450,42 @@
       "evidence": ["tests/detectors/test_newsapi.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "ngc/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/ngc/ngc.go",
+      "scope_notes": "NGC896/v0/span1024 engine hint. An unprefixed 84-byte alphanumeric outer capture is standard-Base64 decoded before any finding, including without verification; the inner 26:8-4-4-4-12 alphanumeric UUID form is searched in that decoded prefix. Decode failure is ordinary and helper nonzero is fatal. Basic authentication with the literal $oauthtoken username is built before the nil-context constructor drop, the header map keeps literal lowercase accept and the request is a SANE GET. Whole preparation/Do failures stay unverified with no setter; every successful-send 2xx verifies while bodies and read errors are ignored. Successful responses are held and released LIFO after publication with original authorization and key storage alive; failed sends release immediately once and every owned nonzero is fatal with invocation-only caller rollback.",
+      "native_files": ["src/detectors/ngc.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/azure_shared_key.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_ngc.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "newscatcher/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/newscatcher/newscatcher.go",
+      "scope_notes": "Newscatcher543/v0/default/no hints. Prefixed 43-byte mixed-alphanumeric-underscore occurrences without uniqueness, key-only result and no setter. Finding creation precedes the nil-context constructor drop; the canonical X-Api-Key header and SANE GET follow it. Whole preparation/Do failures stay unverified with no diagnostic classification, every successful-send 2xx verifies and bodies and read errors are ignored. Successful responses are held and released LIFO after publication with the original key and header values alive; failed sends release immediately once and every owned nonzero including +1 is fatal with invocation-only caller rollback.",
+      "native_files": ["src/detectors/newscatcher.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_newscatcher.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "ngrok/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/ngrok/ngrok.go",
+      "scope_notes": "Ngrok966/v0/default/no hints. Prefixed 2-prefixed 49-byte token grammar with an underscore/digit separator, ASCII Shannon entropy of at least three and first-seen uniqueness applied BEFORE the nil-context drop, so low-entropy tokens never become findings. Canonical Authorization Bearer then Ngrok-Version headers follow the constructor. 200 verifies, 401 and 403 stay quietly unverified, and among 400 responses a present read error wins, then a reached invalid body slice is fatal, then the binary ERR_NGROK_206 marker verifies. Every other status formats the numeric unexpected-status cause. Whole Do failures propagate the borrowed cause without inventing text, and the mandatory checked token-secret setter runs after a single drain/release; every owned nonzero including setter +1 is fatal with invocation-only rollback.",
+      "native_files": ["src/detectors/ngrok.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_ngrok.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "nexmoapikey/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nexmoapikey/nexmoapikey.go",
+      "scope_notes": "NexmoApiKey121/v0/span1024 engine hint. Two independent prefixed grammars (8-byte and 16-byte mixed alphanumeric-underscore-hyphen) form key-major products with duplicates preserved; Raw is the key, RawV2 concatenates key and secret with no separator and both are named parts. The complete literal get-balance URL carrying the raw key and secret is assembled before the nil-context constructor drop, so an owned allocation failure is fatal even when nil would drop. No headers, body or dedup are added and the client is the SANE default. Whole preparation/Do failures stay unverified with no setter; every successful-send 2xx verifies while bodies and read errors are ignored. Successful responses are held with their original URLs and released LIFO after publication; failed sends release immediately once and every owned nonzero is fatal with invocation-only caller rollback.",
+      "native_files": ["src/detectors/nexmoapikey.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_nexmoapikey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

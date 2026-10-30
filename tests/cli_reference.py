@@ -1695,6 +1695,10 @@ def fixtures():
         ("mailmodo", 157, b"mailmodo " + mailmodo_key),
         ("neutrinoapi", 623, b"neutrinoapi " + alnum("neutrinoapi-key", 48) + b"\nneutrinoapi " + alnum("neutrinoapi-id", 12)),
         ("newsapi", 207, b"newsapi " + synthetic("newsapi-key", 32)),
+        ("ngc", 896, b"ngc WGtMOGtDWWFaZEpSbWpKTktWQTQ2VWNKYk06VWxhRjFvMEotS2FEUS0za1hkLVBtekktblJLM0VoZEJPMXAw"),
+        ("newscatcher", 543, b"newscatcher " + alnum("newscatcher-key", 43)),
+        ("ngrok", 966, b"ngrok " + b"2" + alnum("ngrok-key", 26) + b"_7" + alnum("ngrok-tail", 20)),
+        ("nexmoapikey", 121, b"nexmo " + alnum("nexmo-key", 8) + b"\nnexmo " + alnum("nexmo-secret", 16)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
         ("couchbase_retained_number_letter", 920, couchbase_prefix + "user:Name\npass:aBⅫ!\n".encode()),
@@ -2111,7 +2115,7 @@ def compare(native, reference, case):
             raise AssertionError(name + ": LiveAgent still requires independent key and domain captures without verification")
     if name.startswith("jdbc_") and (len(actual) != 1 or len(expected) != 1):
         raise AssertionError(name + ": JDBC custom false-positive policy retains example paths and parsed connection metadata without verification")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):

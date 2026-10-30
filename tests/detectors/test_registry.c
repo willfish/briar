@@ -497,6 +497,10 @@ static const registration expected[] = {
     {995, 0, "Netsuite", "netsuite", 64, true, 1024},
     {623, 0, "NeutrinoApi", "neutrinoapi", 48, true, 1024},
     {207, 0, "Newsapi", "newsapi", 32, true, -1},
+    {896, 0, "NGC", "ngc", 84, true, 1024},
+    {543, 0, "Newscatcher", "newscatcher", 43, true, -1},
+    {966, 0, "Ngrok", "ngrok", 49, true, -1},
+    {121, 0, "NexmoApiKey", "nexmo", 8, true, 1024},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -529,6 +533,39 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len >= 1 && results.items[0].detector_type == 623);
         test_key_result(&results.items[0], 623, key, "key");
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 896) {
+        const char *encoded = "WGtMOGtDWWFaZEpSbWpKTktWQTQ2VWNKYk06VWxhRjFvMEotS2FEUS0za1hkLVBtekktblJLM0VoZEJPMXAw";
+        char input[160];
+        snprintf(input, sizeof(input), "ngc %s", encoded);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1);
+        test_key_result(&results.items[0], 896, encoded, "key");
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 966) {
+        char key[50], input[80];
+        key[0] = '2'; test_secret(key + 1, 26, 0); key[27] = '_'; key[28] = '7'; test_secret(key + 29, 20, 3);
+        snprintf(input, sizeof(input), "ngrok %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1);
+        test_key_result(&results.items[0], 966, key, "key");
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 121) {
+        char key[9], secret[17], input[80];
+        test_secret(key, 8, 0); test_secret(secret, 16, 5);
+        snprintf(input, sizeof(input), "nexmo %s\nnexmo %s", key, secret);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 8 && !memcmp(results.items[0].raw.data, key, 8));
+        CHECK(results.items[0].raw_v2.len == 24 && !memcmp(results.items[0].raw_v2.data, key, 8) && !memcmp(results.items[0].raw_v2.data + 8, secret, 16));
         br_results_clear(&results);
         return;
     }

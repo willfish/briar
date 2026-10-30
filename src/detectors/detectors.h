@@ -493,5 +493,9 @@ int br_mailmodo_init(const br_detector **out, char **error);
 int br_netsuite_init(const br_detector **out, char **error);
 int br_neutrinoapi_init(const br_detector **out, char **error);
 int br_newsapi_init(const br_detector **out, char **error);
+int br_ngc_init(const br_detector **out, char **error);
+int br_newscatcher_init(const br_detector **out, char **error);
+int br_ngrok_init(const br_detector **out, char **error);
+int br_nexmoapikey_init(const br_detector **out, char **error);
 
 #endif
