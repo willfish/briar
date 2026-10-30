@@ -533,6 +533,7 @@ static const registration expected[] = {
     {655, 0, "Luno", "luno", 43, true, 1024},
     {396, 0, "Loyverse", "loyverse", 32, true, -1},
     {797, 0, "LunchMoney", "lunchmoney", 50, true, -1},
+    {835, 0, "Onesignal", "onesignal", 36, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -842,6 +843,18 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 50);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 835) {
+        char key[37], input[70];
+        for (size_t i = 0; i < 36; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[8] = key[13] = key[18] = key[23] = '-';
+        key[36] = '\0';
+        snprintf(input, sizeof(input), "onesignal %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 36);
         br_results_clear(&results);
         return;
     }

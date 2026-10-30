@@ -4774,6 +4774,15 @@
       "evidence": ["tests/detectors/test_lunchmoney.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "onesignal/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/onesignal/onesignal.go",
+      "scope_notes": "Onesignal835/v0/default/no hints. Prefixed lowercase UUID occurrences, key-only result and no setter. Finding construction precedes the nil-context constructor drop; the Accept media type then Basic base64(key:) authorization follow it on a SANE request. Whole mixed preparation/Do failures stay unverified with no diagnostic classification and every successful-send 2xx verifies while bodies and read errors are ignored. Successful responses release LIFO after publication with the original authorization alive, a failed attempt releases immediately once, and later push failures roll back only this invocation.",
+      "native_files": ["src/detectors/onesignal.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_onesignal.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
