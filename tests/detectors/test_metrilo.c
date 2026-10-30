@@ -1,0 +1,242 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+#include "../../src/detectors/detectors.h"
+#include "../../src/detectors/captures.h"
+#include "../../src/detectors/findings.h"
+#include "../support/detector_test.h"
+
+int br_metrilo_init(const br_detector **out, char **error);
+static char key[17], other[17];
+typedef enum { NONE, COMPILE, CAPTURE, FINDING, PUSH } fault_kind;
+static fault_kind fault;
+static size_t fail_nth, failures, freed_patterns, sends, releases, setters;
+static const br_http_request *provider_request;
+static const br_scan_ctx *provider_ctx;
+static br_result *active_result;
+
+static bool hit(fault_kind kind)
+{
+    if (fault != kind || (fail_nth && --fail_nth)) return false;
+    fault = NONE; ++failures; return true;
+}
+/* Existing named-test positive-return seams around actual shared helpers. */
+static int checked_compile(const char *const *keywords, size_t count, const char *capture,
+                            br_regex **out, char **error)
+{
+    CHECK(count == 1 && !strcmp(keywords[0], "metrilo") && !strcmp(capture, "\\b([a-z0-9]{16})\\b"));
+    int rc = br_regex_compile_prefixed(keywords, count, capture, out, error);
+    if (rc == 0 && hit(COMPILE)) { if (error) *error = strdup("synthetic compile failure"); return 1; }
+    return rc;
+}
+static void checked_free(br_regex *pattern)
+{
+    if (pattern) ++freed_patterns;
+    br_regex_free(pattern);
+}
+static int checked_capture(const br_regex *pattern, br_slice input, br_captures *out,
+                            bool unique, char **error)
+{
+    CHECK(!unique);
+    int rc = br_captures_find(pattern, input, out, unique, error);
+    return rc == 0 && hit(CAPTURE) ? 1 : rc;
+}
+static int checked_finding(br_result *r, int32_t type, br_slice token, const char *part)
+{
+    int rc = br_finding_key_bytes(r, type, token, part); active_result = r;
+    return rc == 0 && hit(FINDING) ? 1 : rc;
+}
+static void request_values(const br_http_request *r, bool effective)
+{
+    CHECK(active_result && active_result->raw.len == 16 && r->detector_type == 297 && r->profile == BR_HTTP_SANE);
+    CHECK(!strcmp(r->method, "POST") && !strcmp(r->url, "https://trk.mtrl.me/category"));
+    CHECK(r->timeout_ms == (effective ? 5000u : 0u) && !r->dedup_key.data && !r->dedup_key.len);
+    CHECK(r->nheaders == (effective ? 3u : 2u));
+    CHECK(!strcmp(r->headers[0].name, "Content-Type") && !strcmp(r->headers[0].value, "application/json"));
+    CHECK(!strcmp(r->headers[1].name, "Content-Length") && !strcmp(r->headers[1].value, "0"));
+    char token[17]; memcpy(token, active_result->raw.data, 16); token[16] = 0;
+    char expected[192];
+    int n = snprintf(expected, sizeof(expected), "{\"time\":1518004715732,\"token\": \"%s\" ,\"platform\":\"Wordpress 4.2.7 / Woocommerce 3.5\",\"pluginVersion\":\"1.1.0\",\"params\":{\"id\":\"12\",\"name\":\"Clothing\",\"url\":\"https://dummysite.com\"}}", token);
+    CHECK(n == 191 && r->body.data && r->body.len == 191 && !memcmp(r->body.data, expected, 191));
+}
+static int checked_send(const br_scan_ctx *ctx, const br_http_request *r, br_http_response *response, char **error)
+{
+    CHECK(ctx && !provider_request && active_result && !active_result->verification_error);
+    request_values(r, false); provider_request = r; provider_ctx = ctx; ++sends;
+    return br_http_send(ctx, r, response, error);
+}
+static void checked_release(const br_scan_ctx *ctx, br_http_response *response)
+{
+    CHECK(provider_request && provider_ctx == ctx && !active_result->verification_error);
+    /* Inspect provider-original payload/header/URL storage only, never the
+     * prepared request/header/UA whose lifetime ends at send return. */
+    request_values(provider_request, false);
+    br_http_release(ctx, response); ++releases; provider_request = NULL; provider_ctx = NULL;
+}
+static int checked_push(br_results *out, br_result *r)
+{
+    CHECK(r == active_result && !provider_request && sends == releases);
+    return hit(PUSH) ? 1 : br_results_push(out, r);
+}
+static int checked_setter(br_result *r, const char *cause, const br_slice *secrets, size_t count)
+{
+    ++setters; return br_result_set_verification_error(r, cause, secrets, count);
+}
+
+#define br_regex_compile_prefixed checked_compile
+#define br_regex_free checked_free
+#define br_captures_find checked_capture
+#define br_finding_key_bytes checked_finding
+#define br_http_send checked_send
+#define br_http_release checked_release
+#define br_results_push checked_push
+#define br_result_set_verification_error checked_setter
+#include "../../src/detectors/metrilo.c"
+#undef br_regex_compile_prefixed
+#undef br_regex_free
+#undef br_captures_find
+#undef br_finding_key_bytes
+#undef br_http_send
+#undef br_http_release
+#undef br_results_push
+#undef br_result_set_verification_error
+
+static const br_detector *descriptor(void)
+{
+    const br_detector *d = NULL, *again = NULL; char *error = NULL;
+    CHECK(BR_ABI_REVISION == 1 && strlen(key) == 16 && strlen(other) == 16);
+    CHECK(br_metrilo_init(NULL, &error) == -1 && error); free(error); error = NULL;
+    CHECK(br_metrilo_init(NULL, NULL) == -1);
+    fault = COMPILE; fail_nth = 1;
+    CHECK(br_metrilo_init(&d, &error) == -1 && !d && error && fault == NONE && freed_patterns == 1); free(error); error = NULL;
+    CHECK(!br_metrilo_init(&d, &error) && d && !error && !br_metrilo_init(&again, NULL) && again == d);
+    CHECK(d->type == 297 && !d->version && !strcmp(d->name, "Metrilo") && !strcmp(d->custom_name, ""));
+    CHECK(!strcmp(d->description, "Metrilo is an analytics and CRM platform for e-commerce. Metrilo API keys can be used to access and manage e-commerce data."));
+    CHECK(d->nkeywords == 1 && !strcmp(d->keywords[0], "metrilo"));
+    CHECK(d->max_secret_size == -1 && d->start_offset == -1 && d->max_credential_span == -1);
+    CHECK(d->state && d->scan && !d->clean && !d->clean_always && !d->false_positive && !d->validate_endpoints && !d->cloud_endpoint);
+    return d;
+}
+static void result_is(const br_result *r, const char *token, bool verified)
+{
+    test_key_result(r, 297, token, "key"); CHECK(r->verified == verified && !r->verification_error);
+}
+static void extract(const br_detector *d, const void *input, size_t len, const char *token)
+{
+    size_t sent = sends, released = releases, set = setters;
+    br_results out = test_scan(d, NULL, false, input, len);
+    CHECK(out.len == (token ? 1u : 0u) && sends == sent && releases == released && setters == set);
+    if (token) result_is(&out.items[0], token, false);
+    br_results_clear(&out);
+}
+static void extraction(const br_detector *d)
+{
+    char input[300], changed[18];
+    const char *good[] = {"metrilo '%s'", "MeTrIlO=-%s-", "myMETRILOsuffix\r\n%s", "metrilo\r%s", "metrilo\n%s", "metrilo \t%s\t ", "metrilo é%sé"};
+    const char *bad[] = {"%s", "met rilo %s", "%s metrilo", "metrilo%s", "metrilo _%s", "metrilo %s_", "metrilo %sa", "metrilo %.15s"};
+    for (size_t i = 0; i < sizeof(good) / sizeof(*good); ++i) { snprintf(input, sizeof(input), good[i], key); extract(d, input, strlen(input), key); }
+    for (size_t i = 0; i < sizeof(bad) / sizeof(*bad); ++i) { snprintf(input, sizeof(input), bad[i], key); extract(d, input, strlen(input), NULL); }
+    const char invalid[] = "A_-+/ ";
+    for (size_t i = 0; i < sizeof(invalid) - 1; ++i) {
+        memcpy(changed, key, sizeof(key)); changed[7] = invalid[i]; snprintf(input, sizeof(input), "metrilo %s", changed); extract(d, input, strlen(input), NULL);
+    }
+    memset(changed, 'a', 16); changed[16] = 0; snprintf(input, sizeof(input), "metrilo %s", changed); extract(d, input, strlen(input), changed);
+    memset(changed, '0', 16); snprintf(input, sizeof(input), "metrilo %s", changed); extract(d, input, strlen(input), changed);
+    for (size_t gap = 40; gap <= 41; ++gap) {
+        memcpy(input, "metrilo", 7); memset(input + 7, ':', gap); memcpy(input + 7 + gap, key, 16); extract(d, input, 23 + gap, gap == 40 ? key : NULL);
+        for (size_t i = 0; i < gap; ++i) memcpy(input + 7 + 4 * i, "💡", 4);
+        memcpy(input + 7 + 4 * gap, key, 16); extract(d, input, 23 + 4 * gap, gap == 40 ? key : NULL);
+    }
+    memcpy(input, "metrilo\0", 8); memcpy(input + 8, key, 16); extract(d, input, 24, key);
+    snprintf(input, sizeof(input), "metrilo %s %s", key, other); extract(d, input, strlen(input), key);
+    extract(d, NULL, 0, NULL);
+}
+
+typedef struct { const char *keys[3], *agent; size_t count; } expected;
+static void inspect(test_http *http, const br_scan_ctx *ctx, const br_http_request *r)
+{
+    expected *e = http->user; size_t at = http->calls - 1;
+    CHECK(provider_request && ctx == provider_ctx && at < e->count); request_values(r, true);
+    const size_t token_offset = sizeof("{\"time\":1518004715732,\"token\": \"") - 1;
+    CHECK(!memcmp(r->body.data + token_offset, e->keys[at], 16));
+    CHECK(!strcmp(r->headers[2].name, "User-Agent") && !strcmp(r->headers[2].value, e->agent));
+}
+static void occurrences(const br_detector *d)
+{
+    char input[100]; snprintf(input, sizeof(input), "metrilo %s\nmetrilo %s\nmetrilo %s", key, other, key);
+    expected e = {.keys = {key, other, key}, .count = 3, .agent = "TruffleHog metrilo-offline"};
+    test_http http = {.inspect = inspect, .user = &e, .response = {.status = 204, .body_error = "ignored"}};
+    br_transport transport = test_transport(&http); br_scan_ctx ctx = {.transport = &transport, .user_agent = "metrilo-offline"};
+    for (size_t pass = 0; pass < 3; ++pass) {
+        http.calls = http.releases = 0; http.send_rc = pass == 2 ? 1 : 0; http.send_error = pass == 2 ? "cannot create Metrilo finding" : NULL;
+        br_results out = test_scan(d, &ctx, pass != 0, input, strlen(input));
+        CHECK(out.len == 3 && http.calls == (pass ? 3u : 0u) && http.releases == http.calls);
+        for (size_t i = 0; i < 3; ++i) result_is(&out.items[i], e.keys[i], pass == 1);
+        CHECK(out.items[0].raw.data != out.items[2].raw.data && out.items[0].secret_parts != out.items[2].secret_parts); br_results_clear(&out);
+    }
+    size_t sent = sends, released = releases;
+    br_results out = test_scan(d, NULL, true, input, strlen(input));
+    CHECK(!out.len && sends == sent && releases == released); br_results_clear(&out);
+}
+static bool cancelled(void *user) { ++*(size_t *)user; return true; }
+static void status_send_and_preparation(const br_detector *d)
+{
+    char input[50]; snprintf(input, sizeof(input), "metrilo %s", key);
+    expected e = {.keys = {key}, .count = 1, .agent = "TruffleHog"};
+    test_http http = {.inspect = inspect, .user = &e}; br_transport transport = test_transport(&http); br_scan_ctx ctx = {.transport = &transport};
+    const int statuses[] = {199, 200, 201, 204, 299, 300, 401, 500}; static const unsigned char body[] = {0xff, 0, '{'};
+    for (size_t i = 0; i < sizeof(statuses) / sizeof(*statuses); ++i) {
+        http.calls = http.releases = 0; http.response = (br_http_response){.status = statuses[i], .body = {body, sizeof(body)}, .body_error = i % 2 ? "ignored partial read" : NULL};
+        br_results out = test_scan(d, &ctx, true, input, strlen(input));
+        CHECK(out.len == 1 && http.calls == 1 && http.releases == 1); result_is(&out.items[0], key, statuses[i] >= 200 && statuses[i] < 300); br_results_clear(&out);
+    }
+    const char *causes[] = {"timeout", "out of memory constructing HTTP headers", "cannot create Metrilo finding", "net/http: nil Context", key, "", NULL};
+    for (size_t i = 0; i < sizeof(causes) / sizeof(*causes); ++i) {
+        http.calls = http.releases = 0; http.send_rc = i % 2 ? -7 : 1; http.send_error = causes[i]; http.response.status = 200;
+        br_results out = test_scan(d, &ctx, true, input, strlen(input));
+        CHECK(out.len == 1 && http.calls == 1 && http.releases == 1); result_is(&out.items[0], key, false); br_results_clear(&out);
+    }
+    size_t cancellations = 0;
+    br_scan_ctx contexts[] = {{0}, {.transport = &transport, .cancelled = cancelled, .cancel_user = &cancellations}, {.transport = &transport, .deadline_monotonic_ms = 1}, {.transport = &transport, .user_agent = "bad\r\nagent"}};
+    for (size_t i = 0; i < sizeof(contexts) / sizeof(*contexts); ++i) {
+        size_t sent = sends, released = releases; http.calls = http.releases = 0;
+        br_results out = test_scan(d, &contexts[i], false, input, strlen(input));
+        CHECK(out.len == 1 && sends == sent && releases == released && !http.calls && !http.releases); result_is(&out.items[0], key, false); br_results_clear(&out);
+        out = test_scan(d, &contexts[i], true, input, strlen(input));
+        CHECK(out.len == 1 && sends == sent + 1 && releases == released + 1 && !http.calls && http.releases == (i ? 1u : 0u)); result_is(&out.items[0], key, false); br_results_clear(&out);
+    }
+    CHECK(cancellations == 1 && !setters);
+}
+static void owned_failures(const br_detector *d)
+{
+    char input[80]; snprintf(input, sizeof(input), "metrilo %s\nmetrilo %s", key, other);
+    expected e = {.keys = {key, other}, .count = 2, .agent = "TruffleHog"};
+    test_http http = {.inspect = inspect, .user = &e, .response = {.status = 200}, .send_rc = 1, .send_error = "synthetic Do failure"};
+    br_transport transport = test_transport(&http); br_scan_ctx ctx = {.transport = &transport};
+    br_result prior = {0}; CHECK(!br_finding_key(&prior, 777, "caller", "key")); prior.verified = true; prior.verification_error = strdup("untouched"); CHECK(prior.verification_error);
+    br_results out = {0}; CHECK(!br_results_push(&out, &prior)); prior = out.items[0];
+    const struct { fault_kind kind; size_t nth; bool nov, nil; } cases[] = {
+        {CAPTURE, 1, false, true}, {FINDING, 1, false, true}, {FINDING, 2, false, false},
+        {FINDING, 2, true, true}, {PUSH, 1, false, false}, {PUSH, 2, false, false}, {PUSH, 2, true, true},
+    };
+    for (size_t i = 0; i < sizeof(cases) / sizeof(*cases); ++i) {
+        size_t failed = failures, sent = sends, released = releases; http.calls = http.releases = 0; http.send_rc = i == 4 ? 0 : 1;
+        fault = cases[i].kind; fail_nth = cases[i].nth; char *error = NULL;
+        CHECK(d->scan(d, cases[i].nil ? NULL : &ctx, !cases[i].nov, (br_slice){(const unsigned char *)input, strlen(input)}, &out, &error) == -1);
+        CHECK(error && fault == NONE && failures == failed + 1 && out.len == 1 && !memcmp(&out.items[0], &prior, sizeof(prior)));
+        CHECK(sends - sent == releases - released && !provider_request && !setters); if (cases[i].nov || cases[i].nil) CHECK(sends == sent);
+        free(error); active_result = NULL;
+    }
+    char *error = NULL;
+    CHECK(d->scan(d, NULL, true, (br_slice){(const unsigned char *)input, strlen(input)}, &out, &error) == 0 && !error);
+    CHECK(out.len == 1 && !memcmp(&out.items[0], &prior, sizeof(prior)));
+    CHECK(d->scan(NULL, NULL, false, (br_slice){0}, &out, &error) == -1 && error); free(error); error = NULL;
+    CHECK(d->scan(d, NULL, false, (br_slice){NULL, 1}, &out, &error) == -1 && error); free(error);
+    CHECK(out.len == 1 && !memcmp(&out.items[0], &prior, sizeof(prior))); br_results_clear(&out);
+}
+int main(void)
+{
+    (void)checked_setter;
+    test_secret(key, 16, 0); key[0] = 'g'; key[15] = 'z'; test_secret(other, 16, 7); other[0] = 'q'; other[15] = 'g';
+    const br_detector *d = descriptor(); extraction(d); occurrences(d); status_send_and_preparation(d); owned_failures(d);
+    CHECK(fault == NONE && !setters && sends == releases && !provider_request);
+    return test_finish("Metrilo");
+}
