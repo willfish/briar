@@ -4945,6 +4945,15 @@
       "evidence": ["tests/detectors/test_owlbot.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "meaningcloud/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/meaningcloud/meaningcloud.go",
+      "scope_notes": "MeaningCloud622/v0/default/no hints. Prefixed 32-byte lowercase-alphanumeric occurrences keep duplicates and yield key-only results. Verification consumes exactly thirty cryptographic bytes for the multipart boundary and builds the complete 326-byte key/txt body BEFORE the nil-context constructor drop. Whole preparation/Do failures are suppressed; only a 2xx decodes one first document into the typed deepTime response, where folded field names, ordered duplicates, null no-ops and sticky first type errors still run later visits. A decode error conditionally sets the key-secret verification error before the candidate is dropped, and a setter failure is fatal; otherwise deepTime greater than zero verifies. Release happens after the setter with original body/key storage alive.",
+      "native_files": ["src/detectors/meaningcloud.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/detectors/json.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_meaningcloud.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
