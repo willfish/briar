@@ -547,6 +547,9 @@ static const registration expected[] = {
     {544, 0, "Nicereply", "nicereply", 40, true, -1},
     {266, 0, "Nimble", "nimble", 30, true, -1},
     {635, 0, "Oanda", "oanda", 24, true, -1},
+    {337, 0, "Noticeable", "noticeable", 20, true, -1},
+    {716, 0, "NozbeTeams", "nozbe", 81, true, -1},
+    {134, 0, "Notion", "notion", 50, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -967,6 +970,32 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 40);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 716) {
+        char captured[83], input[130];
+        for (size_t i = 0; i < 16; ++i) captured[i] = "ab12"[i % 4];
+        captured[16] = '_';
+        for (size_t i = 17; i < 81; ++i) captured[i] = "cd34"[i % 4];
+        captured[81] = ' ';
+        captured[82] = '\0';
+        snprintf(input, sizeof(input), "nozbe %s", captured);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 81);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 134) {
+        char key[51], input[80];
+        memcpy(key, "secret_", 7);
+        for (size_t i = 7; i < 50; ++i) key[i] = "ab12"[i % 4];
+        key[50] = '\0';
+        snprintf(input, sizeof(input), "notion %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 50);
         br_results_clear(&results);
         return;
     }
@@ -2820,7 +2849,7 @@ int main(void)
         CHECK(detector->custom_name && !detector->custom_name[0]);
         CHECK(detector->nkeywords == (entry->type == 931 ? 15u : entry->type == 7 ? 5u : (entry->type == 107 && entry->version == 1) ? 4u : entry->type == 196 || (entry->type == 8 && entry->version == 2) || (entry->type == 3 && entry->version == 1) ? 6u :
               entry->type == 994 || entry->type == 2 || entry->type == 120 || entry->type == 181 || entry->type == 1047 || entry->type == 897 || entry->type == 992 || (entry->type == 921 && entry->version == 2) ? 3u :
-              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || entry->type == 490 || (entry->type == 96 && entry->version == 1) || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
+              entry->type == 987 || entry->type == 107 || entry->type == 926 || entry->type == 8 || entry->type == 876 || entry->type == 282 || entry->type == 360 || entry->type == 1059 || entry->type == 18 || entry->type == 39 || entry->type == 1043 || entry->type == 62 || entry->type == 343 || entry->type == 954 || entry->type == 189 || entry->type == 307 || entry->type == 907 || entry->type == 920 || entry->type == 170 || entry->type == 933 || entry->type == 1046 || entry->type == 971 || entry->type == 1013 || entry->type == 1018 || entry->type == 1029 || entry->type == 603 || entry->type == 975 || entry->type == 739 || entry->type == 1062 || entry->type == 1021 || entry->type == 1028 || entry->type == 191 || entry->type == 991 || entry->type == 901 || entry->type == 165 || entry->type == 737 || entry->type == 490 || entry->type == 716 || (entry->type == 96 && entry->version == 1) || (entry->type == 100 && entry->version == 2) || (entry->type == 430 && entry->version == 2) ? 2u : 1u));
         CHECK(!strcmp(detector->keywords[0], entry->keyword));
         if (entry->type == 7) {
             const br_detector *configured = NULL;

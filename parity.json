@@ -4900,6 +4900,33 @@
       "evidence": ["tests/detectors/test_oanda.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Server lifecycle behavior"]
     },
+    "noticeable/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/noticeable/noticeable.go",
+      "scope_notes": "Noticeable337/v0/default/no hints. Prefixed 20-byte mixed-alphanumeric keys keep duplicates; the finding precedes the nil-context constructor drop, after which the exact GraphQL placeholder body, Content-Type and Apikey authorization are prepared for a SANE POST. Whole preparation/Do failures stay unverified without invented text; successful-send 2xx verifies while bodies and read errors are ignored. Successful responses release LIFO after publication with the original authorization alive, failed attempts release immediately once with the authorization scrubbed afterwards, and owned failures are fatal.",
+      "native_files": ["src/detectors/noticeable.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_noticeable.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "nozbeteams/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/nozbeteams/nozbeteams.go",
+      "scope_notes": "NozbeTeams716/v0/default with nozbe and nozbeteams keywords. The 16_64 mixed-alphanumeric grammar requires one captured trailing space, CR or LF, which is trimmed so Raw is the 81-byte key. Finding construction precedes the nil-context drop, then literal Accept and raw Authorization (no Bearer) are prepared for the users GET. Whole preparation/Do failures stay unverified without invented text, successful-send 2xx verifies regardless of read errors, successful responses release LIFO after publication and failed attempts release immediately once.",
+      "native_files": ["src/detectors/nozbeteams.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_nozbeteams.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "notion/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/notion/notion.go",
+      "scope_notes": "Notion134/v0/default/no hints. The unprefixed secret_ plus 43 mixed-alphanumeric grammar keeps duplicates and truncates to 50 bytes. Finding construction precedes the nil-context drop, after which Notion-Version and Bearer authorization are prepared for the users GET. A successful send verifies on any 2xx or exactly 403 and never calls a setter; a send failure releases once before the checked token-secret setter. Successful responses release LIFO after publication with the original authorization alive.",
+      "native_files": ["src/detectors/notion.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_notion.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",
