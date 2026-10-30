@@ -4747,6 +4747,33 @@
       "evidence": ["tests/detectors/test_newrelicuserkey.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
       "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
     },
+    "luno/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/luno/luno.go",
+      "scope_notes": "Luno655/v0/span1024 engine hint. Prefixed 43-byte mixed alphanumeric-underscore-hyphen keys pair with prefixed 13-byte lowercase-alphanumeric IDs into key-major products with the ID hidden; Raw and parts are key-only. Basic authentication over ID and key follows the nil-context constructor drop, and the SANE balance GET verifies 2xx, suppresses whole preparation/Do failures without a setter and ignores bodies and read errors. Successful responses release LIFO after publication.",
+      "native_files": ["src/detectors/luno.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_luno.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "loyverse/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/loyverse/loyverse.go",
+      "scope_notes": "Loyverse396/v0/default/no hints. Prefixed 32-byte lowercase-hyphen-digit occurrences, key-only result and no setter. Finding construction precedes the nil-context constructor drop; Bearer authorization and the merchant GET follow it on a SANE request. Whole shared preparation/Do failures are suppressed and every successful-send 2xx verifies while bodies and read errors are ignored. Successful responses release LIFO after publication with the original authorization alive, and failed attempts release immediately once.",
+      "native_files": ["src/detectors/loyverse.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_loyverse.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
+    "lunchmoney/Scanner": {
+      "status": "partial",
+      "upstream_source": "pkg/detectors/lunchmoney/lunchmoney.go",
+      "scope_notes": "LunchMoney797/v0/default/no hints. Prefixed 50-byte lowercase-hex occurrences, key-only result and no setter. Finding construction precedes the nil-context constructor drop; Bearer authorization and the categories GET follow it on a SANE request. Whole shared preparation/Do failures are suppressed and every successful-send 2xx verifies while bodies and read errors are ignored. Successful responses release LIFO after publication with the original authorization alive, and failed attempts release immediately once.",
+      "native_files": ["src/detectors/lunchmoney.c", "src/detectors/captures.c", "src/detectors/findings.c", "src/http.c", "src/detectors/registry.c"],
+      "aspects": {"extraction": "partial", "filtering": "partial", "verification": "partial", "result_metadata": "verified", "versioning": "verified", "registry_behavior": "verified", "acceptance_evidence": "partial"},
+      "evidence": ["tests/detectors/test_lunchmoney.c", "tests/detectors/test_registry.c", "tests/cli_reference.py", "docs/ACCEPTANCE.md"],
+      "remaining": ["Complete shared regexp/arbitrary-byte and decoder/engine/output behavior", "Full native HTTP/Reader and source-client lifecycle behavior"]
+    },
     "azureapimanagement/repositorykey/Scanner": {
       "status": "partial",
       "upstream_source": "pkg/detectors/azureapimanagement/repositorykey/repositorykey.go",

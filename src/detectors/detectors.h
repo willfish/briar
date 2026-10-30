@@ -526,5 +526,8 @@ int br_newreliclicensekey_init(const br_detector **out, char **error);
 int br_newrelicmobileapptoken_init(const br_detector **out, char **error);
 int br_newrelicpersonalapikey_init(const br_detector **out, char **error);
 int br_newrelicuserkey_init(const br_detector **out, char **error);
+int br_luno_init(const br_detector **out, char **error);
+int br_loyverse_init(const br_detector **out, char **error);
+int br_lunchmoney_init(const br_detector **out, char **error);
 
 #endif

@@ -1728,6 +1728,9 @@ def fixtures():
         ("nr_mobile", 1068, b"-nrma AA" + synthetic("nr-mobile", 40) + b"-NRMA"),
         ("nr_personal", 50, b"newrelic ABCD-" + alnum("nr-personal", 42)),
         ("nr_user", 1066, b"nrak- NRAK-" + alnum("nr-user", 27).upper()),
+        ("luno", 655, b"luno " + alnum("luno-key", 43) + b"\nluno " + synthetic("luno-id", 13)),
+        ("loyverse", 396, b"loyverse " + synthetic("loyverse-key", 32)),
+        ("lunchmoney", 797, b"lunchmoney " + synthetic("lunchmoney-key", 50)),
         ("moosend", 261, b"moosend A" + synthetic("moosend-key", 7) + b"-" + synthetic("moosend-b", 4) + b"-" + synthetic("moosend-c", 4) + b"-" + synthetic("moosend-d", 4) + b"-" + synthetic("moosend-e", 12)),
         ("couchbase_filtered", 920, couchbase_payload),
         ("couchbase_retained", 920, couchbase_payload),
@@ -2155,7 +2158,7 @@ def compare(native, reference, case):
         # source-valid unit-test input, so the oracle agrees only on absence.
         if actual or expected:
             raise AssertionError(name + ": the CLI oracle emits no Mrticktock rows; native must match that absence")
-    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_")):
+    if name.startswith(("miro_", "mixmax_", "mindmeister_", "moderation_", "monkeylearn_", "mockaroo_", "mite_", "monday_", "mailmodo_", "neutrinoapi_", "newsapi_", "ngc_", "newscatcher_", "ngrok_", "nexmoapikey_", "moonclerk_", "moralis_", "moosend_", "myintervals_", "mux_", "myfreshworks_", "nethunt_", "netlify_", "mediastack_", "metabase_", "metrilo_", "metaapi_", "mesibo_", "microsoftteamswebhook_v2_", "lob_", "lokalisetoken_", "loggly_", "logzio_", "nr_", "luno_", "loyverse_", "lunchmoney_")):
         if len(actual) != 1 or len(expected) != 1:
             raise AssertionError(name + ": provider grammar and dispatch must retain exactly one source finding")
     if name.startswith("gengo_products_") and (len(actual) != 4 or len(expected) != 4):

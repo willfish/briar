@@ -530,6 +530,9 @@ static const registration expected[] = {
     {1068, 0, "NewRelicMobileAppToken", "-nrma", 47, true, -1},
     {50, 0, "NewRelicPersonalApiKey", "newrelic", 47, true, -1},
     {1066, 0, "NewRelicUserKey", "nrak-", 32, true, -1},
+    {655, 0, "Luno", "luno", 43, true, 1024},
+    {396, 0, "Loyverse", "loyverse", 32, true, -1},
+    {797, 0, "LunchMoney", "lunchmoney", 50, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
@@ -818,6 +821,27 @@ static void check_dispatch(const br_detector *detector, const registration *entr
         br_scan_ctx ctx = {0};
         br_results results = test_scan(detector, &ctx, false, input, strlen(input));
         CHECK(results.len == 1 && results.items[0].raw.len == 47);
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 655) {
+        char key[44], id[14], input[120];
+        test_secret(key, 43, 0); test_secret(id, 13, 5);
+        snprintf(input, sizeof(input), "luno %s\nluno %s", key, id);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 43 && !memcmp(results.items[0].raw.data, key, 43));
+        br_results_clear(&results);
+        return;
+    }
+    if (entry->type == 797) {
+        char key[51], input[80];
+        for (size_t i = 0; i < 50; ++i) key[i] = "0123456789abcdef"[i % 16];
+        key[50] = '\0';
+        snprintf(input, sizeof(input), "lunchmoney %s", key);
+        br_scan_ctx ctx = {0};
+        br_results results = test_scan(detector, &ctx, false, input, strlen(input));
+        CHECK(results.len == 1 && results.items[0].raw.len == 50);
         br_results_clear(&results);
         return;
     }
