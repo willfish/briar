@@ -51,6 +51,10 @@ static int cache_add(const char *host, char **error)
     for (size_t i = 0; i < cache_len; ++i)
         if (!strcmp(cache_hosts[i], host)) { pthread_mutex_unlock(&cache_mu); return 0; }
     if (cache_len == cache_cap) {
+        if (cache_cap > SIZE_MAX / sizeof(*cache_hosts) / 2) {
+            pthread_mutex_unlock(&cache_mu);
+            return fail(error, "too many URI cache entries");
+        }
         size_t cap = cache_cap ? cache_cap * 2 : 8;
         char **hosts = realloc(cache_hosts, cap * sizeof(*hosts));
         if (!hosts) { pthread_mutex_unlock(&cache_mu); return fail(error, "cannot cache URI host"); }
@@ -76,7 +80,7 @@ static bool cutset_only(const char *s, const char *cut)
 
 static int append_mem(char **buf, size_t *len, size_t *cap, const void *data, size_t n)
 {
-    if (*len + n + 1 < *len) return -1;
+    if (*len == SIZE_MAX || n > SIZE_MAX - *len - 1) return -1;
     if (*len + n + 1 > *cap) {
         size_t next = *cap ? *cap : 64;
         while (next < *len + n + 1) {
@@ -339,6 +343,7 @@ static int collect(void *user, const br_span *groups, size_t ngroups)
     if (ngroups < 2 || groups[1].begin == SIZE_MAX || groups[1].end < groups[1].begin) return 0;
     size_t ulen = groups[0].end - groups[0].begin;
     size_t plen = groups[1].end - groups[1].begin;
+    if (ulen == SIZE_MAX || plen == SIZE_MAX) return fail(found->error, "URI match is too large");
     char *uri = malloc(ulen + 1), *password = malloc(plen + 1);
     if (!uri || !password) { free(uri); free(password); return fail(found->error, "cannot copy URI match"); }
     memcpy(uri, found->input.data + groups[0].begin, ulen);
@@ -354,6 +359,9 @@ static int collect(void *user, const br_span *groups, size_t ngroups)
     for (size_t i = 0; i < found->len; ++i)
         if (!strcmp(found->uris[i], uri)) { free(uri); free(password); return 0; }
     if (found->len == found->cap) {
+        if (found->cap > SIZE_MAX / sizeof(*found->uris) / 2) {
+            free(uri); free(password); return fail(found->error, "too many URI matches");
+        }
         size_t cap = found->cap ? found->cap * 2 : 8;
         char **uris = realloc(found->uris, cap * sizeof(*uris));
         if (!uris) { free(uri); free(password); return fail(found->error, "cannot store URI match"); }
