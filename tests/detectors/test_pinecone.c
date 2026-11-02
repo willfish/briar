@@ -111,8 +111,9 @@ static br_results once(const br_detector *detector, const char *input, script *s
 
 static void extraction(const br_detector *detector)
 {
-    char input[180];
-    snprintf(input, sizeof(input), "%s %s %s", short_key, long_key, short_key);
+    char input[2 * sizeof(short_key) + sizeof(long_key)];
+    int n = snprintf(input, sizeof(input), "%s %s %s", short_key, long_key, short_key);
+    CHECK(n >= 0 && (size_t)n < sizeof(input));
     br_results results = test_scan(detector, NULL, false, input, strlen(input));
     CHECK(results.len == 2);
     check_base(&results.items[0], short_key, "abcde", false, NULL);

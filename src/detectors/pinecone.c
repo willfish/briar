@@ -64,6 +64,7 @@ static int pinecone_note(pinecone_doc *doc, br_json *value, const char *field, c
 
 static int pinecone_copy(char **dest, size_t *len, br_slice text)
 {
+    if (text.len == SIZE_MAX) return -1;
     char *copy = malloc(text.len + 1);
     if (!copy) return -1;
     if (text.len && text.data) memcpy(copy, text.data, text.len);
@@ -108,6 +109,7 @@ static void pinecone_discard(pinecone_doc *doc)
 static int pinecone_grow(pinecone_doc *doc, size_t n)
 {
     if (n <= doc->cap) return 0;
+    if (n > SIZE_MAX / sizeof(*doc->items)) return -1;
     pinecone_index *items = realloc(doc->items, n * sizeof(*items));
     if (!items) return -1;
     memset(items + doc->cap, 0, (n - doc->cap) * sizeof(*items));
