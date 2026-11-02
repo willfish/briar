@@ -300,16 +300,14 @@ static int collect_redact(void *user, const br_span *groups, size_t ngroups)
     if (!ngroups || groups[0].begin == SIZE_MAX || groups[0].end < groups[0].begin)
         return fail(&spans->error, "invalid JDBC redaction match");
     if (spans->len == spans->cap) {
+        if (spans->cap > SIZE_MAX / 2) return fail(&spans->error, "cannot redact JDBC connection string");
         size_t cap = spans->cap ? spans->cap * 2 : 4;
-        if (cap < spans->cap) return fail(&spans->error, "cannot redact JDBC connection string");
+        if (cap > SIZE_MAX / sizeof(*spans->begin)) return fail(&spans->error, "cannot redact JDBC connection string");
         size_t *begin = realloc(spans->begin, cap * sizeof(*begin));
-        size_t *end = realloc(spans->end, cap * sizeof(*end));
-        if (!begin || !end) {
-            if (begin) spans->begin = begin;
-            if (end) spans->end = end;
-            return fail(&spans->error, "cannot redact JDBC connection string");
-        }
+        if (!begin) return fail(&spans->error, "cannot redact JDBC connection string");
         spans->begin = begin;
+        size_t *end = realloc(spans->end, cap * sizeof(*end));
+        if (!end) return fail(&spans->error, "cannot redact JDBC connection string");
         spans->end = end;
         spans->cap = cap;
     }

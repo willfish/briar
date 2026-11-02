@@ -48,7 +48,15 @@ static char *jdbc_strdup_wrap(const char *text)
     return strdup(text);
 }
 #define strdup jdbc_strdup_wrap
+static size_t fail_jdbc_realloc_after;
+static void *jdbc_realloc_wrap(void *ptr, size_t size)
+{
+    if (fail_jdbc_realloc_after && --fail_jdbc_realloc_after == 0) return NULL;
+    return realloc(ptr, size);
+}
+#define realloc jdbc_realloc_wrap
 #include "../../src/detectors/jdbc.c"
+#undef realloc
 #undef strdup
 #undef br_result_set_verification_error
 
@@ -987,6 +995,30 @@ static void test_invalid_bytes(const br_detector *detector)
     br_results_clear(&results);
 }
 
+static void test_redaction_growth(void)
+{
+    br_span group = {2, 5};
+    for (size_t failure = 1; failure <= 2; ++failure) {
+        redact_spans spans = {0};
+        for (size_t i = 0; i < 4; ++i) CHECK(collect_redact(&spans, &group, 1) == 0);
+        CHECK(spans.len == 4 && spans.cap == 4);
+        fail_jdbc_realloc_after = failure;
+        CHECK(collect_redact(&spans, &group, 1) != 0 && spans.error && !fail_jdbc_realloc_after);
+        CHECK(spans.len == 4 && spans.cap == 4);
+        for (size_t i = 0; i < spans.len; ++i) CHECK(spans.begin[i] == 2 && spans.end[i] == 5);
+        free(spans.error); spans.error = NULL;
+        CHECK(collect_redact(&spans, &group, 1) == 0 && spans.len == 5 && spans.cap == 8);
+        free(spans.begin); free(spans.end);
+    }
+    const size_t capacities[] = {SIZE_MAX / 2 + 1, SIZE_MAX / sizeof(size_t) / 2 + 1};
+    for (size_t i = 0; i < sizeof(capacities) / sizeof(*capacities); ++i) {
+        redact_spans spans = {.len = capacities[i], .cap = capacities[i]};
+        CHECK(collect_redact(&spans, &group, 1) != 0 && spans.error);
+        CHECK(!spans.begin && !spans.end && spans.len == capacities[i] && spans.cap == capacities[i]);
+        free(spans.error);
+    }
+}
+
 int main(void)
 {
     const br_detector *detector = NULL;
@@ -996,6 +1028,7 @@ int main(void)
     test_identity(detector);
     test_patterns(detector);
     test_redaction(detector);
+    test_redaction_growth();
     test_metadata(detector);
     test_invalid_bytes(detector);
     test_sqlserver_aliases();
