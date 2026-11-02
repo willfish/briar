@@ -65,7 +65,9 @@ static int or_number(or_key *key, br_slice encoded, const char *field)
     size_t token_len = raw_len - prefix_len - suffix_len;
     static const char mid[] = " into Go struct field ";
     static const char tail[] = " of type float64";
-    size_t n = prefix_len + token_len + sizeof(mid) - 1 + strlen(field) + sizeof(tail) - 1;
+    size_t field_len = strlen(field), fixed = prefix_len + sizeof(mid) + sizeof(tail) - 1;
+    if (token_len > SIZE_MAX - fixed || field_len > SIZE_MAX - fixed - token_len) { free(raw); return -1; }
+    size_t n = fixed - 1 + token_len + field_len;
     char *message = malloc(n + 1);
     if (!message) { free(raw); return -1; }
     char *at = message;
@@ -109,6 +111,7 @@ static int or_field(void *user, br_slice name, br_json *value, br_slice encoded)
         if (!value || json_object_is_type(value, json_type_null)) return 0;
         if (!json_object_is_type(value, json_type_string)) return or_type(key, value, "key.data.label", "string");
         br_slice text = br_json_text(value);
+        if (text.len == SIZE_MAX) return -1;
         char *copy = malloc(text.len + 1);
         if (!copy) return -1;
         if (text.len) memcpy(copy, text.data, text.len);
@@ -128,7 +131,7 @@ static int or_field(void *user, br_slice name, br_json *value, br_slice encoded)
         if (!value || json_object_is_type(value, json_type_null)) return 0;
         if (!json_object_is_type(value, json_type_boolean))
             return or_type(key, value, "key.data.is_free_tier", "bool");
-        strcpy(key->free, json_object_get_boolean(value) ? "true" : "false");
+        snprintf(key->free, sizeof(key->free), "%s", json_object_get_boolean(value) ? "true" : "false");
         return 0;
     }
     return 0;
@@ -147,10 +150,10 @@ static int or_member(void *user, br_slice name, br_json *value, br_slice encoded
 static int or_decode(br_slice body, const char *read_error, or_key *key, char **error)
 {
     *key = (or_key){0};
-    strcpy(key->limit, "<nil>");
-    strcpy(key->remaining, "<nil>");
-    strcpy(key->usage, "0.000000");
-    strcpy(key->free, "false");
+    snprintf(key->limit, sizeof(key->limit), "<nil>");
+    snprintf(key->remaining, sizeof(key->remaining), "<nil>");
+    snprintf(key->usage, sizeof(key->usage), "0.000000");
+    snprintf(key->free, sizeof(key->free), "false");
     br_json *root = NULL;
     size_t end = 0;
     int rc = br_json_first_document(body, read_error, &root, &end, &key->cause);
@@ -192,6 +195,7 @@ static int verify_openrouter(const br_scan_ctx *ctx, br_slice secret, br_result 
     if (!ctx)
         return br_result_set_verification_error(result, "net/http: nil Context", NULL, 0) == 0
             ? 0 : fail(error, "cannot set OpenRouter verification error");
+    if (secret.len > SIZE_MAX - 8) return fail(error, "OpenRouter authorization is too large");
     char *auth = malloc(7 + secret.len + 1);
     if (!auth) return fail(error, "cannot format OpenRouter authorization");
     memcpy(auth, "Bearer ", 7);

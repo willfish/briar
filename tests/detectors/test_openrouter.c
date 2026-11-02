@@ -133,6 +133,7 @@ int main(void)
     CHECK(json_object_object_get_ex(results.items[0].extra_data, "label", &label));
     CHECK(json_object_get_string_len(label) == 4);
     CHECK(!memcmp(json_object_get_string(label), "ab\0c", 4));
+    br_results_clear(&results);
 
     probe empty = {.status = 200, .body = "{}"};
     results = scan_probe(detector, &empty);
