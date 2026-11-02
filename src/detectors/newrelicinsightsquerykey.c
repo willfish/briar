@@ -61,6 +61,7 @@ static int record_region(br_result *result, const char *region, char **error)
 static int copy_text(const char *text, char **out)
 {
     size_t len = strlen(text);
+    if (len == SIZE_MAX) return -1;
     char *owned = malloc(len + 1);
     if (!owned) return -1;
     memcpy(owned, text, len + 1);
@@ -73,6 +74,8 @@ static int region_error(const char *region, const char *inner, char **out)
     static const char head[] = "error verifying region ";
     static const char mid[] = ": ";
     size_t region_len = strlen(region), inner_len = strlen(inner);
+    const size_t fixed = sizeof(head) - 1 + sizeof(mid);
+    if (region_len > SIZE_MAX - fixed || inner_len > SIZE_MAX - fixed - region_len) return -1;
     size_t n = sizeof(head) - 1 + region_len + sizeof(mid) - 1 + inner_len;
     char *text = malloc(n + 1);
     if (!text) return -1;
@@ -95,9 +98,9 @@ static int join_errors(char *const *parts, size_t n, char **out)
     size_t total = 0;
     for (size_t i = 0; i < n; ++i) {
         size_t len = strlen(parts[i]);
-        if (i && total == SIZE_MAX) return -1;
+        if (i && total == SIZE_MAX - 1) return -1;
         if (i) ++total;
-        if (len > SIZE_MAX - total) return -1;
+        if (len > SIZE_MAX - total - 1) return -1;
         total += len;
     }
     char *joined = malloc(total + 1);
