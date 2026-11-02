@@ -23,12 +23,13 @@ static void rollback(br_results *out, size_t before)
 static int append_slice(br_bytes *out, br_slice s)
 {
     if (!s.len) return 0;
+    if (out->len == SIZE_MAX || s.len > SIZE_MAX - out->len - 1) return -1;
     unsigned char *data = realloc(out->data, out->len + s.len + 1);
     if (!data) return -1;
+    out->data = data;
     memcpy(data + out->len, s.data, s.len);
     out->len += s.len;
     data[out->len] = '\0';
-    out->data = data;
     return 0;
 }
 
@@ -127,6 +128,7 @@ static int verify_portainer(const br_scan_ctx *ctx, br_slice token, const char *
                             br_result *result, char **error)
 {
     if (!ctx) return 1;
+    if (token.len > SIZE_MAX - 8) return fail(error, "Portainer authorization is too large");
     char *auth = malloc(7 + token.len + 1);
     if (!auth) return fail(error, "cannot format Portainer authorization");
     memcpy(auth, "Bearer ", 7);
