@@ -18,6 +18,7 @@ static int fail(char **error, const char *message)
 static char *trim_copy(const char *text, size_t *len, char **error)
 {
     size_t start = 0, end = *len;
+    if (end == SIZE_MAX) { fail(error, "TeamworkSpaces token is too large"); return NULL; }
     while (start < end && strchr(" \t\n\v\f\r", text[start])) ++start;
     while (end > start && strchr(" \t\n\v\f\r", text[end - 1])) --end;
     char *copy = malloc(end - start + 1);
