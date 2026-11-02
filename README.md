@@ -1,64 +1,88 @@
 # Briar
 
-A native C reimplementation of TruffleHog, private and under development.
+A native C reimplementation of [TruffleHog 3.97.2](UPSTREAM.json), focused on fast
+scanning and a small executable. No Go runtime or wrapped Go scanner.
 
-The target is **the entirety of TruffleHog 3.97.2**, not a smaller regex scanner: every detector's extraction, filtering, verification, results and version/default behavior, plus decoders, sources, engine, analyzers, configuration, CLI, outputs and distribution integrations. The exact tag and commit are pinned in [UPSTREAM.json](UPSTREAM.json).
+The target is full upstream behaviour, including detectors, verification, decoders,
+sources and outputs. The implementation is still incomplete, not a drop-in
+replacement or a security boundary.
 
-## Current state
+## Performance
 
-The source-derived inventory contains **921 detector implementations**, **892 registry constructor candidates**, including two AWS factory registrations, and **34 supporting components**, including shared detector helpers. It includes disabled and versioned detectors. Registry membership is not evidence that a detector is enabled by default; upstream feature gates require separate behavior checks.
+Measured against pinned TruffleHog 3.97.2 on an AMD Ryzen Threadripper 7960X:
 
-The native library contains shared result/regex/HTTP primitives, named provider modules, and PLAIN/UTF8, Base64, UTF16 and escaped-Unicode decoding. The CLI supports selected stdin/regular-file JSON scans, including multipart credentials, with verification disabled. Raw source chunks use 10 KiB content plus 3 KiB forward peek before decoding. Non-PLAIN fan-out preserves intermediate findings through the default depth of five. Default/all scans and unported options fail explicitly rather than presenting partial coverage as a complete scanner.
+| Synthetic workload | Briar | TruffleHog | Speedup |
+|---|---:|---:|---:|
+| 8 MiB mixed source | 63.3 ms | 1008.0 ms | **15.9x** |
+| 8 MiB mixed encoded | 71.5 ms | 1013.6 ms | **14.2x** |
+| 8 MiB dense keywords, no valid secrets | 159.8 ms | 1014.0 ms | **6.3x** |
+| 128 MiB mixed source | 661.9 ms | 1258.6 ms | **1.9x** |
 
-The ledger records **918 partial detector identities across 883 named provider modules**. The retained reference corpus contains **2,736 synthetic stdin/filesystem cases**, not full upstream-engine coverage. No detector or supporting component is counted as fully reproduced yet. [parity.json](parity.json) records the remaining behavior against [upstream-inventory.json](upstream-inventory.json); absent entries remain not started. [Acceptance evidence](docs/ACCEPTANCE.md) records the actual checks and limits. Inventory and ledger entries are not substitutes for behavioral evidence or the final full-scope audit.
+All rows use the same 891 explicitly selected detectors and produce identical
+complete JSON findings. Figures are medians of five warm-cache runs after a
+warmup, with serial Briar against 16 TruffleHog workers and verification disabled.
+Timing includes startup, network-namespace setup and JSON output. Small scans
+benefit substantially from lower startup cost; these are not universal throughput
+ratios. Each input file is 64 KiB.
 
-Do not use this work-in-progress as a security boundary. Nothing is deployed into Pi. Verification tests use synthetic credentials and injected/offline responses, never real credentials against services. FTP control-flow tests use memory-only byte I/O; native FTP remains explicitly unsupported. Google credential verification likewise uses private byte I/O with native SDK transport unsupported; RSA signing and certificate matching run in C against disposable test keys. Some upstream verifiers mutate services, including the Airbrake project-key deploy POST; CLI verification remains disabled. Native code must not wrap the Go scanner as its implementation.
+The stripped Briar executable is **3.20 MiB**, compared with **122.30 MiB** for
+TruffleHog: about **38x smaller**, or **97.4% less executable space**. This excludes
+shared libraries, and the incomplete migration is not yet a feature-for-feature
+size comparison.
 
-## Development
+The gains come from shared keyword matching, optional ASCII-prefix regex JIT,
+faster decoder and false-positive searches, and hashed result deduplication.
+See the [benchmark report](docs/benchmarks/2026-11-02-performance.md) for all six
+workloads, artifact hashes and reproduction instructions.
 
-The Nix/direnv environment declares the C17 toolchain, PCRE2, libcurl, json-c, OpenSSL's libcrypto for native signing, libxml2 for AWS response parsing, POSIX threads for tenant-discovery coalescing, and Python for build/test tooling. No Go runtime is part of Briar's implementation. Owned C code builds with `-std=c17 -Wall -Wextra -Wpedantic -Werror`, including when overriding `CFLAGS`; Nix hardening remains enabled.
+## Build and use
+
+Nix and direnv provide the C17 toolchain and native dependencies.
 
 ```sh
 direnv allow .
-direnv exec . make -j2 all check
-direnv exec . python3 tools/inventory.py --check
-direnv exec . python3 tools/test_inventory.py
-direnv exec . python3 tools/progress.py
+mkdir -p state
+direnv exec . flock state/build.lock make -j2 all
+direnv exec . build/briar --help
+
+# Scan a regular file with the Abyssale detector only.
+direnv exec . build/briar filesystem ./file.txt \
+  --json --no-verification --include-detectors=239
 ```
 
-Allocation failures return errors rather than exiting from the library. Error strings are best-effort: callers must check status even when the message is NULL. Check size arithmetic before allocation, update ownership immediately after successful `realloc`, and use size-visible string operations, not `strcpy`, `strcat` or `sprintf`.
+The CLI currently supports:
 
-Keep ASan/UBSan in a separate, manual build when changing parsers, allocation, signals or untrusted input. For example, run existing core and CLI fixtures without changing the normal binary:
+- Stdin or explicitly named regular files, capped at **64 KiB per source**.
+- Explicit detector selection and JSON findings, including multipart credentials.
+- PLAIN/UTF8, Base64, UTF16 and escaped-Unicode decoding.
+
+Directory traversal, default/all scans, HTML decoding and CLI verification are
+not supported. Unsupported options fail explicitly. **Findings on stdout contain
+secrets**; treat the output as sensitive.
+
+## Development
+
+Tests use synthetic credentials and injected or isolated transports, not live
+provider verification. Run the native checks with network isolation and an empty
+HOME:
 
 ```sh
-scratch=$(mktemp -d)
-direnv exec . make -j2 BUILD_DIR="$scratch" \
-  CFLAGS="-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer" \
-  LDFLAGS="-fsanitize=address,undefined" all check-core check-e2e
+(
+  set -e
+  home=$(mktemp -d)
+  trap 'rm -rf -- "$home"' EXIT
+  direnv exec . flock state/build.lock unshare -Urn \
+    env HOME="$home" make -j2 check
+)
 ```
 
-Run affected named detector fixtures from the same build directory too. Sanitizers are not enabled in normal builds or an automatic repository gate.
-
-Filesystem input pins the immediate parent directory with `openat`, rejects file and immediate-parent symlinks, and checks the opened file is regular. This is not a sandbox for every ancestor component. Timezone paths from `TZ`, `GOROOT` and system directories are trusted process configuration and may follow symlinks. The CLI never saves credential files. Findings on stdout deliberately contain secrets; write failures and path errors must not echo them in diagnostics.
-
-The executable is `build/briar`; run `--help` for the currently supported subset. Current CLI inputs are at most 64 KiB and require an explicit supported detector selection. Unicode and malformed input bytes use the pinned PLAIN/UTF8 sanitization rules; Base64 uses the pinned candidate and ASCII-output rules; UTF16 reproduces upstream's printable-ASCII extraction heuristic, not general Unicode conversion. The entire upstream CLI and input pipeline remain the target, not these temporary limits.
-
-The pinned upstream source is a read-only reference under ignored `.reference/trufflehog`. To restore a missing cache, export the pinned tree without Git metadata and preserve executable bits:
-
-```sh
-test ! -e .reference/trufflehog
-scratch=$(mktemp -d)
-trap 'rm -rf -- "$scratch"' EXIT
-git clone --depth 1 --branch v3.97.2 git@github.com:trufflesecurity/trufflehog.git "$scratch/upstream"
-test "$(git -C "$scratch/upstream" rev-parse HEAD)" = cc1fe982afc515d2991365ce8d4d0dd07170fcad
-mkdir -p .reference/trufflehog
-git -C "$scratch/upstream" archive HEAD | tar -x -C .reference/trufflehog
-chmod -R a-w .reference/trufflehog
-test "$(nix hash path .reference/trufflehog)" = "$(python3 -c 'import json; print(json.load(open("UPSTREAM.json"))["source_nar_hash"])')"
-```
-
-Do not regenerate the inventory against a different reference to make checks pass. An upstream-version change needs an explicit migration of the full parity ledger.
+[Architecture](docs/ARCHITECTURE.md) describes the native design.
+[Acceptance](docs/ACCEPTANCE.md) defines parity requirements and testing limits.
+The [parity ledger](parity.json) tracks implementation coverage against the
+[pinned upstream inventory](upstream-inventory.json).
 
 ## License
 
-This derivative work retains the GNU Affero General Public License version 3. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Briar is not affiliated with or endorsed by Truffle Security.
+GNU Affero General Public License version 3. See [LICENSE](LICENSE) and
+[NOTICE](NOTICE) for licensing and attribution. Briar is not affiliated with or
+endorsed by Truffle Security.
