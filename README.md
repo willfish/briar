@@ -16,7 +16,7 @@ Do not use this work-in-progress as a security boundary. Nothing is deployed int
 
 ## Development
 
-The Nix/direnv environment declares the C toolchain, PCRE2, libcurl, json-c, OpenSSL's libcrypto for native signing, libxml2 for AWS response parsing, POSIX threads for tenant-discovery coalescing, and Python for build/test tooling. No Go runtime is part of Briar's implementation.
+The Nix/direnv environment declares the C17 toolchain, PCRE2, libcurl, json-c, OpenSSL's libcrypto for native signing, libxml2 for AWS response parsing, POSIX threads for tenant-discovery coalescing, and Python for build/test tooling. No Go runtime is part of Briar's implementation. Owned C code builds with `-std=c17 -Wall -Wextra -Wpedantic -Werror`, including when overriding `CFLAGS`; Nix hardening remains enabled.
 
 ```sh
 direnv allow .
@@ -25,6 +25,21 @@ direnv exec . python3 tools/inventory.py --check
 direnv exec . python3 tools/test_inventory.py
 direnv exec . python3 tools/progress.py
 ```
+
+Allocation failures return errors rather than exiting from the library. Error strings are best-effort: callers must check status even when the message is NULL. Check size arithmetic before allocation, update ownership immediately after successful `realloc`, and use size-visible string operations, not `strcpy`, `strcat` or `sprintf`.
+
+Keep ASan/UBSan in a separate, manual build when changing parsers, allocation, signals or untrusted input. For example, run existing core and CLI fixtures without changing the normal binary:
+
+```sh
+scratch=$(mktemp -d)
+direnv exec . make -j2 BUILD_DIR="$scratch" \
+  CFLAGS="-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer" \
+  LDFLAGS="-fsanitize=address,undefined" all check-core check-e2e
+```
+
+Run affected named detector fixtures from the same build directory too. Sanitizers are not enabled in normal builds or an automatic repository gate.
+
+Filesystem input pins the immediate parent directory with `openat`, rejects file and immediate-parent symlinks, and checks the opened file is regular. This is not a sandbox for every ancestor component. Timezone paths from `TZ`, `GOROOT` and system directories are trusted process configuration and may follow symlinks. The CLI never saves credential files. Findings on stdout deliberately contain secrets; write failures and path errors must not echo them in diagnostics.
 
 The executable is `build/briar`; run `--help` for the currently supported subset. Current CLI inputs are at most 64 KiB and require an explicit supported detector selection. Unicode and malformed input bytes use the pinned PLAIN/UTF8 sanitization rules; Base64 uses the pinned candidate and ASCII-output rules; UTF16 reproduces upstream's printable-ASCII extraction heuristic, not general Unicode conversion. The entire upstream CLI and input pipeline remain the target, not these temporary limits.
 

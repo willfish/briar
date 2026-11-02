@@ -27,6 +27,7 @@ static int fail(char **error, const char *message)
 static int append_key(key_matches *matches, br_slice captured)
 {
     size_t len = captured.len;
+    if (len == SIZE_MAX) return fail(&matches->error, "detector key too large");
     char *key = malloc(len + 1);
     if (!key) return fail(&matches->error, "out of memory copying detector key");
     memcpy(key, captured.data, len);

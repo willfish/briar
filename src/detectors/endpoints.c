@@ -22,11 +22,11 @@ int br_endpoint_list_push(br_endpoint_list *list, const char *item, bool unique,
     char *copy = strdup(item);
     if (!copy) return fail(error, "out of memory copying endpoint");
     if (list->len == list->cap) {
-        size_t next = list->cap ? list->cap * 2 : 8;
-        if (next < list->cap || next > SIZE_MAX / sizeof(*list->items)) {
+        if (list->cap > SIZE_MAX / sizeof(*list->items) / 2) {
             free(copy);
             return fail(error, "too many endpoints");
         }
+        size_t next = list->cap ? list->cap * 2 : 8;
         char **items = realloc(list->items, next * sizeof(*items));
         if (!items) {
             free(copy);
@@ -87,11 +87,11 @@ int br_byte_endpoints_push(br_byte_endpoints *list, br_slice item, bool unique, 
     if (item.len) memcpy(copy, item.data, item.len);
     copy[item.len] = 0;
     if (list->len == list->cap) {
-        size_t next = list->cap ? list->cap * 2 : 8;
-        if (next < list->cap || next > SIZE_MAX / sizeof(*list->items)) {
+        if (list->cap > SIZE_MAX / sizeof(*list->items) / 2) {
             free(copy);
             return fail(error, "too many byte endpoints");
         }
+        size_t next = list->cap ? list->cap * 2 : 8;
         br_bytes *items = realloc(list->items, next * sizeof(*items));
         if (!items) {
             free(copy);

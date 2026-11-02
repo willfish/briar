@@ -18,6 +18,8 @@ typedef struct { unsigned char *data; size_t len; } br_bytes;
 typedef struct br_detector br_detector;
 typedef struct br_scan_ctx br_scan_ctx;
 
+/* Allocation failure returns a nonzero status, never exits the process.
+ * Owned error strings are best-effort and may be NULL even on failure. */
 /* Zero-initialize. All non-const pointers and JSON references are owned. */
 typedef struct {
     int32_t detector_type;

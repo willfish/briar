@@ -40,10 +40,10 @@ int br_captures_push(br_captures *values, br_slice value, bool unique, char **er
                 !memcmp(values->items[i], value.data, value.len)) return 0;
     }
     if (values->len == values->cap) {
-        size_t cap = values->cap ? values->cap * 2 : 8;
-        if (cap < values->cap || cap > SIZE_MAX / sizeof(*values->items) ||
-            cap > SIZE_MAX / sizeof(*values->lengths))
+        if (values->cap > SIZE_MAX / sizeof(*values->items) / 2 ||
+            values->cap > SIZE_MAX / sizeof(*values->lengths) / 2)
             return fail(error, "too many detector captures");
+        size_t cap = values->cap ? values->cap * 2 : 8;
         char **items = malloc(cap * sizeof(*items));
         size_t *lengths = malloc(cap * sizeof(*lengths));
         if (!items || !lengths) {

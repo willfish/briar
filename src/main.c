@@ -10,6 +10,7 @@
 #include <json-c/json.h>
 #include <limits.h>
 #include <poll.h>
+#include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,9 +62,47 @@ static int fail(char **error, const char *message)
     return 1;
 }
 
-static void usage(void)
+static int write_all(int fd, const char *text, size_t len)
 {
-    puts("Usage: briar stdin --json --no-verification --include-detectors CSV [OPTIONS]\n"
+    while (len) {
+        size_t count = len > (size_t)SSIZE_MAX ? (size_t)SSIZE_MAX : len;
+        ssize_t n = write(fd, text, count);
+        if (n < 0 && errno == EINTR) continue;
+        if (n <= 0) return 1;
+        text += (size_t)n;
+        len -= (size_t)n;
+    }
+    return 0;
+}
+
+/* Do not change process-wide SIGPIPE disposition, including in HTTP workers.
+ * Only consume a newly generated EPIPE signal, never one pending on entry. */
+static int print_line(int fd, const char *prefix, const char *text)
+{
+    sigset_t block, previous, pending;
+    if (sigemptyset(&block) || sigaddset(&block, SIGPIPE) ||
+        pthread_sigmask(SIG_BLOCK, &block, &previous)) return 1;
+    int rc = 1;
+    if (sigpending(&pending)) goto restore;
+    int prior = sigismember(&pending, SIGPIPE);
+    if (prior < 0) goto restore;
+    rc = write_all(fd, prefix, strlen(prefix)) || write_all(fd, text, strlen(text)) ||
+         write_all(fd, "\n", 1);
+    if (rc && errno == EPIPE && !prior) {
+        if (sigpending(&pending)) rc = 1;
+        else if (sigismember(&pending, SIGPIPE) == 1) {
+            int caught;
+            if (sigwait(&block, &caught)) rc = 1;
+        }
+    }
+restore:
+    if (pthread_sigmask(SIG_SETMASK, &previous, NULL)) rc = 1;
+    return rc;
+}
+
+static int usage(void)
+{
+    return print_line(STDOUT_FILENO, "", "Usage: briar stdin --json --no-verification --include-detectors CSV [OPTIONS]\n"
          "       briar filesystem FILE... --json --no-verification --include-detectors CSV [OPTIONS]\n"
          "Options: --exclude-detectors CSV\n"
          "         --filter-unverified  --results CSV  --fail\n"
@@ -713,20 +752,51 @@ static int read_input(int fd, br_bytes *input, char **error)
     return 0;
 }
 
+static int open_input(const char *path, int *out, char **error)
+{
+    char *copy = strdup(path);
+    if (!copy) return fail(error, "out of memory opening filesystem input");
+    char *name = strrchr(copy, '/');
+    const char *parent = ".";
+    if (name) {
+        *name++ = '\0';
+        size_t len = strlen(copy);
+        while (len > 1 && copy[len - 1] == '/') copy[--len] = '\0';
+        parent = len ? copy : "/";
+    } else name = copy;
+    /* Pin the immediate parent, then inspect the opened file, not a path
+     * checked before open. This is not a sandbox for all ancestor components. */
+    int directory = openat(AT_FDCWD, parent, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    if (directory < 0) { free(copy); return fail(error, "cannot open filesystem input parent"); }
+    int fd = openat(directory, name, O_RDONLY | O_NONBLOCK | O_NOFOLLOW | O_CLOEXEC);
+    /* Always close the parent; retain an earlier open failure if both fail. */
+    int close_rc = close(directory);
+    free(copy);
+    if (fd < 0) return fail(error, "cannot open filesystem input");
+    struct stat st;
+    if (close_rc || fstat(fd, &st) || !S_ISREG(st.st_mode)) {
+        /* Already failing; a cleanup close error cannot make this successful. */
+        (void)close(fd);
+        return fail(error, "filesystem input or parent is unavailable or not regular");
+    }
+    *out = fd;
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
-    if (argc == 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) { usage(); return 0; }
-    struct sigaction action = { .sa_handler = stop_signal };
-    sigemptyset(&action.sa_mask);
-    sigaction(SIGINT, &action, NULL);
-    sigaction(SIGTERM, &action, NULL);
-    signal(SIGPIPE, SIG_IGN);
+    if (argc == 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) return usage();
     cli_options options = {0};
     char *error = NULL;
     bool *included = NULL, *excluded = NULL, *selected = NULL;
     br_json *output = NULL, *keys = NULL;
     br_native_http *http = NULL;
     int rc = 1;
+    struct sigaction action = { .sa_handler = stop_signal };
+    if (sigemptyset(&action.sa_mask) || sigaction(SIGINT, &action, NULL) ||
+        sigaction(SIGTERM, &action, NULL)) {
+        fail(&error, "cannot install cancellation signal handlers"); goto done;
+    }
     if (parse_cli(argc, argv, &options, &error)) goto done;
     const br_detector *const *registry = NULL;
     size_t count = 0;
@@ -747,27 +817,17 @@ int main(int argc, char **argv)
     ctx.transport = br_native_http_raw(http);
     output = json_object_new_array(); keys = json_object_new_array();
     if (!output || !keys) { fail(&error, "out of memory initializing output"); goto done; }
-    fprintf(stderr, "briar: limited native slice, %zu explicitly selected enabled detector(s); 10 KiB + 3 KiB source chunks, PLAIN/BASE64/UTF16/ESCAPED_UNICODE only (decode depth five), no HTML decoder or CLI verification\n", nselected);
+    char notice[320];
+    snprintf(notice, sizeof(notice), "limited native slice, %zu explicitly selected enabled detector(s); 10 KiB + 3 KiB source chunks, PLAIN/BASE64/UTF16/ESCAPED_UNICODE only (decode depth five), no HTML decoder or CLI verification", nselected);
+    if (print_line(STDERR_FILENO, "briar: ", notice)) { fail(&error, "cannot write scan diagnostic"); goto done; }
     size_t nsources = !strcmp(options.command, "stdin") ? 1 : options.npaths;
     for (size_t i = 0; i < nsources; ++i) {
         bool is_stdin = !strcmp(options.command, "stdin");
         int fd = STDIN_FILENO;
-        if (!is_stdin) {
-            struct stat st;
-            if (lstat(options.paths[i], &st)) { fail(&error, "cannot stat filesystem input"); goto done; }
-            if (!S_ISREG(st.st_mode)) { fail(&error, "unsupported: filesystem input must be an explicit regular file, not a directory or symlink"); goto done; }
-            int flags = O_RDONLY | O_NONBLOCK;
-#ifdef O_NOFOLLOW
-            flags |= O_NOFOLLOW;
-#endif
-            fd = open(options.paths[i], flags);
-            if (fd < 0) { fail(&error, "cannot open filesystem input"); goto done; }
-            if (fstat(fd, &st) || !S_ISREG(st.st_mode)) {
-                close(fd); fail(&error, "filesystem input changed or is not regular"); goto done;
-            }
-        }
+        if (!is_stdin && open_input(options.paths[i], &fd, &error)) goto done;
         br_bytes input = {0};
         int read_rc = read_input(fd, &input, &error);
+        /* Always close owned input; retain a prior read error if close also fails. */
         if (!is_stdin && close(fd) && !read_rc) read_rc = fail(&error, "cannot close filesystem input");
         if (read_rc) { free(input.data); goto done; }
         source_frame source = {
@@ -784,12 +844,12 @@ int main(int argc, char **argv)
     for (size_t i = 0; i < json_object_array_length(output); ++i) {
         const char *line = json_object_to_json_string_ext(json_object_array_get_idx(output, i),
                                                         JSON_C_TO_STRING_PLAIN | JSON_C_TO_STRING_NOSLASHESCAPE);
-        if (!line || puts(line) == EOF) { fail(&error, "cannot write JSON output"); goto done; }
+        if (!line || print_line(STDOUT_FILENO, "", line)) { fail(&error, "cannot write JSON output"); goto done; }
     }
-    if (fflush(stdout)) { fail(&error, "cannot flush JSON output"); goto done; }
     rc = options.fail && json_object_array_length(output) ? 183 : 0;
 done:
-    if (rc && rc != 183) fprintf(stderr, "briar: %s\n", error ? error : "scan failed");
+    /* Already failing; intentionally discard a final diagnostic write failure. */
+    if (rc && rc != 183) (void)print_line(STDERR_FILENO, "briar: ", error ? error : "scan failed");
     free(error); free(options.paths); free(included); free(excluded); free(selected);
     json_object_put(output); json_object_put(keys);
     br_native_http_destroy(http);

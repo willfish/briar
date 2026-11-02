@@ -3,6 +3,7 @@
 """Synthetic, offline acceptance of the explicitly bounded native CLI slice."""
 import base64
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -413,6 +414,11 @@ with tempfile.TemporaryDirectory(prefix="briar-core-") as directory:
     link = Path(directory) / "link.txt"
     link.symlink_to(path)
     invoke(["filesystem", str(link), *base], code=1)
+    parent_link = Path(directory) / "parent-link"
+    parent_link.symlink_to(directory, target_is_directory=True)
+    proc, _ = invoke(["filesystem", str(parent_link / path.name), *base], code=1)
+    check(str(parent_link).encode() not in proc.stderr, "path rejection must not disclose the credential path")
+    invoke(["filesystem", str(parent_link) + "//" + path.name, *base], code=1)
     missing = Path(directory) / "missing.txt"
     invoke(["filesystem", str(path), str(missing), *base], code=1)
 
@@ -515,6 +521,25 @@ check(len(rows) == 1, "64 KiB cap applies to original bytes, not expanded decode
 invoke(["stdin", *base], b"x" * (64 * 1024 + 1), code=1)
 _, rows = invoke(["stdin", *base], b"")
 check(not rows, "empty supported input")
+
+for args, payload in ((["--help"], b""), (["stdin", *base], plain)):
+    read_fd, write_fd = os.pipe()
+    os.close(read_fd)
+    try:
+        proc = subprocess.run([binary, *args], input=payload, stdout=write_fd,
+                              stderr=subprocess.PIPE, timeout=10)
+    finally:
+        os.close(write_fd)
+    check(proc.returncode == 1, "broken stdout must fail normally, not terminate with SIGPIPE")
+    check(key40.encode() not in proc.stderr, "write diagnostics must not disclose a token")
+read_fd, write_fd = os.pipe()
+os.close(read_fd)
+try:
+    proc = subprocess.run([binary, "stdin", *base], input=plain, stdout=subprocess.PIPE,
+                          stderr=write_fd, timeout=10)
+finally:
+    os.close(write_fd)
+check(proc.returncode == 1 and not proc.stdout, "broken diagnostics must not publish successful scan output")
 
 proc, rows = invoke(["stdin", "--json", "--no-verification", "--include-detectors=7"], b"key A!bcdefghijklmnop", code=1)
 check(b"no enabled implemented detectors selected" in proc.stderr, "Generic remains source-disabled despite explicit selection")

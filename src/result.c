@@ -35,8 +35,8 @@ int br_results_push(br_results *rs, br_result *owned)
     for (size_t i = 0; i < rs->len; ++i)
         if (owned == &rs->items[i]) return 1;
     if (rs->len == rs->cap) {
+        if (rs->cap > SIZE_MAX / sizeof(*rs->items) / 2) return 1;
         size_t cap = rs->cap ? rs->cap * 2 : 8;
-        if (cap < rs->cap || cap > SIZE_MAX / sizeof(*rs->items)) return 1;
         void *items = realloc(rs->items, cap * sizeof(*rs->items));
         if (!items) return 1;
         rs->items = items;

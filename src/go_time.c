@@ -334,11 +334,13 @@ ordinary:
 }
 
 /* Ordinary I/O/format failures are separate booleans, never owned failure
- * statuses. Resource failure cannot silently turn a candidate into UTC. */
+ * statuses. Resource failure cannot silently turn a candidate into UTC.
+ * Paths come only from trusted process TZ/GOROOT configuration and system
+ * timezone directories. Follow their symlinks, including /etc/localtime. */
 static int read_file(const char *path, br_bytes *out, bool *loaded, const char **why)
 {
     *out = (br_bytes){0}; *loaded = false;
-    int fd = open(path, O_RDONLY); if (fd < 0) return 0;
+    int fd = open(path, O_RDONLY | O_CLOEXEC); if (fd < 0) return 0;
     unsigned char buffer[4096]; int rc = 0;
     for (;;) {
         ssize_t n = read(fd, buffer, sizeof(buffer));
@@ -350,7 +352,7 @@ static int read_file(const char *path, br_bytes *out, bool *loaded, const char *
         out->data = grown; memcpy(grown + out->len, buffer, (size_t)n); out->len += (size_t)n;
         if (out->len > (10u << 20)) break;
     }
-    close(fd);
+    if (close(fd) != 0) *loaded = false;
     if (!*loaded || rc) { free(out->data); *out = (br_bytes){0}; }
     return rc;
 }
@@ -376,7 +378,7 @@ static bool read_at(int fd, void *data, size_t len, int64_t off)
 static int read_zip(const char *path, const char *name, br_bytes *out, bool *loaded, const char **why)
 {
     *out = (br_bytes){0}; *loaded = false;
-    int fd = open(path, O_RDONLY); if (fd < 0) return 0;
+    int fd = open(path, O_RDONLY | O_CLOEXEC); if (fd < 0) return 0;
     unsigned char tail[22], *directory = NULL, *header = NULL;
     int rc = 0;
     if (!read_at(fd, tail, sizeof(tail), -22) || little4(tail) != UINT32_C(0x06054b50)) goto done;
@@ -408,7 +410,8 @@ static int read_zip(const char *path, const char *name, br_bytes *out, bool *loa
         *loaded = true; break;
     }
 done:
-    close(fd); free(directory); free(header);
+    if (close(fd) != 0) *loaded = false;
+    free(directory); free(header);
     if (!*loaded || rc) { free(out->data); *out = (br_bytes){0}; }
     return rc;
 }

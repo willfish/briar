@@ -77,11 +77,11 @@ static int invalid_character(br_slice body, size_t offset, const char *context, 
 {
     unsigned char c = offset < body.len ? body.data[offset] : 0;
     char byte[16], message[192];
-    if (c == '\n') strcpy(byte, "'\\n'");
-    else if (c == '\r') strcpy(byte, "'\\r'");
-    else if (c == '\t') strcpy(byte, "'\\t'");
-    else if (c == '\\') strcpy(byte, "'\\\\'");
-    else if (c == '\'') strcpy(byte, "'\\\''");
+    if (c == '\n') snprintf(byte, sizeof(byte), "'\\n'");
+    else if (c == '\r') snprintf(byte, sizeof(byte), "'\\r'");
+    else if (c == '\t') snprintf(byte, sizeof(byte), "'\\t'");
+    else if (c == '\\') snprintf(byte, sizeof(byte), "'\\\\'");
+    else if (c == '\'') snprintf(byte, sizeof(byte), "'\\\''");
     else if (c < 32 || c >= 127) snprintf(byte, sizeof(byte), "'\\x%02x'", c);
     else snprintf(byte, sizeof(byte), "'%c'", c);
     snprintf(message, sizeof(message), "invalid character %s %s", byte, context);
