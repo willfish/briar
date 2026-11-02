@@ -648,6 +648,287 @@ static const detector_factory named_factories[] = {
     br_opencagedata_init,
     br_mailchimp_init,
     br_numverify_init,
+    br_mailgun_init,
+    br_mandrill_init,
+    br_manifest_init,
+    br_marketstack_init,
+    br_mattermostpersonaltoken_init,
+    br_mongodb_init,
+    br_nutritionix_init,
+    br_octopusdeploy_init,
+    br_onelogin_init,
+    br_openai_init,
+    br_openaiadmin_init,
+    br_openrouter_init,
+    br_openvpn_init,
+    br_opsgenie_init,
+    br_optimizely_init,
+    br_overloop_init,
+    br_parseur_init,
+    br_pastebin_init,
+    br_pganalyzereadkey_init,
+    br_phraseaccesstoken_init,
+    br_pinata_init,
+    br_pinecone_init,
+    br_planviewleankit_init,
+    br_planyo_init,
+    br_plivo_init,
+    br_poloniex_init,
+    br_portainer_init,
+    br_portainertoken_init,
+    br_postbacks_init,
+    br_postgres_init,
+    br_privacy_init,
+    br_privatekey_init,
+    br_prospectcrm_init,
+    br_protocolsio_init,
+    br_proxycrawl_init,
+    br_pubnubpublishkey_init,
+    br_pubnubsubscriptionkey_init,
+    br_pulumi_init,
+    br_pusherchannelkey_init,
+    br_pypi_init,
+    br_qase_init,
+    br_qualaroo_init,
+    br_qubole_init,
+    br_rabbitmq_init,
+    br_railwayapp_init,
+    br_ramp_init,
+    br_raven_init,
+    br_razorpay_init,
+    br_reachmail_init,
+    br_readme_init,
+    br_reallysimplesystems_init,
+    br_rechargepayments_init,
+    br_redhatpyxis_init,
+    br_redis_init,
+    br_refiner_init,
+    br_rentman_init,
+    br_repairshopr_init,
+    br_replicate_init,
+    br_replyio_init,
+    br_requestfinance_init,
+    br_restpackhtmltopdfapi_init,
+    br_restpackscreenshotapi_init,
+    br_rev_init,
+    br_revampcrm_init,
+    br_ringcentral_init,
+    br_ritekit_init,
+    br_roaring_init,
+    br_robinhoodcrypto_init,
+    br_rootly_init,
+    br_rownd_init,
+    br_runrunit_init,
+    br_saladcloudapikey_init,
+    br_salescookie_init,
+    br_salesflare_init,
+    br_salesforce_init,
+    br_salesforceoauth2_init,
+    br_salesforcerefreshtoken_init,
+    br_salesmate_init,
+    br_sanity_init,
+    br_satismeterprojectkey_init,
+    br_satismeterwritekey_init,
+    br_saucelabs_init,
+    br_scalr_init,
+    br_scraperapi_init,
+    br_scraperbox_init,
+    br_scrapestack_init,
+    br_scrapfly_init,
+    br_scrapingant_init,
+    br_scrapingbee_init,
+    br_screenshotapi_init,
+    br_screenshotlayer_init,
+    br_segmentapikey_init,
+    br_selectpdf_init,
+    br_semaphore_init,
+    br_sendbird_init,
+    br_sendbirdorganizationapi_init,
+    br_sendgrid_init,
+    br_sentryorgtoken_init,
+    br_sentrytoken_v1_init,
+    br_sentrytoken_v2_init,
+    br_serphouse_init,
+    br_serpstack_init,
+    br_sheety_init,
+    br_sherpadesk_init,
+    br_shipday_init,
+    br_shippo_init,
+    br_shodankey_init,
+    br_shopify_init,
+    br_shopifyoauth_init,
+    br_shortcut_init,
+    br_shotstack_init,
+    br_shutterstock_init,
+    br_shutterstockoauth_init,
+    br_signable_init,
+    br_signalwire_init,
+    br_signaturit_init,
+    br_sigopt_init,
+    br_simfin_init,
+    br_simplynoted_init,
+    br_simvoly_init,
+    br_sinchmessage_init,
+    br_sirv_init,
+    br_siteleaf_init,
+    br_skybiometry_init,
+    br_slack_init,
+    br_slackwebhook_init,
+    br_smartsheets_init,
+    br_smartystreets_init,
+    br_smooch_init,
+    br_snipcart_init,
+    br_snowflake_init,
+    br_snykkey_init,
+    br_solarwindsobservability_init,
+    br_sonarcloud_v1_init,
+    br_sonarcloud_v2_init,
+    br_sourcegraph_init,
+    br_sourcegraphcody_init,
+    br_sparkpost_init,
+    br_spectralops_init,
+    br_speechtextai_init,
+    br_spoonacular_init,
+    br_spotifykey_init,
+    br_sqlserver_init,
+    br_square_init,
+    br_squareapp_init,
+    br_squarespace_init,
+    br_sslmate_init,
+    br_statuscake_init,
+    br_statuspage_init,
+    br_stitchdata_init,
+    br_storecove_init,
+    br_storyblok_init,
+    br_storyblokpersonalaccesstoken_init,
+    br_storychief_init,
+    br_strava_init,
+    br_streak_init,
+    br_stripe_init,
+    br_stripepaymentintent_init,
+    br_stripo_init,
+    br_stytch_init,
+    br_sugester_init,
+    br_sumologickey_init,
+    br_supabasetoken_init,
+    br_supernotesapi_init,
+    br_surveyanyplace_init,
+    br_surveybot_init,
+    br_surveysparrow_init,
+    br_survicate_init,
+    br_swell_init,
+    br_swiftype_init,
+    br_tableau_init,
+    br_tailscale_init,
+    br_tallyfy_init,
+    br_taxjar_init,
+    br_teamgate_init,
+    br_teamworkcrm_init,
+    br_teamworkdesk_init,
+    br_teamworkspaces_init,
+    br_technicalanalysisapi_init,
+    br_tefter_init,
+    br_telegrambottoken_init,
+    br_teletype_init,
+    br_telnyx_init,
+    br_terraformcloudpersonaltoken_init,
+    br_testingbot_init,
+    br_textmagic_init,
+    br_thinkific_init,
+    br_thousandeyes_init,
+    br_ticketmaster_init,
+    br_tickettailor_init,
+    br_tiingo_init,
+    br_timezoneapi_init,
+    br_tineswebhook_init,
+    br_tly_init,
+    br_tmetric_init,
+    br_todoist_init,
+    br_toggltrack_init,
+    br_tokeet_init,
+    br_tomorrowio_init,
+    br_tradier_init,
+    br_transferwise_init,
+    br_travelpayouts_init,
+    br_travisci_init,
+    br_trelloapikey_init,
+    br_tru_init,
+    br_trufflehogenterprise_init,
+    br_twelvedata_init,
+    br_twilio_init,
+    br_twilioapikey_init,
+    br_twist_init,
+    br_twitch_init,
+    br_twitchaccesstoken_init,
+    br_twitter_v1_init,
+    br_twitter_v2_init,
+    br_twitterconsumerkey_init,
+    br_typeform_v1_init,
+    br_typeform_v2_init,
+    br_typetalk_init,
+    br_uclassify_init,
+    br_unifyid_init,
+    br_unplugg_init,
+    br_upcdatabase_init,
+    br_uploadcare_init,
+    br_upwave_init,
+    br_uri_init,
+    br_user_init,
+    br_userflow_init,
+    br_userstack_init,
+    br_vagrantcloudpersonaltoken_init,
+    br_vatlayer_init,
+    br_vercel_init,
+    br_verifier_init,
+    br_viewneo_init,
+    br_virustotal_init,
+    br_visualcrossing_init,
+    br_voiceflow_init,
+    br_voicegain_init,
+    br_voodoosms_init,
+    br_vouchery_init,
+    br_vultrapikey_init,
+    br_walkscore_init,
+    br_weatherbit_init,
+    br_weatherstack_init,
+    br_web3storage_init,
+    br_webex_init,
+    br_webexbot_init,
+    br_webflow_init,
+    br_webscraper_init,
+    br_webscraping_init,
+    br_websitepulse_init,
+    br_weightsandbiases_v1_init,
+    br_weightsandbiases_v2_init,
+    br_wepay_init,
+    br_whoxy_init,
+    br_wit_init,
+    br_wiz_init,
+    br_worksnaps_init,
+    br_worldcoinindex_init,
+    br_worldweather_init,
+    br_wrike_init,
+    br_xai_init,
+    br_yelp_init,
+    br_youneedabudget_init,
+    br_yousign_init,
+    br_youtubeapikey_init,
+    br_zapierwebhook_init,
+    br_zendeskapi_init,
+    br_zenkitapi_init,
+    br_zenrows_init,
+    br_zenscrape_init,
+    br_zenserp_init,
+    br_zeplin_init,
+    br_zerobounce_init,
+    br_zerotier_init,
+    br_zipapi_init,
+    br_zipbooks_init,
+    br_zipcodeapi_init,
+    br_zipcodebase_init,
+    br_zohocrm_init,
+    br_zonkafeedback_init,
+    br_zulipchat_init,
 };
 
 static int fail(char **error, const char *message)
@@ -794,6 +1075,115 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
             if (!json_object_object_get_ex(feature_flags, "IPInfoDetectorEnabled", &enabled)) return true;
             return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
         }
+        case 1056: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "OctopusDeployDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1057: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "OpenRouterDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1054: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "PgAnalyzeReadKeyDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1049: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "PineconeDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1055: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "RedHatPyxisDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 368: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "RevDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1060: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "ShippoDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1069: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "SolarwindsDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 767: {
+            if (detector->version == 1) return true;
+            if (detector->version != 2) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "SonarCloudV2DetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 586: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "TlyDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 274: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "UserDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 1005: {
+            if (detector->version == 1) return true;
+            if (detector->version != 2) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "WeightsAndBiasesV2DetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 817: {
+            if (detector->version != 0) return false;
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "WitDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
+        case 87: return detector->version == 1 || detector->version == 2;
+        case 676: return detector->version == 1 || detector->version == 2;
+        case 370: return detector->version == 1 || detector->version == 2;
         case 9: case 113: return detector->version >= 1 && detector->version <= 3;
         case 3: case 4: case 8: case 19: case 107: case 142: case 190: case 303: case 333: case 394: case 430: case 708: case 921: case 994: case 1008: case 120: case 74: case 114: case 49: case 96: return detector->version == 1 || detector->version == 2;
         case 0: case 5: case 6: case 983: case 696: case 876: case 529: case 486: case 542: case 18: case 36: case 39: case 40: case 138: case 192: case 196: case 149: case 150: case 158: case 237: case 238: case 239: case 249: case 254: case 255: case 256: case 258: case 259: case 265: case 521: case 390: case 431: case 432: case 433: case 434: case 436: case 678: case 681: case 683: case 684: case 685: case 692: case 334: case 335: case 343: case 693: case 197: case 199: case 802: case 805: case 808:
@@ -813,6 +1203,32 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
     case 321: case 85: case 766: case 413: case 638: case 575: case 252: case 331:
     case 616: case 178: case 200: case 776: case 245: case 778: case 124: case 445:
     case 916: case 985: case 32: case 298: case 731: case 21: case 205: case 601: case 791: case 479: case 803: case 765: case 161: case 81: case 243: case 842: case 534: case 31: case 77: case 658: case 724: case 23: case 79: case 195: case 545: case 699: case 410: case 1038: case 533: case 20: case 439:
+        case 34: case 172: case 363: case 174: case 895: case 364: case 22: case 201: case 1040: case 945:
+        case 875: case 595: case 965: case 837: case 492: case 1037: case 755: case 734: case 614: case 80:
+        case 516: case 942: case 943: case 822: case 968: case 938: case 15: case 275: case 411: case 440:
+        case 82: case 83: case 914: case 84: case 998: case 761: case 229: case 577: case 903: case 999:
+        case 934: case 11: case 814: case 495: case 276: case 818: case 900: case 288: case 836: case 702:
+        case 967: case 956: case 964: case 517: case 518: case 299: case 422: case 461: case 480: case 996:
+        case 1035: case 673: case 369: case 1001: case 300: case 217: case 925: case 47: case 1031: case 868:
+        case 1012: case 230: case 231: case 398: case 852: case 412: case 559: case 581: case 660: case 560:
+        case 139: case 451: case 537: case 122: case 641: case 609: case 750: case 751: case 12: case 1017:
+        case 613: case 561: case 469: case 690: case 625: case 88: case 902: case 1044: case 587: case 674:
+        case 462: case 519: case 785: case 611: case 594: case 704: case 851: case 661: case 203: case 162:
+        case 725: case 263: case 520: case 13: case 30: case 247: case 562: case 608: case 505: case 927:
+        case 89: case 928: case 936: case 1051: case 849: case 345: case 898: case 14: case 25: case 264:
+        case 109: case 795: case 775: case 591: case 624: case 222: case 1016: case 340: case 476: case 549:
+        case 16: case 1027: case 955: case 538: case 705: case 123: case 915: case 718: case 233: case 234:
+        case 202: case 204: case 365: case 675: case 1034: case 929: case 719: case 151: case 319: case 628:
+        case 629: case 630: case 582: case 826: case 91: case 777: case 610: case 93: case 759: case 612:
+        case 589: case 640: case 563: case 840: case 421: case 289: case 913: case 446: case 339: case 864:
+        case 414: case 372: case 832: case 662: case 29: case 94: case 922: case 137: case 26: case 1011:
+        case 827: case 310: case 1010: case 989: case 809: case 871: case 606: case 539: case 540: case 722:
+        case 679: case 17: case 779: case 541: case 946: case 496: case 160: case 373: case 706: case 497:
+        case 419: case 937: case 417: case 810: case 374: case 116: case 475: case 597: case 452: case 930:
+        case 101: case 1033: case 218: case 663: case 551: case 870: case 482: case 984: case 687: case 415:
+        case 483: case 248: case 1023: case 799: case 464: case 342: case 46: case 95: case 720: case 824:
+        case 552: case 553: case 155: case 144: case 948: case 599: case 600: case 441: case 825: case 1006:
+        case 236: case 811:
             return detector->version == 0;
         default: break;
         }
@@ -1428,6 +1844,282 @@ const char *br_detector_type_name(int32_t type)
     case 533: return "OpenCageData";
     case 20: return "Mailchimp";
     case 439: return "Numverify";
+    case 34: return "Mailgun";
+    case 172: return "Mandrill";
+    case 644: return "Manifest";
+    case 363: return "Marketstack";
+    case 174: return "MattermostPersonalToken";
+    case 895: return "MongoDB";
+    case 364: return "Nutritionix";
+    case 1056: return "OctopusDeploy";
+    case 22: return "OneLogin";
+    case 201: return "OpenAI";
+    case 1040: return "OpenAIAdmin";
+    case 1057: return "OpenRouter";
+    case 945: return "OpenVpn";
+    case 875: return "Opsgenie";
+    case 595: return "Optimizely";
+    case 965: return "Overloop";
+    case 837: return "Parseur";
+    case 492: return "Pastebin";
+    case 1054: return "PgAnalyzeReadKey";
+    case 1037: return "PhraseAccessToken";
+    case 755: return "Pinata";
+    case 1049: return "Pinecone";
+    case 734: return "PlanviewLeanKit";
+    case 614: return "Planyo";
+    case 80: return "Plivo";
+    case 516: return "Poloniex";
+    case 942: return "Portainer";
+    case 943: return "PortainerToken";
+    case 822: return "Postbacks";
+    case 968: return "Postgres";
+    case 938: return "Privacy";
+    case 15: return "PrivateKey";
+    case 275: return "ProspectCRM";
+    case 411: return "ProtocolsIO";
+    case 440: return "ProxyCrawl";
+    case 82: return "PubNubPublishKey";
+    case 83: return "PubNubSubscriptionKey";
+    case 914: return "Pulumi";
+    case 84: return "PusherChannelKey";
+    case 998: return "PyPI";
+    case 761: return "Qase";
+    case 229: return "Qualaroo";
+    case 577: return "Qubole";
+    case 903: return "RabbitMQ";
+    case 999: return "RailwayApp";
+    case 934: return "Ramp";
+    case 330: return "Raven";
+    case 11: return "RazorPay";
+    case 814: return "Reachmail";
+    case 495: return "ReadMe";
+    case 276: return "ReallySimpleSystems";
+    case 818: return "RechargePayments";
+    case 1055: return "RedHatPyxis";
+    case 900: return "Redis";
+    case 288: return "Refiner";
+    case 836: return "Rentman";
+    case 702: return "Repairshopr";
+    case 967: return "Replicate";
+    case 956: return "ReplyIO";
+    case 964: return "RequestFinance";
+    case 517: return "RestpackHtmlToPdfAPI";
+    case 518: return "RestpackScreenshotAPI";
+    case 368: return "Rev";
+    case 299: return "RevampCRM";
+    case 422: return "RingCentral";
+    case 461: return "RiteKit";
+    case 480: return "Roaring";
+    case 996: return "RobinhoodCrypto";
+    case 1035: return "Rootly";
+    case 673: return "Rownd";
+    case 369: return "RunRunIt";
+    case 1001: return "SaladCloudApiKey";
+    case 300: return "Salescookie";
+    case 217: return "Salesflare";
+    case 925: return "Salesforce";
+    case 47: return "SalesforceOauth2";
+    case 1031: return "SalesforceRefreshToken";
+    case 868: return "Salesmate";
+    case 1012: return "Sanity";
+    case 230: return "SatismeterProjectkey";
+    case 231: return "SatismeterWritekey";
+    case 398: return "SauceLabs";
+    case 852: return "Scalr";
+    case 412: return "ScraperAPI";
+    case 559: return "ScraperBox";
+    case 581: return "ScrapeStack";
+    case 660: return "Scrapfly";
+    case 560: return "ScrapingAnt";
+    case 139: return "ScrapingBee";
+    case 451: return "ScreenshotAPI";
+    case 537: return "ScreenshotLayer";
+    case 122: return "SegmentApiKey";
+    case 641: return "SelectPDF";
+    case 609: return "Semaphore";
+    case 750: return "Sendbird";
+    case 751: return "SendbirdOrganizationAPI";
+    case 12: return "SendGrid";
+    case 1017: return "SentryOrgToken";
+    case 87: return "SentryToken";
+    case 613: return "Serphouse";
+    case 561: return "SerpStack";
+    case 469: return "Sheety";
+    case 690: return "Sherpadesk";
+    case 625: return "Shipday";
+    case 1060: return "Shippo";
+    case 88: return "ShodanKey";
+    case 902: return "Shopify";
+    case 1044: return "ShopifyOAuth";
+    case 587: return "Shortcut";
+    case 674: return "Shotstack";
+    case 462: return "Shutterstock";
+    case 519: return "ShutterstockOAuth";
+    case 785: return "Signable";
+    case 611: return "Signalwire";
+    case 594: return "Signaturit";
+    case 704: return "Sigopt";
+    case 851: return "SimFin";
+    case 661: return "SimplyNoted";
+    case 203: return "Simvoly";
+    case 162: return "SinchMessage";
+    case 725: return "Sirv";
+    case 263: return "Siteleaf";
+    case 520: return "SkyBiometry";
+    case 13: return "Slack";
+    case 30: return "SlackWebhook";
+    case 247: return "Smartsheets";
+    case 562: return "SmartyStreets";
+    case 608: return "Smooch";
+    case 505: return "Snipcart";
+    case 927: return "Snowflake";
+    case 89: return "SnykKey";
+    case 1069: return "SolarWindsObservability";
+    case 767: return "SonarCloud";
+    case 928: return "Sourcegraph";
+    case 936: return "SourcegraphCody";
+    case 183: return "Sparkpost";
+    case 1051: return "SpectralOps";
+    case 849: return "SpeechTextAI";
+    case 345: return "Spoonacular";
+    case 90: return "SpotifyKey";
+    case 898: return "SQLServer";
+    case 14: return "Square";
+    case 25: return "SquareApp";
+    case 264: return "Squarespace";
+    case 109: return "SslMate";
+    case 795: return "Statuscake";
+    case 775: return "Statuspage";
+    case 591: return "Stitchdata";
+    case 624: return "Storecove";
+    case 222: return "StoryblokAccessToken";
+    case 1016: return "StoryblokPersonalAccessToken";
+    case 340: return "Storychief";
+    case 476: return "Strava";
+    case 549: return "Streak";
+    case 16: return "Stripe";
+    case 1027: return "StripePaymentIntent";
+    case 955: return "Stripo";
+    case 538: return "Stytch";
+    case 705: return "Sugester";
+    case 123: return "SumoLogicKey";
+    case 915: return "SupabaseToken";
+    case 718: return "SuperNotesAPI";
+    case 233: return "SurveyAnyplace";
+    case 234: return "SurveyBot";
+    case 202: return "SurveySparrow";
+    case 204: return "Survicate";
+    case 365: return "Swell";
+    case 675: return "Swiftype";
+    case 1034: return "TableauPersonalAccessToken";
+    case 929: return "Tailscale";
+    case 719: return "Tallyfy";
+    case 151: return "Taxjar";
+    case 319: return "Teamgate";
+    case 628: return "TeamworkCRM";
+    case 629: return "TeamworkDesk";
+    case 630: return "TeamworkSpaces";
+    case 582: return "TechnicalAnalysisApi";
+    case 826: return "Tefter";
+    case 91: return "TelegramBotToken";
+    case 777: return "Teletype";
+    case 610: return "Telnyx";
+    case 93: return "TerraformCloudPersonalToken";
+    case 759: return "TestingBot";
+    case 612: return "Textmagic";
+    case 589: return "Thinkific";
+    case 640: return "ThousandEyes";
+    case 563: return "TicketMaster";
+    case 840: return "Tickettailor";
+    case 421: return "Tiingo";
+    case 289: return "Timezoneapi";
+    case 913: return "TinesWebhook";
+    case 586: return "TLy";
+    case 446: return "Tmetric";
+    case 339: return "Todoist";
+    case 290: return "TogglTrack";
+    case 864: return "Tokeet";
+    case 414: return "TomorrowIO";
+    case 372: return "Tradier";
+    case 832: return "Transferwise";
+    case 662: return "TravelPayouts";
+    case 29: return "TravisCI";
+    case 94: return "TrelloApiKey";
+    case 605: return "Tru";
+    case 922: return "TrufflehogEnterprise";
+    case 137: return "TwelveData";
+    case 26: return "Twilio";
+    case 1011: return "TwilioApiKey";
+    case 827: return "Twist";
+    case 310: return "Twitch";
+    case 1010: return "TwitchAccessToken";
+    case 676: return "Twitter";
+    case 989: return "TwitterConsumerkey";
+    case 370: return "Typeform";
+    case 809: return "Typetalk";
+    case 871: return "Uclassify";
+    case 606: return "UnifyID";
+    case 539: return "Unplugg";
+    case 540: return "UPCDatabase";
+    case 722: return "UploadCare";
+    case 679: return "Upwave";
+    case 17: return "URI";
+    case 274: return "User";
+    case 779: return "Userflow";
+    case 541: return "UserStack";
+    case 946: return "VagrantCloudPersonalToken";
+    case 496: return "VatLayer";
+    case 160: return "Vercel";
+    case 373: return "Verifier";
+    case 706: return "Viewneo";
+    case 497: return "VirusTotal";
+    case 419: return "VisualCrossing";
+    case 937: return "Voiceflow";
+    case 417: return "Voicegain";
+    case 810: return "VoodooSMS";
+    case 374: return "Vouchery";
+    case 116: return "VultrApiKey";
+    case 475: return "WalkScore";
+    case 597: return "WeatherBit";
+    case 452: return "WeatherStack";
+    case 930: return "Web3Storage";
+    case 101: return "Webex";
+    case 1033: return "WebexBot";
+    case 218: return "Webflow";
+    case 663: return "WebScraper";
+    case 551: return "Webscraping";
+    case 870: return "Websitepulse";
+    case 1005: return "WeightsAndBiases";
+    case 194: return "WePay";
+    case 482: return "Whoxy";
+    case 817: return "Wit";
+    case 984: return "Wiz";
+    case 687: return "Worksnaps";
+    case 415: return "WorldCoinIndex";
+    case 483: return "WorldWeather";
+    case 248: return "Wrike";
+    case 1023: return "XAI";
+    case 799: return "Yelp";
+    case 464: return "YouNeedABudget";
+    case 342: return "YouSign";
+    case 46: return "YoutubeApiKey";
+    case 45: return "ZapierWebhook";
+    case 95: return "ZendeskApi";
+    case 720: return "ZenkitAPI";
+    case 824: return "ZenRows";
+    case 552: return "Zenscrape";
+    case 553: return "Zenserp";
+    case 155: return "Zeplin";
+    case 144: return "Zerobounce";
+    case 948: return "ZeroTier";
+    case 599: return "ZipAPI";
+    case 600: return "ZipBooks";
+    case 441: return "ZipCodeAPI";
+    case 825: return "Zipcodebase";
+    case 1006: return "ZohoCRM";
+    case 236: return "ZonkaFeedback";
+    case 811: return "ZulipChat";
     case 329: return "Leadfeeder";
     case 450: return "LocationIQ";
     case 510: return "Loginradius";

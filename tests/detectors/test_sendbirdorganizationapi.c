@@ -26,7 +26,7 @@ int main(void)
     CHECK(br_sendbirdorganizationapi_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 751 && !strcmp(detector->name, "SendbirdOrganizationAPI"));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "sendbird"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[96];
     snprintf(input, sizeof(input), "sendbirdorgapi %s", key);

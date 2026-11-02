@@ -37,7 +37,7 @@ int main(void)
     CHECK(br_parseur_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 837 && !strcmp(detector->name, "Parseur"));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "parseur"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[256];
     snprintf(input, sizeof(input), "parseurx %s", key);

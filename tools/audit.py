@@ -89,6 +89,15 @@ def main():
             for path in record.get("native_files", []):
                 if path.startswith("src/detectors/") and path.endswith(".c"):
                     candidates.add(f"br_{Path(path).stem}_init")
+        supporting_identity = not item["listed_in_registry"] and "Keywords" not in item["methods"]
+        if supporting_identity and record:
+            # Embedded shared scanners are not standalone constructors. Resolve
+            # their owning versioned factories rather than inventing an alias.
+            for path in record.get("native_files", []):
+                if path.startswith("src/detectors/") and path.endswith(".c"):
+                    prefix = re.escape(Path(path).stem)
+                    candidates.update(symbol for symbol in symbols
+                                      if re.fullmatch(rf"br_{prefix}_v\d+_init", symbol))
         for part in segments:
             if re.fullmatch(r"\d+|v\d+|\d+\.v\d+", part):
                 version = part.replace(".v", "_v").replace("v", "")
@@ -108,6 +117,7 @@ def main():
             "native_files": bool(native),
             "exports": exports,
             "registered": registered,
+            "supporting_identity": supporting_identity,
             "fixtures": None,
         }
         if record and row["ledger"] != "unstarted":

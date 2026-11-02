@@ -29,6 +29,17 @@ class PinnedRegistryTests(unittest.TestCase):
         self.assertIsNone(item["registry_constructor"])
         self.assertIn("FromData", item["methods"])
 
+    def test_shared_base_is_not_a_constructor(self):
+        shared = self.detectors["weightsandbiases/BaseScanner"]
+        self.assertFalse(shared["listed_in_registry"])
+        self.assertNotIn("Keywords", shared["methods"])
+        self.assertIsNone(shared["registry_constructor"])
+        # Missing a declared Keywords method alone is not a helper signal:
+        # registered versioned scanners can inherit it from another scanner.
+        inherited = self.detectors["accuweather/v2/Scanner"]
+        self.assertTrue(inherited["listed_in_registry"])
+        self.assertNotIn("Keywords", inherited["methods"])
+
     def test_reference_totals_and_resolution(self):
         self.assertEqual(self.catalogue["detector_implementations"], 921)
         self.assertEqual(self.catalogue["registry_composite_candidates"], 890)

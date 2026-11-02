@@ -3162,6 +3162,96 @@ static void cloudflare_feature_gate_tests(int32_t type, const char *flag)
     json_object_put(invalid); json_object_put(flags);
 }
 
+static br_json *provider_fixture_field(br_json *row, const char *name)
+{
+    br_json *value = NULL;
+    CHECK(json_object_object_get_ex(row, name, &value));
+    return value;
+}
+
+static void provider_registration_tests(const br_detector *const *detectors, size_t count,
+                                        size_t retained)
+{
+    br_json *document = json_object_from_file("tests/provider-fixtures.json");
+    CHECK(document);
+    br_json *registrations = provider_fixture_field(document, "registrations");
+    br_json *fixtures = provider_fixture_field(document, "fixtures");
+    CHECK(json_object_is_type(registrations, json_type_array));
+    CHECK(json_object_array_length(registrations) == 281);
+    CHECK(count == retained + json_object_array_length(registrations));
+    br_json *flags = json_object_new_object();
+    CHECK(flags && !json_object_object_add(flags, "all", json_object_new_boolean(true)));
+    br_scan_ctx ctx = {0};
+    for (size_t k = 0; k < json_object_array_length(registrations); ++k) {
+        br_json *row = json_object_array_get_idx(registrations, k);
+        const br_detector *detector = detectors[retained + k];
+        CHECK(detector->type == json_object_get_int(provider_fixture_field(row, "type")));
+        CHECK(detector->version == json_object_get_int(provider_fixture_field(row, "version")));
+        const char *name = json_object_get_string(provider_fixture_field(row, "name"));
+        CHECK(!strcmp(detector->name, name) && !strcmp(br_detector_type_name(detector->type), name));
+        CHECK(!strcmp(detector->description, json_object_get_string(provider_fixture_field(row, "description"))));
+        CHECK(detector->custom_name && !*detector->custom_name);
+        br_json *keywords = provider_fixture_field(row, "keywords");
+        CHECK(detector->nkeywords == json_object_array_length(keywords));
+        for (size_t i = 0; i < detector->nkeywords; ++i)
+            CHECK(!strcmp(detector->keywords[i], json_object_get_string(json_object_array_get_idx(keywords, i))));
+        CHECK(detector->max_secret_size == json_object_get_int64(provider_fixture_field(row, "max_secret_size")));
+        CHECK(detector->start_offset == json_object_get_int64(provider_fixture_field(row, "start_offset")));
+        int64_t expected_span = json_object_get_int64(provider_fixture_field(row, "max_credential_span"));
+        if (detector->max_credential_span != expected_span)
+            fprintf(stderr, "%s credential span: got %lld, expected %lld\n", detector->name,
+                    (long long)detector->max_credential_span, (long long)expected_span);
+        CHECK(detector->max_credential_span == expected_span);
+        CHECK(detector->state && detector->scan && !detector->clean && !detector->clean_always);
+        CHECK(!!detector->false_positive == !!json_object_get_boolean(provider_fixture_field(row, "false_positive")));
+        CHECK(!!detector->validate_endpoints == !!json_object_get_boolean(provider_fixture_field(row, "validate_endpoints")));
+        br_json *cloud = provider_fixture_field(row, "cloud_endpoint");
+        if (cloud) CHECK(detector->cloud_endpoint && !strcmp(detector->cloud_endpoint, json_object_get_string(cloud)));
+        else CHECK(!detector->cloud_endpoint);
+        bool enabled = json_object_get_boolean(provider_fixture_field(row, "enabled"));
+        CHECK(br_detector_is_default(detector, NULL) == enabled);
+        CHECK(br_detector_is_default(detector, flags) == enabled);
+        br_detector copy = *detector;
+        CHECK(br_detector_is_default(&copy, NULL) == enabled);
+        copy.version = 77;
+        CHECK(!br_detector_is_default(&copy, NULL));
+        copy.version = detector->version;
+        copy.custom_name = "custom";
+        CHECK(!br_detector_is_default(&copy, NULL));
+        for (size_t j = 0; j < retained + k; ++j) {
+            CHECK(detector != detectors[j]);
+            CHECK(detector->type != detectors[j]->type || detector->version != detectors[j]->version);
+        }
+        const char *selector = json_object_get_string(provider_fixture_field(row, "selector"));
+        size_t exercised = 0;
+        for (size_t i = 0; i < json_object_array_length(fixtures); ++i) {
+            br_json *fixture = json_object_array_get_idx(fixtures, i);
+            if (strcmp(selector, json_object_get_string(provider_fixture_field(fixture, "selector")))) continue;
+            br_json *input = provider_fixture_field(fixture, "input");
+            br_results results = test_scan(detector, &ctx, false, json_object_get_string(input),
+                                          (size_t)json_object_get_string_len(input));
+            int minimum = json_object_get_int(provider_fixture_field(fixture, "min_findings"));
+            /* CLI window clipping and mandatory-prefix wordlist filtering do
+             * not suppress direct detector-API dispatch. Keep those five exact
+             * zero-finding default-CLI guards in cli_reference.py. */
+            CHECK(minimum || detector->type == 276 || detector->type == 340 ||
+                  detector->type == 1035 || detector->type == 1001 || detector->type == 913);
+            CHECK(results.len >= (minimum ? (size_t)minimum : 1u));
+            br_results_clear(&results);
+            ++exercised;
+        }
+        CHECK(exercised == (enabled ? 1u : 0u));
+        if (!enabled) {
+            /* Disabled constructors have direct named-provider tests, not CLI fixtures. */
+            br_results empty = test_scan(detector, &ctx, false, "", 0);
+            CHECK(!empty.len);
+            br_results_clear(&empty);
+        }
+    }
+    json_object_put(flags);
+    json_object_put(document);
+}
+
 int main(void)
 {
     const br_detector *const *detectors = NULL;
@@ -3180,8 +3270,22 @@ int main(void)
     feature_gate_tests(939, "IPInfoDetectorEnabled");
     cloudflare_feature_gate_tests(100, "CloudflareApiTokenV2DetectorEnabled");
     cloudflare_feature_gate_tests(58, "CloudflareGlobalApiKeyV2DetectorEnabled");
+    feature_gate_tests(1056, "OctopusDeployDetectorEnabled");
+    feature_gate_tests(1057, "OpenRouterDetectorEnabled");
+    feature_gate_tests(1054, "PgAnalyzeReadKeyDetectorEnabled");
+    feature_gate_tests(1049, "PineconeDetectorEnabled");
+    feature_gate_tests(1055, "RedHatPyxisDetectorEnabled");
+    feature_gate_tests(368, "RevDetectorEnabled");
+    feature_gate_tests(1060, "ShippoDetectorEnabled");
+    feature_gate_tests(1069, "SolarwindsDetectorEnabled");
+    feature_gate_tests(586, "TlyDetectorEnabled");
+    feature_gate_tests(274, "UserDetectorEnabled");
+    feature_gate_tests(817, "WitDetectorEnabled");
+    cloudflare_feature_gate_tests(767, "SonarCloudV2DetectorEnabled");
+    cloudflare_feature_gate_tests(1005, "WeightsAndBiasesV2DetectorEnabled");
     CHECK(br_registry(&detectors, &count, &error) == 0 && error == NULL);
-    CHECK(count == sizeof(expected) / sizeof(expected[0]));
+    const size_t retained = sizeof(expected) / sizeof(expected[0]);
+    provider_registration_tests(detectors, count, retained);
     CHECK(!br_detector_type_name(-1));
     CHECK(!br_detector_type_name(1)); /* AMQP has no implementation yet. */
     CHECK(!br_detector_is_default(NULL, NULL));
@@ -3189,7 +3293,7 @@ int main(void)
     CHECK(!br_detector_is_default(&missing, NULL));
     br_json *flags = json_object_new_object();
     CHECK(flags && json_object_object_add(flags, "all", json_object_new_boolean(true)) == 0);
-    for (size_t i = 0; i < count; ++i) {
+    for (size_t i = 0; i < retained; ++i) {
         const br_detector *detector = detectors[i];
         const registration *entry = &expected[i];
         CHECK(detector->type == entry->type && detector->version == entry->version);

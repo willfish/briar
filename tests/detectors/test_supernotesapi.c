@@ -28,7 +28,7 @@ int main(void)
     CHECK(br_supernotesapi_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 718 && !strcmp(detector->name, "SuperNotesAPI"));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "supernotes"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[128];
     snprintf(input, sizeof(input), "supernotes %s\n", key);

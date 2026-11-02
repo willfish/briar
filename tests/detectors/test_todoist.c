@@ -28,7 +28,7 @@ int main(void)
     CHECK(br_todoist_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 339 && !strcmp(detector->name, "Todoist"));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "todoist"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[160];
     snprintf(input, sizeof(input), "todoist %s", key);

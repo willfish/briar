@@ -43,7 +43,7 @@ int main(void)
     CHECK(br_tefter_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 826 && !strcmp(detector->name, "Tefter"));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "tefter"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[80];
     snprintf(input, sizeof(input), "tefter %s", key);

@@ -28,7 +28,7 @@ int main(void)
     CHECK(br_twitchaccesstoken_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 1010 && !strcmp(detector->name, "TwitchAccessToken"));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "twitch"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[128];
     snprintf(input, sizeof(input), "twitch %s twitch %s", key, key);

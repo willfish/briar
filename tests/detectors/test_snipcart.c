@@ -32,7 +32,7 @@ int main(void)
     CHECK(br_snipcart_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 505 && !strcmp(detector->name, "Snipcart"));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "snipcart"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[220];
     snprintf(input, sizeof(input), "snipcart %s", key);

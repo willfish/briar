@@ -30,7 +30,7 @@ int main(void)
     CHECK(br_revampcrm_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 299 && !strcmp(detector->name, "RevampCRM") && detector->max_credential_span == 1024);
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "revampcrm"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[160];
     snprintf(input, sizeof(input), "revamp %s %s", id, token);

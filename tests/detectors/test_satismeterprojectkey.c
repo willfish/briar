@@ -31,7 +31,7 @@ int main(void)
     CHECK(br_satismeterprojectkey_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 230 && !strcmp(detector->name, "SatismeterProjectkey") && detector->max_credential_span == 1024);
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "satismeter"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[192];
     snprintf(input, sizeof(input), "satismeter %s %s satismeter %s %s", project, token, project, token);

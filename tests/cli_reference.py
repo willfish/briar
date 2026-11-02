@@ -260,6 +260,20 @@ def escaped_unicode_fixtures():
     return cases
 
 
+def pool_fixtures():
+    records = json.loads((ROOT / "tests/provider-fixtures.json").read_text())["fixtures"]
+    cases = []
+    for record in records:
+        assert record["min_findings"] in (0, 1)
+        label = "pool_positive_" if record["min_findings"] else "pool_absent_"
+        payload = record["input"].encode()
+        for kind in ("stdin", "filesystem"):
+            source = payload if kind == "stdin" else b"heading\n" + payload + b"\n"
+            cases.append((label + record["name"] + "_" + kind,
+                          source, record["selector"], kind, False))
+    return cases
+
+
 def fixtures():
     cases = []
     for name, length, number in (("abuseipdb", 80, 521), ("abyssale", 40, 239)):
@@ -1906,6 +1920,7 @@ def fixtures():
     cases.extend(chunk_fixtures())
     cases.extend(utf16_fixtures())
     cases.extend(escaped_unicode_fixtures())
+    cases.extend(pool_fixtures())
     return cases
 
 
@@ -2036,6 +2051,10 @@ def compare(native, reference, case):
         directory = Path(tmp)
         expected = invoke(reference, source, detector, kind, cleaning, directory, reference_run=True, result_types=result_types)
         actual = invoke(native, source, detector, kind, cleaning, directory, result_types=result_types)
+    if name.startswith("pool_positive_") and (not actual or not expected):
+        raise AssertionError(name + ": provider grammar and dispatch must retain a source finding")
+    if name.startswith("pool_absent_") and (actual or expected):
+        raise AssertionError(name + ": both CLIs must preserve the source default-result absence")
     # False-positive filtering or keyword-window clipping must not turn these
     # positive fixtures into a vacuous zero-row comparison.
     if name in ("azure_apim_repository_stdin", "azure_apim_repository_filesystem",

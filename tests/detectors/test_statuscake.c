@@ -27,7 +27,7 @@ int main(void)
     CHECK(br_statuscake_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 795 && !strcmp(detector->name, "Statuscake"));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "statuscake"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[160];
     snprintf(input, sizeof(input), "statuscake %s", key);

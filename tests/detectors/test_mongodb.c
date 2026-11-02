@@ -43,7 +43,7 @@ int main(void)
     CHECK(detector->false_positive && !detector->false_positive(detector, NULL, &error) && error && !error[0]);
     free(error);
     error = NULL;
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     expect_raw(detector, "mongodb://myDBReader:D1fficultP%40ssw0rd@mongodb0.example.com:27017",
                "mongodb://myDBReader:D1fficultP%40ssw0rd@mongodb0.example.com:27017");

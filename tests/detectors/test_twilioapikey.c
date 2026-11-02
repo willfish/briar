@@ -61,7 +61,9 @@ static void inspect(test_http *http, const br_scan_ctx *ctx, const br_http_reque
     memcpy(dedup + 5, key1, 34);
     memcpy(dedup + 39, secret1, 32);
     CHECK(ctx && !strcmp(request->method, "GET") && request->profile == BR_HTTP_SANE);
-    CHECK(request->timeout_ms == 5000 && !request->body.len && request->detector_type == 1011);
+    /* Owned-client entry deadlines include time spent scheduling the worker. */
+    CHECK(request->timeout_ms > 0 && request->timeout_ms <= 5000 &&
+          !request->body.len && request->detector_type == 1011);
     CHECK(!strcmp(request->url, "https://verify.twilio.com/v2/Services"));
     CHECK(request->dedup_key.len == 71 && !memcmp(request->dedup_key.data, dedup, 71));
     CHECK(request->nheaders == 4);

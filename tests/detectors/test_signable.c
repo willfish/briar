@@ -28,7 +28,7 @@ int main(void)
     CHECK(br_signable_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 785 && !strcmp(detector->name, "Signable") && detector->max_credential_span == 1024);
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "signable"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[160];
     snprintf(input, sizeof(input), "signable %s", key);

@@ -22,7 +22,7 @@ int main(void)
     CHECK(br_webscraper_init(&detector, &error) == 0 && detector && !error);
     CHECK(detector->type == 663 && !strcmp(detector->name, "WebScraper"));
     CHECK(detector->nkeywords == 1 && !strcmp(detector->keywords[0], "webscraper"));
-    CHECK(!br_detector_is_default(detector, NULL));
+    CHECK(br_detector_is_default(detector, NULL));
 
     char input[160];
     snprintf(input, sizeof(input), "webscraper %s", key);
