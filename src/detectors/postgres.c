@@ -60,6 +60,7 @@ int br_postgres_set_ignore_patterns(const char *const *patterns, size_t count, c
 {
     if (error) *error = NULL;
     if (count && !patterns) return fail(error, "invalid Postgres ignore patterns");
+    if (count > SIZE_MAX / sizeof(br_regex *)) return fail(error, "too many Postgres ignore patterns");
     br_regex **next = count ? calloc(count, sizeof(*next)) : NULL;
     if (count && !next) return fail(error, "cannot allocate Postgres ignore patterns");
     for (size_t i = 0; i < count; ++i) {
@@ -90,6 +91,7 @@ static void params_clear(pg_params *params)
 
 static char *dup_len(const char *text, size_t len)
 {
+    if (len == SIZE_MAX) return NULL;
     char *copy = malloc(len + 1);
     if (!copy) return NULL;
     if (len) memcpy(copy, text, len);
@@ -108,6 +110,7 @@ static int params_set(pg_params *params, const char *key, const char *value, cha
         return 0;
     }
     if (params->len == params->cap) {
+        if (params->cap > SIZE_MAX / sizeof(*params->items) / 2) return fail(error, "too many Postgres parameters");
         size_t cap = params->cap ? params->cap * 2 : 8;
         pg_param *items = realloc(params->items, cap * sizeof(*items));
         if (!items) return fail(error, "cannot store Postgres parameter");
@@ -258,6 +261,7 @@ static int escape_value(const char *value, char **out, char **error)
     size_t n = strlen(value), extra = 0;
     for (size_t i = 0; i < n; ++i)
         if (value[i] == '\'' || value[i] == '\\') ++extra;
+    if (n == SIZE_MAX || extra > SIZE_MAX - n - 1) return fail(error, "Postgres parameter is too large");
     char *copy = malloc(n + extra + 1);
     if (!copy) return fail(error, "cannot escape Postgres parameter");
     size_t at = 0;
@@ -275,7 +279,11 @@ static int push_kv(char ***kvs, size_t *n, size_t *cap, const char *key, const c
     if (!value || !*value) return 0;
     char *escaped = NULL;
     if (escape_value(value, &escaped, error) != 0) return -1;
-    size_t need = strlen(key) + 3 + strlen(escaped);
+    size_t key_len = strlen(key), value_len = strlen(escaped);
+    if (key_len > SIZE_MAX - 4 || value_len > SIZE_MAX - 4 - key_len) {
+        free(escaped); return fail(error, "Postgres connection parameter is too large");
+    }
+    size_t need = key_len + 3 + value_len;
     char *item = malloc(need + 1);
     if (!item) {
         free(escaped);
@@ -284,6 +292,9 @@ static int push_kv(char ***kvs, size_t *n, size_t *cap, const char *key, const c
     snprintf(item, need + 1, "%s='%s'", key, escaped);
     free(escaped);
     if (*n == *cap) {
+        if (*cap > SIZE_MAX / sizeof(**kvs) / 2) {
+            free(item); return fail(error, "too many Postgres connection parameters");
+        }
         size_t next = *cap ? *cap * 2 : 8;
         char **grown = realloc(*kvs, next * sizeof(*grown));
         if (!grown) {
@@ -435,7 +446,12 @@ static int parse_uri(const char *uri, const char *scheme, pg_params *params, cha
     if (!rc) rc = push_kv(&kvs, &n, &cap, "dbname", path, error);
     if (!rc) rc = add_query(&kvs, &n, &cap, parts.raw_query, error);
     size_t joined_len = 0;
-    for (size_t i = 0; !rc && i < n; ++i) joined_len += strlen(kvs[i]) + (i ? 1 : 0);
+    for (size_t i = 0; !rc && i < n; ++i) {
+        size_t len = strlen(kvs[i]), sep = i ? 1 : 0;
+        if (joined_len > SIZE_MAX - sep - 1 || len > SIZE_MAX - sep - 1 - joined_len)
+            rc = fail(error, "Postgres connection string is too large");
+        else joined_len += len + sep;
+    }
     char *joined = rc ? NULL : calloc(joined_len + 1, 1);
     if (!rc && !joined) rc = fail(error, "cannot join Postgres connection string");
     if (!rc) {
@@ -488,7 +504,11 @@ static int format_conninfo(const pg_params *params, bool pgx, char **out, char *
     for (size_t i = 0; i < copy.len; ++i) {
         if (!strcmp(copy.items[i].key, "db_type")) continue;
         if (pgx && !strcmp(copy.items[i].key, "requiressl")) continue;
-        total += strlen(copy.items[i].key) + 3 + strlen(copy.items[i].value);
+        size_t kn = strlen(copy.items[i].key), vn = strlen(copy.items[i].value);
+        if (total > SIZE_MAX - 3 || kn > SIZE_MAX - 3 - total || vn > SIZE_MAX - 3 - total - kn) {
+            params_clear(&copy); return fail(error, "Postgres connection string is too large");
+        }
+        total += kn + 3 + vn;
     }
     char *text = malloc(total);
     if (!text) {
@@ -619,7 +639,9 @@ static int attach_extra(br_result *result, const pg_params *params, char **error
     const char *dbname = params_get(params, "dbname");
     if (extra_add(result, "sslmode", sslmode && *sslmode ? sslmode : "<unset>", error) != 0) return -1;
     if (host && *host) {
-        size_t need = strlen(host) + 1 + (port && *port ? strlen(port) + 1 : 0);
+        size_t hn = strlen(host), pn = port && *port ? strlen(port) : 0;
+        if (hn > SIZE_MAX - 3 || pn > SIZE_MAX - 3 - hn) return fail(error, "Postgres endpoint is too large");
+        size_t need = hn + 1 + (pn ? pn + 1 : 0);
         char *endpoint = malloc(need + 1);
         if (!endpoint) return fail(error, "cannot format Postgres endpoint");
         if (port && *port) snprintf(endpoint, need + 1, "%s:%s", host, port);
@@ -642,6 +664,8 @@ static int take_uri(void *user, const br_span *groups, size_t ngroups)
         ngroups < 2 || groups[1].begin == SIZE_MAX || groups[1].end < groups[1].begin)
         return fail(&box->error, "invalid Postgres URI capture");
     if (box->hits->len == box->hits->cap) {
+        if (box->hits->cap > SIZE_MAX / sizeof(*box->hits->items) / 2)
+            return fail(&box->error, "too many Postgres URIs");
         size_t cap = box->hits->cap ? box->hits->cap * 2 : 4;
         pg_hit *items = realloc(box->hits->items, cap * sizeof(*items));
         if (!items) return fail(&box->error, "cannot retain Postgres URI");
@@ -766,8 +790,8 @@ static int scan_postgres(const br_detector *detector, const br_scan_ctx *ctx, bo
         }
         const char *port = params_get(&params, "port");
         const char *scheme = params_get(&params, "db_type");
-        size_t raw_len = strlen(scheme) + strlen(user) + strlen(password) + strlen(host) + strlen(port) + 6;
-        char *raw = malloc(raw_len + 1);
+        int raw_len = snprintf(NULL, 0, "%s://%s:%s@%s:%s", scheme, user, password, host, port);
+        char *raw = raw_len < 0 ? NULL : malloc((size_t)raw_len + 1);
         br_result result = {0};
         if (!raw) {
             fail(&owned_error, "cannot format Postgres result");
@@ -775,7 +799,7 @@ static int scan_postgres(const br_detector *detector, const br_scan_ctx *ctx, bo
             rc = -1;
             break;
         }
-        snprintf(raw, raw_len + 1, "%s://%s:%s@%s:%s", scheme, user, password, host, port);
+        snprintf(raw, (size_t)raw_len + 1, "%s://%s:%s@%s:%s", scheme, user, password, host, port);
         if (br_finding_key_bytes(&result, detector->type,
                                  (br_slice){(const unsigned char *)raw, strlen(raw)},
                                  "connection_string") != 0) {

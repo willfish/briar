@@ -19,6 +19,12 @@ static bool saw_neon, saw_disable;
 static const char *forced_code, *forced_message;
 static bool force_ssl;
 
+static void check_bytes(br_bytes actual, const char *expected)
+{
+    size_t len = strlen(expected);
+    CHECK(actual.len == len && (!len || !memcmp(actual.data, expected, len)));
+}
+
 static int sql_hook(void *user, bool neon, const char *conninfo, br_postgres_sql_outcome *out, char **error)
 {
     (void)user;
@@ -67,9 +73,10 @@ int main(void)
     const char *input = "postgres://app:s3cret@db.example.com/analytics";
     br_results results = test_scan(detector, &ctx, false, input, strlen(input));
     CHECK(results.len == 1);
-    CHECK(!strcmp((char *)results.items[0].raw.data, "postgres://app:s3cret@db.example.com:5432"));
-    CHECK(!strcmp((char *)results.items[0].raw_v2.data, (char *)results.items[0].raw.data));
-    CHECK(!strcmp((char *)results.items[0].primary_secret.data, input));
+    check_bytes(results.items[0].raw, "postgres://app:s3cret@db.example.com:5432");
+    CHECK(results.items[0].raw_v2.len == results.items[0].raw.len &&
+          !memcmp(results.items[0].raw_v2.data, results.items[0].raw.data, results.items[0].raw.len));
+    check_bytes(results.items[0].primary_secret, input);
     CHECK(!strcmp(extra(&results.items[0], "sslmode"), "<unset>"));
     CHECK(!strcmp(extra(&results.items[0], "host"), "db.example.com:5432"));
     CHECK(!strcmp(extra(&results.items[0], "username"), "app"));
@@ -80,7 +87,7 @@ int main(void)
     input = "postgresql://admin:p%40ss@10.0.0.8:5433/production?sslmode=require";
     results = test_scan(detector, &ctx, false, input, strlen(input));
     CHECK(results.len == 1);
-    CHECK(!strcmp((char *)results.items[0].raw.data, "postgresql://admin:p@ss@10.0.0.8:5433"));
+    check_bytes(results.items[0].raw, "postgresql://admin:p@ss@10.0.0.8:5433");
     CHECK(!strcmp(extra(&results.items[0], "sslmode"), "require"));
     CHECK(!strcmp(extra(&results.items[0], "database"), "production"));
     br_results_clear(&results);
@@ -150,8 +157,8 @@ int main(void)
     forced_message = "connection refused";
     results = test_scan(detector, &ctx, true, input, strlen(input));
     CHECK(results.len == 1 && calls == 1 && saw_neon && !results.items[0].verified);
-    CHECK(!strcmp((char *)results.items[0].raw.data, "postgres://app:s3cret@ep.neon.tech:5432"));
-    CHECK(!strcmp((char *)results.items[0].primary_secret.data, input));
+    check_bytes(results.items[0].raw, "postgres://app:s3cret@ep.neon.tech:5432");
+    check_bytes(results.items[0].primary_secret, input);
     CHECK(!strcmp(extra(&results.items[0], "database"), "analytics"));
     CHECK(results.items[0].verification_error && strstr(results.items[0].verification_error, "connection refused"));
     br_results_clear(&results);
