@@ -79,6 +79,7 @@ static void sendgrid_discard(sendgrid_fields *fields)
 static int sendgrid_grow(sendgrid_fields *fields, size_t n)
 {
     if (n <= fields->cap) return 0;
+    if (n > SIZE_MAX / sizeof(*fields->items)) return -1;
     sendgrid_slot *items = realloc(fields->items, n * sizeof(*items));
     if (!items) return -1;
     memset(items + fields->cap, 0, (n - fields->cap) * sizeof(*items));
@@ -94,6 +95,7 @@ static void sendgrid_clear(sendgrid_fields *fields)
 
 static int sendgrid_store(sendgrid_slot *slot, br_slice text)
 {
+    if (text.len == SIZE_MAX) return -1;
     char *copy = malloc(text.len + 1);
     if (!copy) return -1;
     if (text.len && text.data) memcpy(copy, text.data, text.len);
