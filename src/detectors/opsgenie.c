@@ -72,6 +72,7 @@ typedef struct {
 
 static int copy_text(char **slot, size_t *len, br_slice text)
 {
+    if (text.len == SIZE_MAX) return -1;
     char *copy = malloc(text.len + 1);
     if (!copy) return -1;
     if (text.len) memcpy(copy, text.data, text.len);
@@ -128,12 +129,18 @@ static int take_int(opsgenie_account *account, br_json *value, br_slice encoded,
     if (integer) return 0;
     if (!json_object_is_type(value, json_type_int) && !json_object_is_type(value, json_type_double))
         return type_error(account, value, field, "int");
-    char *message = malloc(96 + (end - begin));
+    static const char prefix[] = "json: cannot unmarshal number ";
+    size_t token_len = end - begin, field_len = strlen(field);
+    size_t fixed = sizeof(prefix) + sizeof(" into Go struct field  of type int") - 1;
+    if (token_len > SIZE_MAX - fixed || field_len > SIZE_MAX - fixed - token_len) return -1;
+    size_t size = fixed + token_len + field_len;
+    char *message = malloc(size);
     if (!message) return -1;
-    memcpy(message, "json: cannot unmarshal number ", 29);
-    memcpy(message + 29, encoded.data + begin, end - begin);
-    int n = sprintf(message + 29 + (end - begin), " into Go struct field %s of type int", field);
-    if (n < 0) { free(message); return -1; }
+    memcpy(message, prefix, sizeof(prefix) - 1);
+    memcpy(message + sizeof(prefix) - 1, encoded.data + begin, token_len);
+    size_t at = sizeof(prefix) - 1 + token_len;
+    int n = snprintf(message + at, size - at, " into Go struct field %s of type int", field);
+    if (n < 0 || (size_t)n >= size - at) { free(message); return -1; }
     if (account->ordinary) { free(message); return 0; }
     account->ordinary = true;
     account->cause = message;
