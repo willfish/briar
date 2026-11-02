@@ -729,6 +729,8 @@ static void format_and_null_send(void)
 
 int main(void)
 {
+    char *oversized = NULL;
+    CHECK(copy_bytes(NULL, SIZE_MAX, &oversized) == -1 && !oversized);
     const br_detector *d = descriptor();
     extraction(d);
     verification(d);
