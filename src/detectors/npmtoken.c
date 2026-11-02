@@ -56,9 +56,9 @@ static int npm_hold(npm_pending *pending, const br_http_response *response,
                     char *authorization, char **error)
 {
     if (pending->len == pending->cap) {
-        size_t cap = pending->cap ? pending->cap * 2 : 2;
-        if (cap < pending->cap || cap > SIZE_MAX / sizeof(*pending->items))
+        if (pending->cap > SIZE_MAX / sizeof(*pending->items) / 2)
             return npm_fail(error, "cannot retain NpmToken response");
+        size_t cap = pending->cap ? pending->cap * 2 : 2;
         npm_held *items = realloc(pending->items, cap * sizeof(*items));
         if (!items) return npm_fail(error, "cannot retain NpmToken response");
         pending->items = items;
