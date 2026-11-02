@@ -50,9 +50,12 @@ static int verify_enterprise(const br_scan_ctx *ctx, const char *key, const char
                              const char *hostname, br_result *result, char **error)
 {
     size_t host_len = strlen(hostname);
-    char *url = malloc(sizeof("https://") + host_len + sizeof("/api/v1/sources"));
+    if (host_len > SIZE_MAX - sizeof("https:///api/v1/sources"))
+        return fail(error, "TruffleHog Enterprise URL is too large");
+    size_t size = sizeof("https:///api/v1/sources") + host_len;
+    char *url = malloc(size);
     if (!url) return fail(error, "cannot create TruffleHog Enterprise URL");
-    sprintf(url, "https://%s/api/v1/sources", hostname);
+    snprintf(url, size, "https://%s/api/v1/sources", hostname);
     if (!ctx) { free(url); return 1; }
     const br_header headers[] = {
         {"Accept", "application/vnd.trufflehogenterprise+json; version=3"},
