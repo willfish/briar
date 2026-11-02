@@ -161,9 +161,9 @@ static int join_scopes(const shopify_scopes *scopes, char **out, size_t *out_len
 {
     size_t total = 0;
     for (size_t i = 0; i < scopes->len; ++i) {
-        if (i && total == SIZE_MAX) return -1;
+        if (i && total >= SIZE_MAX - 1) return -1;
         if (i) ++total;
-        if (scopes->items[i].len > SIZE_MAX - total) return -1;
+        if (total == SIZE_MAX || scopes->items[i].len > SIZE_MAX - total - 1) return -1;
         total += scopes->items[i].len;
     }
     char *text = malloc(total + 1);
