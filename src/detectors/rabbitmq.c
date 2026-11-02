@@ -10,8 +10,11 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <netdb.h>
 #include <poll.h>
+#include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,12 +67,23 @@ static int dial_numeric(const char *host, const char *port, int *fd, char **caus
 {
     struct in_addr ipv4;
     if (inet_pton(AF_INET, host, &ipv4) != 1) return 0;
+    errno = 0;
+    char *end = NULL;
+    long number = strtol(port, &end, 10);
+    if (errno || end == port || *end || number < 0 || number > UINT16_MAX) {
+        *cause = strdup("dial tcp: invalid port");
+        return *cause ? 1 : -1;
+    }
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) return fail(cause, "cannot open RabbitMQ socket");
     struct sockaddr_in address = {.sin_family = AF_INET, .sin_addr = ipv4};
-    address.sin_port = htons((uint16_t)atoi(port));
+    address.sin_port = htons((uint16_t)number);
     int flags = fcntl(sock, F_GETFL, 0);
-    if (flags < 0 || fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0) { close(sock); return fail(cause, "cannot set RabbitMQ dial mode"); }
+    if (flags < 0 || fcntl(sock, F_SETFD, FD_CLOEXEC) < 0 || fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0) {
+        /* Already failing; a cleanup close error cannot make setup successful. */
+        (void)close(sock);
+        return fail(cause, "cannot set RabbitMQ dial mode");
+    }
     int connected = connect(sock, (struct sockaddr *)&address, sizeof(address));
     int connect_errno = 0;
     if (connected != 0 && errno == EINPROGRESS) {
@@ -77,11 +91,12 @@ static int dial_numeric(const char *host, const char *port, int *fd, char **caus
         int polled = poll(&ready, 1, 10000);
         if (polled > 0) {
             socklen_t len = sizeof(connect_errno);
-            getsockopt(sock, SOL_SOCKET, SO_ERROR, &connect_errno, &len);
+            if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &connect_errno, &len) < 0) connect_errno = errno;
         } else connect_errno = polled == 0 ? ETIMEDOUT : errno;
     } else if (connected != 0) connect_errno = errno;
     if (connect_errno) {
-        close(sock);
+        /* The connection already failed; retain that cause if cleanup also fails. */
+        (void)close(sock);
         const char *why = errno_text(connect_errno);
         int n = snprintf(NULL, 0, "dial tcp %s:%s: connect: %s", host, port, why);
         char *buffer = n < 0 ? NULL : malloc((size_t)n + 1);
@@ -90,10 +105,14 @@ static int dial_numeric(const char *host, const char *port, int *fd, char **caus
         *cause = buffer;
         return 1;
     }
-    fcntl(sock, F_SETFL, flags);
     struct timeval timeout = {.tv_sec = 10};
-    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+    if (fcntl(sock, F_SETFL, flags) < 0 ||
+        setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0 ||
+        setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+        /* Already failing; retain the setup failure if cleanup also fails. */
+        (void)close(sock);
+        return fail(cause, "cannot set RabbitMQ socket timeouts");
+    }
     *fd = sock;
     return 2;
 }
@@ -121,9 +140,10 @@ static int dial_tcp(const char *host, const char *port, int *fd, char **cause)
         sock = socket(item->ai_family, item->ai_socktype, item->ai_protocol);
         if (sock < 0) { connect_errno = errno; continue; }
         int flags = fcntl(sock, F_GETFL, 0);
-        if (flags < 0 || fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0) {
+        if (flags < 0 || fcntl(sock, F_SETFD, FD_CLOEXEC) < 0 || fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0) {
             connect_errno = errno;
-            close(sock);
+            /* This attempt already failed; a cleanup close error does not reuse it. */
+            (void)close(sock);
             sock = -1;
             continue;
         }
@@ -143,12 +163,16 @@ static int dial_tcp(const char *host, const char *port, int *fd, char **cause)
             if (polled > 0) {
                 int so = 0;
                 socklen_t len = sizeof(so);
-                getsockopt(sock, SOL_SOCKET, SO_ERROR, &so, &len);
-                if (!so) { fcntl(sock, F_SETFL, flags); break; }
+                if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &so, &len) < 0) so = errno;
+                if (!so) {
+                    if (fcntl(sock, F_SETFL, flags) == 0) break;
+                    so = errno;
+                }
                 connect_errno = so;
             } else connect_errno = polled == 0 ? ETIMEDOUT : errno;
         } else connect_errno = errno;
-        close(sock);
+        /* This attempt already failed; retain its cause if cleanup also fails. */
+        (void)close(sock);
         sock = -1;
     }
     freeaddrinfo(info);
@@ -163,29 +187,57 @@ static int dial_tcp(const char *host, const char *port, int *fd, char **cause)
         return 1;
     }
     struct timeval timeout = {.tv_sec = 10};
-    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0 ||
+        setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+        /* Already failing; retain the setup failure if cleanup also fails. */
+        (void)close(sock);
+        return fail(cause, "cannot set RabbitMQ socket timeouts");
+    }
     *fd = sock;
     return 0;
 }
 
 static int write_all(int fd, const unsigned char *data, size_t len)
 {
+    sigset_t block, previous, pending;
+    if (sigemptyset(&block) || sigaddset(&block, SIGPIPE)) return -1;
+    int masked = pthread_sigmask(SIG_BLOCK, &block, &previous);
+    if (masked) { errno = masked; return -1; }
+    int rc = -1, saved_errno = 0, prior = -1;
+    if (sigpending(&pending) || (prior = sigismember(&pending, SIGPIPE)) < 0) {
+        saved_errno = errno;
+        goto restore;
+    }
+    rc = 0;
     size_t at = 0;
     while (at < len) {
-        ssize_t n = write(fd, data + at, len - at);
+        size_t count = len - at > (size_t)SSIZE_MAX ? (size_t)SSIZE_MAX : len - at;
+        ssize_t n = write(fd, data + at, count);
         if (n < 0 && errno == EINTR) continue;
-        if (n <= 0) return -1;
+        if (n <= 0) { saved_errno = n < 0 ? errno : EIO; rc = -1; break; }
         at += (size_t)n;
     }
-    return 0;
+    if (rc && saved_errno == EPIPE && !prior) {
+        if (sigpending(&pending)) saved_errno = errno;
+        else if (sigismember(&pending, SIGPIPE) == 1) {
+            int caught;
+            int waited = sigwait(&block, &caught);
+            if (waited) saved_errno = waited;
+        }
+    }
+restore:
+    masked = pthread_sigmask(SIG_SETMASK, &previous, NULL);
+    if (masked && !rc) { rc = -1; saved_errno = masked; }
+    if (rc) errno = saved_errno;
+    return rc;
 }
 
 static int read_full(int fd, unsigned char *data, size_t len)
 {
     size_t at = 0;
     while (at < len) {
-        ssize_t n = read(fd, data + at, len - at);
+        size_t count = len - at > (size_t)SSIZE_MAX ? (size_t)SSIZE_MAX : len - at;
+        ssize_t n = read(fd, data + at, count);
         if (n < 0 && errno == EINTR) continue;
         if (n <= 0) return -1;
         at += (size_t)n;
@@ -196,7 +248,7 @@ static int read_full(int fd, unsigned char *data, size_t len)
 static int put_shortstr(unsigned char *out, size_t cap, size_t *at, const char *text)
 {
     size_t n = strlen(text);
-    if (n > 255 || *at + 1 + n > cap) return -1;
+    if (n > 255 || *at >= cap || n > cap - *at - 1) return -1;
     out[(*at)++] = (unsigned char)n;
     memcpy(out + *at, text, n);
     *at += n;
@@ -222,7 +274,7 @@ static int put_u32(unsigned char *out, size_t *at, unsigned value)
 static int send_method(int fd, unsigned class_id, unsigned method_id, const unsigned char *args, size_t args_len)
 {
     unsigned char frame[512];
-    if (args_len > sizeof(frame) - 8) return -1;
+    if (args_len > sizeof(frame) - 12) return -1;
     size_t payload = 4 + args_len;
     frame[0] = 1;
     frame[1] = frame[2] = 0;
@@ -285,7 +337,8 @@ static int handshake(int fd, const char *user, const char *password, const char 
     put_u32(start, &at, 0);
     if (put_shortstr(start, sizeof(start), &at, "PLAIN") != 0) return fail(cause, "AMQP credential too large");
     size_t user_len = strlen(user), pass_len = strlen(password);
-    if (at + 4 + user_len + pass_len + 2 > sizeof(start)) return fail(cause, "AMQP credential too large");
+    if (at > sizeof(start) - 6 || user_len > sizeof(start) - at - 6 ||
+        pass_len > sizeof(start) - at - 6 - user_len) return fail(cause, "AMQP credential too large");
     put_u32(start, &at, (unsigned)(user_len + pass_len + 2));
     start[at++] = 0;
     memcpy(start + at, user, user_len);
@@ -318,6 +371,7 @@ static int handshake(int fd, const char *user, const char *password, const char 
         put_shortstr(open, sizeof(open), &open_at, vhost) != 0 ||
         put_shortstr(open, sizeof(open), &open_at, "") != 0)
         return fail(cause, "EOF");
+    if (open_at == sizeof(open)) return fail(cause, "AMQP vhost too large");
     open[open_at++] = 0;
     if (send_method(fd, 10, 40, open, open_at) != 0 ||
         read_method(fd, &class_id, &method_id, args, sizeof(args), &args_len) != 0)
@@ -343,7 +397,10 @@ static int verify_rabbit(const char *url, const char *user, const char *password
     int dialed = dial_tcp(host, port, &fd, cause);
     if (dialed != 0) return dialed < 0 ? -1 : 0;
     int shook = handshake(fd, user, password, vhost, cause);
-    close(fd);
+    /* Close once, never retry a possibly reused descriptor. A handshake error
+     * remains the defined failure path if cleanup also fails. */
+    int closed = close(fd);
+    if (closed && !shook) return fail(cause, "cannot close RabbitMQ socket");
     if (shook == 0) *verified = true;
     (void)url;
     return shook < 0 ? -1 : 0;
@@ -396,10 +453,12 @@ static int collect_rabbit(void *user, const br_span *groups, size_t ngroups)
     rabbit_bag *bag = user;
     if (ngroups < 2 || groups[0].begin == SIZE_MAX || groups[1].begin == SIZE_MAX) return 0;
     size_t url_len = groups[0].end - groups[0].begin, pass_len = groups[1].end - groups[1].begin;
+    if (url_len == SIZE_MAX || pass_len == SIZE_MAX) return fail(&bag->error, "RabbitMQ URL is too large");
     for (size_t i = 0; i < bag->len; ++i)
         if (strlen(bag->items[i].url) == url_len && !memcmp(bag->items[i].url, bag->data + groups[0].begin, url_len))
             return 0;
     if (bag->len == bag->cap) {
+        if (bag->cap > SIZE_MAX / sizeof(*bag->items) / 2) return fail(&bag->error, "too many RabbitMQ URLs");
         size_t cap = bag->cap ? bag->cap * 2 : 4;
         rabbit_pair *grown = realloc(bag->items, cap * sizeof(*grown));
         if (!grown) return fail(&bag->error, "out of memory collecting RabbitMQ URLs");
@@ -412,6 +471,30 @@ static int collect_rabbit(void *user, const br_span *groups, size_t ngroups)
     memcpy(password, bag->data + groups[1].begin, pass_len);
     url[url_len] = password[pass_len] = 0;
     bag->items[bag->len++] = (rabbit_pair){url, password};
+    return 0;
+}
+
+static int redact_url(const char *url, const char *password, char **out, char **error)
+{
+    size_t url_len = strlen(url), pass_len = strlen(password), count = 0;
+    if (!pass_len) return fail(error, "cannot redact RabbitMQ URL");
+    const char *cursor = url, *match;
+    while ((match = strstr(cursor, password))) { ++count; cursor = match + pass_len; }
+    if (url_len == SIZE_MAX || (pass_len < 8 && count > (SIZE_MAX - url_len - 1) / (8 - pass_len)))
+        return fail(error, "RabbitMQ redaction is too large");
+    size_t len = pass_len < 8 ? url_len + count * (8 - pass_len) : url_len - count * (pass_len - 8);
+    char *redacted = malloc(len + 1);
+    if (!redacted) return fail(error, "out of memory redacting RabbitMQ URL");
+    char *at = redacted;
+    cursor = url;
+    while ((match = strstr(cursor, password))) {
+        size_t prefix = (size_t)(match - cursor);
+        memcpy(at, cursor, prefix); at += prefix;
+        memcpy(at, "********", 8); at += 8;
+        cursor = match + pass_len;
+    }
+    memcpy(at, cursor, strlen(cursor) + 1);
+    *out = redacted;
     return 0;
 }
 
@@ -474,20 +557,13 @@ static int scan_rabbit(const br_detector *detector, const br_scan_ctx *ctx, bool
             vhost[parts.raw_path.len - 1] = 0;
             vhost_text = vhost;
         }
-        char *redacted = malloc(url.len + 8);
+        char *redacted = NULL;
         br_result result = {0};
-        if (!redacted || br_finding_key(&result, 903, bag.items[i].url, "key") != 0) {
+        if (redact_url(bag.items[i].url, captured, &redacted, &owned) != 0 ||
+            br_finding_key(&result, 903, bag.items[i].url, "key") != 0) {
             free(redacted);
             rc = fail(&owned, "out of memory creating RabbitMQ result");
         } else {
-            memcpy(redacted, url.data, url.len);
-            redacted[url.len] = 0;
-            for (char *cursor = redacted; (cursor = strstr(cursor, captured)); ) {
-                size_t pass_len = strlen(captured), rest = strlen(cursor + pass_len);
-                memmove(cursor + 8, cursor + pass_len, rest + 1);
-                memcpy(cursor, "********", 8);
-                cursor += 8;
-            }
             result.redacted = redacted;
             bool verified = false;
             char *cause = NULL;
