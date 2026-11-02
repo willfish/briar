@@ -14,6 +14,15 @@ void *malloc(size_t size)
     return calloc(1, size);
 }
 
+/* Keep string copies inside this fixture's malloc fault boundary. */
+char *strdup(const char *text)
+{
+    size_t size = strlen(text) + 1;
+    char *copy = malloc(size);
+    if (copy) memcpy(copy, text, size);
+    return copy;
+}
+
 int json_object_object_add(struct json_object *object, const char *name, struct json_object *value)
 {
     if (fail_part_after && (!fail_part_name || !strcmp(name, fail_part_name)) && --fail_part_after == 0) return 1;

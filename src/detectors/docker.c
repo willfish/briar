@@ -121,8 +121,8 @@ static int docker_read_registry(void *user, br_slice name, br_json *value, br_sl
            (name.len && memcmp(auths->items[at].registry.data, name.data, name.len)))) ++at;
     if (at == auths->len) {
         if (auths->len == auths->cap) {
+            if (auths->cap > SIZE_MAX / sizeof(*auths->items) / 2) return -1;
             size_t cap = auths->cap ? auths->cap * 2 : 8;
-            if (cap < auths->cap || cap > SIZE_MAX / sizeof(*auths->items)) return -1;
             docker_entry *items = realloc(auths->items, cap * sizeof(*items));
             if (!items) return -1;
             auths->items = items; auths->cap = cap;
