@@ -50,8 +50,8 @@ static int moonclerk_defer(moonclerk_closes *closes, const br_http_response *res
                            char *authorization)
 {
     if (closes->len == closes->cap) {
+        if (closes->cap > SIZE_MAX / sizeof(*closes->items) / 2) return -1;
         size_t cap = closes->cap ? closes->cap * 2 : 4;
-        if (cap < closes->cap || cap > SIZE_MAX / sizeof(*closes->items)) return -1;
         moonclerk_pending *items = realloc(closes->items, cap * sizeof(*items));
         if (!items) return -1;
         closes->items = items;
