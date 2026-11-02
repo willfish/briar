@@ -30,7 +30,7 @@
 _Static_assert(DECODE_MAX_DEPTH == 5, "update decoder bounds when changing depth");
 
 typedef struct {
-    bool json, no_verification, clean, fail;
+    bool json, no_verification, clean, fail, pre_commit, results_set;
     bool verified, unverified, unknown, retain_fp;
     const char *include, *exclude, *command;
     const char **paths;
@@ -121,9 +121,11 @@ static int usage(void)
 {
     return print_line(STDOUT_FILENO, "", "Usage: briar stdin --json --no-verification --include-detectors CSV [OPTIONS]\n"
          "       briar filesystem FILE... --json --no-verification --include-detectors CSV [OPTIONS]\n"
+         "       briar pre-commit [--include-detectors CSV] [--exclude-detectors CSV] -- FILE...\n"
+         "Pre-commit: offline implemented/default-enabled detectors, location-only JSON, fail on findings.\n"
          "Options: --exclude-detectors CSV\n"
          "         --filter-unverified  --results CSV  --fail\n"
-         "Native slice: explicit supported detector selection required; default/all scans fail.\n"
+         "stdin/filesystem: explicit supported detector selection required; default/all scans fail.\n"
          "Only selected upstream-enabled implementations run; Abstract remains disabled.\n"
          "Inputs: explicit regular files or stdin, at most 64 KiB each.\n"
          "Source chunks: 10 KiB content + 3 KiB forward peek, before decoding.\n"
@@ -178,16 +180,24 @@ static int parse_cli(int argc, char **argv, cli_options *o, char **error)
         else if (!positional && (value = option_value(argc, argv, &i, "--include-detectors"))) o->include = value;
         else if (!positional && (value = option_value(argc, argv, &i, "--exclude-detectors"))) o->exclude = value;
         else if (!positional && (value = option_value(argc, argv, &i, "--results"))) {
+            o->results_set = true;
             if (result_selection(o, value, error)) return 1;
         } else if (!positional && argv[i][0] == '-') return fail(error, "unsupported or incomplete CLI option; see --help");
         else if (!o->command) o->command = argv[i];
         else o->paths[o->npaths++] = argv[i];
     }
+    if (o->command && !strcmp(o->command, "pre-commit")) {
+        o->pre_commit = true;
+        o->command = "filesystem";
+        if (o->results_set || o->clean)
+            return fail(error, "pre-commit does not support result suppression options");
+        o->json = o->no_verification = o->fail = true;
+    }
     if (!o->command || (strcmp(o->command, "stdin") && strcmp(o->command, "filesystem")))
         return fail(error, "unsupported or missing source command; see --help");
     if ((!strcmp(o->command, "stdin") && o->npaths) || (!strcmp(o->command, "filesystem") && !o->npaths))
         return fail(error, "stdin takes no paths; filesystem requires explicit regular files");
-    if (!o->include || !*o->include)
+    if ((!o->include && !o->pre_commit) || (o->include && !*o->include))
         return fail(error, "incomplete detector port: explicit --include-detectors selection required; default/all scans are unavailable");
     if (!o->json) return fail(error, "unsupported output format: this slice requires --json");
     if (!o->no_verification)
@@ -402,6 +412,24 @@ static br_json *json_result(const result_frame *f)
 failed:
     json_object_put(object);
     return NULL;
+}
+
+/* Allowlist the hook's public fields. Even Redacted and ExtraData can contain
+ * credentials, so never derive hook output by removing a few known secrets. */
+static br_json *hook_result(br_json *finding)
+{
+    const char *fields[] = {"SourceMetadata", "DetectorType", "DetectorName", "DecoderName"};
+    br_json *object = json_object_new_object();
+    if (!object) return NULL;
+    for (size_t i = 0; i < sizeof(fields) / sizeof(fields[0]); ++i) {
+        br_json *value = NULL;
+        if (!json_object_object_get_ex(finding, fields[i], &value) ||
+            jadd(object, fields[i], json_object_get(value))) {
+            json_object_put(object);
+            return NULL;
+        }
+    }
+    return object;
 }
 
 static int append_output(br_json *output, br_json *keys, const result_frame *f, char **error)
@@ -747,7 +775,9 @@ static int open_input(const char *path, int *out, char **error)
 
 int main(int argc, char **argv)
 {
-    if (argc == 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) return usage();
+    if ((argc == 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) ||
+        (argc == 3 && !strcmp(argv[1], "pre-commit") &&
+         (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h")))) return usage();
     cli_options options = {0};
     char *error = NULL;
     bool *included = NULL, *excluded = NULL, *selected = NULL;
@@ -767,8 +797,13 @@ int main(int argc, char **argv)
     if (!registry || !count) { fail(&error, "no compiled detectors available"); goto done; }
     included = calloc(count, sizeof(bool)); excluded = calloc(count, sizeof(bool)); selected = calloc(count, sizeof(bool));
     if (!included || !excluded || !selected) { fail(&error, "out of memory selecting detectors"); goto done; }
-    if (selectors(options.include, registry, count, included, false, &error) ||
-        selectors(options.exclude, registry, count, excluded, true, &error)) goto done;
+    if (options.include) {
+        if (selectors(options.include, registry, count, included, false, &error)) goto done;
+    } else {
+        /* Only pre-commit opts into the implemented catalogue, not upstream all. */
+        for (size_t i = 0; i < count; ++i) included[i] = true;
+    }
+    if (selectors(options.exclude, registry, count, excluded, true, &error)) goto done;
     size_t nselected = 0;
     for (size_t i = 0; i < count; ++i) {
         selected[i] = br_detector_is_default(registry[i], NULL) && included[i] && !excluded[i];
@@ -782,7 +817,10 @@ int main(int argc, char **argv)
     output = json_object_new_array(); keys = json_object_new_object();
     if (!output || !keys) { fail(&error, "out of memory initializing output"); goto done; }
     char notice[320];
-    snprintf(notice, sizeof(notice), "limited native slice, %zu explicitly selected enabled detector(s); 10 KiB + 3 KiB source chunks, PLAIN/BASE64/UTF16/ESCAPED_UNICODE only (decode depth five), no HTML decoder or CLI verification", nselected);
+    if (options.pre_commit)
+        snprintf(notice, sizeof(notice), "pre-commit: %zu implemented/default-enabled detector(s); offline, 64 KiB/file; incomplete TruffleHog parity", nselected);
+    else
+        snprintf(notice, sizeof(notice), "limited native slice, %zu explicitly selected enabled detector(s); 10 KiB + 3 KiB source chunks, PLAIN/BASE64/UTF16/ESCAPED_UNICODE only (decode depth five), no HTML decoder or CLI verification", nselected);
     if (print_line(STDERR_FILENO, "briar: ", notice)) { fail(&error, "cannot write scan diagnostic"); goto done; }
     size_t nsources = !strcmp(options.command, "stdin") ? 1 : options.npaths;
     for (size_t i = 0; i < nsources; ++i) {
@@ -805,6 +843,16 @@ int main(int argc, char **argv)
         if (scan_rc) goto done;
     }
     if (stopped) { fail(&error, "context canceled"); goto done; }
+    if (options.pre_commit) {
+        /* Finish projection before printing, preserving scan-failure rollback. */
+        for (size_t i = 0; i < json_object_array_length(output); ++i) {
+            br_json *safe = hook_result(json_object_array_get_idx(output, i));
+            if (!safe || json_object_array_put_idx(output, i, safe)) {
+                json_object_put(safe);
+                fail(&error, "cannot construct pre-commit output"); goto done;
+            }
+        }
+    }
     for (size_t i = 0; i < json_object_array_length(output); ++i) {
         const char *line = json_object_to_json_string_ext(json_object_array_get_idx(output, i),
                                                         JSON_C_TO_STRING_PLAIN | JSON_C_TO_STRING_NOSLASHESCAPE);

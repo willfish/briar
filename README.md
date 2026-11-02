@@ -1,6 +1,6 @@
 # Briar
 
-A native C reimplementation of [TruffleHog 3.97.2](UPSTREAM.json), focused on fast
+A native C reimplementation of [TruffleHog 3.97.2](https://github.com/trufflesecurity/trufflehog/tree/cc1fe982afc515d2991365ce8d4d0dd07170fcad), focused on fast
 scanning and a small executable. No Go runtime or wrapped Go scanner.
 
 The target is full upstream behaviour, including detectors, verification, decoders,
@@ -50,7 +50,7 @@ direnv exec . build/briar filesystem ./file.txt \
   --json --no-verification --include-detectors=239
 ```
 
-The CLI currently supports:
+The `stdin` and `filesystem` commands currently support:
 
 - Stdin or explicitly named regular files, capped at **64 KiB per source**.
 - Explicit detector selection and JSON findings, including multipart credentials.
@@ -59,6 +59,29 @@ The CLI currently supports:
 Directory traversal, default/all scans, HTML decoding and CLI verification are
 not supported. Unsupported options fail explicitly. **Findings on stdout contain
 secrets**; treat the output as sensitive.
+
+## Pre-commit with Docker
+
+Reference this repository from `.pre-commit-config.yaml`, pinning a reviewed
+commit that contains the hook. The private repository requires Git access.
+
+```yaml
+repos:
+  - repo: ssh://git@github.com/willfish/briar
+    rev: <full-commit-sha>
+    hooks:
+      - id: briar
+```
+
+The hook scans implemented, default-enabled detectors without verification and
+fails on findings or errors. It reports locations, not credential contents.
+**Files above 64 KiB fail rather than being silently skipped.** Docker builds a
+minimal `scratch` image from the pinned revision; cache its build layers in CI.
+The measured Linux amd64 image is **9.44 MB unpacked**, including static libraries
+and notices, or **3.98 MB** as a gzipped Docker-save archive. The earlier executable
+benchmarks do not include Docker or pre-commit overhead.
+See [Docker and pre-commit](docs/PRE_COMMIT.md) for image builds, result handling,
+prebuilt-image use and the remaining scanning limits.
 
 ## Development
 
@@ -78,10 +101,8 @@ HOME:
 
 [Integration testing](docs/INTEGRATION_TESTING.md) provides a single Python runner,
 coverage map and explicit parity gaps.
-[Architecture](docs/ARCHITECTURE.md) describes the native design.
-[Acceptance](docs/ACCEPTANCE.md) defines parity requirements and testing limits.
-The [parity ledger](parity.json) tracks implementation coverage against the
-[pinned upstream inventory](upstream-inventory.json).
+The reference fixture runner pins TruffleHog 3.97.2 directly in
+`tests/cli_reference.py`.
 
 ## License
 

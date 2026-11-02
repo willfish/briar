@@ -21,6 +21,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
+REFERENCE_VERSION = '3.97.2'  # Fixtures target TruffleHog cc1fe982afc515d2991365ce8d4d0dd07170fcad.
 
 
 def synthetic(label, length):
@@ -2528,7 +2529,7 @@ def compare(native, reference, case):
 
 
 def check_reference_version(reference):
-    version = json.loads((ROOT / "UPSTREAM.json").read_text())["version"]
+    version = REFERENCE_VERSION
     result = run_isolated([str(reference), "--no-update", "--version"], timeout=30)
     output = (result.stdout + result.stderr).decode(errors="replace")
     if result.returncode or not re.search(r"(?<![\d.])" + re.escape(version) + r"(?![\d.])", output):

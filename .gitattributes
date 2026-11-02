@@ -1,0 +1,2 @@
+# Preserve the upstream runtime exception's terminal blank line verbatim.
+container/licenses/gcc-COPYING.RUNTIME whitespace=-blank-at-eof

@@ -46,6 +46,19 @@ int main(void)
     CHECK(sigpending(&pending) == 0 && sigismember(&pending, SIGPIPE) == 0);
     CHECK(pthread_sigmask(SIG_SETMASK, &initial, NULL) == 0);
     CHECK(sigaction(SIGPIPE, &original, NULL) == 0);
+    br_json *finding = json_tokener_parse("{\"SourceMetadata\":{},\"DetectorType\":239,"
+        "\"DetectorName\":\"Abyssale\",\"DecoderName\":\"PLAIN\",\"Raw\":\"sensitive\","
+        "\"RawV2\":\"sensitive\",\"Redacted\":\"sensitive\",\"SecretParts\":{\"key\":\"sensitive\"},"
+        "\"ExtraData\":{\"key\":\"sensitive\"},\"StructuredData\":{\"key\":\"sensitive\"},"
+        "\"VerificationError\":\"sensitive\",\"futureField\":\"sensitive\"}");
+    CHECK(finding != NULL);
+    br_json *safe = hook_result(finding);
+    CHECK(safe != NULL && json_object_object_length(safe) == 4);
+    CHECK(strstr(json_object_to_json_string(safe), "sensitive") == NULL);
+    CHECK(json_object_object_length(finding) == 12);
+    json_object_put(finding);
+    CHECK(strstr(json_object_to_json_string(safe), "Abyssale") != NULL);
+    json_object_put(safe);
     printf("CLI I/O: %zu assertions, 0 failures\n", checks);
     return 0;
 }

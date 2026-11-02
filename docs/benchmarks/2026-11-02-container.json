@@ -1,0 +1,55 @@
+{
+  "image": "sha256:bca995bb729ce5cdb69e9dd59fa5f6b0be1afcd096f90415021b5ece367ac1e2",
+  "image_unpacked_bytes": 9442461,
+  "binary_sha256": "f1f765b6dd0080ece70e76433e867a107073a33b4d34a6a614fd58dfed609845",
+  "files": 16,
+  "bytes": 1048576,
+  "detectors": 891,
+  "findings": 16,
+  "method": "One warmup, five alternating runs; empty HOME; network isolated; complete location-only rows equal after filename sorting. Native includes unshare; containers include Docker startup; hook timings include pre-commit.",
+  "measurements_seconds": {
+    "static_cli": [
+      0.04045467599644326,
+      0.04894226499891374,
+      0.04102596000302583,
+      0.043294846000208054,
+      0.04203276999760419
+    ],
+    "docker": [
+      0.20966784300253494,
+      0.3341243500035489,
+      0.21856883299915353,
+      0.17825996399915311,
+      0.2379226179982652
+    ],
+    "repository_hook_cached": [
+      0.8968154940012028,
+      0.6105900120019214,
+      0.5597992529947078,
+      0.5693700310002896,
+      0.6168358190043364
+    ],
+    "prebuilt_hook_cached": [
+      0.5313462120029726,
+      0.40176283099572174,
+      0.36393845100246836,
+      0.4258955999976024,
+      0.42374737199861556
+    ]
+  },
+  "medians_seconds": {
+    "static_cli": 0.04203276999760419,
+    "docker": 0.21856883299915353,
+    "repository_hook_cached": 0.6105900120019214,
+    "prebuilt_hook_cached": 0.42374737199861556
+  },
+  "host": "AMD Ryzen Threadripper 7960X, Linux amd64",
+  "docker_version": "29.9.2",
+  "pre_commit_version": "4.5.1",
+  "gzip_docker_save_bytes": 3978964,
+  "uncached_build": {
+    "exit": 0,
+    "seconds": 57.09682100200007,
+    "scope": "Uncached build steps; pinned Alpine base image already present; 4 build jobs"
+  }
+}

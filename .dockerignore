@@ -1,0 +1,15 @@
+**
+!Dockerfile
+!.dockerignore
+!Makefile
+!include/
+!include/**
+!src/
+!src/**
+!LICENSE
+!NOTICE
+!LICENSES/
+!LICENSES/**
+!container/
+!container/licenses/
+!container/licenses/**

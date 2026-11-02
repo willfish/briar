@@ -34,11 +34,40 @@ direnv exec . unshare -Urn python3 tests/core/cli_failures.py build/briar
 That script creates an empty HOME for each test. Add `--reference PATH` to run
 only the shared upstream exit/outcome comparisons; the full runner executes both.
 
+## Container artifact
+
+The reference version is pinned in `tests/cli_reference.py`. To check the actual
+static executable from a locally built image, without provider networking:
+
+```sh
+mkdir -p state
+docker build -t briar:local .
+container=$(docker create --network=none briar:local --help)
+docker cp "$container:/briar" state/briar-container
+docker rm "$container"
+direnv exec . unshare -Urn python3 tests/core/e2e.py state/briar-container
+direnv exec . unshare -Urn python3 tests/core/cli_failures.py state/briar-container
+direnv exec . python3 tests/cli_reference.py --native state/briar-container \
+  --reference /path/to/pinned/trufflehog --jobs 8
+pre-commit validate-manifest .pre-commit-hooks.yaml
+```
+
+Exercise the repository hook in a disposable consumer with synthetic files using
+`pre-commit try-repo /path/to/briar briar --all-files`. Check both clean and
+finding-containing files, exit status, location-only output and unchanged inputs.
+See [Docker and pre-commit](PRE_COMMIT.md) for the hook's contract.
+
+Keep the C fault-injection suite in the supported Nix environment. Some tests
+interpose shared-library/libc symbols: static linking can conflict with those
+overrides, and a test's `malloc` forwarding to `calloc` recurses on musl. Those
+harness assumptions are not valid substitutes for testing the shipped executable.
+
 ## Coverage map
 
 | Boundary | Executed evidence | What it checks |
 |---|---|---|
 | Arguments and selection | `tests/core/e2e.py`, `tests/core/cli_failures.py` | Supported options and terminator, invalid/missing values, detector versions/default restrictions, result filters and finding-sensitive exit 183 |
+| Pre-commit command | `cli_failures.py`, `test_cli_io.c` | Implemented-catalogue selection, fail-on-finding, output allowlist, option-looking filenames, suppression guards and scan-failure rollback |
 | Files and stdin | The same Python scripts | Missing/inaccessible paths, symlinks, nonregular files, read errors, size caps, chunk/peek boundaries, immutable inputs and rollback of earlier files on scan failure |
 | Process and output | `cli_failures.py`, `tests/core/test_cli_io.c` | SIGINT/SIGTERM during pending input and blocked output, broken/full/nonblocking output, preserved descriptor flags, SIGPIPE disposition and diagnostic secrecy for tested failures |
 | Decoder/engine/result pipeline | `e2e.py`, `tests/cli_reference.py`, core decoder/overlap/prefilter tests | Complete selected findings, nested decoding, filtering, multipart windows, locations, deduplication and overlap outcomes |
@@ -54,11 +83,9 @@ a stalled output pipe to let the process exit.
 
 ## Explicit gaps
 
-[The parity ledger](../parity.json) remains authoritative for provider-specific
-coverage and missing behaviour. No detector or component is promoted to complete
-by this suite.
+No detector or component is promoted to complete by this suite.
 
-- CLI verification, verification cache, default/all scans, directory traversal,
+- CLI verification, verification cache, upstream default/all scans, directory traversal,
   archives, other sources/printers, HTML decoding and remaining configuration are
   not implemented. Their rejection tests are safeguards, not upstream parity.
 - Injected SQL, LDAP, FTP, DNS, SDK and authentication tests do not establish native

@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+- id: briar
+  name: Briar (offline secret scan)
+  description: Scan files with implemented detectors; reject findings and unsupported inputs.
+  language: docker
+  entry: /briar pre-commit
+  args: ['--']
+  types: [file]
+  require_serial: true

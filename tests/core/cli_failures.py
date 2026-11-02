@@ -252,6 +252,52 @@ class CliFailures(unittest.TestCase):
                 self.assertEqual(result.returncode, expected)
                 self.assertEqual(bool(result.stdout), expected == 183)
 
+    def test_pre_commit_safe_findings(self):
+        for name in ('--fail', 'with spaces.txt', 'with\nnewline.txt'):
+            with self.subTest(name=name):
+                path = self.directory / name
+                path.write_bytes(SOURCE)
+                result = self.invoke(['pre-commit', '--', name])
+                self.assertEqual(result.returncode, 183)
+                self.assertNotIn(KEY, result.stdout + result.stderr)
+                rows = [json.loads(line) for line in result.stdout.splitlines()]
+                self.assertEqual(len(rows), 1)
+                self.assertEqual(set(rows[0]), {'SourceMetadata', 'DetectorType', 'DetectorName', 'DecoderName'})
+                self.assertEqual(rows[0]['DetectorName'], 'Abyssale')
+                self.assertEqual(rows[0]['SourceMetadata']['Data']['Filesystem'], {'file': name, 'line': 1})
+                self.assertEqual(path.read_bytes(), SOURCE)
+        (self.directory / 'clean.txt').write_bytes(b'ordinary text\n')
+        result = self.invoke(['pre-commit', '--', 'clean.txt'])
+        self.assertEqual((result.returncode, result.stdout), (0, b''))
+
+    def test_pre_commit_guards(self):
+        (self.directory / 'secret.txt').write_bytes(SOURCE)
+        for extra, diagnostic in (
+            (['--results=verified'], 'result suppression'),
+            (['--filter-unverified'], 'result suppression'),
+            (['--include-detectors='], 'explicit --include-detectors'),
+            (['--include-detectors=all'], 'all-detector scans are unavailable'),
+            (['--exclude-detectors=all'], 'no enabled implemented detectors'),
+            (['--include-detectors=notimplemented'], 'unknown detector'),
+        ):
+            with self.subTest(extra=extra):
+                self.failed(self.invoke(['pre-commit', *extra, '--', 'secret.txt']), diagnostic)
+        result = self.invoke(['pre-commit', '--include-detectors=239', '--json', '--', 'secret.txt'])
+        self.assertEqual(result.returncode, 183)
+        self.assertNotIn(KEY, result.stdout + result.stderr)
+        result = self.invoke(['pre-commit', '--exclude-detectors=239', '--', 'secret.txt'])
+        self.assertEqual((result.returncode, result.stdout), (0, b''))
+        self.failed(self.invoke(['pre-commit']), 'requires explicit regular files')
+
+    def test_pre_commit_rollback(self):
+        (self.directory / 'secret.txt').write_bytes(SOURCE)
+        (self.directory / 'large.txt').write_bytes(b'x' * 65537)
+        (self.directory / 'link.txt').symlink_to('secret.txt')
+        for name, diagnostic in (('large.txt', '64 KiB source cap'), ('missing.txt', 'cannot open'),
+                                 ('link.txt', 'cannot open')):
+            with self.subTest(name=name):
+                self.failed(self.invoke(['pre-commit', '--', 'secret.txt', name]), diagnostic)
+
     def test_shared_upstream_outcomes(self):
         if not REFERENCE:
             self.skipTest('pass --reference for pinned upstream exit/outcome comparisons')
