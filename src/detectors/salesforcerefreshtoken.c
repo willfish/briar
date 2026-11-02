@@ -63,6 +63,11 @@ static int salesforce_form(br_slice token, br_slice key, br_slice secret, char *
     }
     /* url.Values.Encode sorts client_id, client_secret, token. */
     static const char id[] = "client_id=", secret_name[] = "&client_secret=", token_name[] = "&token=";
+    size_t fixed = sizeof(id) + sizeof(secret_name) + sizeof(token_name) - 2;
+    if (key_n > SIZE_MAX - fixed || secret_n > SIZE_MAX - fixed - key_n ||
+        token_n > SIZE_MAX - fixed - key_n - secret_n) {
+        free(key_e); free(secret_e); free(token_e); return -1;
+    }
     size_t n = sizeof(id) - 1 + key_n + sizeof(secret_name) - 1 + secret_n + sizeof(token_name) - 1 + token_n;
     char *body = malloc(n + 1);
     if (!body) { free(key_e); free(secret_e); free(token_e); return -1; }
@@ -136,7 +141,7 @@ static int salesforce_active(br_slice body, bool *active, char **cause)
 static int salesforce_wrap(char **out, const char *prefix, const char *detail, const char *suffix)
 {
     size_t n = strlen(prefix), m = detail ? strlen(detail) : 0, s = suffix ? strlen(suffix) : 0;
-    if (m > SIZE_MAX - n - s - 1) return -1;
+    if (n == SIZE_MAX || s > SIZE_MAX - n - 1 || m > SIZE_MAX - n - s - 1) return -1;
     char *message = malloc(n + m + s + 1);
     if (!message) return -1;
     memcpy(message, prefix, n);
