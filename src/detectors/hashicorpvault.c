@@ -96,8 +96,9 @@ static int vault_policy_element(void *opaque, size_t index, br_json *value, br_s
     (void)encoded;
     vault_lookup *lookup = opaque;
     if (index >= lookup->capacity) {
+        if (lookup->capacity > SIZE_MAX / sizeof(*lookup->policies) / 2) return -1;
         size_t next = lookup->capacity ? lookup->capacity * 2 : 1;
-        if (next <= index || next < lookup->capacity || next > SIZE_MAX / sizeof(*lookup->policies)) return -1;
+        if (next <= index) return -1;
         vault_string *items = realloc(lookup->policies, next * sizeof(*items));
         if (!items) return -1;
         memset(items + lookup->capacity, 0, (next - lookup->capacity) * sizeof(*items));
