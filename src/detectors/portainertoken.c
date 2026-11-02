@@ -6,9 +6,13 @@
 #include "../go_url.h"
 
 #include <json-c/json.h>
+#include <errno.h>
+#include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 typedef struct { br_regex *key, *endpoint; } portainer_patterns;
 
@@ -16,6 +20,37 @@ static int fail(char **error, const char *message)
 {
     if (error && !*error) *error = strdup(message);
     return -1;
+}
+
+/* Preserve the source's fixed stdout diagnostic without process-wide signal changes. */
+static int invalid_url(char **error)
+{
+    sigset_t block, previous, pending;
+    if (sigemptyset(&block) || sigaddset(&block, SIGPIPE) ||
+        pthread_sigmask(SIG_BLOCK, &block, &previous)) return fail(error, "cannot block Portainer diagnostic signal");
+    int rc = -1;
+    if (sigpending(&pending)) goto restore;
+    int prior = sigismember(&pending, SIGPIPE);
+    if (prior < 0) goto restore;
+    static const char message[] = "\nINVALID URL\n";
+    size_t at = 0;
+    rc = 0;
+    while (at < sizeof(message) - 1) {
+        ssize_t n = write(STDOUT_FILENO, message + at, sizeof(message) - 1 - at);
+        if (n < 0 && errno == EINTR) continue;
+        if (n <= 0) { rc = -1; break; }
+        at += (size_t)n;
+    }
+    if (rc && errno == EPIPE && !prior) {
+        if (sigpending(&pending)) rc = -1;
+        else if (sigismember(&pending, SIGPIPE) == 1) {
+            int caught;
+            if (sigwait(&block, &caught)) rc = -1;
+        }
+    }
+restore:
+    if (pthread_sigmask(SIG_SETMASK, &previous, NULL)) rc = -1;
+    return rc ? fail(error, "cannot write Portainer URL diagnostic") : 0;
 }
 
 static int add_part(br_result *result, const char *name, br_slice value)
@@ -52,19 +87,22 @@ static int request_url(br_slice endpoint, char **out, bool *valid, char **error)
     int rc = br_go_url_parse(endpoint, &parts, &ordinary, error);
     if (rc != 0) { br_go_url_clear(&parts); return -1; }
     if (ordinary.kind != BR_GO_URL_OK || endpoint.len < 7) {
-        printf("\nINVALID URL\n");
         br_go_url_clear(&parts);
-        return 0;
+        return invalid_url(error);
     }
     size_t scheme = endpoint.data[4] == 's' ? 8 : 7;
-    size_t extra = parts.raw_fragment.len ? parts.raw_fragment.len + 1 : 0;
-    size_t user = 0;
-    if (parts.has_user) user = parts.raw_user.len + 1 + (parts.has_password ? parts.raw_password.len + 1 : 0) + 1;
-    if (parts.host.len > SIZE_MAX - scheme - user - sizeof("/api/stacks") - extra) {
-        br_go_url_clear(&parts);
-        return fail(error, "Portainer URL too large");
+    size_t size = scheme + sizeof("/api/stacks") + (parts.has_user ? 1 : 0) +
+                  (parts.has_password ? 1 : 0) + (parts.raw_fragment.len ? 1 : 0);
+    size_t lengths[] = {parts.has_user ? parts.raw_user.len : 0,
+                        parts.has_password ? parts.raw_password.len : 0,
+                        parts.host.len, parts.raw_fragment.len};
+    for (size_t i = 0; i < sizeof(lengths) / sizeof(lengths[0]); ++i) {
+        if (lengths[i] > SIZE_MAX - size) {
+            br_go_url_clear(&parts); return fail(error, "Portainer URL too large");
+        }
+        size += lengths[i];
     }
-    char *url = malloc(scheme + user + parts.host.len + sizeof("/api/stacks") + extra);
+    char *url = malloc(size);
     if (!url) { br_go_url_clear(&parts); return fail(error, "out of memory constructing Portainer URL"); }
     size_t at = 0;
     memcpy(url, endpoint.data, scheme);

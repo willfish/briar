@@ -1,7 +1,29 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "../support/detector_test.h"
+#include "../../src/detectors/portainertoken.c"
+#include <sys/wait.h>
 
-int br_portainertoken_init(const br_detector **out, char **error);
+static void check_broken_diagnostic_pipe(void)
+{
+    int pipefd[2];
+    CHECK(pipe(pipefd) == 0);
+    CHECK(close(pipefd[0]) == 0);
+    pid_t child = fork();
+    CHECK(child >= 0);
+    if (!child) {
+        if (dup2(pipefd[1], STDOUT_FILENO) < 0 || close(pipefd[1])) _exit(1);
+        char *url = NULL, *error = NULL;
+        bool valid = false;
+        static const unsigned char rejected[] = "http://%zz";
+        int rc = request_url((br_slice){rejected, sizeof(rejected) - 1}, &url, &valid, &error);
+        bool failed = rc != 0 && !url && !valid && error;
+        free(error); free(url);
+        _exit(failed ? 0 : 1);
+    }
+    CHECK(close(pipefd[1]) == 0);
+    int status;
+    CHECK(waitpid(child, &status, 0) == child && WIFEXITED(status) && WEXITSTATUS(status) == 0);
+}
 
 static const char *key = "ptr_abcdefghijABCDEFGHIJ";
 static const char *endpoint = "https://portainer.example:9443/api/old";
@@ -18,6 +40,7 @@ static void inspect(test_http *http, const br_scan_ctx *ctx, const br_http_reque
 
 int main(void)
 {
+    check_broken_diagnostic_pipe();
     const br_detector *detector = NULL;
     char *error = NULL;
     CHECK(br_portainertoken_init(&detector, &error) == 0 && !error);
