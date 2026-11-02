@@ -26,10 +26,12 @@ static int verify_tiingo(const br_scan_ctx *ctx, br_slice secret, br_result *res
 {
     if (!ctx) return 1;
     const char *key = (const char *)secret.data;
-    char *auth = malloc(6 + strlen(key) + 1);
+    size_t key_len = strlen(key);
+    if (key_len > SIZE_MAX - 7) return fail(error, "Tiingo authorization is too large");
+    char *auth = malloc(6 + key_len + 1);
     if (!auth) return fail(error, "cannot format Tiingo authorization");
     memcpy(auth, "Token ", 6);
-    memcpy(auth + 6, key, strlen(key) + 1);
+    memcpy(auth + 6, key, key_len + 1);
     const br_header headers[] = {
         {"Content-Type", "application/json"},
         {"Authorization", auth},
