@@ -56,9 +56,9 @@ static int lokalise_slot(lokalise_creators *creators, size_t index, char **error
     if (index < creators->cap) return 0;
     if (index == SIZE_MAX || index + 1 > SIZE_MAX / sizeof(*creators->items))
         return lokalise_fail(error, "too many LokaliseToken project slots");
-    size_t cap = creators->cap ? creators->cap * 2 : 8;
-    if (cap < creators->cap || cap <= index) cap = index + 1;
-    if (cap > SIZE_MAX / sizeof(*creators->items)) cap = index + 1;
+    size_t cap = creators->cap > SIZE_MAX / sizeof(*creators->items) / 2 ?
+        index + 1 : creators->cap ? creators->cap * 2 : 8;
+    if (cap <= index) cap = index + 1;
     lokalise_creator *items = malloc(cap * sizeof(*items));
     if (!items) return lokalise_fail(error, "cannot allocate LokaliseToken project slots");
     memset(items, 0, cap * sizeof(*items));
