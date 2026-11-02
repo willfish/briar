@@ -1,11 +1,31 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 #include "../support/detector_test.h"
 
-int br_sqlserver_init(const br_detector **out, char **error);
-typedef int (*sqlserver_ping_fn)(const br_scan_ctx *, const char *, const char *,
-                                 bool *, bool *, int32_t *, char **, char **);
-int br_sqlserver_set_ping(sqlserver_ping_fn);
-int br_sqlserver_set_ignore(const char *const *, size_t, char **);
+static unsigned fail_duplicate;
+
+static char *fixture_strdup(const char *text)
+{
+    if (fail_duplicate && --fail_duplicate == 0) return NULL;
+    size_t len = strlen(text) + 1;
+    char *copy = malloc(len);
+    if (copy) memcpy(copy, text, len);
+    return copy;
+}
+
+#define strdup fixture_strdup
+#include "../../src/detectors/sqlserver.c"
+#undef strdup
+
+static void check_partial_parameter_allocation(void)
+{
+    for (unsigned failure = 1; failure <= 2; ++failure) {
+        mssql_cfg cfg = {0};
+        fail_duplicate = failure;
+        CHECK(kv_set(&cfg, "key", "value") != 0 && cfg.len == 0);
+        cfg_clear(&cfg);
+    }
+    fail_duplicate = 0;
+}
 
 static const char conn[] =
     "Server=localhost;Initial Catalog=master;User ID=sa;Password=P@ssw0rd!;Persist Security Info=true;MultipleActiveResultSets=true;";
@@ -51,6 +71,7 @@ static void check_parts(const br_result *result)
 
 int main(void)
 {
+    check_partial_parameter_allocation();
     const br_detector *detector = NULL;
     char *error = NULL;
     CHECK(br_sqlserver_init(&detector, &error) == 0 && !error);

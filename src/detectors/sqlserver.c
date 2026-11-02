@@ -54,15 +54,16 @@ static int kv_set(mssql_cfg *cfg, const char *name, const char *value)
         }
     }
     if (cfg->len == cfg->cap) {
+        if (cfg->cap > SIZE_MAX / sizeof(*cfg->items) / 2) return -1;
         size_t cap = cfg->cap ? cfg->cap * 2 : 8;
         kv *grown = realloc(cfg->items, cap * sizeof(*grown));
         if (!grown) return -1;
         cfg->items = grown;
         cfg->cap = cap;
     }
-    cfg->items[cfg->len].name = strdup(name);
-    cfg->items[cfg->len].value = strdup(value);
-    if (!cfg->items[cfg->len].name || !cfg->items[cfg->len].value) return -1;
+    char *name_copy = strdup(name), *value_copy = strdup(value);
+    if (!name_copy || !value_copy) { free(name_copy); free(value_copy); return -1; }
+    cfg->items[cfg->len] = (kv){name_copy, value_copy};
     ++cfg->len;
     return 0;
 }
@@ -76,6 +77,7 @@ static const char *kv_get(const mssql_cfg *cfg, const char *name)
 
 static char *trim_dup(const char *start, size_t n, bool lower)
 {
+    if (n == SIZE_MAX) return NULL;
     while (n && (*start == ' ' || *start == '\t')) { ++start; --n; }
     while (n && (start[n - 1] == ' ' || start[n - 1] == '\t')) --n;
     char *out = malloc(n + 1);
@@ -247,6 +249,7 @@ static int escape_mode(const char *in, bool query, char **out)
 {
     static const char hex[] = "0123456789ABCDEF";
     size_t n = strlen(in);
+    if (n > (SIZE_MAX - 1) / 3) return -1;
     char *text = malloc(n * 3 + 1);
     if (!text) return -1;
     size_t at = 0;
@@ -319,10 +322,11 @@ static int redact_url(const char *url, char **out)
     const char *colon = at ? strchr(at + 3, ':') : NULL;
     const char *host = colon ? strchr(colon + 1, '@') : NULL;
     if (!at || !colon || !host) return -1;
-    size_t n = (size_t)(colon + 1 - url) + 8 + strlen(host);
+    size_t head = (size_t)(colon + 1 - url), tail = strlen(host);
+    if (head > SIZE_MAX - 9 || tail > SIZE_MAX - 9 - head) return -1;
+    size_t n = head + 8 + tail;
     char *text = malloc(n + 1);
     if (!text) return -1;
-    size_t head = (size_t)(colon + 1 - url);
     memcpy(text, url, head);
     memcpy(text + head, "********", 8);
     memcpy(text + head + 8, host, strlen(host) + 1);
@@ -428,6 +432,7 @@ int br_sqlserver_set_ignore(const char *const *patterns, size_t count, char **er
 {
     if (error) *error = NULL;
     if (!sql_state || (count && !patterns)) return fail(error, "invalid SQL Server ignore patterns");
+    if (count > SIZE_MAX / sizeof(br_regex *)) return fail(error, "too many SQL Server ignore patterns");
     br_regex **next = count ? calloc(count, sizeof(*next)) : NULL;
     if (count && !next) return fail(error, "cannot allocate SQL Server ignore patterns");
     for (size_t i = 0; i < count; ++i) {
