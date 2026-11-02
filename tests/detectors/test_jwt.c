@@ -119,6 +119,7 @@ static int jwt_http_send(const br_scan_ctx *ctx, const br_http_request *request,
     if (error) *error = NULL;
     if (!http || http->calls >= http->nsteps || http->calls >= 6) return 1;
     size_t i = http->calls++;
+    free(http->urls[i]);
     http->urls[i] = request && request->url ? strdup(request->url) : NULL;
     http->profiles[i] = request ? (int)request->profile : -1;
     http->timeouts[i] = request ? (int)request->timeout_ms : -1;
@@ -437,6 +438,7 @@ static void expect_jwks(const br_detector *detector, const char *token, const ch
     br_results_clear(&results);
     free(error);
     free(set);
+    script_clear(&http);
 }
 
 static void test_identity(const br_detector *detector)
@@ -959,6 +961,7 @@ static void test_source_policy(const br_detector *detector)
     CHECK(http.releases == 1 && !results.len);
     strdup_fail = 0;
     br_results_clear(&results);
+    script_clear(&http);
 
     reset_hooks();
     http.calls = http.releases = 0;
@@ -1066,6 +1069,7 @@ static void test_source_policy(const br_detector *detector)
     free(error);
     error = NULL;
     fromdata_force = 0;
+    script_clear(&force_http);
     EVP_PKEY_free(rsa);
     free(forced);
     free(public_jwk);
@@ -1086,6 +1090,7 @@ static void test_source_policy(const br_detector *detector)
     CHECK(scan_raw(detector, &curve_ctx, true, narrow, &results, &error) == 0 && !error && results.len == 1);
     CHECK(!results.items[0].verified && !results.items[0].verification_error && curve_http.releases == 2);
     br_results_clear(&results);
+    script_clear(&curve_http);
     EVP_PKEY_free(p384);
     EVP_PKEY_free(p256);
     free(wide_key);
@@ -1115,6 +1120,7 @@ static void test_source_policy(const br_detector *detector)
     CHECK(over_http.releases == 2 && setter_calls == 0);
     free(error);
     error = NULL;
+    script_clear(&over_http);
     free(xs);
     free(ys);
     free(over);
@@ -1177,12 +1183,29 @@ static void test_source_policy(const br_detector *detector)
     free(short_jwk);
 }
 
+static void test_growth_limits(void)
+{
+    const size_t seen_capacities[] = {SIZE_MAX / 2 + 1, SIZE_MAX / sizeof(br_slice) / 2 + 1};
+    for (size_t i = 0; i < sizeof(seen_capacities) / sizeof(*seen_capacities); ++i) {
+        seen_matches seen = {.len = seen_capacities[i], .cap = seen_capacities[i]};
+        CHECK(remember(&seen, (br_slice){0}) == -1 && !seen.items);
+        CHECK(seen.len == seen_capacities[i] && seen.cap == seen_capacities[i]);
+    }
+    const size_t key_capacities[] = {SIZE_MAX / 2 + 1, SIZE_MAX / sizeof(jwt_jwk) / 2 + 1};
+    for (size_t i = 0; i < sizeof(key_capacities) / sizeof(*key_capacities); ++i) {
+        jwks_list list = {.n = key_capacities[i], .cap = key_capacities[i]};
+        CHECK(jwks_append(&list, (br_slice){0}, 0) == -1 && list.rc == -1 && !list.keys);
+        CHECK(list.n == key_capacities[i] && list.cap == key_capacities[i]);
+    }
+}
+
 int main(void)
 {
     char *error = NULL;
     const br_detector *detector = NULL;
     CHECK(br_jwt_init_under_test(&detector, &error) == 0 && !error && detector);
     test_identity(detector);
+    test_growth_limits();
     test_extraction(detector);
     test_dates(detector);
     test_verify_gates(detector);

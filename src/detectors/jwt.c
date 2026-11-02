@@ -1045,7 +1045,9 @@ static int jwks_append(jwks_list *list, br_slice encoded, size_t index)
 {
     if (list->rc) return 0;
     if (list->n == list->cap) {
+        if (list->cap > SIZE_MAX / 2) { list->rc = -1; return -1; }
         size_t cap = list->cap ? list->cap * 2 : 4;
+        if (cap > SIZE_MAX / sizeof(*list->keys)) { list->rc = -1; return -1; }
         jwt_jwk *grown = realloc(list->keys, cap * sizeof(*grown));
         if (!grown) {
             list->rc = -1;
@@ -1943,7 +1945,9 @@ static bool already_seen(seen_matches *seen, br_slice match)
 static int remember(seen_matches *seen, br_slice match)
 {
     if (seen->len == seen->cap) {
+        if (seen->cap > SIZE_MAX / 2) return -1;
         size_t cap = seen->cap ? seen->cap * 2 : 8;
+        if (cap > SIZE_MAX / sizeof(*seen->items)) return -1;
         br_slice *items = realloc(seen->items, cap * sizeof(*items));
         if (!items) return -1;
         seen->items = items;
