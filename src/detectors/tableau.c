@@ -36,6 +36,7 @@ static int compile_name(br_regex **out, char **error)
     if (br_prefix_regex(name_keywords, 4, &prefix) != 0)
         return fail(error, "cannot allocate Tableau name prefix");
     size_t first = strlen(prefix);
+    if (first > SIZE_MAX - sizeof(rest)) { free(prefix); return fail(error, "Tableau name pattern is too large"); }
     char *pattern = malloc(first + sizeof(rest));
     if (!pattern) {
         free(prefix);
@@ -72,6 +73,7 @@ static int put_text(br_json *obj, const char *name, const char *value)
 
 static int quote_ascii(br_slice text, char **out, char **fatal)
 {
+    if (text.len > (SIZE_MAX - 3) / 4) return fail(fatal, "Tableau URL diagnostic is too large");
     size_t cap = text.len * 4 + 3;
     char *quoted = malloc(cap ? cap : 1);
     if (!quoted) return fail(fatal, "cannot quote Tableau URL diagnostic");
@@ -90,7 +92,9 @@ static int quote_ascii(br_slice text, char **out, char **fatal)
             quoted[n++] = '\\';
             quoted[n++] = c == '\n' ? 'n' : c == '\r' ? 'r' : 't';
         } else if (c < 0x20) {
-            n += (size_t)sprintf(quoted + n, "\\x%02x", c);
+            int written = snprintf(quoted + n, cap - n, "\\x%02x", c);
+            if (written != 4) { free(quoted); return fail(fatal, "cannot quote Tableau URL diagnostic"); }
+            n += (size_t)written;
         } else quoted[n++] = (char)c;
     }
     quoted[n++] = '"';
@@ -125,7 +129,11 @@ static int request_cause(const char *url, const br_go_url_error *rejection, char
             free(quoted_url);
             return -1;
         }
-        size_t len = strlen(fmt) + strlen(detail) + 1;
+        size_t fmt_len = strlen(fmt), detail_len = strlen(detail);
+        if (fmt_len == SIZE_MAX || detail_len > SIZE_MAX - fmt_len - 1) {
+            free(detail); free(quoted_url); return fail(fatal, "Tableau URL error is too large");
+        }
+        size_t len = fmt_len + detail_len + 1;
         inner = malloc(len);
         if (inner) snprintf(inner, len, fmt, detail);
         free(detail);
@@ -137,7 +145,12 @@ static int request_cause(const char *url, const br_go_url_error *rejection, char
         free(quoted_url);
         return fail(fatal, "cannot format Tableau URL error");
     }
-    size_t len = strlen(quoted_url) + strlen(inner) + sizeof("failed to create request: parse : ");
+    size_t url_len = strlen(quoted_url), inner_len = strlen(inner);
+    size_t overhead = sizeof("failed to create request: parse : ");
+    if (url_len > SIZE_MAX - overhead || inner_len > SIZE_MAX - overhead - url_len) {
+        free(inner); free(quoted_url); return fail(fatal, "Tableau URL error is too large");
+    }
+    size_t len = url_len + inner_len + overhead;
     char *message = malloc(len);
     if (!message) {
         free(inner);
@@ -268,6 +281,8 @@ static int tableau_verify(const br_scan_ctx *ctx, br_result *result, br_slice na
                           const char *endpoint, char **error)
 {
     size_t elen = strlen(endpoint);
+    if (elen > SIZE_MAX - sizeof("https:///api/3.26/auth/signin"))
+        return fail(error, "Tableau verification URL is too large");
     char *url = malloc(elen + sizeof("https:///api/3.26/auth/signin"));
     char body[256];
     if (!url) return fail(error, "cannot allocate Tableau verification URL");
@@ -327,20 +342,26 @@ static int tableau_verify(const br_scan_ctx *ctx, br_result *result, br_slice na
                 rc = fail(error, "cannot set Tableau verification error");
         } else {
             const char *detail = send_error ? send_error : "";
-            char *cause = malloc(strlen(detail) + sizeof("request failed: "));
+            size_t detail_len = strlen(detail);
+            size_t size = detail_len <= SIZE_MAX - sizeof("request failed: ") ?
+                          detail_len + sizeof("request failed: ") : 0;
+            char *cause = size ? malloc(size) : NULL;
             if (!cause) rc = fail(error, "cannot format Tableau request failure");
             else {
-                sprintf(cause, "request failed: %s", detail);
+                snprintf(cause, size, "request failed: %s", detail);
                 rc = set_error(result, cause, name, secret, endpoint);
                 free(cause);
                 if (rc) rc = fail(error, "cannot set Tableau verification error");
             }
         }
     } else if (response.body_error) {
-        char *cause = malloc(strlen(response.body_error) + sizeof("failed to read response body: "));
+        size_t detail_len = strlen(response.body_error);
+        size_t size = detail_len <= SIZE_MAX - sizeof("failed to read response body: ") ?
+                      detail_len + sizeof("failed to read response body: ") : 0;
+        char *cause = size ? malloc(size) : NULL;
         if (!cause) rc = fail(error, "cannot format Tableau body error");
         else {
-            sprintf(cause, "failed to read response body: %s", response.body_error);
+            snprintf(cause, size, "failed to read response body: %s", response.body_error);
             rc = set_error(result, cause, name, secret, endpoint);
             free(cause);
             if (rc) rc = fail(error, "cannot set Tableau verification error");
@@ -381,7 +402,8 @@ static int tableau_verify(const br_scan_ctx *ctx, br_result *result, br_slice na
 static int tableau_finding(br_result *result, br_slice name, br_slice secret, const char *endpoint)
 {
     size_t elen = strlen(endpoint);
-    if (name.len > SIZE_MAX - secret.len || elen > SIZE_MAX - name.len - secret.len - 2) return -1;
+    if (name.len > SIZE_MAX - 2 || secret.len > SIZE_MAX - 2 - name.len ||
+        elen > SIZE_MAX - 2 - name.len - secret.len) return -1;
     result->detector_type = 1034;
     result->raw.len = name.len;
     result->raw_v2.len = name.len + secret.len + elen + 2;
