@@ -47,9 +47,9 @@ static int add_field(br_json *object, const char *name, br_slice value)
 
 static int redact(br_slice raw, br_slice password, char **out, char **error)
 {
-    if (!password.len || !raw.data) return redis_fail(error, "invalid Redis redaction");
+    if (!password.len || !raw.data || raw.len == SIZE_MAX) return redis_fail(error, "invalid Redis redaction");
     size_t count = 0;
-    for (size_t i = 0; i + password.len <= raw.len; ) {
+    for (size_t i = 0; i <= raw.len && password.len <= raw.len - i; ) {
         if (!memcmp(raw.data + i, password.data, password.len)) {
             ++count;
             i += password.len;
@@ -62,14 +62,14 @@ static int redact(br_slice raw, br_slice password, char **out, char **error)
         out_len = raw.len - count * unit;
     } else if (password.len < 7) {
         size_t unit = 7 - password.len;
-        if (count > (SIZE_MAX - raw.len) / unit) return redis_fail(error, "Redis redaction is too large");
+        if (count > (SIZE_MAX - raw.len - 1) / unit) return redis_fail(error, "Redis redaction is too large");
         out_len = raw.len + count * unit;
     }
     char *text = malloc(out_len + 1);
     if (!text) return redis_fail(error, "out of memory redacting Redis secret");
     size_t written = 0;
     for (size_t i = 0; i < raw.len; ) {
-        if (i + password.len <= raw.len && !memcmp(raw.data + i, password.data, password.len)) {
+        if (password.len <= raw.len - i && !memcmp(raw.data + i, password.data, password.len)) {
             memcpy(text + written, "*******", 7);
             written += 7;
             i += password.len;
@@ -90,6 +90,7 @@ static int consider(br_results *out, br_slice raw, br_slice password, bool owned
 {
     br_bytes owned = {0};
     if (owned_raw) {
+        if (raw.len == SIZE_MAX) return redis_fail(error, "Redis URL is too large");
         owned.data = malloc(raw.len + 1);
         if (!owned.data) return redis_fail(error, "out of memory copying Redis URL");
         if (raw.len) memcpy(owned.data, raw.data, raw.len);
