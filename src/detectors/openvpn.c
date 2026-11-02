@@ -32,6 +32,7 @@ static int make_openvpn(br_result *result, const char *id, const char *secret)
     if (br_finding_key(result, 945, secret, "client_secret") != 0) return -1;
     if (add_part(result, "client_id", id) != 0) return -1;
     size_t id_len = strlen(id), secret_len = strlen(secret);
+    if (id_len > SIZE_MAX - secret_len) return -1;
     result->raw_v2.data = malloc(id_len + secret_len ? id_len + secret_len : 1);
     if (!result->raw_v2.data) return -1;
     memcpy(result->raw_v2.data, id, id_len);
@@ -47,6 +48,7 @@ static int verify_openvpn(const br_scan_ctx *ctx, const char *domain, const char
     char *url = NULL, *auth = NULL;
     size_t domain_len = strlen(domain);
     static const char suffix[] = "/api/beta/oauth/token";
+    if (domain_len > SIZE_MAX - sizeof(suffix)) return fail(error, "OpenVPN URL is too large");
     url = malloc(domain_len + sizeof(suffix));
     if (!url) return fail(error, "out of memory constructing OpenVPN URL");
     memcpy(url, domain, domain_len);
