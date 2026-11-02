@@ -178,6 +178,8 @@ static zu_outcome zu_verify(const br_scan_ctx *ctx, const char *domain, const ch
                             const char *key, br_result *result, char **error)
 {
     size_t domain_len = strlen(domain);
+    if (domain_len > SIZE_MAX - sizeof("https:///api/v1/users"))
+        return zu_fail(error, "ZulipChat URL is too large"), ZU_ABORT;
     size_t url_len = strlen("https://") + domain_len + strlen("/api/v1/users");
     char *url = malloc(url_len + 1);
     if (!url) return zu_fail(error, "cannot allocate ZulipChat URL"), ZU_ABORT;
@@ -268,6 +270,8 @@ static int zu_finding(br_result *result, const char *key, const char *id, const 
                               (br_slice){(const unsigned char *)id, strlen(id)}, "id", colon) != 0)
         return zu_fail(error, "cannot create ZulipChat result");
     size_t key_len = strlen(key), id_len = strlen(id), domain_len = strlen(domain);
+    if (key_len > SIZE_MAX - 2 || id_len > SIZE_MAX - 2 - key_len ||
+        domain_len > SIZE_MAX - 2 - key_len - id_len) return zu_fail(error, "ZulipChat raw value is too large");
     size_t n = key_len + 1 + id_len + 1 + domain_len;
     unsigned char *raw = malloc(n ? n : 1);
     result->extra_data = json_object_new_object();
