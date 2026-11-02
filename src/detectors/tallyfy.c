@@ -23,6 +23,7 @@ static int verify(const br_scan_ctx *ctx, const char *token, br_result *result, 
 {
     if (!ctx) return 1;
     size_t token_len = strlen(token);
+    if (token_len > SIZE_MAX - 8) return fail(error, "Tallyfy authorization is too large");
     char *bearer = malloc(7 + token_len + 1);
     if (!bearer) return fail(error, "cannot format Tallyfy authorization");
     memcpy(bearer, "Bearer ", 7);
