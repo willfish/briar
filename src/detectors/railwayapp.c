@@ -74,12 +74,16 @@ static int railway_float(railway_parsed *parsed, br_slice encoded, const char *f
         return railway_note(parsed, raw);
     size_t token_len = raw_len - prefix_len - suffix_len;
     if (token_len > INT_MAX) { free(raw); return -1; }
-    char *message = malloc(raw_len + strlen(field) + 48);
+    size_t field_len = strlen(field);
+    size_t fixed = sizeof("json: cannot unmarshal number  into Go struct field  of type float64");
+    if (token_len > SIZE_MAX - fixed || field_len > SIZE_MAX - fixed - token_len) { free(raw); return -1; }
+    size_t size = fixed + token_len + field_len;
+    char *message = malloc(size);
     if (!message) { free(raw); return -1; }
-    int n = sprintf(message, "json: cannot unmarshal number %.*s into Go struct field %s of type float64",
-                    (int)token_len, raw + prefix_len, field);
+    int n = snprintf(message, size, "json: cannot unmarshal number %.*s into Go struct field %s of type float64",
+                     (int)token_len, raw + prefix_len, field);
     free(raw);
-    if (n < 0) { free(message); return -1; }
+    if (n < 0 || (size_t)n >= size) { free(message); return -1; }
     return railway_note(parsed, message);
 }
 
@@ -139,6 +143,7 @@ static int railway_verify_key(const br_scan_ctx *ctx, const char *key, size_t ke
 {
     /* Payload exists before NewRequestWithContext. Headers follow a successful constructor. */
     if (!ctx) return railway_store(result, "net/http: nil Context", error);
+    if (key_len > SIZE_MAX - 8) return railway_fail(error, "RailwayApp authorization is too large");
     char *authorization = malloc(8 + key_len);
     if (!authorization) return railway_fail(error, "cannot format RailwayApp authorization");
     memcpy(authorization, "Bearer ", 7);
