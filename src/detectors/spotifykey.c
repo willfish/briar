@@ -129,10 +129,16 @@ static int token_style(const br_scan_ctx *ctx, const char *id, const char *secre
             return fail(error, "cannot format Spotify authorization");
         }
     } else {
-        size_t need = sizeof("client_id=&client_secret=&grant_type=client_credentials") + strlen(id) + strlen(secret);
+        size_t id_len = strlen(id), secret_len = strlen(secret);
+        size_t fixed = sizeof("client_id=&client_secret=&grant_type=client_credentials");
+        if (id_len > SIZE_MAX - fixed || secret_len > SIZE_MAX - fixed - id_len)
+            return fail(error, "Spotify token body is too large");
+        size_t need = fixed + id_len + secret_len;
         body = malloc(need);
         if (!body) return fail(error, "cannot create Spotify token body");
-        body_len = (size_t)sprintf(body, "client_id=%s&client_secret=%s&grant_type=client_credentials", id, secret);
+        int n = snprintf(body, need, "client_id=%s&client_secret=%s&grant_type=client_credentials", id, secret);
+        if (n < 0 || (size_t)n >= need) { free(body); return fail(error, "cannot format Spotify token body"); }
+        body_len = (size_t)n;
     }
     const br_header headers[2] = {
         {"Content-Type", "application/x-www-form-urlencoded"},
