@@ -22,7 +22,7 @@ static int sentry_fail(char **error, const char *message)
 
 static int fmt_add(char **out, size_t *len, size_t *cap, const void *bytes, size_t n)
 {
-    if (*len > SIZE_MAX - n - 1) return -1;
+    if (*len == SIZE_MAX || n > SIZE_MAX - *len - 1) return -1;
     if (*len + n + 1 > *cap) {
         size_t next = *cap ? *cap : 64;
         while (next < *len + n + 1) {
@@ -82,8 +82,8 @@ static int keep_survivor(void *user, br_slice name, br_json *value, br_slice enc
         }
     }
     if (kept->len == kept->cap) {
+        if (kept->cap > SIZE_MAX / sizeof(*kept->items) / 2) return -1;
         size_t cap = kept->cap ? kept->cap * 2 : 4;
-        if (cap < kept->cap) return -1;
         void *grown = realloc(kept->items, cap * sizeof(*kept->items));
         if (!grown) return -1;
         kept->items = grown;
