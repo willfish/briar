@@ -38,6 +38,7 @@ static void mongo_items_clear(mongo_items *items)
 
 static char *mongo_dup(br_slice value)
 {
+    if (value.len == SIZE_MAX) return NULL;
     char *copy = malloc(value.len + 1);
     if (!copy) return NULL;
     if (value.len) memcpy(copy, value.data, value.len);
@@ -63,15 +64,17 @@ static br_slice mongo_trim(br_slice value)
 static int mongo_replace_amp(br_slice input, br_bytes *out)
 {
     *out = (br_bytes){0};
+    if (input.len == SIZE_MAX) return -1;
     size_t extra = 0;
-    for (size_t i = 0; i + 5 <= input.len; ++i)
-        if (!memcmp(input.data + i, "&amp;", 5)) extra += 4;
+    for (size_t i = 0; i < input.len;)
+        if (input.len - i >= 5 && !memcmp(input.data + i, "&amp;", 5)) { extra += 4; i += 5; }
+        else ++i;
     if (extra > input.len) return -1;
     out->data = malloc(input.len - extra + 1);
     if (!out->data) return -1;
     size_t n = 0;
     for (size_t i = 0; i < input.len;) {
-        if (i + 5 <= input.len && !memcmp(input.data + i, "&amp;", 5)) {
+        if (input.len - i >= 5 && !memcmp(input.data + i, "&amp;", 5)) {
             out->data[n++] = '&';
             i += 5;
         } else out->data[n++] = input.data[i++];
@@ -89,9 +92,9 @@ static int mongo_query_escape(br_slice value, br_bytes *out)
         unsigned char c = value.data[i];
         bool plain = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
                      (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~';
-        if (c == ' ') need += 1;
-        else if (plain) need += 1;
-        else need += 3;
+        size_t extra = c == ' ' || plain ? 1 : 3;
+        if (need > SIZE_MAX - extra - 1) return -1;
+        need += extra;
     }
     out->data = malloc(need + 1);
     if (!out->data) return -1;
@@ -131,6 +134,7 @@ static void mongo_pairs_clear(mongo_pairs *pairs)
 static int mongo_pairs_push(mongo_pairs *pairs, br_bytes key, br_bytes value)
 {
     if (pairs->len == pairs->cap) {
+        if (pairs->cap > SIZE_MAX / sizeof(*pairs->items) / 2) return -1;
         size_t cap = pairs->cap ? pairs->cap * 2 : 8;
         mongo_pair *items = realloc(pairs->items, cap * sizeof(*items));
         if (!items) return -1;
@@ -235,6 +239,7 @@ static int mongo_encode_query(mongo_pairs *pairs, br_bytes *out, char **error)
             return mongo_fail(error, "cannot store MongoDB tls");
         }
     }
+    if (pairs->len > SIZE_MAX / sizeof(const char *)) return mongo_fail(error, "MongoDB query is too large");
     const char **keys = calloc(pairs->len ? pairs->len : 1, sizeof(*keys));
     if (!keys) return mongo_fail(error, "cannot sort MongoDB query");
     size_t nkeys = 0;
@@ -257,6 +262,12 @@ static int mongo_encode_query(mongo_pairs *pairs, br_bytes *out, char **error)
                 free(keys);
                 free(encoded.data);
                 return mongo_fail(error, "cannot encode MongoDB query");
+            }
+            size_t fixed = encoded.len ? 3 : 2; /* separators and terminator */
+            if (encoded.len > SIZE_MAX - fixed || ek.len > SIZE_MAX - fixed - encoded.len ||
+                ev.len > SIZE_MAX - fixed - encoded.len - ek.len) {
+                free(ek.data); free(ev.data); free(keys); free(encoded.data);
+                return mongo_fail(error, "MongoDB query is too large");
             }
             size_t next = encoded.len + (encoded.len ? 1 : 0) + ek.len + 1 + ev.len;
             unsigned char *grown = realloc(encoded.data, next + 1);
@@ -299,6 +310,8 @@ static int mongo_add(mongo_items *items, br_slice canonical, br_slice password,
         }
     }
     if (items->len == items->cap) {
+        if (items->cap > SIZE_MAX / sizeof(*items->items) / 2)
+            return mongo_fail(error, "too many MongoDB matches");
         size_t cap = items->cap ? items->cap * 2 : 4;
         mongo_item *grown = realloc(items->items, cap * sizeof(*grown));
         if (!grown) return mongo_fail(error, "cannot store MongoDB match");
@@ -470,6 +483,11 @@ static int mongo_emit(void *user, const br_span *groups, size_t ngroups)
         mongo_pairs_clear(&pairs);
         size_t question = br_slice_find(prefix, (br_slice){(const unsigned char *)"?", 1}, 0);
         if (question != SIZE_MAX) prefix.len = question;
+    }
+    size_t fixed = query.len || parts.force_query ? 2 : 1;
+    if (prefix.len > SIZE_MAX - fixed || query.len > SIZE_MAX - fixed - prefix.len) {
+        free(query.data); br_go_url_clear(&parts); free(replaced.data);
+        return mongo_fail(&walk->error, "MongoDB connection string is too large");
     }
     size_t canonical_len = prefix.len + (query.len || parts.force_query ? 1 + query.len : 0);
     unsigned char *canonical = malloc(canonical_len + 1);
