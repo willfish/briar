@@ -29,6 +29,7 @@ int br_sumologickey_set_configured_endpoints(const char *const *endpoints, size_
     if (error) *error = NULL;
     if (!count) return fail(error, "at least one endpoint required");
     if (!endpoints) return fail(error, "invalid SumoLogicKey endpoints");
+    if (count > SIZE_MAX / sizeof(char *)) return fail(error, "too many SumoLogicKey endpoints");
     char **next = calloc(count, sizeof(*next));
     if (!next) return fail(error, "cannot store SumoLogicKey endpoints");
     size_t n = 0;
@@ -85,12 +86,15 @@ static int strings_add(strings *values, const char *text, size_t len, char **err
     for (size_t i = 0; i < values->len; ++i)
         if (strlen(values->items[i]) == len && !memcmp(values->items[i], text, len)) return 0;
     if (values->len == values->cap) {
+        if (values->cap > SIZE_MAX / sizeof(*values->items) / 2)
+            return fail(error, "too many SumoLogicKey matches");
         size_t cap = values->cap ? values->cap * 2 : 4;
         char **items = realloc(values->items, cap * sizeof(*items));
         if (!items) return fail(error, "cannot retain SumoLogicKey match");
         values->items = items;
         values->cap = cap;
     }
+    if (len == SIZE_MAX) return fail(error, "SumoLogicKey match is too large");
     char *copy = malloc(len + 1);
     if (!copy) return fail(error, "cannot retain SumoLogicKey match");
     memcpy(copy, text, len);
@@ -126,8 +130,17 @@ static int collect(const br_regex *re, br_slice input, int group, strings *out, 
 static int raw_v2(br_result *result, const char *id, const char *key, const char *endpoint, char **error)
 {
     if (!id || !*id) return 0;
-    size_t n = sizeof("{\"accessId\":\"\",\"accessKey\":\"\"}") + strlen(id) + strlen(key);
-    if (endpoint && *endpoint) n += sizeof(",\"url\":\"\"") + strlen(endpoint);
+    size_t n = sizeof("{\"accessId\":\"\",\"accessKey\":\"\"}");
+    size_t id_len = strlen(id), key_len = strlen(key);
+    if (id_len > SIZE_MAX - n || key_len > SIZE_MAX - n - id_len)
+        return fail(error, "SumoLogicKey raw value is too large");
+    n += id_len + key_len;
+    if (endpoint && *endpoint) {
+        size_t len = strlen(endpoint), fixed = sizeof(",\"url\":\"\"");
+        if (n > SIZE_MAX - fixed || len > SIZE_MAX - fixed - n)
+            return fail(error, "SumoLogicKey raw value is too large");
+        n += fixed + len;
+    }
     char *text = malloc(n);
     if (!text) return fail(error, "cannot format SumoLogicKey raw value");
     size_t at = 0;
