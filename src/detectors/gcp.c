@@ -353,8 +353,8 @@ static int cert_member(void *user, br_slice name, br_json *v, br_slice raw)
     for (i = 0; i < m->len; ++i) if (equal(key.text, m->items[i].name.text)) break;
     if (i == m->len) {
         if (m->len == m->capacity) {
+            if (m->capacity > SIZE_MAX / sizeof(*m->items) / 2) { string_clear(&key); return gcp_fail(m->fatal, "GCP certificate map is too large"); }
             size_t next = m->capacity ? m->capacity * 2 : 4;
-            if (next < m->capacity || next > SIZE_MAX / sizeof(*m->items)) { string_clear(&key); return gcp_fail(m->fatal, "GCP certificate map is too large"); }
             cert_entry *items = realloc(m->items, next * sizeof(*items));
             if (!items) { string_clear(&key); return gcp_fail(m->fatal, "cannot grow GCP certificate map"); }
             m->items = items; m->capacity = next;
