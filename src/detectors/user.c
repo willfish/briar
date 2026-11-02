@@ -37,7 +37,11 @@ static bool host_plain(unsigned char c)
 static int escape_host(const char *host, char **out, char **error)
 {
     size_t len = strlen(host), need = 0;
-    for (size_t i = 0; i < len; ++i) need += host_plain((unsigned char)host[i]) ? 1 : 3;
+    for (size_t i = 0; i < len; ++i) {
+        size_t extra = host_plain((unsigned char)host[i]) ? 1 : 3;
+        if (need > SIZE_MAX - extra - 1) return fail(error, "User host is too large");
+        need += extra;
+    }
     char *escaped = malloc(need + 1);
     if (!escaped) return fail(error, "cannot escape User host");
     size_t at = 0;
@@ -62,9 +66,13 @@ static int verify_user(const br_scan_ctx *ctx, const char *host, const char *tok
     char *escaped = NULL;
     if (escape_host(host, &escaped, error) != 0) return -1;
     size_t host_len = strlen(host), escaped_len = strlen(escaped);
-    char *url = malloc(sizeof("https://") + escaped_len + sizeof("/api/public/users/"));
+    if (escaped_len > SIZE_MAX - sizeof("https:///api/public/users/")) {
+        free(escaped); return fail(error, "User URL is too large");
+    }
+    size_t size = sizeof("https:///api/public/users/") + escaped_len;
+    char *url = malloc(size);
     if (!url) { free(escaped); return fail(error, "cannot create User URL"); }
-    sprintf(url, "https://%s/api/public/users/", escaped);
+    snprintf(url, size, "https://%s/api/public/users/", escaped);
     free(escaped);
     if (!ctx) {
         free(url);
@@ -139,10 +147,12 @@ static int scan_user(const br_detector *detector, const br_scan_ctx *ctx, bool v
             int drop = 0;
             if (escape_host(hosts.items[j], &endpoint, error) != 0) rc = -1;
             else {
-                char *url = malloc(sizeof("https://") + strlen(endpoint));
+                size_t len = strlen(endpoint);
+                size_t size = len <= SIZE_MAX - sizeof("https://") ? sizeof("https://") + len : 0;
+                char *url = size ? malloc(size) : NULL;
                 if (!url) rc = fail(error, "cannot create User endpoint");
                 else {
-                    sprintf(url, "https://%s", endpoint);
+                    snprintf(url, size, "https://%s", endpoint);
                     br_slice token = br_captures_at(&tokens, i);
                     br_slice secondary = {(const unsigned char *)url, strlen(url)};
                     if (br_finding_pair_bytes(&result, detector->type, token, "key", secondary, "endpoint",
