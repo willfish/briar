@@ -60,6 +60,7 @@ static void xai_discard_acls(xai_doc *doc)
 static int xai_grow(xai_doc *doc, size_t n)
 {
     if (n <= doc->cap) return 0;
+    if (n > SIZE_MAX / sizeof(*doc->slots)) return -1;
     xai_slot *slots = realloc(doc->slots, n * sizeof(*slots));
     if (!slots) return -1;
     memset(slots + doc->cap, 0, (n - doc->cap) * sizeof(*slots));
@@ -72,7 +73,7 @@ static int xai_join(xai_doc *doc)
 {
     size_t total = doc->len ? doc->len - 1 : 0;
     for (size_t i = 0; i < doc->len; ++i) {
-        if (doc->slots[i].len > SIZE_MAX - total) return -1;
+        if (total == SIZE_MAX || doc->slots[i].len > SIZE_MAX - total - 1) return -1;
         total += doc->slots[i].len;
     }
     char *joined = malloc(total + 1);
@@ -105,6 +106,7 @@ static int xai_type(xai_doc *doc, br_json *value, const char *field, const char 
 
 static int copy_text(char **slot, size_t *len, br_slice text)
 {
+    if (text.len == SIZE_MAX) return -1;
     char *owned = malloc(text.len + 1);
     if (!owned) return -1;
     if (text.len) memcpy(owned, text.data, text.len);
@@ -232,6 +234,7 @@ static int verify_xai(const br_scan_ctx *ctx, br_slice secret, br_result *result
     if (!ctx)
         return br_result_set_verification_error(result, "net/http: nil Context", &secret, 1) == 0
             ? 0 : fail(error, "cannot set xAI verification error");
+    if (secret.len > SIZE_MAX - 8) return fail(error, "xAI authorization is too large");
     char *auth = malloc(7 + secret.len + 1);
     if (!auth) return fail(error, "cannot format xAI authorization");
     memcpy(auth, "Bearer ", 7);
