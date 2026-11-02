@@ -32,9 +32,9 @@ static void news_drain(const br_scan_ctx *ctx, news_pending *pending)
 static int news_hold(news_pending *pending, const br_http_response *response, char **error)
 {
     if (pending->len == pending->cap) {
-        size_t cap = pending->cap ? pending->cap * 2 : 2;
-        if (cap < pending->cap || cap > SIZE_MAX / sizeof(*pending->items))
+        if (pending->cap > SIZE_MAX / sizeof(*pending->items) / 2)
             return news_fail(error, "cannot retain Newscatcher response");
+        size_t cap = pending->cap ? pending->cap * 2 : 2;
         br_http_response *items = realloc(pending->items, cap * sizeof(*items));
         if (!items) return news_fail(error, "cannot retain Newscatcher response");
         pending->items = items;
