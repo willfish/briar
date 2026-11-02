@@ -23,6 +23,9 @@ static int compile_rest(const char *const *keywords, size_t count, const char *r
     if (br_prefix_regex(keywords, count, &prefix) != 0)
         return fail(error, "cannot allocate PlanviewLeanKit prefix");
     size_t first = strlen(prefix), second = strlen(rest);
+    if (first == SIZE_MAX || second > SIZE_MAX - first - 1) {
+        free(prefix); return fail(error, "PlanviewLeanKit pattern is too large");
+    }
     char *pattern = malloc(first + second + 1);
     if (!pattern) {
         free(prefix);
