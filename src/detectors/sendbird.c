@@ -25,6 +25,7 @@ static int sb_fail(char **error, const char *message)
 static char *sb_join(const char *prefix, const char *detail)
 {
     size_t n = strlen(prefix), m = strlen(detail);
+    if (n == SIZE_MAX || m > SIZE_MAX - n - 1) return NULL;
     char *out = malloc(n + m + 1);
     if (!out) return NULL;
     memcpy(out, prefix, n);
