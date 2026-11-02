@@ -48,6 +48,7 @@ static int verify(const br_scan_ctx *ctx, const char *token, br_result *result, 
         return 0;
     }
     size_t token_len = strlen(token);
+    if (token_len > SIZE_MAX - 8) return fail(error, "Twitter authorization is too large");
     char *bearer = malloc(7 + token_len + 1);
     if (!bearer) return fail(error, "cannot format Twitter authorization");
     memcpy(bearer, "Bearer ", 7);
