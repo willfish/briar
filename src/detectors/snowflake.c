@@ -72,7 +72,7 @@ static int snow_password_ok(br_slice password, bool *ok, char **error)
 
 static int snow_append(char **buf, size_t *len, size_t *cap, const void *data, size_t n)
 {
-    if (n > SIZE_MAX - *len - 1) return -1;
+    if (*len == SIZE_MAX || n > SIZE_MAX - *len - 1) return -1;
     if (*len + n + 1 > *cap) {
         size_t next = *cap ? *cap : 64;
         while (next < *len + n + 1) {
