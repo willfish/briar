@@ -390,7 +390,7 @@ static int sdk_call(const br_scan_ctx *ctx, bool sns, const char *id, const char
     for (unsigned attempt = 1; attempt <= 3; ++attempt) {
         if (skew > 0 && ctx && ctx->deadline_monotonic_ms)
             return cause_text(cause, "unsupported: AWS skew-adjusted deadline/TTL timing") < 0 ? -1 : 2;
-        char date[17], auth[512], metric[32], length[8];
+        char date[17], auth[512], metric[32], length[sizeof(size_t) * CHAR_BIT + 1];
         snprintf(metric, sizeof(metric), "attempt=%u; max=3", attempt);
         snprintf(length, sizeof(length), "%zu", strlen(body));
         struct timespec before, after;
