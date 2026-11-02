@@ -74,6 +74,27 @@ int main(void)
     NONE("ordinary text", "ordinary text");
     NONE("empty", "");
 
+    /* Sparse matches after long ordinary/binary spans must not be skipped by
+     * the mandatory-prefix search, including a match at the end of input. */
+    static const char *const sparse[] = {
+        "\\U00000041", "\\u{41}", "\\x{41}", "&#x41;", "%u0041", "\\u0041", "U+0041 ", "\\41 "
+    };
+    for (size_t i = 0; i < sizeof(sparse) / sizeof(*sparse); ++i) {
+        for (size_t edge = 0; edge < 2; ++edge) {
+            unsigned char input[8192], expected[8192];
+            memset(input, '~', sizeof(input));
+            memcpy(input, "%! &! U! \\!", sizeof("%! &! U! \\!") - 1);
+            input[128] = 0; input[129] = 0xff;
+            size_t len = strlen(sparse[i]);
+            size_t at = edge ? sizeof(input) - len : 4093;
+            memcpy(input + at, sparse[i], len);
+            memcpy(expected, input, at);
+            expected[at] = 'A';
+            memcpy(expected + at + 1, input + at + len, sizeof(input) - at - len);
+            check("sparse mandatory prefix", input, sizeof(input), expected, sizeof(input) - len + 1, true);
+        }
+    }
+
     current = "invalid arguments"; ++cases;
     br_bytes out = {0}; bool applied = true; char *error = NULL;
     CHECK(br_escaped_unicode_decode((br_slice){NULL, 1}, &out, &applied, &error) != 0);

@@ -78,9 +78,15 @@ static unsigned char *lower_utf8(br_slice input, size_t *length)
 static size_t find(const unsigned char *data, size_t len, const char *term)
 {
     size_t n = strlen(term);
+    if (!n) return 0;
     if (n > len) return SIZE_MAX;
-    for (size_t i = 0; i <= len - n; ++i)
-        if (!memcmp(data + i, term, n)) return i;
+    size_t at = 0, positions = len - n + 1;
+    while (at < positions) {
+        const unsigned char *candidate = memchr(data + at, (unsigned char)term[0], positions - at);
+        if (!candidate) break;
+        if (!memcmp(candidate, term, n)) return (size_t)(candidate - data);
+        at = (size_t)(candidate - data) + 1;
+    }
     return SIZE_MAX;
 }
 
@@ -125,7 +131,20 @@ bool br_known_false_positive(br_slice s, const char *const *terms, size_t nterms
     const char *word = NULL;
     size_t first_end = SIZE_MAX;
     if (word_check) {
+        /* A word cannot occur unless its first byte pair occurs. This exact
+         * necessary-condition bitmap avoids thousands of full substring scans;
+         * find() and earliest-ending/source-order choice remain authoritative. */
+        uint64_t pairs[1024] = {0};
+        for (size_t i = 1; i < lower_len; ++i) {
+            unsigned pair = ((unsigned)lower[i - 1] << 8) | lower[i];
+            pairs[pair >> 6] |= UINT64_C(1) << (pair & 63);
+        }
         for (size_t i = 0; i < br_fp_word_count; ++i) {
+            const unsigned char *candidate = (const unsigned char *)br_fp_words[i];
+            if (candidate[0] && candidate[1]) {
+                unsigned pair = ((unsigned)candidate[0] << 8) | candidate[1];
+                if (!(pairs[pair >> 6] & (UINT64_C(1) << (pair & 63)))) continue;
+            }
             size_t at = find(lower, lower_len, br_fp_words[i]);
             if (at != SIZE_MAX && at + strlen(br_fp_words[i]) < first_end) {
                 first_end = at + strlen(br_fp_words[i]);

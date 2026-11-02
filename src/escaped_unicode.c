@@ -110,6 +110,16 @@ static bool match_at(br_slice input, size_t at, pattern kind, escape_match *matc
     return true;
 }
 
+/* Each syntax has a mandatory first byte. memchr skips ordinary text without
+ * invoking its parser; syntax priority and match/replace endpoints stay intact. */
+static size_t next_start(br_slice input, size_t at, pattern kind)
+{
+    static const unsigned char first[PATTERN_COUNT] = {'\\', '\\', '\\', '&', '%', '\\', 'U', '\\'};
+    if (at >= input.len) return input.len;
+    const unsigned char *found = memchr(input.data + at, first[kind], input.len - at);
+    return found ? (size_t)(found - input.data) : input.len;
+}
+
 static size_t encode_rune(uint32_t cp, unsigned char out[4])
 {
     if (cp >= 0xd800 && cp <= 0xdfff) cp = 0xfffd;
@@ -142,14 +152,14 @@ int br_escaped_unicode_decode(br_slice input, br_bytes *decoded, bool *applied, 
     escape_match match;
     /* FromChunk chooses exactly one syntax family by priority for this pass. */
     for (pattern kind = LONG; kind < PATTERN_COUNT && selected == PATTERN_COUNT; ++kind)
-        for (size_t at = 0; at < input.len; ++at)
+        for (size_t at = next_start(input, 0, kind); at < input.len; at = next_start(input, at + 1, kind))
             if (match_at(input, at, kind, &match)) { selected = kind; break; }
     if (selected == PATTERN_COUNT) return 0;
     unsigned char *out = malloc(input.len);
     if (!out) return fail(error);
     size_t written = 0, copied = 0;
-    for (size_t at = 0; at < input.len;) {
-        if (!match_at(input, at, selected, &match)) { ++at; continue; }
+    for (size_t at = next_start(input, 0, selected); at < input.len;) {
+        if (!match_at(input, at, selected, &match)) { at = next_start(input, at + 1, selected); continue; }
         uint32_t cp = 0;
         for (size_t i = 0; i < match.digits; ++i)
             cp = (cp << 4) | (unsigned)hex_value(input.data[match.hex + i]);
@@ -163,7 +173,7 @@ int br_escaped_unicode_decode(br_slice input, br_bytes *decoded, bool *applied, 
             copied = match.replace_end;
         }
         /* FindAll advances past the entire regex match, including restored bytes. */
-        at = match.end;
+        at = next_start(input, match.end, selected);
     }
     memcpy(out + written, input.data + copied, input.len - copied);
     *decoded = (br_bytes){out, written + input.len - copied};

@@ -38,6 +38,16 @@ bool br_utf8_valid(br_slice input)
 {
     if (!input.data && input.len) return false;
     for (size_t at = 0; at < input.len;) {
+        /* ASCII bytes are already complete scalars, including controls/NUL.
+         * Skip a machine word at a time without alignment or aliasing assumptions. */
+        while (input.len - at >= sizeof(uint64_t)) {
+            uint64_t word;
+            memcpy(&word, input.data + at, sizeof(word));
+            if (word & UINT64_C(0x8080808080808080)) break;
+            at += sizeof(word);
+        }
+        while (at < input.len && input.data[at] < 0x80) ++at;
+        if (at == input.len) break;
         size_t width = rune_width(input.data + at, input.len - at);
         if (!width) return false;
         at += width;
@@ -64,14 +74,8 @@ int br_utf8_decode(br_slice input, br_slice *decoded, br_bytes *storage, char **
     if (!decoded || !storage || (!input.data && input.len))
         return fail(error, "invalid PLAIN decoder arguments");
 
-    bool valid = true;
-    for (size_t i = 0; i < input.len;) {
-        size_t width = rune_width(input.data + i, input.len - i);
-        if (!width) { valid = false; break; }
-        i += width;
-    }
     /* Upstream returns valid input untouched, including NUL, controls and U+FFFD. */
-    if (valid) {
+    if (br_utf8_valid(input)) {
         *decoded = input;
         return 0;
     }

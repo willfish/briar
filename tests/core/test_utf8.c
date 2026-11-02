@@ -106,6 +106,20 @@ int main(void)
            SLICE(REPLACEMENT REPLACEMENT REPLACEMENT REPLACEMENT), false);
     decode("ASCII inside malformed sequence survives", SLICE("x\xe2\x28\xa1"), SLICE("x" REPLACEMENT "(" REPLACEMENT), false);
 
+    for (size_t at = 60; at < 76; ++at) {
+        unsigned char sparse[128], repaired[130];
+        memset(sparse, 'A', sizeof(sparse));
+        sparse[at] = 0xc3; sparse[at + 1] = 0xa9;
+        decode("ASCII words before and after a valid scalar", (br_slice){sparse, sizeof(sparse)},
+               (br_slice){sparse, sizeof(sparse)}, true);
+        sparse[at] = 0xff; sparse[at + 1] = 'A';
+        memcpy(repaired, sparse, at);
+        memcpy(repaired + at, REPLACEMENT, 3);
+        memcpy(repaired + at + 3, sparse + at + 1, sizeof(sparse) - at - 1);
+        decode("ASCII fast path cannot hide an invalid byte", (br_slice){sparse, sizeof(sparse)},
+               (br_slice){repaired, sizeof(repaired)}, false);
+    }
+
     current = "bounded input may expand to three times its original size";
     unsigned char *input = malloc(64 * 1024);
     CHECK(input);

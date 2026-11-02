@@ -27,7 +27,12 @@ static int sextet(unsigned char c, bool url)
 
 static bool charset(unsigned char c)
 {
-    return sextet(c, false) >= 0 || c == '-' || c == '_' || c == '=';
+    /* Exact ASCII union: A-Z, a-z, 0-9, +, /, -, _, =. The run scanner
+     * needs only membership, not the branching sextet conversion. */
+    static const uint32_t masks[8] = {
+        0, UINT32_C(0x23ffa800), UINT32_C(0x87fffffe), UINT32_C(0x07fffffe), 0, 0, 0, 0
+    };
+    return ((masks[c >> 5] >> (c & 31)) & 1) != 0;
 }
 
 static bool end_char(unsigned char c)

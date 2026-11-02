@@ -271,6 +271,12 @@ with tempfile.TemporaryDirectory(prefix="briar-core-") as directory:
     check(all(r["SourceMetadata"]["Data"]["Filesystem"]["file"] == str(path) for r in rows), "filesystem path")
     check(all(r["SourceType"] == 15 and r["SourceName"] == "trufflehog - filesystem" for r in rows), "filesystem envelope")
     check(all(r["Raw"] == key40 for r in rows), "engine false-positive marking is not detector filtering")
+    escaped_path = Path(directory) / 'quoted"\\\n.txt'
+    escaped_path.write_text(source)
+    _, repeated = invoke(["filesystem", str(escaped_path), str(path), str(escaped_path), *base])
+    check([r["SourceMetadata"]["Data"]["Filesystem"] for r in repeated] ==
+          [{"file": str(p), "line": line} for p in (escaped_path, path) for line in (1, 2, 3, 5)],
+          "hashed identities retain escaped paths, distinct files and first-seen duplicate order")
     _, cleaned = invoke(["filesystem", str(path), *base, "--filter-unverified"])
     check(len(cleaned) == 1 and cleaned[0]["SourceMetadata"]["Data"]["Filesystem"]["line"] == 1,
           "cleaning is opt-in and keeps first unverified result")

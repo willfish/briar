@@ -3,6 +3,7 @@
 #include "briar_decoders.h"
 #include "http_internal.h"
 #include "overlap.h"
+#include "prefilter.h"
 #include "utf8.h"
 
 #include <errno.h>
@@ -264,6 +265,19 @@ static void duplicate_offsets(br_slice input, br_results *results)
     }
 }
 
+static int64_t newline_count(br_slice input)
+{
+    int64_t count = 0;
+    size_t at = 0;
+    while (at < input.len) {
+        const unsigned char *newline = memchr(input.data + at, '\n', input.len - at);
+        if (!newline) break;
+        ++count;
+        at = (size_t)(newline - input.data) + 1;
+    }
+    return count;
+}
+
 static bool locate(result_frame *frame)
 {
     const source_frame *s = frame->source;
@@ -274,8 +288,7 @@ static bool locate(result_frame *frame)
         ? (size_t)r->chunk_offset : br_slice_find(s->data, key, 0);
     frame->line = s->first_line;
     if (offset == SIZE_MAX || offset > s->data.len || key.len > s->data.len - offset) return false;
-    int64_t line_offset = 0;
-    for (size_t i = 0; i < offset; ++i) if (s->data.data[i] == '\n') ++line_offset;
+    int64_t line_offset = newline_count((br_slice){s->data.data, offset});
     frame->line += line_offset;
     if (r->primary_secret.len) r->primary_line = line_offset;
     size_t start = offset + key.len, end = start;
@@ -389,13 +402,19 @@ static int append_output(br_json *output, br_json *keys, const result_frame *f, 
         v = json_object_get(v);
         if (json_object_array_add(key, v)) { json_object_put(v); goto failed; }
     }
-    for (size_t i = 0; i < json_object_array_length(keys); ++i) {
-        if (json_object_equal(key, json_object_array_get_idx(keys, i))) {
-            json_object_put(object); json_object_put(key);
-            return 0;
-        }
+    /* This private tuple contains strings, integer DetectorType and metadata
+     * constructed above in a fixed field order. Its JSON encoding is an exact
+     * key, including embedded NULs and escaped path bytes. Hash lookup preserves
+     * first-result wins without comparing every earlier finding. */
+    const char *identity = json_object_to_json_string_ext(key, JSON_C_TO_STRING_PLAIN);
+    br_json *existing = NULL;
+    if (!identity) goto failed;
+    if (json_object_object_get_ex(keys, identity, &existing)) {
+        json_object_put(object); json_object_put(key);
+        return 0;
     }
-    if (json_object_array_add(keys, key)) goto failed;
+    if (json_object_object_add(keys, identity, NULL)) goto failed;
+    json_object_put(key);
     key = NULL;
     if (json_object_array_add(output, object)) goto failed;
     return 0;
@@ -448,52 +467,7 @@ static int process_results(const cli_options *o, const source_frame *source,
     return 0;
 }
 
-static bool keyword_at(br_slice input, size_t at, const char *word)
-{
-    size_t n = strlen(word);
-    if (n > input.len - at) return false;
-    for (size_t i = 0; i < n; ++i) {
-        unsigned char a = input.data[at + i], b = (unsigned char)word[i];
-        if (a >= 'A' && a <= 'Z') a += 'a' - 'A';
-        if (b >= 'A' && b <= 'Z') b += 'a' - 'A';
-        if (a != b) return false;
-    }
-    return true;
-}
-
-static br_span keyword_span(const br_detector *detector, size_t at, size_t input_len)
-{
-    uint64_t before = 512, after = 512;
-    /* Independent overrides, in pinned order. Zero is present; -1 is absent. */
-    if (detector->max_credential_span >= 0)
-        before = after = (uint64_t)detector->max_credential_span;
-    if (detector->max_secret_size >= 0) after = (uint64_t)detector->max_secret_size;
-    if (detector->start_offset >= 0) before = (uint64_t)detector->start_offset;
-    br_span span = {
-        before > at ? 0 : at - (size_t)before,
-        after > input_len - at ? input_len : at + (size_t)after,
-    };
-    if (span.begin >= span.end) span.begin = 0;
-    return span;
-}
-
-typedef struct {
-    const br_detector *detector;
-    br_span *windows;
-    size_t len;
-    bool pending;
-} detector_windows;
 typedef struct { const br_detector *detector; br_bytes value; } overlap_seen;
-
-static int add_window(detector_windows *match, br_span span, char **error)
-{
-    if (match->len >= SIZE_MAX / sizeof(*match->windows)) return fail(error, "too many detector windows");
-    br_span *windows = realloc(match->windows, (match->len + 1) * sizeof(*windows));
-    if (!windows) return fail(error, "out of memory collecting detector windows");
-    match->windows = windows;
-    windows[match->len++] = span;
-    return 0;
-}
 
 static br_slice overlap_value(const br_result *result)
 {
@@ -509,7 +483,7 @@ static bool same_detector(const br_detector *a, const br_detector *b)
 
 static int probe_overlaps(const cli_options *o, const source_frame *source,
                           const br_scan_ctx *ctx, const br_native_http *http,
-                          detector_windows *matches, size_t count,
+                          br_detector_windows *matches, size_t count,
                           br_json *output, br_json *keys, char **error)
 {
     static const char cause[] = "more than one detector has found this result; for your safety, verification has been disabled. "
@@ -520,7 +494,8 @@ static int probe_overlaps(const cli_options *o, const source_frame *source,
     /* Registry order is one valid deterministic order. Upstream iterates a Go
      * map here, so which different-type detector wins is not deterministic. */
     for (size_t m = 0; !rc && m < count; ++m) {
-        detector_windows *match = &matches[m];
+        br_detector_windows *match = &matches[m];
+        if (!match->len) continue;
         const br_detector *d = match->detector;
         br_scan_ctx scan_ctx = *ctx;
         br_native_http_bind(http, d, &scan_ctx);
@@ -573,43 +548,19 @@ static int probe_overlaps(const cli_options *o, const source_frame *source,
 
 static int scan_source(const cli_options *o, const source_frame *source,
                         const br_scan_ctx *ctx, const br_native_http *http,
-                        const br_detector *const *registry,
-                        size_t count, const bool *selected, br_json *output,
+                        br_prefilter *prefilter, br_json *output,
                         br_json *keys, char **error)
 {
     br_slice input = source->data;
-    detector_windows *matches = calloc(count, sizeof(*matches));
-    if (!matches) return fail(error, "out of memory collecting matching detectors");
-    size_t nmatch = 0;
-    int rc = 0;
-    for (size_t i = 0; !rc && i < count; ++i) {
-        if (!selected[i]) continue;
-        const br_detector *d = registry[i];
-        if (!d->scan || !d->keywords || !d->nkeywords || d->max_secret_size < -1 ||
-            d->max_credential_span < -1 || d->start_offset < -1) {
-            rc = fail(error, "invalid or unsupported detector prefilter capability");
-            break;
-        }
-        detector_windows *match = &matches[nmatch];
-        match->detector = d;
-        br_span merged = { SIZE_MAX, SIZE_MAX };
-        for (size_t at = 0; !rc && at < input.len; ++at) {
-            if (stopped) { rc = fail(error, "context canceled"); break; }
-            bool hit = false;
-            for (size_t k = 0; k < d->nkeywords; ++k) hit |= keyword_at(input, at, d->keywords[k]);
-            if (!hit) continue;
-            br_span span = keyword_span(d, at, input.len);
-            if (merged.begin == SIZE_MAX) merged = span;
-            else if (span.begin <= merged.end) merged.end = span.end > merged.end ? span.end : merged.end;
-            else { rc = add_window(match, merged, error); merged = span; }
-        }
-        if (!rc && merged.begin != SIZE_MAX) rc = add_window(match, merged, error);
-        if (match->len) ++nmatch;
-    }
-    if (!rc && nmatch > 1) rc = probe_overlaps(o, source, ctx, http, matches, nmatch, output, keys, error);
-    for (size_t m = 0; !rc && m < nmatch; ++m) {
-        detector_windows *match = &matches[m];
-        if (nmatch > 1 && !match->pending) continue;
+    br_detector_windows *matches = NULL;
+    size_t count = 0, nmatch = 0;
+    int rc = br_prefilter_find(prefilter, input, ctx, &matches, &count, error);
+    if (rc) return rc;
+    for (size_t m = 0; m < count; ++m) if (matches[m].len) ++nmatch;
+    if (nmatch > 1) rc = probe_overlaps(o, source, ctx, http, matches, count, output, keys, error);
+    for (size_t m = 0; !rc && m < count; ++m) {
+        br_detector_windows *match = &matches[m];
+        if (!match->len || (nmatch > 1 && !match->pending)) continue;
         br_scan_ctx scan_ctx = *ctx;
         br_native_http_bind(http, match->detector, &scan_ctx);
         for (size_t w = 0; !rc && w < match->len; ++w) {
@@ -621,22 +572,19 @@ static int scan_source(const cli_options *o, const source_frame *source,
             br_results_clear(&results);
         }
     }
-    for (size_t m = 0; m < count; ++m) free(matches[m].windows);
-    free(matches);
     return rc;
 }
 
 static int scan_decoders(const cli_options *o, const source_frame *source,
                           const br_scan_ctx *ctx, const br_native_http *http,
-                          const br_detector *const *registry,
-                          size_t count, const bool *selected, br_json *output,
+                          br_prefilter *prefilter, br_json *output,
                           br_json *keys, char **error)
 {
     source_frame plain = *source;
     plain.decoder_name = "PLAIN";
     br_bytes plain_storage = {0};
     int rc = br_utf8_decode(source->original, &plain.data, &plain_storage, error);
-    if (!rc && plain.data.len) rc = scan_source(o, &plain, ctx, http, registry, count, selected, output, keys, error);
+    if (!rc && plain.data.len) rc = scan_source(o, &plain, ctx, http, prefilter, output, keys, error);
     free(plain_storage.data);
     if (rc) return rc;
 
@@ -679,7 +627,7 @@ static int scan_decoders(const cli_options *o, const source_frame *source,
                 /* Append/scan intermediate results even if their data was seen.
                  * Only scheduling is deduplicated; verification-cache flags and
                  * original chunk metadata must not be changed by decoder reuse. */
-                rc = scan_source(o, &chunk, ctx, http, registry, count, selected, output, keys, error);
+                rc = scan_source(o, &chunk, ctx, http, prefilter, output, keys, error);
                 if (rc || depth + 1 == DECODE_MAX_DEPTH || same_bytes(chunk.data, current[i])) continue;
                 bool repeat = false;
                 for (size_t j = 0; j < nseen; ++j)
@@ -702,8 +650,7 @@ static int scan_decoders(const cli_options *o, const source_frame *source,
 
 static int scan_chunks(const cli_options *o, const source_frame *source,
                         const br_scan_ctx *ctx, const br_native_http *http,
-                        const br_detector *const *registry,
-                        size_t count, const bool *selected, br_json *output,
+                        br_prefilter *prefilter, br_json *output,
                         br_json *keys, char **error)
 {
     int64_t first_line = 1;
@@ -716,13 +663,12 @@ static int scan_chunks(const cli_options *o, const source_frame *source,
         chunk.first_line = first_line;
         /* OriginalData is this raw content+peek view, never the decoded window. */
         chunk.original = (br_slice){ source->original.data + start, view_len };
-        int rc = scan_decoders(o, &chunk, ctx, http, registry, count, selected, output, keys, error);
+        int rc = scan_decoders(o, &chunk, ctx, http, prefilter, output, keys, error);
         if (rc) return rc;
         /* Peek bytes are read again as content in the next chunk. Stdin has no
          * line/ignore metadata, while filesystem advances only over raw content. */
         if (source->source_type == 15)
-            for (size_t i = 0; i < content; ++i)
-                if (source->original.data[start + i] == '\n') ++first_line;
+            first_line += newline_count((br_slice){source->original.data + start, content});
         start += content;
     }
     return 0;
@@ -791,6 +737,7 @@ int main(int argc, char **argv)
     bool *included = NULL, *excluded = NULL, *selected = NULL;
     br_json *output = NULL, *keys = NULL;
     br_native_http *http = NULL;
+    br_prefilter *prefilter = NULL;
     int rc = 1;
     struct sigaction action = { .sa_handler = stop_signal };
     if (sigemptyset(&action.sa_mask) || sigaction(SIGINT, &action, NULL) ||
@@ -813,9 +760,10 @@ int main(int argc, char **argv)
     }
     if (!nselected) { fail(&error, "no enabled implemented detectors selected; include selectors cannot enable disabled upstream detectors"); goto done; }
     br_scan_ctx ctx = { .cancelled = cancelled };
+    if (br_prefilter_create(registry, count, selected, &prefilter, &error)) goto done;
     if (br_native_http_init(&http, &error)) goto done;
     ctx.transport = br_native_http_raw(http);
-    output = json_object_new_array(); keys = json_object_new_array();
+    output = json_object_new_array(); keys = json_object_new_object();
     if (!output || !keys) { fail(&error, "out of memory initializing output"); goto done; }
     char notice[320];
     snprintf(notice, sizeof(notice), "limited native slice, %zu explicitly selected enabled detector(s); 10 KiB + 3 KiB source chunks, PLAIN/BASE64/UTF16/ESCAPED_UNICODE only (decode depth five), no HTML decoder or CLI verification", nselected);
@@ -836,7 +784,7 @@ int main(int argc, char **argv)
             .source_name = is_stdin ? "trufflehog - stdin" : "trufflehog - filesystem",
             .path = is_stdin ? NULL : options.paths[i], .original = { input.data, input.len },
         };
-        int scan_rc = scan_chunks(&options, &source, &ctx, http, registry, count, selected, output, keys, &error);
+        int scan_rc = scan_chunks(&options, &source, &ctx, http, prefilter, output, keys, &error);
         free(input.data);
         if (scan_rc) goto done;
     }
@@ -853,5 +801,6 @@ done:
     free(error); free(options.paths); free(included); free(excluded); free(selected);
     json_object_put(output); json_object_put(keys);
     br_native_http_destroy(http);
+    br_prefilter_destroy(prefilter);
     return rc;
 }

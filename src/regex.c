@@ -110,6 +110,10 @@ int br_regex_compile(const char *pattern, br_regex **out, char **error)
         br_regex_free(re);
         return 1;
     }
+    /* JIT is optional: unsupported platforms or unavailable executable memory
+     * retain the interpreter. Only canonical prefixes use this ASCII fast path;
+     * their non-ASCII calls still use the byte-unit compatibility walk. */
+    if (re->prefix) (void)pcre2_jit_compile(re->code, PCRE2_JIT_COMPLETE);
     *out = re;
     return 0;
 }
@@ -421,12 +425,28 @@ static int each_prefixed(const br_regex *re, br_slice input, br_match_fn fn,
     return rc;
 }
 
+static bool ascii_input(br_slice input)
+{
+    size_t at = 0;
+    for (; input.len - at >= sizeof(uint64_t); at += sizeof(uint64_t)) {
+        uint64_t word;
+        memcpy(&word, input.data + at, sizeof(word));
+        if (word & UINT64_C(0x8080808080808080)) return false;
+    }
+    for (; at < input.len; ++at) if (input.data[at] & 0x80) return false;
+    return true;
+}
+
 int br_regex_each(const br_regex *re, br_slice input, br_match_fn fn,
                   void *user, char **error)
 {
     if (error) *error = NULL;
     if (!re || !fn || (!input.data && input.len)) return fail(error, "invalid regex iteration arguments");
-    if (re->prefix) return each_prefixed(re, input, fn, user, error);
+    /* The original compiled pattern has identical prefix/gap semantics on
+     * ASCII, including NUL. Use one search instead of up to 41 anchored tail
+     * calls per keyword. Non-ASCII retains the RE2 byte-unit compatibility
+     * walk, including malformed encodings and folded Unicode keyword starts. */
+    if (re->prefix && !ascii_input(input)) return each_prefixed(re, input, fn, user, error);
     pcre2_match_data *md = pcre2_match_data_create_from_pattern(re->code, NULL);
     pcre2_match_context *mc = pcre2_match_context_create(NULL);
     br_span *groups = malloc(re->ngroups * sizeof(*groups));
@@ -444,6 +464,9 @@ int br_regex_each(const br_regex *re, br_slice input, br_match_fn fn,
     int rc = 0;
     for (;;) {
         int n = pcre2_match(re->code, data, input.len, offset, 0, md, mc);
+        /* Do not turn JIT's smaller execution stack into a new rejection. */
+        if (n == PCRE2_ERROR_JIT_STACKLIMIT)
+            n = pcre2_match(re->code, data, input.len, offset, PCRE2_NO_JIT, md, mc);
         if (n == PCRE2_ERROR_NOMATCH) break;
         if (n <= 0) {
             rc = execution_error(error, n);

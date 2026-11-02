@@ -190,6 +190,25 @@ static captures prefix_match(const char *const *heads, size_t count, const char 
         free(pattern); free(prefix);
     } else CHECK(!br_regex_compile_prefixed(heads, count, tail, &re, &error));
     CHECK(!error && !br_regex_each(re, input, capture, &c, &error) && !error);
+    bool ascii = true;
+    for (size_t i = 0; i < input.len; ++i) if (input.data[i] & 0x80) ascii = false;
+    if (ascii) {
+        /* An unreachable invalid byte after the ASCII subject selects the
+         * compatibility walk. All these suffixes keep identical boundaries;
+         * require the fast path's entire capture sequence, not just counts. */
+        unsigned char *fallback = malloc(input.len + 1); CHECK(fallback);
+        if (input.len) memcpy(fallback, input.data, input.len);
+        fallback[input.len] = 0xff;
+        captures slow = {0};
+        CHECK(!br_regex_each(re, (br_slice){fallback, input.len + 1}, capture, &slow, &error) && !error);
+        CHECK(c.count == slow.count);
+        for (size_t i = 0; i < c.count; ++i) {
+            CHECK(c.ngroups[i] == slow.ngroups[i]);
+            for (size_t j = 0; j < c.ngroups[i]; ++j)
+                CHECK(c.spans[i][j].begin == slow.spans[i][j].begin && c.spans[i][j].end == slow.spans[i][j].end);
+        }
+        free(fallback);
+    }
     br_regex_free(re); return c;
 }
 
@@ -393,6 +412,35 @@ static void fp_tests(void)
     CHECK(!strcmp(reason, "contains term: example")); free(reason);
     CHECK(!br_known_false_positive(SLICE("\xc3\x89"), terms, 7, true, &reason));
     CHECK(!reason);
+    CHECK(br_known_false_positive(SLICE("k\0password"), NULL, 0, true, &reason));
+    CHECK(reason && !strcmp(reason, "matches wordlist: password")); free(reason);
+    const char *const empty[] = {""};
+    CHECK(br_known_false_positive(SLICE("Q7"), empty, 1, false, &reason));
+    CHECK(reason && !strcmp(reason, "contains term: ")); free(reason);
+
+    /* The byte-pair rejection must preserve every pinned word and the exact
+     * earliest-ending/source-order winner, even when wordlist entries overlap. */
+    extern const char *const br_fp_words[];
+    extern const size_t br_fp_word_count;
+    for (size_t i = 0; i < br_fp_word_count; ++i) {
+        size_t len = strlen(br_fp_words[i]) + 6;
+        char *input = malloc(len + 1); CHECK(input);
+        snprintf(input, len + 1, "z9|%s|q7", br_fp_words[i]);
+        for (size_t j = 0; j < len; ++j)
+            if (input[j] >= 'A' && input[j] <= 'Z') input[j] += 'a' - 'A';
+        const char *winner = NULL;
+        size_t end = SIZE_MAX;
+        for (size_t j = 0; j < br_fp_word_count; ++j) {
+            const char *hit = strstr(input, br_fp_words[j]);
+            size_t candidate_end = hit ? (size_t)(hit - input) + strlen(br_fp_words[j]) : SIZE_MAX;
+            if (candidate_end < end) { end = candidate_end; winner = br_fp_words[j]; }
+        }
+        bool result = br_known_false_positive((br_slice){(unsigned char *)input, len}, NULL, 0, true, &reason);
+        CHECK(result == (winner != NULL));
+        if (winner) CHECK(reason && !strncmp(reason, "matches wordlist: ", 18) && !strcmp(reason + 18, winner));
+        else CHECK(!reason);
+        free(reason); free(input);
+    }
 }
 
 typedef struct { size_t calls, releases; bool transport_failure; uint32_t timeout; br_http_profile profile; } fake;
