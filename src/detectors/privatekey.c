@@ -29,20 +29,22 @@ static int pk_replace(br_bytes *buf, const char *needle, const char *repl)
     size_t nlen = strlen(needle), rlen = strlen(repl);
     if (!nlen) return 0;
     size_t count = 0;
-    for (size_t i = 0; i + nlen <= buf->len;) {
+    for (size_t i = 0; i <= buf->len && nlen <= buf->len - i;) {
         if (!memcmp(buf->data + i, needle, nlen)) {
             ++count;
             i += nlen;
         } else ++i;
     }
     if (!count) return 0;
-    if (rlen > nlen && count > (SIZE_MAX - buf->len) / (rlen - nlen)) return -1;
-    size_t next = buf->len + count * (rlen - nlen);
+    if (buf->len == SIZE_MAX ||
+        (rlen > nlen && count > (SIZE_MAX - buf->len - 1) / (rlen - nlen))) return -1;
+    size_t next = rlen > nlen ? buf->len + count * (rlen - nlen) :
+                               buf->len - count * (nlen - rlen);
     unsigned char *out = malloc(next + 1);
     if (!out) return -1;
     size_t n = 0;
     for (size_t i = 0; i < buf->len;) {
-        if (i + nlen <= buf->len && !memcmp(buf->data + i, needle, nlen)) {
+        if (nlen <= buf->len - i && !memcmp(buf->data + i, needle, nlen)) {
             if (rlen) memcpy(out + n, repl, rlen);
             n += rlen;
             i += nlen;
@@ -63,6 +65,7 @@ static bool pk_space(unsigned char c)
 static int pk_normalize(br_slice input, br_bytes *out, char **error)
 {
     *out = (br_bytes){0};
+    if (input.len == SIZE_MAX) return pk_fail(error, "private key is too large");
     out->data = malloc(input.len + 1);
     if (!out->data) return pk_fail(error, "cannot normalize private key");
     if (input.len) memcpy(out->data, input.data, input.len);
@@ -82,6 +85,10 @@ static int pk_normalize(br_slice input, br_bytes *out, char **error)
         }
     size_t lines = 1;
     for (size_t i = 0; i < out->len; ++i) if (out->data[i] == '\n') ++lines;
+    if (lines > SIZE_MAX - out->len - 1) {
+        free(out->data); *out = (br_bytes){0};
+        return pk_fail(error, "normalized private key is too large");
+    }
     br_bytes cleaned = {0};
     cleaned.data = malloc(out->len + lines + 1);
     if (!cleaned.data) {
@@ -128,6 +135,7 @@ static int pk_decode_b64(br_slice text, br_bytes *out, bool *valid)
 {
     *out = (br_bytes){0};
     *valid = false;
+    if (text.len == SIZE_MAX) return -1;
     out->data = malloc(text.len + 1);
     if (!out->data) return -1;
     unsigned value = 0;
@@ -364,7 +372,11 @@ static int pk_cert(void *user, size_t index, br_json *value, br_slice encoded)
     for (size_t i = 0; fp && i < certs->len; ++i)
         if (!strcmp(certs->urls[i] + strlen("https://crt.sh/?q="), fp)) skip = true;
     if (!skip) {
-        size_t url_len = sizeof("https://crt.sh/?q=") + strlen(fp);
+        size_t fp_len = strlen(fp);
+        if (fp_len > SIZE_MAX - sizeof("https://crt.sh/?q=")) {
+            json_object_put(object); return pk_fail(&certs->error, "certificate URL is too large");
+        }
+        size_t url_len = sizeof("https://crt.sh/?q=") + fp_len;
         char *url = malloc(url_len);
         if (!url) {
             json_object_put(object);
@@ -373,6 +385,10 @@ static int pk_cert(void *user, size_t index, br_json *value, br_slice encoded)
         memcpy(url, "https://crt.sh/?q=", sizeof("https://crt.sh/?q=") - 1);
         memcpy(url + sizeof("https://crt.sh/?q=") - 1, fp, strlen(fp) + 1);
         if (certs->len == certs->cap) {
+            if (certs->cap > SIZE_MAX / sizeof(*certs->urls) / 2) {
+                free(url); json_object_put(object);
+                return pk_fail(&certs->error, "too many certificate URLs");
+            }
             size_t cap = certs->cap ? certs->cap * 2 : 4;
             char **urls = realloc(certs->urls, cap * sizeof(*urls));
             if (!urls) {
@@ -464,7 +480,14 @@ static int pk_lookup(const br_scan_ctx *ctx, const char *fingerprint, char **url
     free(visit_error);
     if (certs.len) {
         size_t total = 0;
-        for (size_t i = 0; i < certs.len; ++i) total += strlen(certs.urls[i]) + (i ? 2 : 0);
+        for (size_t i = 0; i < certs.len; ++i) {
+            size_t len = strlen(certs.urls[i]), sep = i ? 2 : 0;
+            if (total > SIZE_MAX - sep - 1 || len > SIZE_MAX - sep - 1 - total) {
+                for (size_t j = 0; j < certs.len; ++j) free(certs.urls[j]);
+                free(certs.urls); return pk_fail(error, "certificate URLs are too large");
+            }
+            total += len + sep;
+        }
         *urls = malloc(total + 1);
         if (!*urls) {
             for (size_t i = 0; i < certs.len; ++i) free(certs.urls[i]);
@@ -493,7 +516,10 @@ static int pk_join(char **out, const char *a, const char *b, const char *c)
     const char *parts[] = {a, b, c};
     size_t n = 0, count = 0;
     for (size_t i = 0; i < 3; ++i) if (parts[i]) {
-        n += strlen(parts[i]) + (count ? 2 : 0);
+        size_t len = strlen(parts[i]), sep = count ? 2 : 0;
+        if (n > SIZE_MAX - sizeof("verification failures: ") - sep ||
+            len > SIZE_MAX - sizeof("verification failures: ") - sep - n) return -1;
+        n += len + sep;
         ++count;
     }
     if (!count) {
