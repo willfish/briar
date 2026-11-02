@@ -49,9 +49,9 @@ typedef struct {
 static int hold_ngc(ngc_scan *scan, br_http_response response, char *authorization)
 {
     if (scan->held_len == scan->held_cap) {
-        size_t cap = scan->held_cap ? scan->held_cap * 2 : 4;
-        if (cap < scan->held_cap || cap > SIZE_MAX / sizeof(*scan->held))
+        if (scan->held_cap > SIZE_MAX / sizeof(*scan->held) / 2)
             return fail(scan->error, "cannot retain NGC response");
+        size_t cap = scan->held_cap ? scan->held_cap * 2 : 4;
         ngc_held *grown = realloc(scan->held, cap * sizeof(*grown));
         if (!grown) return fail(scan->error, "cannot retain NGC response");
         scan->held = grown;
