@@ -22,6 +22,9 @@ static int compile_rest(const char *rest, br_regex **out, char **error)
     if (br_prefix_regex(keywords, 1, &prefix) != 0)
         return fail(error, "cannot allocate RunRunIt prefix");
     size_t first = strlen(prefix), second = strlen(rest);
+    if (first == SIZE_MAX || second > SIZE_MAX - first - 1) {
+        free(prefix); return fail(error, "RunRunIt pattern is too large");
+    }
     char *pattern = malloc(first + second + 1);
     if (!pattern) {
         free(prefix);
