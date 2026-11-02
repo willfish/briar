@@ -158,7 +158,7 @@ static int classify(br_result *result, const br_ldap_error *ordinary, br_slice p
         return ldap_fail(error, "unsupported: LDAP error presence");
     if (!ordinary->has_op_error && !ordinary->is_deadline && !ordinary->is_canceled)
         return 0;
-    if (ordinary->innermost.len && !ordinary->innermost.data)
+    if (ordinary->innermost.len == SIZE_MAX || (ordinary->innermost.len && !ordinary->innermost.data))
         return ldap_fail(error, "unsupported: LDAP verification error");
     if (ordinary->innermost.data && memchr(ordinary->innermost.data, '\0', ordinary->innermost.len))
         return ldap_fail(error, "unsupported: LDAP verification error contains embedded NUL");
@@ -336,9 +336,9 @@ static int collect_iad(void *user, const br_span *groups, size_t ngroups)
     iad_collect *collect = user;
     if (ngroups < 4) return ldap_fail(&collect->error, "invalid LDAP IAD capture");
     if (collect->len == collect->cap) {
-        size_t cap = collect->cap ? collect->cap * 2 : 4;
-        if (cap < collect->cap || cap > SIZE_MAX / sizeof(*collect->items))
+        if (collect->cap > SIZE_MAX / sizeof(*collect->items) / 2)
             return ldap_fail(&collect->error, "too many LDAP IAD matches");
+        size_t cap = collect->cap ? collect->cap * 2 : 4;
         iad_item *items = realloc(collect->items, cap * sizeof(*items));
         if (!items) return ldap_fail(&collect->error, "cannot allocate LDAP IAD matches");
         collect->items = items;

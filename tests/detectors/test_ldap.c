@@ -749,6 +749,14 @@ static void unknown_scheme_format(void)
 
 int main(void)
 {
+    br_result result = {0};
+    unsigned char text[] = "synthetic";
+    br_ldap_error oversized = {.presence = BR_LDAP_ERR_OTHER, .has_op_error = true,
+                              .innermost = {text, SIZE_MAX}};
+    char *error = NULL;
+    CHECK(classify(&result, &oversized, (br_slice){0}, &error) == -1 && error);
+    CHECK(!result.verification_error && !result.verified);
+    free(error);
     const br_detector *detector = descriptor();
     products(detector);
     iad(detector);
