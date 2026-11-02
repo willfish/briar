@@ -417,6 +417,10 @@ static int curl_send(void *user, const br_scan_ctx *ctx, const br_http_request *
         }
         if (!failure && outcome != CURLE_OK)
             failure = cr.failure ? cr.failure : curl_easy_strerror(outcome);
+        /* curl can report success after EOF inside a final header block.
+         * A parsed 200 status alone must never verify a status-only detector. */
+        if (!failure && !cr.headers_complete)
+            failure = "incomplete HTTP response headers";
         char *next_url = NULL;
         if (!failure && req->profile == BR_HTTP_SANE && redirect_status(response->status)) {
             char *location = NULL;

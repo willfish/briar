@@ -3,6 +3,7 @@
 #include "../../src/detectors/detectors.h"
 
 #include <curl/curl.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,11 +32,107 @@ static bool cancel_waiter(void *user)
     return true; /* Work is already registered; its cloned context is detached. */
 }
 
+static bool cancel_on_request(void *user)
+{
+    int *fd = user;
+    char byte;
+    ssize_t n = read(*fd, &byte, 1);
+    CHECK((n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) || (n == 1 && byte == 'r'));
+    return n == 1;
+}
+
+static int failure_case(const char *mode, const char *url)
+{
+    char *error = NULL;
+    const br_transport *raw = br_curl_transport_init(&error);
+    CHECK(raw && !error);
+    bool owned = !strcmp(mode, "failure-owned-short");
+    br_http_client *client = NULL;
+    if (owned) {
+        br_http_owned_backend backend = {.transport = *raw};
+        CHECK(!br_http_client_init(&client, backend, BR_HTTP_SANE, &error) && client && !error);
+    }
+    br_scan_ctx ctx = {.transport = owned ? br_http_client_transport(client) : raw,
+                       .user_agent = "native-http-fixture"};
+    int ready_fd = -1;
+    if (!strcmp(mode, "failure-cancel")) {
+        CHECK(getenv("BRIAR_TEST_READY_FD"));
+        ready_fd = atoi(getenv("BRIAR_TEST_READY_FD"));
+        ctx.cancelled = cancel_on_request; ctx.cancel_user = &ready_fd;
+    }
+    br_header authorization = {"Authorization", "Bearer synthetic-only"};
+    bool sensitive = !strcmp(mode, "failure-sensitive");
+    br_http_request request = {.method = "GET", .url = url, .profile = BR_HTTP_SANE,
+        .headers = sensitive ? &authorization : NULL, .nheaders = sensitive ? 1 : 0,
+        .timeout_ms = strstr(mode, "timeout") ? 500 : 5000};
+    if (owned) request.dedup_key = (br_slice){(const unsigned char *)"offline", 7};
+    if (!strcmp(mode, "failure-method")) request.method = "PUT";
+    if (!strcmp(mode, "failure-get-body")) request.body = (br_slice){(const unsigned char *)"x", 1};
+    br_http_response response = {0};
+    int rc = br_http_send(&ctx, &request, &response, &error);
+    bool body_error = !strcmp(mode, "failure-short") || !strcmp(mode, "failure-body-limit") ||
+                      !strcmp(mode, "failure-body-timeout") || !strcmp(mode, "failure-gzip");
+    bool status = !strncmp(mode, "failure-status-", 15);
+    bool informational = !strcmp(mode, "failure-informational");
+    bool gzip = !strcmp(mode, "failure-gzip-ok");
+    if (body_error || status || informational || gzip) {
+        CHECK(!rc && !error);
+        CHECK(response.status == (status ? atoi(mode + 15) : 200));
+        CHECK((response.body_error != NULL) == body_error);
+        if (body_error) CHECK(*response.body_error);
+        if (!strcmp(mode, "failure-short") || !strcmp(mode, "failure-body-timeout"))
+            CHECK(response.body.len == 1 && response.body.data[0] == 'r');
+        if (!strcmp(mode, "failure-body-limit")) {
+            CHECK(!strcmp(response.body_error, "unsupported: HTTP body exceeds 8 MiB"));
+            CHECK(response.body.len > 0 && response.body.len <= 8 * 1024 * 1024);
+        }
+        if (gzip) {
+            static const char decoded[] = "decoded\0body";
+            CHECK(response.body.len == sizeof(decoded) - 1 && !memcmp(response.body.data, decoded, sizeof(decoded) - 1));
+        }
+        if (informational) {
+            unsigned duplicates = 0;
+            for (size_t i = 0; i < response.nheaders; ++i) {
+                CHECK(strcmp(response.headers[i].name, "X-Old"));
+                if (!strcmp(response.headers[i].name, "X-Repeat")) ++duplicates;
+            }
+            CHECK(duplicates == 2);
+        }
+    } else {
+        CHECK(rc != 0 && error && *error);
+        CHECK(!response.body_error);
+        if (owned) CHECK(!response.status && !response.body.data);
+        if (!strcmp(mode, "failure-method") || !strcmp(mode, "failure-get-body"))
+            CHECK(!strcmp(error, "unsupported: curl adapter supports bodyless GET or POST"));
+        if (!strcmp(mode, "failure-incomplete")) {
+            CHECK(response.status == 200 && !response.body.data);
+            CHECK(!strcmp(error, "incomplete HTTP response headers"));
+        }
+        if (!strcmp(mode, "failure-refused"))
+            CHECK(!strcmp(error, curl_easy_strerror(CURLE_COULDNT_CONNECT)));
+        if (!strcmp(mode, "failure-timeout"))
+            CHECK(!strcmp(error, "context deadline exceeded") || !strcmp(error, curl_easy_strerror(CURLE_OPERATION_TIMEDOUT)));
+        if (!strcmp(mode, "failure-headers")) CHECK(!strcmp(error, "unsupported: HTTP headers exceed 64 KiB"));
+        if (!strcmp(mode, "failure-loop")) CHECK(!strcmp(error, "stopped after 10 redirects"));
+        if (sensitive) CHECK(!strcmp(error, "unsupported: redirects with sensitive HTTP headers"));
+        if (!strcmp(mode, "failure-cancel")) CHECK(!strcmp(error, "context canceled"));
+        CHECK(!strstr(error, "synthetic-only"));
+    }
+    free(error);
+    br_http_release(&ctx, &response);
+    CHECK(!response.status && !response.body.data && !response.body_error && !response.headers && !response.nheaders);
+    br_http_client_destroy(client);
+    curl_global_cleanup();
+    printf("Native HTTP %s: %u assertions, 0 failures\n", mode, assertions);
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     CHECK(argc == 3);
     CHECK(getenv("BRIAR_TEST_ISOLATED_NET") && !strcmp(getenv("BRIAR_TEST_ISOLATED_NET"), "1"));
     CHECK(!strncmp(argv[2], "http://127.0.0.1:", sizeof("http://127.0.0.1:") - 1));
+    if (!strncmp(argv[1], "failure-", 8)) return failure_case(argv[1], argv[2]);
     bool runtime_gitter = !strcmp(argv[1], "runtime-gitter");
     bool runtime_unknown = !strcmp(argv[1], "runtime-unknown");
     bool runtime_cancel = !strcmp(argv[1], "runtime-cancel-drain");

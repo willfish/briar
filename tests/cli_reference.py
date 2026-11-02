@@ -9,6 +9,7 @@ synthetic; mismatch messages never print candidate values.
 import argparse
 import base64
 import copy
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
 import os
@@ -2538,7 +2539,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--native", type=Path, default=ROOT / "build/briar")
     parser.add_argument("--reference", type=Path, required=True)
+    parser.add_argument("--jobs", type=int, default=1, help="independent isolated comparisons (default: 1)")
     args = parser.parse_args()
+    if args.jobs < 1:
+        parser.error("--jobs must be positive")
     if shutil.which("unshare") is None or shutil.which("ip") is None:
         raise SystemExit("Linux network-namespace isolation and ip are required for reference execution")
     (ROOT / "state").mkdir(exist_ok=True)
@@ -2550,8 +2554,22 @@ def main():
         suite.addTest(unittest.FunctionTestCase(lambda case=case: compare(args.native.resolve(), args.reference.resolve(), case), description=case[0]))
     print(f"Pinned-reference comparisons: {len(cases)}; synthetic inputs; network isolated", flush=True)
     print("Known cross-decoder oracle duplicates may race on DecoderName only; native ordering is PLAIN-first.", flush=True)
-    result = unittest.TextTestRunner(verbosity=1).run(suite)
-    raise SystemExit(0 if result.wasSuccessful() else 1)
+    if args.jobs == 1:
+        result = unittest.TextTestRunner(verbosity=1).run(suite)
+        raise SystemExit(0 if result.wasSuccessful() else 1)
+    # Each existing unittest has its own result and fixture directory. Only
+    # scheduling changes; invoke(), compare() and their allowances stay intact.
+    failures = 0
+    with ThreadPoolExecutor(max_workers=args.jobs) as pool:
+        pending = [pool.submit(test.run) for test in suite]
+        for completed, future in enumerate(as_completed(pending), 1):
+            result = future.result()
+            failures += len(result.failures) + len(result.errors)
+            for test, diagnostic in result.failures + result.errors:
+                print(f"FAIL {test.shortDescription()}\n{diagnostic}", flush=True)
+            if completed % 100 == 0 or completed == len(cases):
+                print(f"Completed {completed}/{len(cases)}; {failures} failures", flush=True)
+    raise SystemExit(1 if failures else 0)
 
 
 if __name__ == "__main__":

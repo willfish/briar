@@ -18,7 +18,7 @@ DETECTOR_TESTS := $(patsubst tests/detectors/%.c,$(BUILD_DIR)/tests/detectors/%,
 PROXY_TEST := $(BUILD_DIR)/tests/core/proxy_connect
 PROFILE_TEST := $(BUILD_DIR)/tests/core/http_profiles
 
-.PHONY: all check check-core check-proxy check-http-profiles check-detectors check-e2e clean
+.PHONY: all check check-core check-proxy check-http-profiles check-detectors check-e2e check-cli-failures clean
 all: $(BUILD_DIR)/briar $(BUILD_DIR)/libbriar.a
 
 $(BUILD_DIR)/briar: $(BUILD_DIR)/src/main.o $(BUILD_DIR)/libbriar.a
@@ -63,7 +63,10 @@ check-http-profiles: $(PROFILE_TEST)
 check-e2e: $(BUILD_DIR)/briar
 	python3 tests/core/e2e.py $(BUILD_DIR)/briar
 
-check: check-core check-proxy check-http-profiles check-detectors check-e2e
+check-cli-failures: $(BUILD_DIR)/briar
+	unshare --user --map-root-user --net python3 tests/core/cli_failures.py $(BUILD_DIR)/briar
+
+check: check-core check-proxy check-http-profiles check-detectors check-e2e check-cli-failures
 
 clean:
 	rm -f $(OBJECTS) $(OBJECTS:.o=.d) $(BUILD_DIR)/src/main.o $(BUILD_DIR)/src/main.d $(BUILD_DIR)/libbriar.a $(BUILD_DIR)/briar $(CORE_TESTS) $(DETECTOR_TESTS) $(PROXY_TEST) $(PROFILE_TEST)

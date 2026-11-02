@@ -28074,6 +28074,7 @@
         "Native Go DefaultTransport and DefaultClient families remain unsupported; private byte helpers do not certify unknown forwarding wrappers",
         "Ordinary ABI1 synthesized request storage still ends at send return; owned clients retain it through raw release",
         "Complete Go HTTP/streaming/trailer/redirect and exact cancellation-notification behavior; custom uncopyable JSON option state remains unsupported",
+        "Complete gzip truncation detection: native curl can accept a one-byte gzip body as empty without a body error; malformed longer streams are tested but do not establish Go decompression parity",
         "Complete response-document semantics and byte-preserving verification-error representation",
         "Complete endpoint URL parsing/rendering; Data Center builder currently guards escaped, relative, opaque and authority-normalizing forms",
         "Remaining shared detector helpers and protocol adapters"
@@ -28127,6 +28128,8 @@
       ],
       "evidence": [
         "tests/core/e2e.py",
+        "tests/core/cli_failures.py",
+        "tests/integration.py",
         "tests/cli_reference.py"
       ],
       "remaining": [
@@ -28141,6 +28144,7 @@
       ],
       "evidence": [
         "tests/core/e2e.py",
+        "tests/core/cli_failures.py",
         "tests/cli_reference.py"
       ],
       "remaining": [
@@ -28154,6 +28158,8 @@
         "src/main.c"
       ],
       "evidence": [
+        "tests/core/test_cli_io.c",
+        "tests/core/cli_failures.py",
         "tests/cli_reference.py"
       ],
       "remaining": [

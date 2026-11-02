@@ -76,6 +76,8 @@ HOME:
 )
 ```
 
+[Integration testing](docs/INTEGRATION_TESTING.md) provides a single Python runner,
+coverage map and explicit parity gaps.
 [Architecture](docs/ARCHITECTURE.md) describes the native design.
 [Acceptance](docs/ACCEPTANCE.md) defines parity requirements and testing limits.
 The [parity ledger](parity.json) tracks implementation coverage against the

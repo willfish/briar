@@ -65,8 +65,24 @@ static int fail(char **error, const char *message)
 
 static int write_all(int fd, const char *text, size_t len)
 {
+    int flags = fcntl(fd, F_GETFL);
+    if (flags < 0) return 1;
+    bool nonblocking = (flags & O_NONBLOCK) != 0;
     while (len) {
-        size_t count = len > (size_t)SSIZE_MAX ? (size_t)SSIZE_MAX : len;
+        /* A full output pipe must not trap cancellation in a restarted write.
+         * Keep writes atomic for pipes and still allow a final diagnostic when
+         * its descriptor is writable, without changing shared descriptor flags. */
+        if (!nonblocking) {
+            struct pollfd output = { .fd = fd, .events = POLLOUT };
+            int ready = poll(&output, 1, stopped ? 0 : 100);
+            if (ready < 0 && errno == EINTR) continue;
+            if (ready < 0) return 1;
+            if (!ready) {
+                if (stopped) { errno = EINTR; return 1; }
+                continue;
+            }
+        }
+        size_t count = len > PIPE_BUF ? PIPE_BUF : len;
         ssize_t n = write(fd, text, count);
         if (n < 0 && errno == EINTR) continue;
         if (n <= 0) return 1;
