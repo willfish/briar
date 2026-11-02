@@ -120,6 +120,8 @@ static int make_result(br_result *result, int32_t type, const char *key, const c
     if (br_finding_pair(result, type, key, "key", host, "account_url") != 0) return -1;
     const char prefix[] = "key: ", middle[] = " account_url: ";
     size_t key_len = strlen(key), host_len = strlen(host);
+    const size_t fixed = sizeof(prefix) - 1 + sizeof(middle) - 1;
+    if (key_len > SIZE_MAX - fixed || host_len > SIZE_MAX - fixed - key_len) return -1;
     size_t len = sizeof(prefix) - 1 + key_len + sizeof(middle) - 1 + host_len;
     unsigned char *raw_v2 = realloc(result->raw_v2.data, len);
     if (!raw_v2) return -1;
