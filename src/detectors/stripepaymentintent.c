@@ -6,6 +6,7 @@
 #include "json.h"
 
 #include <json-c/json.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,9 +30,11 @@ static const char *stripe_word(enum json_type kind)
 
 static char *format_message(const char *prefix, const char *detail)
 {
-    size_t need = strlen(prefix) + strlen(detail) + 1;
+    size_t first = strlen(prefix), second = strlen(detail);
+    if (first == SIZE_MAX || second > SIZE_MAX - first - 1) return NULL;
+    size_t need = first + second + 1;
     char *message = malloc(need);
-    if (message) sprintf(message, "%s%s", prefix, detail);
+    if (message) snprintf(message, need, "%s%s", prefix, detail);
     return message;
 }
 
@@ -118,6 +121,7 @@ static int stripe_member(void *user, br_slice name, br_json *value, br_slice enc
         return 0;
     }
     br_slice text = br_json_text(value);
+    if (text.len == SIZE_MAX) { out->rc = -1; return -1; }
     char *copy = malloc(text.len + 1);
     if (!copy) { out->rc = -1; return -1; }
     memcpy(copy, text.data, text.len);
@@ -176,15 +180,22 @@ static int verify_secret_key(const br_scan_ctx *ctx, const char *secret, const c
 {
     size_t id_len = 0;
     const char *id = intent_id(secret, &id_len);
+    if (id_len > SIZE_MAX - sizeof("https://api.stripe.com/v1/payment_intents/"))
+        return fail(error, "Stripe PaymentIntent URL is too large");
     char *url = malloc(sizeof("https://api.stripe.com/v1/payment_intents/") + id_len);
     if (!url) return fail(error, "cannot create Stripe PaymentIntent URL");
     memcpy(url, "https://api.stripe.com/v1/payment_intents/", sizeof("https://api.stripe.com/v1/payment_intents/") - 1);
     memcpy(url + sizeof("https://api.stripe.com/v1/payment_intents/") - 1, id, id_len);
     url[sizeof("https://api.stripe.com/v1/payment_intents/") - 1 + id_len] = '\0';
     if (!ctx) { free(url); return set_error(result, "error creating request: net/http: nil Context", error); }
-    char *authorization = malloc(sizeof("Bearer ") + strlen(key));
+    size_t key_len = strlen(key);
+    if (key_len > SIZE_MAX - sizeof("Bearer ")) {
+        free(url); return fail(error, "Stripe PaymentIntent authorization is too large");
+    }
+    size_t auth_size = sizeof("Bearer ") + key_len;
+    char *authorization = malloc(auth_size);
     if (!authorization) { free(url); return fail(error, "cannot format Stripe PaymentIntent authorization"); }
-    sprintf(authorization, "Bearer %s", key);
+    snprintf(authorization, auth_size, "Bearer %s", key);
     const br_header headers[] = {
         {"Authorization", authorization},
         {"Content-Type", "application/x-www-form-urlencoded"},
@@ -231,12 +242,16 @@ static int verify_publishable(const br_scan_ctx *ctx, const char *secret, const 
     size_t id_len = 0;
     const char *id = intent_id(secret, &id_len);
     if (!id_len) return set_error(result, "payment intent ID is required", error);
-    size_t need = sizeof("https://api.stripe.com/v1/payment_intents/") + id_len +
-                  sizeof("?key=") + strlen(key) + sizeof("&client_secret=") + strlen(secret);
+    size_t need = sizeof("https://api.stripe.com/v1/payment_intents/?key=&client_secret=");
+    size_t key_len = strlen(key), secret_len = strlen(secret);
+    if (id_len > INT_MAX || id_len > SIZE_MAX - need ||
+        key_len > SIZE_MAX - need - id_len || secret_len > SIZE_MAX - need - id_len - key_len)
+        return fail(error, "Stripe PaymentIntent URL is too large");
+    need += id_len + key_len + secret_len;
     char *url = malloc(need);
     if (!url) return fail(error, "cannot create Stripe PaymentIntent URL");
-    sprintf(url, "https://api.stripe.com/v1/payment_intents/%.*s?key=%s&client_secret=%s",
-            (int)id_len, id, key, secret);
+    snprintf(url, need, "https://api.stripe.com/v1/payment_intents/%.*s?key=%s&client_secret=%s",
+             (int)id_len, id, key, secret);
     if (!ctx) { free(url); return set_error(result, "error creating request: net/http: nil Context", error); }
     const br_http_request request = {
         .method = "GET", .url = url, .profile = BR_HTTP_SANE, .timeout_ms = 5000,
