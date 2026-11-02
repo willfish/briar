@@ -29,7 +29,9 @@ static int query_escape(const char *in, char **out)
         unsigned char c = (unsigned char)in[i];
         bool plain = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
             c == '-' || c == '_' || c == '.' || c == '~';
-        need += plain ? 1 : 3;
+        size_t extra = plain ? 1 : 3;
+        if (need > SIZE_MAX - extra - 1) return -1;
+        need += extra;
     }
     char *encoded = malloc(need + 1);
     if (!encoded) return -1;
@@ -64,7 +66,10 @@ static int make_salesforce(br_result *result, const char *domain, const char *ke
 {
     if (br_finding_key(result, 47, secret, "client_secret") != 0) return -1;
     if (add_part(result, "domain", domain) != 0 || add_part(result, "client_id", key) != 0) return -1;
-    size_t n = strlen(domain) + 1 + strlen(key) + 1 + strlen(secret);
+    size_t domain_len = strlen(domain), key_len = strlen(key), secret_len = strlen(secret);
+    if (domain_len > SIZE_MAX - 3 || key_len > SIZE_MAX - 3 - domain_len ||
+        secret_len > SIZE_MAX - 3 - domain_len - key_len) return -1;
+    size_t n = domain_len + 1 + key_len + 1 + secret_len;
     result->raw_v2.data = malloc(n + 1);
     if (!result->raw_v2.data) return -1;
     snprintf((char *)result->raw_v2.data, n + 1, "%s:%s:%s", domain, key, secret);
@@ -93,6 +98,7 @@ static int oauth_note(oauth_proj *proj, br_json *value, const char *field, const
 
 static int oauth_copy(char **slot, size_t *len, br_slice text)
 {
+    if (text.len == SIZE_MAX) return -1;
     char *copy = malloc(text.len + 1);
     if (!copy) return -1;
     if (text.len) memcpy(copy, text.data, text.len);
@@ -194,7 +200,8 @@ static int bad_request(br_http_response *response, const char **cause, char **ow
         oauth_eq(proj.error, proj.error_len, "invalid_client")) {
         /* Determinate invalid client: no verification error. Description is not projected. */
     } else if (oauth_eq(proj.error, proj.error_len, "invalid_grant")) {
-        if (!oauth_representable(description, description_len))
+        if (!oauth_representable(description, description_len) ||
+            description_len > SIZE_MAX - sizeof("verification failed: "))
             rc = fail(error, "unsupported: Salesforce OAuth error string is not representable");
         else {
             *owned = malloc(description_len + sizeof("verification failed: "));
@@ -212,7 +219,11 @@ static int bad_request(br_http_response *response, const char **cause, char **ow
     } else {
         static const char prefix[] = "unexpected OAuth error: ";
         static const char sep[] = " - ";
-        *owned = malloc(sizeof(prefix) - 1 + error_len + sizeof(sep) - 1 + description_len + 1);
+        size_t fixed = sizeof(prefix) + sizeof(sep) - 1;
+        if (error_len > SIZE_MAX - fixed || description_len > SIZE_MAX - fixed - error_len) {
+            free(proj.error); free(proj.description); return -1;
+        }
+        *owned = malloc(fixed + error_len + description_len);
         if (!*owned) rc = -1;
         else {
             char *at = *owned;
@@ -247,11 +258,17 @@ static int verify_salesforce(const br_scan_ctx *ctx, const char *domain, const c
         free(id);
         return fail(error, "out of memory encoding Salesforce form");
     } else {
-        size_t n = strlen(id) + strlen(secret_escaped) + sizeof("client_id=&client_secret=&grant_type=client_credentials");
-        form = malloc(n + 8);
+        size_t id_len = strlen(id), secret_len = strlen(secret_escaped);
+        size_t fixed = sizeof("client_id=&client_secret=&grant_type=client_credentials");
+        if (id_len > SIZE_MAX - fixed || secret_len > SIZE_MAX - fixed - id_len) {
+            free(id); free(secret_escaped);
+            return fail(error, "Salesforce form is too large");
+        }
+        size_t n = fixed + id_len + secret_len;
+        form = malloc(n);
         if (!form) rc = fail(error, "out of memory encoding Salesforce form");
         else {
-            sprintf(form, "client_id=%s&client_secret=%s&grant_type=client_credentials", id, secret_escaped);
+            snprintf(form, n, "client_id=%s&client_secret=%s&grant_type=client_credentials", id, secret_escaped);
             const br_header headers[] = {{"Content-Type", "application/x-www-form-urlencoded"}};
             const br_http_request request = {
                 .method = "POST", .url = url, .headers = headers, .nheaders = 1,
@@ -278,7 +295,7 @@ static int verify_salesforce(const br_scan_ctx *ctx, const char *domain, const c
                 owned = malloc(64);
                 if (!owned) rc = fail(error, "out of memory recording Salesforce verification error");
                 else {
-                    sprintf(owned, "unexpected status code: %d", response.status);
+                    snprintf(owned, 64, "unexpected status code: %d", response.status);
                     cause = owned;
                     error_present = true;
                 }
