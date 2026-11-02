@@ -25,7 +25,8 @@ static ver_outcome ver_verify(const br_scan_ctx *ctx, br_slice key, br_slice ema
      * fatal rather than an ordinary skip. */
     static const char prefix[] = "https://verifier.meetchopra.com/verify/";
     static const char query[] = "?token=";
-    if (email.len > SIZE_MAX - sizeof(prefix) - sizeof(query) - key.len)
+    if (key.len > SIZE_MAX - sizeof(prefix) - sizeof(query) ||
+        email.len > SIZE_MAX - sizeof(prefix) - sizeof(query) - key.len)
         return ver_fail(error, "cannot build Verifier URL"), VER_ABORT;
     char *url = malloc(sizeof(prefix) - 1 + email.len + sizeof(query) - 1 + key.len + 1);
     if (!url) return ver_fail(error, "cannot build Verifier URL"), VER_ABORT;
