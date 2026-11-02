@@ -561,8 +561,8 @@ static int ftp_collect(void *user, const br_span *groups, size_t n)
         groups[0].end <= groups[0].begin || groups[1].end <= groups[1].begin)
         return ftp_fail(&m->error, "invalid FTP capture");
     if (m->len == m->cap) {
+        if (m->cap > SIZE_MAX / sizeof(*m->items) / 2) return ftp_fail(&m->error, "too many FTP captures");
         size_t cap = m->cap ? m->cap * 2 : 8;
-        if (cap < m->cap || cap > SIZE_MAX / sizeof(*m->items)) return ftp_fail(&m->error, "too many FTP captures");
         void *p = realloc(m->items, cap * sizeof(*m->items));
         if (!p) return ftp_fail(&m->error, "cannot allocate FTP captures");
         m->items = p; m->cap = cap;
