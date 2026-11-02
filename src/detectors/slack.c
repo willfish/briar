@@ -70,6 +70,7 @@ static int slack_string(slack_auth *auth, br_json *value, char **slot, size_t *l
     if (!value || json_object_is_type(value, json_type_null)) return 0;
     if (!json_object_is_type(value, json_type_string)) return slack_type(auth, value, field, "string");
     br_slice text = br_json_text(value);
+    if (text.len == SIZE_MAX) return -1;
     char *owned = malloc(text.len + 1);
     if (!owned) return -1;
     if (text.len) memcpy(owned, text.data, text.len);
@@ -136,6 +137,7 @@ static int slack_decode(br_slice body, const char *read_error, slack_auth *auth,
 static int unexpected_auth(const slack_auth *auth, char **out)
 {
     static const char prefix[] = "unexpected error auth response ";
+    if (auth->error_len > SIZE_MAX - sizeof(prefix)) return -1;
     size_t n = sizeof(prefix) - 1 + auth->error_len;
     char *message = malloc(n + 1);
     if (!message) return -1;
@@ -150,6 +152,7 @@ static int unexpected_auth(const slack_auth *auth, char **out)
 static int verify_slack(const br_scan_ctx *ctx, br_slice token, br_result *result, char **error)
 {
     if (!ctx) return 1;
+    if (token.len > SIZE_MAX - 8) return fail(error, "Slack authorization is too large");
     char *authz = malloc(7 + token.len + 1);
     if (!authz) return fail(error, "cannot format Slack authorization");
     memcpy(authz, "Bearer ", 7);

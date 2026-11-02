@@ -87,6 +87,7 @@ int main(void)
     results = scan_probe(detector, bot, &not_quiet);
     CHECK(results.len == 1 && !results.items[0].verified && results.items[0].verification_error);
     CHECK(!strcmp(results.items[0].verification_error, "unexpected error auth response invalid_auth"));
+    br_results_clear(&results);
     probe quiet = {.status = 200, .body = "{\"ok\":false,\"error\":\"invalid_auth\"}"};
     results = scan_probe(detector, bot, &quiet);
     CHECK(results.len == 1 && !results.items[0].verified && !results.items[0].verification_error);
