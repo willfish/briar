@@ -33,7 +33,10 @@ static int verify_zipbooks(const br_scan_ctx *ctx, const char *email, const char
     *verified = false;
     if (cause) *cause = NULL;
     const char *fmt = "{\"email\": \"%s\", \"password\": \"%s\"}";
-    size_t need = strlen(fmt) - 4 + strlen(email) + strlen(password) + 1;
+    size_t fixed = strlen(fmt) - 4 + 1, email_len = strlen(email), password_len = strlen(password);
+    if (email_len > SIZE_MAX - fixed || password_len > SIZE_MAX - fixed - email_len)
+        return fail(error, "ZipBooks body is too large");
+    size_t need = fixed + email_len + password_len;
     char *body = malloc(need);
     if (!body) return fail(error, "cannot create ZipBooks body");
     int n = snprintf(body, need, fmt, email, password);
