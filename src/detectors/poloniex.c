@@ -23,6 +23,7 @@ static int add_part(br_result *result, const char *name, br_slice value, char **
 {
     if (!result->secret_parts && !(result->secret_parts = json_object_new_object()))
         return fail(error, "cannot create Poloniex result");
+    if (value.len == SIZE_MAX) return fail(error, "Poloniex result is too large");
     char *text = malloc(value.len + 1);
     if (!text) return fail(error, "cannot create Poloniex result");
     memcpy(text, value.data, value.len);
