@@ -44,9 +44,9 @@ static void num_drain(const br_scan_ctx *ctx, num_pending *pending)
 static int num_hold(num_pending *pending, const br_http_response *response, char *url, char **error)
 {
     if (pending->len == pending->cap) {
-        size_t cap = pending->cap ? pending->cap * 2 : 2;
-        if (cap < pending->cap || cap > SIZE_MAX / sizeof(*pending->items))
+        if (pending->cap > SIZE_MAX / sizeof(*pending->items) / 2)
             return num_fail(error, "cannot retain Numverify response");
+        size_t cap = pending->cap ? pending->cap * 2 : 2;
         num_held *items = realloc(pending->items, cap * sizeof(*items));
         if (!items) return num_fail(error, "cannot retain Numverify response");
         pending->items = items;
