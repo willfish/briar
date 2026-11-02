@@ -23,6 +23,7 @@ static void rollback(br_results *out, size_t before)
 static int query_escape(br_slice in, char **out)
 {
     static const char hex[] = "0123456789ABCDEF";
+    if (in.len > (SIZE_MAX - 1) / 3) return -1;
     size_t cap = in.len * 3 + 1;
     char *text = malloc(cap ? cap : 1);
     if (!text) return -1;
@@ -63,8 +64,12 @@ static int form_body(br_slice client_id, br_slice secret, char **out, char **err
         free(id); free(sec);
         return fail(error, "cannot encode Shopify form");
     }
-    size_t n = strlen("client_id=") + strlen(id) + strlen("&client_secret=") + strlen(sec) +
-               strlen("&grant_type=client_credentials");
+    size_t id_len = strlen(id), secret_len = strlen(sec);
+    size_t fixed = sizeof("client_id=&client_secret=&grant_type=client_credentials");
+    if (id_len > SIZE_MAX - fixed || secret_len > SIZE_MAX - fixed - id_len) {
+        free(id); free(sec); return fail(error, "Shopify form is too large");
+    }
+    size_t n = fixed - 1 + id_len + secret_len;
     char *body = malloc(n + 1);
     if (!body) {
         free(id); free(sec);
