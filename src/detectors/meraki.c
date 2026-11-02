@@ -98,9 +98,9 @@ static int meraki_element(void *user, size_t index, br_json *value, br_slice enc
     meraki_organizations *organizations = projection->organizations;
     if (index != organizations->len) return meraki_fail(projection->error, "invalid Meraki organization index");
     if (organizations->len == organizations->cap) {
-        size_t cap = organizations->cap ? organizations->cap * 2 : 8;
-        if (cap < organizations->cap || cap > SIZE_MAX / sizeof(*organizations->items))
+        if (organizations->cap > SIZE_MAX / sizeof(*organizations->items) / 2)
             return meraki_fail(projection->error, "too many Meraki organizations");
+        size_t cap = organizations->cap ? organizations->cap * 2 : 8;
         meraki_organization *items = realloc(organizations->items, cap * sizeof(*items));
         if (!items) return meraki_fail(projection->error, "cannot stage Meraki organizations");
         organizations->items = items; organizations->cap = cap;
