@@ -36,6 +36,7 @@ static int openaiadmin_verify(const br_scan_ctx *ctx, br_slice key, br_result *r
     if (!ctx)
         return br_result_set_verification_error(result, "net/http: nil Context", &key, 1)
             ? openaiadmin_fail(error, "cannot set OpenAIAdmin verification error") : 0;
+    if (key.len > SIZE_MAX - 8) return openaiadmin_fail(error, "OpenAIAdmin authorization is too large");
     char *authorization = malloc(7 + key.len + 1);
     if (!authorization) return openaiadmin_fail(error, "cannot allocate OpenAIAdmin authorization");
     memcpy(authorization, "Bearer ", 7);
