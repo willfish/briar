@@ -24,10 +24,12 @@ static int verify_userflow(const br_scan_ctx *ctx, br_slice secret, br_result *r
 {
     if (!ctx) return 1;
     const char *key = (const char *)secret.data;
-    char *auth = malloc(7 + strlen(key) + 1);
+    size_t key_len = strlen(key);
+    if (key_len > SIZE_MAX - 8) return fail(error, "Userflow authorization is too large");
+    char *auth = malloc(7 + key_len + 1);
     if (!auth) return fail(error, "cannot format Userflow authorization");
     memcpy(auth, "Bearer ", 7);
-    memcpy(auth + 7, key, strlen(key) + 1);
+    memcpy(auth + 7, key, key_len + 1);
     const br_header headers[] = {
         {"Accept", "application/vnd.userflow+json; version=3"},
         {"Authorization", auth},
