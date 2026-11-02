@@ -29,6 +29,7 @@ static int zohocrm_store(br_result *result, const char *cause, br_slice token, c
 static int zohocrm_join_len(char **out, const char *prefix, const char *detail, size_t detail_len)
 {
     size_t n = strlen(prefix);
+    if (n == SIZE_MAX || detail_len > SIZE_MAX - n - 1) return -1;
     char *message = malloc(n + detail_len + 1);
     if (!message) return -1;
     memcpy(message, prefix, n);
