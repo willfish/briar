@@ -108,9 +108,9 @@ static void inspect(test_http *http, const br_scan_ctx *ctx, const br_http_reque
         if (token_status == 200 && token_json) {
             http->response.body = (br_slice){(const unsigned char *)token_json, strlen(token_json)};
         } else if (token_status == 200 && access_token) {
-            char body[128];
+            static char body[128]; /* Borrowed response storage must outlive this callback. */
             snprintf(body, sizeof(body), "{\"token_type\":\"bearer\",\"access_token\":\"%s\"}", access_token);
-            http->response.body = (br_slice){(const unsigned char *)strdup(body), strlen(body)};
+            http->response.body = (br_slice){(const unsigned char *)body, strlen(body)};
         }
     } else {
         CHECK(!strcmp(request->method, "GET"));

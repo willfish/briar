@@ -179,7 +179,7 @@ static int twitter_verify(const br_scan_ctx *ctx, br_slice key, br_slice secret,
             cause = strdup("unsupported: Twitter access token contains NUL");
             if (!cause) rc = twitter_fail(error, "cannot store TwitterConsumerkey status");
         } else {
-        char *bearer = malloc(7 + token_len + 1);
+        char *bearer = token_len > SIZE_MAX - 8 ? NULL : malloc(7 + token_len + 1);
         if (!bearer) rc = twitter_fail(error, "cannot allocate TwitterConsumerkey bearer");
         else {
             memcpy(bearer, "Bearer ", 7);
