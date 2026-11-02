@@ -62,6 +62,7 @@ static int openai_type(openai_doc *doc, br_json *value, const char *field, const
 static int openai_copy(char **dest, size_t *dest_len, br_json *value)
 {
     br_slice text = br_json_text(value);
+    if (text.len == SIZE_MAX) return -1;
     char *copy = malloc(text.len + 1);
     if (!copy) return -1;
     if (text.len) memcpy(copy, text.data ? text.data : (const unsigned char *)"", text.len);
@@ -90,7 +91,8 @@ static int openai_float64(openai_doc *doc, br_slice encoded, const char *field)
     const char middle[] = " into Go struct field ";
     const char end[] = " of type float64";
     size_t prefix = n - suffix_len, field_len = strlen(field);
-    if (prefix > SIZE_MAX - (sizeof(middle) - 1) - field_len - sizeof(end)) {
+    size_t fixed = sizeof(middle) - 1 + sizeof(end);
+    if (prefix > SIZE_MAX - fixed || field_len > SIZE_MAX - fixed - prefix) {
         free(cause);
         return -1;
     }
@@ -112,7 +114,8 @@ static int openai_int_cause(openai_doc *doc, br_slice token, const char *field)
     const char prefix[] = "json: cannot unmarshal number ";
     const char middle[] = " into Go struct field ";
     const char suffix[] = " of type int";
-    if (token.len > SIZE_MAX - sizeof(prefix) - sizeof(middle) - sizeof(suffix)) return -1;
+    size_t field_len = strlen(field), fixed = sizeof(prefix) + sizeof(middle) + sizeof(suffix) - 2;
+    if (token.len > SIZE_MAX - fixed || field_len > SIZE_MAX - fixed - token.len) return -1;
     char *message = malloc(sizeof(prefix) - 1 + token.len + sizeof(middle) - 1 + strlen(field) + sizeof(suffix));
     if (!message) return -1;
     char *at = message;
@@ -141,6 +144,7 @@ static int openai_int(openai_doc *doc, br_slice encoded, const char *field, int6
     for (size_t i = token.data && token.data[0] == '-' ? 1 : 0; integer && i < token.len; ++i)
         integer = token.data[i] >= '0' && token.data[i] <= '9';
     if (!integer) return doc->ordinary ? 0 : openai_int_cause(doc, token, field);
+    if (token.len == SIZE_MAX) return -1;
     char *text = malloc(token.len + 1);
     if (!text) return -1;
     memcpy(text, token.data, token.len);
@@ -517,6 +521,9 @@ static openai_outcome openai_verify(const br_scan_ctx *ctx, br_slice key, br_res
         if (openai_cause(result, "net/http: nil Context", error) != 0) return OPENAI_ABORT;
         return OPENAI_KEEP;
     }
+    if (key.len > SIZE_MAX - 8) {
+        openai_fail(error, "OpenAI authorization is too large"); return OPENAI_ABORT;
+    }
     char *authorization = malloc(7 + key.len + 1);
     if (!authorization) {
         openai_fail(error, "cannot format OpenAI authorization");
@@ -585,6 +592,7 @@ static openai_outcome openai_verify(const br_scan_ctx *ctx, br_slice key, br_res
 
 static int openai_redact(br_result *result, br_slice token, char **error)
 {
+    if (token.len < 3 || token.len > SIZE_MAX - 7) return openai_fail(error, "invalid OpenAI token size");
     size_t suffix_at = token.len - 1 < 47 ? token.len - 1 : 47;
     size_t suffix_len = token.len - suffix_at;
     char *redacted = malloc(6 + suffix_len + 1);
