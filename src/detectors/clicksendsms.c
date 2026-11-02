@@ -57,9 +57,9 @@ static int clicksendsms_collect_id(void *user, const br_span *groups, size_t cou
     }
     br_slice id = clicksendsms_trim_leading((br_slice){ids->input.data + begin, end - begin});
     if (ids->len == ids->cap) {
-        size_t cap = ids->cap ? ids->cap * 2 : 8;
-        if (cap < ids->cap || cap > SIZE_MAX / sizeof(*ids->items))
+        if (ids->cap > SIZE_MAX / sizeof(*ids->items) / 2)
             return clicksendsms_fail(&ids->error, "too many ClickSendsms IDs");
+        size_t cap = ids->cap ? ids->cap * 2 : 8;
         br_span *items = realloc(ids->items, cap * sizeof(*items));
         if (!items) return clicksendsms_fail(&ids->error, "out of memory collecting ClickSendsms IDs");
         ids->items = items;
