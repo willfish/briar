@@ -144,8 +144,9 @@ static int hf_org_element(void *opaque, size_t index, br_json *value, br_slice e
     hf_whoami *whoami = opaque;
     /* Go grows/initializes each value-struct slot BEFORE inspecting its type. */
     if (index >= whoami->backing_cap) {
+        if (whoami->backing_cap > SIZE_MAX / sizeof(*whoami->orgs) / 2) return -1;
         size_t next = whoami->backing_cap ? whoami->backing_cap * 2 : 1;
-        if (next <= index || next < whoami->backing_cap || next > SIZE_MAX / sizeof(*whoami->orgs)) return -1;
+        if (next <= index) return -1;
         hf_organization *items = realloc(whoami->orgs, next * sizeof(*items));
         if (!items) return -1;
         memset(items + whoami->backing_cap, 0, (next - whoami->backing_cap) * sizeof(*items));
