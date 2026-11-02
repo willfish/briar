@@ -523,8 +523,9 @@ for payload in (
           "PLAIN decoding accepts valid Unicode/controls and replaces malformed tails")
 prefix = f"abyssale {key40}\n".encode()
 _, rows = invoke(["stdin", *base], prefix + b"x" * (64 * 1024 - len(prefix) - 1) + b"\xff")
-check(len(rows) == 1, "64 KiB cap applies to original bytes, not expanded decoder output")
-invoke(["stdin", *base], b"x" * (64 * 1024 + 1), code=1)
+check(len(rows) == 1, "expanded decoder output preserves findings at 64 KiB")
+_, rows = invoke(["stdin", *base], b"x" * (64 * 1024 + 1))
+check(not rows, "stdin streams beyond 64 KiB without truncation or rejection")
 _, rows = invoke(["stdin", *base], b"")
 check(not rows, "empty supported input")
 

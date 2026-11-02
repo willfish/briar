@@ -11,14 +11,15 @@ Add this to the consuming repository's `.pre-commit-config.yaml`:
 
 ```yaml
 repos:
-  - repo: ssh://git@github.com/willfish/briar
+  - repo: https://github.com/willfish/briar
     rev: <full-commit-sha>
     hooks:
       - id: briar
 ```
 
-Replace `rev` with a reviewed commit containing `.pre-commit-hooks.yaml`. Access
-to the private repository is required. Then run `pre-commit install`, or use
+Replace `rev` with a reviewed commit containing `.pre-commit-hooks.yaml`. The
+public repository can be fetched over HTTPS without credentials. Run
+`pre-commit install`, or use
 `pre-commit run briar --all-files` in CI. Docker hooks require a Docker-capable
 runner; they do not run on pre-commit.ci.
 
@@ -41,17 +42,40 @@ cannot become options:
 
 - Clean scans exit zero. Findings exit 183 and fail the hook. Invalid arguments,
   unsupported inputs and scan/output errors exit 1 and also fail it.
-- Hook output includes filename, line, detector and decoder only. It omits raw
-  credentials, provider metadata and even the potentially sensitive `Redacted`
-  field. Filenames themselves are not redacted.
-- Files larger than **64 KiB fail the hook**, rather than being skipped or cut
-  short. Directory traversal, archives, HTML decoding and provider verification
-  remain unsupported. Upstream-disabled detectors remain disabled.
+- Clean scans are quiet. Findings show a count, filename, line, detector and
+  decoder, followed by a reminder to remove credentials and stage the correction.
+  Matches are labelled as potential secrets, not verified credentials.
+- Credential values, provider metadata and even the potentially sensitive
+  `Redacted` field are omitted. Filenames are quoted with control characters
+  escaped, but their contents are not redacted.
+- Files have no size cap. Input streams through a 13 KiB buffer, retaining 3 KiB
+  of overlap between 10 KiB content chunks. Decoder windows remain bounded;
+  findings and deduplication state still consume memory proportional to results.
+- Directory traversal, archives, HTML decoding and provider verification remain
+  unsupported. Upstream-disabled detectors remain disabled.
 - Ordinary scanner filtering still applies. A successful hook is not proof that
   a file contains no secrets.
 - Inputs are not modified. Pre-commit itself mounts the checkout read-write;
   the hook is not a filesystem or network sandbox. The application disables
   verification, but pre-commit's `docker` language does not disable networking.
+
+A failed scan reports an error instead of partial findings. Results are buffered
+until every selected file has been scanned successfully. Output failures cannot
+retract bytes already written; always check the exit status.
+
+Example finding output (no credential values):
+
+```text
+Found 1 potential secret (offline, not verified):
+  "config/service.env":12: Abyssale (PLAIN)
+
+Remove real credentials, stage the changes, and retry. Credential values are hidden.
+```
+
+For tooling, `args: ['--json', '--']` selects newline-delimited JSON containing
+only `SourceMetadata`, `DetectorType`, `DetectorName` and `DecoderName`. The same
+failure exit codes and credential-value protections apply. Unlike the ordinary
+`stdin` and `filesystem` JSON output, hook JSON never includes credential fields.
 
 ## Build and run the image directly
 
@@ -80,7 +104,9 @@ IDN, public-suffix, HTTP/2, Brotli and Zstandard dependencies are omitted.
 
 ## Measured size and overhead
 
-On Linux amd64 with a Threadripper 7960X, Docker 29.9.2 and pre-commit 4.5.1:
+The original JSON-output hook was measured on Linux amd64 with a Threadripper
+7960X, Docker 29.9.2 and pre-commit 4.5.1. These are historical packaging results,
+not timings for the current streaming reader and readable output:
 
 - Unpacked image: **9,442,461 bytes** (9.44 decimal MB).
 - Gzipped Docker-save archive: **3,978,964 bytes**. This is an archive measurement,

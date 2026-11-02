@@ -3,6 +3,7 @@
 """Exercise OS/process failures against the real CLI, not an embedded main()."""
 import argparse
 import array
+import base64
 import fcntl
 import hashlib
 import json
@@ -78,8 +79,6 @@ class CliFailures(unittest.TestCase):
     def test_filesystem_failures_rollback_earlier_findings(self):
         good = self.directory / 'good.txt'
         good.write_bytes(SOURCE)
-        large = self.directory / 'large.txt'
-        large.write_bytes(SOURCE + b'x' * 65536)
         fifo = self.directory / 'pipe'
         os.mkfifo(fifo)
         peer = socket.socket(socket.AF_UNIX)
@@ -89,7 +88,6 @@ class CliFailures(unittest.TestCase):
         cases = [
             (self.directory / KEY.decode() / 'missing.txt', 'cannot open filesystem input parent'),
             (good / 'child', 'cannot open filesystem input parent'),
-            (large, 'exceeds the 64 KiB source cap'),
             (fifo, 'not regular'),
             (address, 'cannot open filesystem input'),
             (Path('/dev/null'), 'not regular'),
@@ -98,7 +96,58 @@ class CliFailures(unittest.TestCase):
             with self.subTest(path=path.name):
                 self.failed(self.invoke(['filesystem', str(good), str(path), *OPTIONS]), diagnostic)
                 self.assertEqual(good.read_bytes(), SOURCE)
-        self.assertEqual(large.stat().st_size, len(SOURCE) + 65536)
+
+    def test_stream_large_files(self):
+        path = self.directory / 'large.txt'
+        for size in (65535, 65536, 65537, 71680, 74752, 2 * 1024 * 1024):
+            with self.subTest(size=size):
+                source = bytearray((b'.\n' * ((size + 1) // 2))[:size])
+                offsets = [size - len(SOURCE)]
+                if size > 74752:
+                    offsets.insert(0, 7 * 10240 - 16)  # Secret crosses a content boundary after 64 KiB.
+                for offset in offsets:
+                    source[offset:offset + len(SOURCE)] = SOURCE
+                path.write_bytes(source)
+                result = self.invoke(['filesystem', *OPTIONS, '--', path.name])
+                self.assertEqual(result.returncode, 0)
+                rows = [json.loads(line) for line in result.stdout.splitlines()]
+                self.assertEqual([r['Raw'] for r in rows], [KEY.decode()] * len(offsets))
+                self.assertEqual([r['SourceMetadata']['Data']['Filesystem']['line'] for r in rows],
+                                 [source[:offset].count(b'\n') + 1 for offset in offsets])
+                hook = self.invoke(['pre-commit', '--', path.name])
+                self.assertEqual(hook.returncode, 183)
+                self.assertIn(f'Found {len(offsets)} potential secret'.encode(), hook.stdout)
+                self.assertNotIn(KEY, hook.stdout + hook.stderr)
+                self.assertEqual(path.read_bytes(), source)
+        path.write_bytes(b'.\n' * (1024 * 1024))
+        result = self.invoke(['pre-commit', '--', path.name])
+        self.assertEqual((result.returncode, result.stdout, result.stderr), (0, b'', b''))
+
+    def test_stream_short_pipe_reads(self):
+        source = bytearray(b'.\n' * (80 * 1024))
+        # Distinct keys avoid stdin's intentional first-result-wins deduplication.
+        encoded = base64.b64encode(b'abyssale ' + KEY[::-1] + b'\n')
+        for offset, value in ((7 * 10240 - 16, SOURCE), (9 * 10240 - 8, encoded)):
+            source[offset:offset + len(value)] = value
+        expected = self.invoke(['stdin', *OPTIONS], source=source)
+        self.assertEqual(expected.returncode, 0)
+        rows = [json.loads(line) for line in expected.stdout.splitlines()]
+        self.assertEqual(len(rows), 2)
+        self.assertEqual({row['DecoderName'] for row in rows}, {'PLAIN', 'BASE64'})
+        process = self.process(stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.ready(process)
+        at = 0
+        while at < len(source):
+            for size in (1, 13, 4091, 19, 511):
+                part = source[at:at + size]
+                process.stdin.write(part)
+                process.stdin.flush()
+                at += len(part)
+        process.stdin.close()
+        process.stdin = None
+        stdout, stderr = process.communicate(timeout=10)
+        self.assertEqual(process.returncode, 0, stderr)
+        self.assertEqual(stdout, expected.stdout)
 
     def test_permission_denied(self):
         # A user-namespace root may still have DAC override. Drop that capability
@@ -182,8 +231,12 @@ class CliFailures(unittest.TestCase):
             with self.subTest(signal=signum):
                 process = self.process(stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 self.ready(process)
-                process.stdin.write(SOURCE)
+                # SIGTERM cancels after several scanned windows, not just a read
+                # of the first window. Buffered findings must still be discarded.
+                source = SOURCE if signum == signal.SIGINT else SOURCE + b'.\n' * 65536
+                process.stdin.write(source)
                 process.stdin.flush()  # Keep stdin open, including after cancellation.
+                self.assertFalse(select.select([process.stdout], [], [], 0.1)[0])
                 process.send_signal(signum)
                 process.wait(timeout=5)
                 stdout, stderr = process.communicate(timeout=5)
@@ -253,22 +306,32 @@ class CliFailures(unittest.TestCase):
                 self.assertEqual(bool(result.stdout), expected == 183)
 
     def test_pre_commit_safe_findings(self):
-        for name in ('--fail', 'with spaces.txt', 'with\nnewline.txt'):
+        for name in ('--fail', 'with spaces.txt', 'with\nnewline.txt', 'with\x1b[31mescape.txt'):
             with self.subTest(name=name):
                 path = self.directory / name
                 path.write_bytes(SOURCE)
                 result = self.invoke(['pre-commit', '--', name])
                 self.assertEqual(result.returncode, 183)
                 self.assertNotIn(KEY, result.stdout + result.stderr)
-                rows = [json.loads(line) for line in result.stdout.splitlines()]
+                self.assertEqual(result.stderr, b'')
+                self.assertEqual(result.stdout.decode().splitlines(), [
+                    'Found 1 potential secret (offline, not verified):',
+                    f'  {json.dumps(name)}:1: Abyssale (PLAIN)', '',
+                    'Remove real credentials, stage the changes, and retry. Credential values are hidden.',
+                ])
+                machine = self.invoke(['pre-commit', '--json', '--', name])
+                self.assertEqual(machine.returncode, 183)
+                self.assertNotIn(KEY, machine.stdout + machine.stderr)
+                rows = [json.loads(line) for line in machine.stdout.splitlines()]
                 self.assertEqual(len(rows), 1)
                 self.assertEqual(set(rows[0]), {'SourceMetadata', 'DetectorType', 'DetectorName', 'DecoderName'})
                 self.assertEqual(rows[0]['DetectorName'], 'Abyssale')
                 self.assertEqual(rows[0]['SourceMetadata']['Data']['Filesystem'], {'file': name, 'line': 1})
                 self.assertEqual(path.read_bytes(), SOURCE)
         (self.directory / 'clean.txt').write_bytes(b'ordinary text\n')
-        result = self.invoke(['pre-commit', '--', 'clean.txt'])
-        self.assertEqual((result.returncode, result.stdout), (0, b''))
+        for extra in ([], ['--json']):
+            result = self.invoke(['pre-commit', *extra, '--', 'clean.txt'])
+            self.assertEqual((result.returncode, result.stdout, result.stderr), (0, b'', b''))
 
     def test_pre_commit_guards(self):
         (self.directory / 'secret.txt').write_bytes(SOURCE)
@@ -290,13 +353,22 @@ class CliFailures(unittest.TestCase):
         self.failed(self.invoke(['pre-commit']), 'requires explicit regular files')
 
     def test_pre_commit_rollback(self):
-        (self.directory / 'secret.txt').write_bytes(SOURCE)
-        (self.directory / 'large.txt').write_bytes(b'x' * 65537)
+        (self.directory / 'secret.txt').write_bytes(b'.\n' * 65536 + SOURCE)
         (self.directory / 'link.txt').symlink_to('secret.txt')
-        for name, diagnostic in (('large.txt', '64 KiB source cap'), ('missing.txt', 'cannot open'),
-                                 ('link.txt', 'cannot open')):
-            with self.subTest(name=name):
-                self.failed(self.invoke(['pre-commit', '--', 'secret.txt', name]), diagnostic)
+        for name in ('missing.txt', 'link.txt'):
+            for extra in ([], ['--json']):
+                with self.subTest(name=name, extra=extra):
+                    self.failed(self.invoke(['pre-commit', *extra, '--', 'secret.txt', name]), 'cannot open')
+
+    def test_pre_commit_full_output_device(self):
+        (self.directory / 'secret.txt').write_bytes(SOURCE)
+        with open('/dev/full', 'wb') as sink:
+            result = subprocess.run([str(BINARY), 'pre-commit', '--', 'secret.txt'],
+                                    cwd=self.directory, stdout=sink, stderr=subprocess.PIPE,
+                                    env=self.env, timeout=10)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn(b'cannot write pre-commit output', result.stderr)
+        self.assertNotIn(KEY, result.stderr)
 
     def test_shared_upstream_outcomes(self):
         if not REFERENCE:

@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <json-c/json.h>
 #include <limits.h>
 #include <poll.h>
@@ -20,7 +21,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define INPUT_LIMIT (64 * 1024)
 #define SOURCE_CONTENT_SIZE (10 * 1024)
 #define SOURCE_PEEK_SIZE (3 * 1024)
 #define DECODE_MAX_DEPTH 5 /* Pinned CLI default; other depth options remain unsupported. */
@@ -122,17 +122,18 @@ static int usage(void)
     return print_line(STDOUT_FILENO, "", "Usage: briar stdin --json --no-verification --include-detectors CSV [OPTIONS]\n"
          "       briar filesystem FILE... --json --no-verification --include-detectors CSV [OPTIONS]\n"
          "       briar pre-commit [--include-detectors CSV] [--exclude-detectors CSV] -- FILE...\n"
-         "Pre-commit: offline implemented/default-enabled detectors, location-only JSON, fail on findings.\n"
+         "Pre-commit: offline implemented/default-enabled detectors, readable findings, fail on findings.\n"
+         "           --json selects location-only JSON; credential values stay hidden.\n"
          "Options: --exclude-detectors CSV\n"
          "         --filter-unverified  --results CSV  --fail\n"
          "stdin/filesystem: explicit supported detector selection required; default/all scans fail.\n"
          "Only selected upstream-enabled implementations run; Abstract remains disabled.\n"
-         "Inputs: explicit regular files or stdin, at most 64 KiB each.\n"
+         "Inputs: explicit regular files or stdin, streamed without a file-size limit.\n"
          "Source chunks: 10 KiB content + 3 KiB forward peek, before decoding.\n"
          "PLAIN runs first; BASE64/UTF16/ESCAPED_UNICODE fan-out iterates to depth five.\n"
          "UTF16 is the pinned printable-ASCII heuristic, not general Unicode decoding.\n"
          "No directory traversal, archives, HTML decoder, depth options, CLI verification/cache,\n"
-         "entropy, custom configuration, non-JSON printers or other sources yet.\n"
+         "entropy, custom configuration, upstream non-JSON printers or other sources yet.\n"
          "Unported options and commands fail explicitly. JSON is newline-delimited.");
 }
 
@@ -191,7 +192,7 @@ static int parse_cli(int argc, char **argv, cli_options *o, char **error)
         o->command = "filesystem";
         if (o->results_set || o->clean)
             return fail(error, "pre-commit does not support result suppression options");
-        o->json = o->no_verification = o->fail = true;
+        o->no_verification = o->fail = true;
     }
     if (!o->command || (strcmp(o->command, "stdin") && strcmp(o->command, "filesystem")))
         return fail(error, "unsupported or missing source command; see --help");
@@ -199,7 +200,7 @@ static int parse_cli(int argc, char **argv, cli_options *o, char **error)
         return fail(error, "stdin takes no paths; filesystem requires explicit regular files");
     if ((!o->include && !o->pre_commit) || (o->include && !*o->include))
         return fail(error, "incomplete detector port: explicit --include-detectors selection required; default/all scans are unavailable");
-    if (!o->json) return fail(error, "unsupported output format: this slice requires --json");
+    if (!o->json && !o->pre_commit) return fail(error, "unsupported output format: this slice requires --json");
     if (!o->no_verification)
         return fail(error, "unsupported CLI verification pipeline: this slice requires --no-verification; injected detector verification is available through ABI 1");
     return 0;
@@ -430,6 +431,34 @@ static br_json *hook_result(br_json *finding)
         }
     }
     return object;
+}
+
+/* Format only the allowlisted projection. JSON quoting keeps filename control
+ * characters from injecting terminal escapes or additional diagnostic lines. */
+static br_json *hook_line(br_json *safe)
+{
+    br_json *metadata = NULL, *data = NULL, *file = NULL, *path = NULL;
+    br_json *line = NULL, *detector = NULL, *decoder = NULL;
+    if (!json_object_object_get_ex(safe, "SourceMetadata", &metadata) ||
+        !json_object_object_get_ex(metadata, "Data", &data) ||
+        !json_object_object_get_ex(data, "Filesystem", &file) ||
+        !json_object_object_get_ex(file, "file", &path) ||
+        !json_object_object_get_ex(file, "line", &line) ||
+        !json_object_object_get_ex(safe, "DetectorName", &detector) ||
+        !json_object_object_get_ex(safe, "DecoderName", &decoder)) return NULL;
+    const char *filename = json_object_to_json_string_ext(path,
+        JSON_C_TO_STRING_PLAIN | JSON_C_TO_STRING_NOSLASHESCAPE);
+    const char *name = json_object_get_string(detector), *codec = json_object_get_string(decoder);
+    if (!filename || !name || !codec) return NULL;
+    int64_t number = json_object_get_int64(line);
+    int size = snprintf(NULL, 0, "  %s:%" PRId64 ": %s (%s)", filename, number, name, codec);
+    if (size < 0) return NULL;
+    char *text = malloc((size_t)size + 1);
+    if (!text) return NULL;
+    snprintf(text, (size_t)size + 1, "  %s:%" PRId64 ": %s (%s)", filename, number, name, codec);
+    br_json *formatted = json_object_new_string_len(text, size);
+    free(text);
+    return formatted;
 }
 
 static int append_output(br_json *output, br_json *keys, const result_frame *f, char **error)
@@ -692,54 +721,51 @@ static int scan_decoders(const cli_options *o, const source_frame *source,
     return rc;
 }
 
-static int scan_chunks(const cli_options *o, const source_frame *source,
-                        const br_scan_ctx *ctx, const br_native_http *http,
-                        br_prefilter *prefilter, br_json *output,
-                        br_json *keys, char **error)
+static int scan_input(int fd, const cli_options *o, const source_frame *source,
+                      const br_scan_ctx *ctx, const br_native_http *http,
+                      br_prefilter *prefilter, br_json *output,
+                      br_json *keys, char **error)
 {
+    unsigned char data[SOURCE_CONTENT_SIZE + SOURCE_PEEK_SIZE];
+    size_t len = 0;
+    bool eof = false;
     int64_t first_line = 1;
-    for (size_t start = 0; start < source->original.len;) {
+    for (;;) {
+        /* Fill a complete content+peek view even after short pipe reads. Read
+         * ahead is retained for the next view, so boundaries do not depend on
+         * producer write sizes and each raw byte is read only once. */
+        while (!eof && len < sizeof(data)) {
+            if (stopped) return fail(error, "context canceled");
+            struct pollfd pfd = { .fd = fd, .events = POLLIN };
+            int ready = poll(&pfd, 1, 100);
+            if (ready < 0 && errno == EINTR) continue;
+            if (ready < 0) return fail(error, "input poll failed");
+            if (!ready) continue;
+            ssize_t n = read(fd, data + len, sizeof(data) - len);
+            if (n < 0 && (errno == EINTR || errno == EAGAIN)) continue;
+            if (n < 0) return fail(error, "input read failed");
+            if (!n) eof = true;
+            else len += (size_t)n;
+        }
         if (stopped) return fail(error, "context canceled");
-        size_t remaining = source->original.len - start;
-        size_t content = remaining < SOURCE_CONTENT_SIZE ? remaining : SOURCE_CONTENT_SIZE;
-        size_t view_len = remaining < content + SOURCE_PEEK_SIZE ? remaining : content + SOURCE_PEEK_SIZE;
+        if (!len) return 0;
+        size_t content = len < SOURCE_CONTENT_SIZE ? len : SOURCE_CONTENT_SIZE;
         source_frame chunk = *source;
         chunk.first_line = first_line;
         /* OriginalData is this raw content+peek view, never the decoded window. */
-        chunk.original = (br_slice){ source->original.data + start, view_len };
+        chunk.original = (br_slice){ data, len };
         int rc = scan_decoders(o, &chunk, ctx, http, prefilter, output, keys, error);
         if (rc) return rc;
-        /* Peek bytes are read again as content in the next chunk. Stdin has no
-         * line/ignore metadata, while filesystem advances only over raw content. */
-        if (source->source_type == 15)
-            first_line += newline_count((br_slice){source->original.data + start, content});
-        start += content;
+        /* Stdin has no line/ignore metadata. Advance filesystem line numbers
+         * over content only, not the retained forward peek. */
+        if (source->source_type == 15) {
+            int64_t lines = newline_count((br_slice){data, content});
+            if (lines > INT64_MAX - first_line) return fail(error, "filesystem line number overflow");
+            first_line += lines;
+        }
+        len -= content;
+        memmove(data, data + content, len);
     }
-    return 0;
-}
-
-static int read_input(int fd, br_bytes *input, char **error)
-{
-    unsigned char *data = malloc(INPUT_LIMIT + 1);
-    if (!data) return fail(error, "out of memory reading input");
-    size_t len = 0;
-    for (;;) {
-        if (stopped) { free(data); return fail(error, "context canceled"); }
-        struct pollfd pfd = { .fd = fd, .events = POLLIN };
-        int ready = poll(&pfd, 1, 100);
-        if (ready < 0 && errno == EINTR) continue;
-        if (ready < 0) { free(data); return fail(error, "input poll failed"); }
-        if (!ready) continue;
-        ssize_t n = read(fd, data + len, INPUT_LIMIT + 1 - len);
-        if (n < 0 && (errno == EINTR || errno == EAGAIN)) continue;
-        if (n < 0) { free(data); return fail(error, "input read failed"); }
-        if (!n) break;
-        len += (size_t)n;
-        if (len > INPUT_LIMIT) { free(data); return fail(error, "unsupported: input exceeds the 64 KiB source cap"); }
-    }
-    input->data = data;
-    input->len = len;
-    return 0;
 }
 
 static int open_input(const char *path, int *out, char **error)
@@ -816,49 +842,64 @@ int main(int argc, char **argv)
     ctx.transport = br_native_http_raw(http);
     output = json_object_new_array(); keys = json_object_new_object();
     if (!output || !keys) { fail(&error, "out of memory initializing output"); goto done; }
-    char notice[320];
-    if (options.pre_commit)
-        snprintf(notice, sizeof(notice), "pre-commit: %zu implemented/default-enabled detector(s); offline, 64 KiB/file; incomplete TruffleHog parity", nselected);
-    else
+    if (!options.pre_commit) {
+        char notice[320];
         snprintf(notice, sizeof(notice), "limited native slice, %zu explicitly selected enabled detector(s); 10 KiB + 3 KiB source chunks, PLAIN/BASE64/UTF16/ESCAPED_UNICODE only (decode depth five), no HTML decoder or CLI verification", nselected);
-    if (print_line(STDERR_FILENO, "briar: ", notice)) { fail(&error, "cannot write scan diagnostic"); goto done; }
+        if (print_line(STDERR_FILENO, "briar: ", notice)) { fail(&error, "cannot write scan diagnostic"); goto done; }
+    }
     size_t nsources = !strcmp(options.command, "stdin") ? 1 : options.npaths;
     for (size_t i = 0; i < nsources; ++i) {
         bool is_stdin = !strcmp(options.command, "stdin");
         int fd = STDIN_FILENO;
         if (!is_stdin && open_input(options.paths[i], &fd, &error)) goto done;
-        br_bytes input = {0};
-        int read_rc = read_input(fd, &input, &error);
-        /* Always close owned input; retain a prior read error if close also fails. */
-        if (!is_stdin && close(fd) && !read_rc) read_rc = fail(&error, "cannot close filesystem input");
-        if (read_rc) { free(input.data); goto done; }
         source_frame source = {
             .source_id = 1, .job_id = 1, .secret_id = 0, .first_line = 1,
             .source_type = is_stdin ? 40 : 15,
             .source_name = is_stdin ? "trufflehog - stdin" : "trufflehog - filesystem",
-            .path = is_stdin ? NULL : options.paths[i], .original = { input.data, input.len },
+            .path = is_stdin ? NULL : options.paths[i],
         };
-        int scan_rc = scan_chunks(&options, &source, &ctx, http, prefilter, output, keys, &error);
-        free(input.data);
+        int scan_rc = scan_input(fd, &options, &source, &ctx, http, prefilter, output, keys, &error);
+        /* Always close owned input; retain a prior scan error if close also fails. */
+        if (!is_stdin && close(fd) && !scan_rc) scan_rc = fail(&error, "cannot close filesystem input");
         if (scan_rc) goto done;
     }
     if (stopped) { fail(&error, "context canceled"); goto done; }
+    bool human = options.pre_commit && !options.json;
+    size_t nfindings = json_object_array_length(output);
     if (options.pre_commit) {
-        /* Finish projection before printing, preserving scan-failure rollback. */
-        for (size_t i = 0; i < json_object_array_length(output); ++i) {
+        /* Finish projection and formatting before printing, preserving rollback. */
+        for (size_t i = 0; i < nfindings; ++i) {
             br_json *safe = hook_result(json_object_array_get_idx(output, i));
+            if (safe && human) {
+                br_json *formatted = hook_line(safe);
+                json_object_put(safe);
+                safe = formatted;
+            }
             if (!safe || json_object_array_put_idx(output, i, safe)) {
                 json_object_put(safe);
                 fail(&error, "cannot construct pre-commit output"); goto done;
             }
         }
     }
-    for (size_t i = 0; i < json_object_array_length(output); ++i) {
-        const char *line = json_object_to_json_string_ext(json_object_array_get_idx(output, i),
-                                                        JSON_C_TO_STRING_PLAIN | JSON_C_TO_STRING_NOSLASHESCAPE);
-        if (!line || print_line(STDOUT_FILENO, "", line)) { fail(&error, "cannot write JSON output"); goto done; }
+    if (human && nfindings) {
+        char summary[128];
+        snprintf(summary, sizeof(summary), "Found %zu potential secret%s (offline, not verified):",
+                 nfindings, nfindings == 1 ? "" : "s");
+        if (print_line(STDOUT_FILENO, "", summary)) { fail(&error, "cannot write pre-commit output"); goto done; }
     }
-    rc = options.fail && json_object_array_length(output) ? 183 : 0;
+    for (size_t i = 0; i < nfindings; ++i) {
+        br_json *item = json_object_array_get_idx(output, i);
+        const char *line = human ? json_object_get_string(item) : json_object_to_json_string_ext(item,
+            JSON_C_TO_STRING_PLAIN | JSON_C_TO_STRING_NOSLASHESCAPE);
+        if (!line || print_line(STDOUT_FILENO, "", line)) {
+            fail(&error, human ? "cannot write pre-commit output" : "cannot write JSON output"); goto done;
+        }
+    }
+    if (human && nfindings && print_line(STDOUT_FILENO, "",
+        "\nRemove real credentials, stage the changes, and retry. Credential values are hidden.")) {
+        fail(&error, "cannot write pre-commit output"); goto done;
+    }
+    rc = options.fail && nfindings ? 183 : 0;
 done:
     /* Already failing; intentionally discard a final diagnostic write failure. */
     if (rc && rc != 183) (void)print_line(STDERR_FILENO, "briar: ", error ? error : "scan failed");

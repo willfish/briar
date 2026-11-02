@@ -52,7 +52,7 @@ direnv exec . build/briar filesystem ./file.txt \
 
 The `stdin` and `filesystem` commands currently support:
 
-- Stdin or explicitly named regular files, capped at **64 KiB per source**.
+- Stdin or explicitly named regular files, streamed without a file-size limit.
 - Explicit detector selection and JSON findings, including multipart credentials.
 - PLAIN/UTF8, Base64, UTF16 and escaped-Unicode decoding.
 
@@ -63,20 +63,22 @@ secrets**; treat the output as sensitive.
 ## Pre-commit with Docker
 
 Reference this repository from `.pre-commit-config.yaml`, pinning a reviewed
-commit that contains the hook. The private repository requires Git access.
+commit that contains the hook. HTTPS access to the public repository requires no
+GitHub credentials.
 
 ```yaml
 repos:
-  - repo: ssh://git@github.com/willfish/briar
+  - repo: https://github.com/willfish/briar
     rev: <full-commit-sha>
     hooks:
       - id: briar
 ```
 
 The hook scans implemented, default-enabled detectors without verification and
-fails on findings or errors. It reports locations, not credential contents.
-**Files above 64 KiB fail rather than being silently skipped.** Docker builds a
-minimal `scratch` image from the pinned revision; cache its build layers in CI.
+fails on findings or errors. Clean runs are quiet; findings show file, line and
+detector, never credential contents. Input streams through a fixed-size buffer;
+large files are not skipped or truncated. Docker builds a minimal `scratch` image
+from the pinned revision; cache its build layers in CI.
 The measured Linux amd64 image is **9.44 MB unpacked**, including static libraries
 and notices, or **3.98 MB** as a gzipped Docker-save archive. The earlier executable
 benchmarks do not include Docker or pre-commit overhead.
