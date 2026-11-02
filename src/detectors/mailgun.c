@@ -63,6 +63,7 @@ static void mg_discard_items(mg_doc *doc)
 static int mg_grow_items(mg_doc *doc, size_t n)
 {
     if (n <= doc->cap) return 0;
+    if (n > SIZE_MAX / sizeof(*doc->items)) return -1;
     mg_item *items = realloc(doc->items, n * sizeof(*items));
     if (!items) return -1;
     memset(items + doc->cap, 0, (n - doc->cap) * sizeof(*items));
@@ -86,6 +87,7 @@ static int mg_type(mg_doc *doc, br_json *value, const char *field, const char *e
 
 static int mg_copy(char **slot, size_t *len, br_slice text)
 {
+    if (text.len == SIZE_MAX) return -1;
     char *owned = malloc(text.len + 1);
     if (!owned) return -1;
     if (text.len && text.data) memcpy(owned, text.data, text.len);
@@ -239,10 +241,11 @@ static int domains_text(const mg_doc *doc, char **out, size_t *out_len)
     size_t total = 0;
     for (size_t i = 0; i < doc->len; ++i) {
         const mg_item *item = &doc->items[i];
-        size_t piece = item->name_len + item->state_len + item->type_len + 4;
-        if (item->disabled) piece += 9;
-        if (i) piece += 2;
-        if (piece > SIZE_MAX - total) return -1;
+        size_t fixed = 4 + (item->disabled ? 9 : 0) + (i ? 2 : 0);
+        if (item->name_len > SIZE_MAX - fixed || item->state_len > SIZE_MAX - fixed - item->name_len ||
+            item->type_len > SIZE_MAX - fixed - item->name_len - item->state_len) return -1;
+        size_t piece = item->name_len + item->state_len + item->type_len + fixed;
+        if (total == SIZE_MAX || piece > SIZE_MAX - total - 1) return -1;
         total += piece;
     }
     char *text = malloc(total + 1);
