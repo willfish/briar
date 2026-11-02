@@ -22,6 +22,7 @@ static char *dup_span(const unsigned char *data, br_span span)
 {
     if (span.begin == SIZE_MAX || span.end < span.begin) return NULL;
     size_t n = span.end - span.begin;
+    if (n == SIZE_MAX) return NULL;
     char *copy = malloc(n + 1);
     if (!copy) return NULL;
     memcpy(copy, data + span.begin, n);
@@ -34,6 +35,7 @@ static int take_twist(void *user, const br_span *groups, size_t ngroups)
     twist_box *box = user;
     if (ngroups < 2) return fail(&box->error, "invalid Twist capture");
     if (box->len == box->cap) {
+        if (box->cap > SIZE_MAX / sizeof(*box->items) / 2) return fail(&box->error, "too many Twist matches");
         size_t cap = box->cap ? box->cap * 2 : 4;
         twist_hit *items = realloc(box->items, cap * sizeof(*items));
         if (!items) return fail(&box->error, "cannot retain Twist token");
