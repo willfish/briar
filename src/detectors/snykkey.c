@@ -35,6 +35,7 @@ static void snyk_user_clear(snyk_user *user)
 
 static int snyk_store(char **slot, size_t *len, br_slice text)
 {
+    if (text.len == SIZE_MAX) return -1;
     char *copy = malloc(text.len + 1);
     if (!copy) return -1;
     if (text.len && text.data) memcpy(copy, text.data, text.len);
@@ -64,6 +65,7 @@ static void snyk_discard_orgs(snyk_user *user)
 static int snyk_grow_orgs(snyk_user *user, size_t n)
 {
     if (n <= user->cap) return 0;
+    if (n > SIZE_MAX / sizeof(*user->orgs)) return -1;
     snyk_org_slot *orgs = realloc(user->orgs, n * sizeof(*orgs));
     if (!orgs) return -1;
     memset(orgs + user->cap, 0, (n - user->cap) * sizeof(*orgs));
@@ -166,7 +168,7 @@ static int snyk_extra(snyk_user *user, br_result *result)
     if (user->norgs) {
         size_t total = user->norgs - 1;
         for (size_t i = 0; i < user->norgs; ++i) {
-            if (user->orgs[i].len > SIZE_MAX - total) {
+            if (total == SIZE_MAX || user->orgs[i].len > SIZE_MAX - total - 1) {
                 json_object_put(extra);
                 return -1;
             }
