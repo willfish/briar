@@ -337,9 +337,18 @@ static int owned_send(void *user, const br_scan_ctx *ctx, const br_http_request 
         if (stop) { rc = fail(error, stop); break; }
         int64_t until = now + 5;
         if (until > deadline) until = deadline;
+#ifdef __APPLE__
+        /* Darwin lacks pthread_condattr_setclock. Relative waits avoid mixing
+         * a monotonic deadline with the condition variable's realtime clock. */
+        int64_t remaining = until - now;
+        struct timespec wake = {.tv_sec = (time_t)(remaining / 1000),
+                                .tv_nsec = (long)(remaining % 1000) * 1000000};
+        pthread_cond_timedwait_relative_np(&c->changed, &c->mutex, &wake);
+#else
         struct timespec wake = {.tv_sec = (time_t)(until / 1000),
                                 .tv_nsec = (long)(until % 1000) * 1000000};
         pthread_cond_timedwait(&c->changed, &c->mutex, &wake);
+#endif
     }
     flight_put(f);
     --c->active;
@@ -374,7 +383,10 @@ int br_http_client_init(br_http_client **out, br_http_owned_backend backend,
     if (pthread_mutex_init(&c->mutex, NULL)) goto failed;
     pthread_condattr_t attr;
     if (pthread_condattr_init(&attr)) goto mutex_failed;
-    int rc = pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
+    int rc = 0;
+#ifndef __APPLE__
+    rc = pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
+#endif
     if (!rc) rc = pthread_cond_init(&c->changed, &attr);
     pthread_condattr_destroy(&attr);
     if (rc) goto mutex_failed;
