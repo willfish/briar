@@ -5,6 +5,9 @@ PKG_CONFIG ?= pkg-config
 BUILD_DIR ?= build
 LIB_PACKAGES := libpcre2-8 libcurl json-c libcrypto libxml-2.0
 CPPFLAGS += -Iinclude -D_POSIX_C_SOURCE=200809L $(shell $(PKG_CONFIG) --cflags $(LIB_PACKAGES))
+ifeq ($(shell uname -s),Darwin)
+CPPFLAGS += -D_DARWIN_C_SOURCE
+endif
 CFLAGS ?= -O2 -g
 override CFLAGS += -std=c17 -Wall -Wextra -Wpedantic -Werror -pthread
 LDLIBS += $(shell $(PKG_CONFIG) --libs $(LIB_PACKAGES)) -lm
