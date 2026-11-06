@@ -6,6 +6,10 @@
 #include <time.h>
 
 #define SLICE(value) ((br_slice){(const unsigned char *)(value), sizeof(value) - 1})
+#define UNAUTHORIZED "{\"error\":\"unauthorized_client\"}"
+#define INVALID "{\"error\":\"invalid_client\"}"
+#define UNKNOWN "unauthorized_client: cannot verify incomplete Box credentials without an enterprise, user, or subject id found nearby"
+#define REJECTED UNKNOWN "; no nearby subject ID was accepted"
 static char id0[33], id1[33], secret0[33], secret1[33], secret2[33];
 static const char status_503[] = "unexpected HTTP response status 503";
 static bool fail_status_copy;
@@ -228,20 +232,24 @@ static void test_extraction_and_products(const br_detector *detector)
     expect_results(detector, NULL, false, &input, unequal, 3);
 }
 
-static void test_base_status_and_marker_priority(const br_detector *detector)
+static void test_base_status_and_error_codes(const br_detector *detector)
 {
     fixture input = pair_input();
     const struct { int status; br_slice body; bool verified; const char *error; } cases[] = {
-        {400, SLICE("unauthorized_client"), true, NULL},
-        {400, SLICE("invalid_client"), false, NULL},
-        {400, SLICE("invalid_client before unauthorized_client"), true, NULL},
-        {400, SLICE("\xff\0unauthorized_client invalid_client"), true, NULL},
-        {400, SLICE("\xff\0invalid_client"), false, NULL},
-        {400, SLICE("UNAUTHORIZED_CLIENT"), false, "response body missing expected keyword"},
-        {400, {NULL, 0}, false, "response body missing expected keyword"},
-        {200, SLICE("unauthorized_client"), false, "unexpected HTTP response status 200"},
-        {401, SLICE("invalid_client"), false, "unexpected HTTP response status 401"},
-        {403, SLICE("unauthorized_client"), false, "unexpected HTTP response status 403"},
+        {400, SLICE(UNAUTHORIZED), false, UNKNOWN},
+        {400, SLICE(INVALID), false, NULL},
+        {400, SLICE("{\"error\":\"invalid_client\",\"error_description\":\"unauthorized_client\"}"), false, NULL},
+        {400, SLICE("invalid_client before unauthorized_client"), false, "failed to decode token error response"},
+        {400, SLICE("\xff\0unauthorized_client invalid_client"), false, "failed to decode token error response"},
+        {400, SLICE("{\"error\":42}"), false, "failed to decode token error response"},
+        {400, SLICE("[]"), false, "failed to decode token error response"},
+        {400, SLICE("{\"error\":\"invalid_request\"}"), false, "unexpected token error"},
+        {400, SLICE("{\"error_description\":\"invalid_client unauthorized_client\"}"), false, "unexpected token error"},
+        {400, SLICE("{\"error\":\"invalid_client\\u0000unauthorized_client\"}"), false, "unexpected token error"},
+        {400, {NULL, 0}, false, "failed to decode token error response"},
+        {200, SLICE(UNAUTHORIZED), false, "unexpected HTTP response status 200"},
+        {401, SLICE(INVALID), false, "unexpected HTTP response status 401"},
+        {403, SLICE(UNAUTHORIZED), false, "unexpected HTTP response status 403"},
     };
     for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
         reply step = {.id = id0, .secret = secret0, .status = cases[i].status, .body = cases[i].body,
@@ -251,12 +259,12 @@ static void test_base_status_and_marker_priority(const br_detector *detector)
     }
     char cause[192], redacted[192];
     snprintf(cause, sizeof(cause), "id=%s secret=%s repeat=%s", id0, secret0, id0);
-    snprintf(redacted, sizeof(redacted), "id=[REDACTED] secret=%s repeat=[REDACTED]", secret0);
+    snprintf(redacted, sizeof(redacted), "id=[REDACTED] secret=[REDACTED] repeat=[REDACTED]");
     reply step = {.id = id0, .secret = secret0, .status = 400, .body = SLICE("\0unauthorized_client invalid_client"), .body_error = cause};
     expected_result expected = {.id = id0, .secret = secret0, .error = redacted};
     run_script(detector, &input, &step, 1, &expected, 1); /* ReadAll error preempts even complete markers. */
     step.body_error = NULL; step.send_rc = 1; step.send_error = cause;
-    run_script(detector, &input, &step, 1, &expected, 1); /* Secret stays unredacted; only ID is passed. */
+    run_script(detector, &input, &step, 1, &expected, 1); /* Both credentials are redacted. */
     step.send_rc = -1; step.send_error = NULL; expected.error = "HTTP transport failed";
     run_script(detector, &input, &step, 1, &expected, 1);
     step.send_rc = 1; step.send_error = "unsupported: redirects for native HTTP POST"; expected.error = step.send_error;
@@ -271,25 +279,25 @@ static void add_unsorted_subjects(fixture *input)
     field(input, "subject", "000123");
 }
 
-static void test_sorted_subjects_and_fallback(const br_detector *detector)
+static void test_ranked_subjects_and_fallback(const br_detector *detector)
 {
     fixture input = pair_input(); add_unsorted_subjects(&input);
     const reply replies[] = {
-        {.id = id0, .secret = secret0, .status = 400, .body = SLICE("unauthorized_client")},
-        {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "000123", .status = 400},
-        {.id = id0, .secret = secret0, .subject_type = "user", .subject = "000123", .status = 401},
-        {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "1000000", .status = 200,
+        {.id = id0, .secret = secret0, .status = 400, .body = SLICE(UNAUTHORIZED)},
+        {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "1000000", .status = 400},
+        {.id = id0, .secret = secret0, .subject_type = "user", .subject = "1000000", .status = 401},
+        {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "000123", .status = 200,
          .send_rc = 1, .send_error = "suppressed synthetic probe error"},
-        {.id = id0, .secret = secret0, .subject_type = "user", .subject = "1000000", .status = 200,
+        {.id = id0, .secret = secret0, .subject_type = "user", .subject = "000123", .status = 200,
          .body = SLICE("\xff\0ignored token data"), .body_error = "ignored probe read error"},
     };
-    expected_result expected = {.id = id0, .secret = secret0, .subject = "1000000", .verified = true};
+    expected_result expected = {.id = id0, .secret = secret0, .subject = "000123", .verified = true};
     run_script(detector, &input, replies, 5, &expected, 1); /* No 999999 probes after user succeeds. */
     const reply leading_zero[] = {
-        replies[0], {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "000123", .status = 200},
+        replies[0], {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "1000000", .status = 200},
     };
-    expected.subject = "000123";
-    run_script(detector, &input, leading_zero, 2, &expected, 1); /* Preserve zeros; skip user and later subjects. */
+    expected.subject = "1000000";
+    run_script(detector, &input, leading_zero, 2, &expected, 1); /* Skip user and later subjects after success. */
     input = pair_input();
     field(&input, "enterprise", "12345"); /* Too short. */
     field(&input, "subject", "123456789012345678901"); /* Too long. */
@@ -303,21 +311,69 @@ static void test_sorted_subjects_and_fallback(const br_detector *detector)
     run_script(detector, &input, bounded, 2, &expected, 1);
 }
 
-static void test_all_probes_fail_but_base_stays_verified(const br_detector *detector)
+static void test_subject_cap_and_ranking(const br_detector *detector)
 {
-    fixture input = pair_input(); field(&input, "secret", secret1); add_unsorted_subjects(&input);
+    fixture input = pair_input();
+    const char *ids[] = {"1000001", "1000002", "1000003", "1000004", "1000005", "1000006", "1000007"};
+    for (size_t i = 0; i < 7; ++i) field(&input, "user_id", ids[i]);
+    reply replies[11] = {{.id = id0, .secret = secret0, .status = 400, .body = SLICE(UNAUTHORIZED)}};
+    for (size_t i = 0; i < 5; ++i) {
+        replies[1 + 2*i] = (reply){.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = ids[i], .status = 400};
+        replies[2 + 2*i] = (reply){.id = id0, .secret = secret0, .subject_type = "user", .subject = ids[i], .status = 400};
+    }
+    expected_result expected = {.id = id0, .secret = secret0,
+        .error = REJECTED " (tried 5 of 7 subject ID candidates)"};
+    run_script(detector, &input, replies, 11, &expected, 1);
+
+    /* A late strong label outranks all seven weak IDs and duplicate strong
+     * evidence promotes an existing ID without losing first occurrence. */
+    field(&input, "ENTERPRISE_ID", ids[6]);
+    field(&input, "box_subject", "000123");
+    const reply success[] = {
+        replies[0], {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = ids[6], .status = 200},
+    };
+    expected = (expected_result){.id = id0, .secret = secret0, .subject = ids[6], .verified = true};
+    run_script(detector, &input, success, 2, &expected, 1);
+
+    input = pair_input();
+    field(&input, "user", "8888888");
+    field(&input, "owner user: bob enterprise_id:", "1234567");
+    const reply nearest[] = {
+        replies[0], {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "1234567", .status = 200},
+    };
+    expected.subject = "1234567";
+    run_script(detector, &input, nearest, 2, &expected, 1);
+
+    input = pair_input(); field(&input, "user", "8888888"); field(&input, "box_subject", "2345678");
+    const reply box_label[] = {
+        replies[0], {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "2345678", .status = 200},
+    };
+    expected.subject = "2345678";
+    run_script(detector, &input, box_label, 2, &expected, 1);
+
+    /* A definite invalid pair never consumes subject requests. */
+    const reply invalid = {.id = id0, .secret = secret0, .status = 400, .body = SLICE(INVALID)};
+    expected = (expected_result){.id = id0, .secret = secret0};
+    run_script(detector, &input, &invalid, 1, &expected, 1);
+}
+
+static void test_all_probes_fail_stays_unknown(const br_detector *detector)
+{
+    fixture input = pair_input(); field(&input, "secret", secret1); field(&input, "enterprise", "000123");
     const reply replies[] = {
-        {.id = id0, .secret = secret0, .status = 400, .body = SLICE("unauthorized_client")},
+        {.id = id0, .secret = secret0, .status = 400, .body = SLICE(UNAUTHORIZED)},
         {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "000123", .status = 200,
          .send_rc = -1, .send_error = "unsupported: redirects for native HTTP POST"},
         {.id = id0, .secret = secret0, .subject_type = "user", .subject = "000123", .status = 401},
-        {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "1000000", .status = 200, .send_rc = 1},
-        {.id = id0, .secret = secret0, .subject_type = "user", .subject = "1000000", .status = 400, .body_error = "ignored"},
-        {.id = id0, .secret = secret0, .subject_type = "enterprise", .subject = "999999", .status = 503},
-        {.id = id0, .secret = secret0, .subject_type = "user", .subject = "999999", .status = 201},
+        {.id = id0, .secret = secret1, .status = 400, .body = SLICE(UNAUTHORIZED)},
+        {.id = id0, .secret = secret1, .subject_type = "enterprise", .subject = "000123", .status = 503},
+        {.id = id0, .secret = secret1, .subject_type = "user", .subject = "000123", .status = 201},
     };
-    const expected_result expected = {.id = id0, .secret = secret0, .verified = true};
-    run_script(detector, &input, replies, 7, &expected, 1); /* Still break secrets; never send secret1. */
+    const expected_result expected[] = {
+        {.id = id0, .secret = secret0, .error = REJECTED},
+        {.id = id0, .secret = secret1, .error = REJECTED},
+    };
+    run_script(detector, &input, replies, 6, expected, 2); /* Unknown must not suppress a later secret. */
 }
 
 static void test_inner_break_and_secret_reuse(const br_detector *detector)
@@ -325,23 +381,26 @@ static void test_inner_break_and_secret_reuse(const br_detector *detector)
     fixture input = {0};
     field(&input, "id", id0); field(&input, "id", id1);
     field(&input, "secret", secret0); field(&input, "secret", secret1); field(&input, "secret", secret2);
+    field(&input, "enterprise", "000123");
     const reply replies[] = {
-        {.id = id0, .secret = secret0, .status = 400, .body = SLICE("invalid_client")},
-        {.id = id0, .secret = secret1, .status = 400, .body = SLICE("unauthorized_client")},
-        {.id = id1, .secret = secret0, .status = 400, .body = SLICE("invalid_client")},
-        {.id = id1, .secret = secret1, .status = 400, .body = SLICE("unauthorized_client")},
+        {.id = id0, .secret = secret0, .status = 400, .body = SLICE(INVALID)},
+        {.id = id0, .secret = secret1, .status = 400, .body = SLICE(UNAUTHORIZED)},
+        {.id = id0, .secret = secret1, .subject_type = "enterprise", .subject = "000123", .status = 200},
+        {.id = id1, .secret = secret0, .status = 400, .body = SLICE(INVALID)},
+        {.id = id1, .secret = secret1, .status = 400, .body = SLICE(UNAUTHORIZED)},
+        {.id = id1, .secret = secret1, .subject_type = "enterprise", .subject = "000123", .status = 200},
     };
     const expected_result expected[] = {
-        {.id = id0, .secret = secret0}, {.id = id0, .secret = secret1, .verified = true},
-        {.id = id1, .secret = secret0}, {.id = id1, .secret = secret1, .verified = true},
+        {.id = id0, .secret = secret0}, {.id = id0, .secret = secret1, .subject = "000123", .verified = true},
+        {.id = id1, .secret = secret0}, {.id = id1, .secret = secret1, .subject = "000123", .verified = true},
     };
-    run_script(detector, &input, replies, 4, expected, 4); /* secret1 reused across IDs; secret2 never attempted. */
+    run_script(detector, &input, replies, 6, expected, 4); /* secret1 reused across IDs; secret2 never attempted. */
 }
 
 static void test_context_and_creation(const br_detector *detector)
 {
     fixture input = pair_input();
-    reply step = {.id = id0, .secret = secret0, .status = 400, .body = SLICE("unauthorized_client")};
+    reply step = {.id = id0, .secret = secret0, .status = 400, .body = SLICE(UNAUTHORIZED)};
     script steps = {.steps = &step, .count = 1, .timeout_limit = 2000};
     test_http http = {.inspect = inspect_request, .user = &steps};
     br_transport transport = test_transport(&http);
@@ -349,7 +408,7 @@ static void test_context_and_creation(const br_detector *detector)
     CHECK(clock_gettime(CLOCK_MONOTONIC, &now) == 0);
     int64_t deadline = (int64_t)now.tv_sec * 1000 + now.tv_nsec / 1000000 + steps.timeout_limit;
     br_scan_ctx ctx = {.transport = &transport, .cancelled = cancelled, .cancel_user = &steps, .deadline_monotonic_ms = deadline};
-    expected_result expected = {.id = id0, .secret = secret0, .verified = true};
+    expected_result expected = {.id = id0, .secret = secret0, .error = UNKNOWN};
     expect_results(detector, &ctx, true, &input, &expected, 1);
     CHECK(http.calls == 1 && http.releases == 1 && ctx.deadline_monotonic_ms == deadline);
     http.calls = http.releases = 0;
@@ -370,13 +429,14 @@ static void test_context_and_creation(const br_detector *detector)
     expect_results(detector, NULL, true, &input, &expected, 1);
     steps.cancel = false; steps.timeout_limit = 0;
     http.calls = http.releases = 0;
-    expected.verified = true; expected.error = NULL;
+    expected.error = UNKNOWN;
     expect_results(detector, &ctx, true, &input, &expected, 1);
     CHECK(http.calls == 1 && http.releases == 1);
     /* Cancellation becomes active only AFTER a valid base response. Probe Do
      * errors remain suppressed, all enterprise/user attempts still occur. */
     field(&input, "subject", "999999"); field(&input, "enterprise", "000123");
     step.cancel_after = true;
+    expected.error = REJECTED;
     http.calls = http.releases = 0;
     expect_results(detector, &ctx, true, &input, &expected, 1);
     CHECK(http.calls == 1 && http.releases == 5); /* Base + four rejected probe sends, no subject metadata. */
@@ -386,7 +446,7 @@ static void test_positive_setter_failure_and_rollback(const br_detector *detecto
 {
     fixture input = {0}; field(&input, "id", id0); field(&input, "id", id1); field(&input, "secret", secret0);
     const reply replies[] = {
-        {.id = id0, .secret = secret0, .status = 400, .body = SLICE("unauthorized_client")},
+        {.id = id0, .secret = secret0, .status = 400, .body = SLICE(UNAUTHORIZED)},
         {.id = id1, .secret = secret0, .status = 503},
     };
     script steps = {.steps = replies, .count = 2};
@@ -403,7 +463,7 @@ static void test_positive_setter_failure_and_rollback(const br_detector *detecto
     CHECK(results.items[0].raw.data == saved && results.items[0].detector_type == 777);
     free(error); br_results_clear(&results);
     const expected_result expected[] = {
-        {.id = id0, .secret = secret0, .verified = true}, {.id = id1, .secret = secret0, .error = status_503},
+        {.id = id0, .secret = secret0, .error = UNKNOWN}, {.id = id1, .secret = secret0, .error = status_503},
     };
     run_script(detector, &input, replies, 2, expected, 2);
 }
@@ -415,11 +475,12 @@ int main(void)
     id0[0] = 'A'; id1[0] = 'B'; secret0[0] = 'C'; secret1[0] = 'D'; secret2[0] = 'E';
     const br_detector *detector = test_descriptor();
     test_extraction_and_products(detector);
-    test_base_status_and_marker_priority(detector);
-    test_sorted_subjects_and_fallback(detector);
-    test_all_probes_fail_but_base_stays_verified(detector);
+    test_base_status_and_error_codes(detector);
+    test_ranked_subjects_and_fallback(detector);
+    test_subject_cap_and_ranking(detector);
+    test_all_probes_fail_stays_unknown(detector);
     test_inner_break_and_secret_reuse(detector);
     test_context_and_creation(detector);
     test_positive_setter_failure_and_rollback(detector);
-    return test_finish("BoxOauth unique pairs + sorted subject probes + response ownership");
+    return test_finish("BoxOauth unique pairs + bounded ranked subject probes + response ownership");
 }
