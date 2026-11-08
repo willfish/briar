@@ -7,6 +7,31 @@ an upstream implementation that supports it.
 
 ## Run
 
+The required local and CI acceptance gate is:
+
+```sh
+make check-container
+```
+
+It needs Docker, Make, Python 3 and pre-commit on the host, not host Nix or a C
+toolchain. The Dockerfile's separate `test` stage uses the pinned Nix/glibc
+environment to compile and run the complete native suite. Each test container has
+only loopback networking and an empty HOME. The entrypoint rejects external
+interfaces or default routes; no privileged container or host sysctl change is
+required. Native macOS is not a release target.
+
+The same gate checks the final Linux amd64 image's uncompressed size against
+10,000,000 bytes, runs the existing CLI/process-failure suites on its extracted
+static executable inside the test container, exercises the actual non-root image
+with read-only fixtures, and runs the real source-built pre-commit hook. Only then
+does it write the tested image archive and checksum to `dist/`.
+
+For a narrower development loop, `make check-native-container`, `make check-image`
+and `make check-hook` run individual groups; none alone replaces the full gate.
+Use `TEST_JOBS=N` to change native build/test parallelism.
+
+### Native and pinned-reference checks
+
 From the repository root, in the Nix/direnv environment:
 
 ```sh
@@ -61,6 +86,8 @@ Keep the C fault-injection suite in the supported Nix environment. Some tests
 interpose shared-library/libc symbols: static linking can conflict with those
 overrides, and a test's `malloc` forwarding to `calloc` recurses on musl. Those
 harness assumptions are not valid substitutes for testing the shipped executable.
+The Dockerfile's glibc `test` stage preserves this suite without adding glibc or
+test tooling to the musl/scratch runtime.
 
 ## Coverage map
 

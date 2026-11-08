@@ -14,80 +14,18 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  linux:
-    name: Linux native suite
+  container:
+    name: Container acceptance
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31
-      - name: Enable isolated user namespaces on the disposable runner
-        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-      - name: Validate workflow and shell
-        run: nix develop -c actionlint .github/workflows/ci.yml
-      - name: Test release planning
-        run: python3 -m unittest discover -s tests -p test_ci_release.py -v
-      - name: Full native C and CLI suite, without external networking
-        run: |
-          # Variables below intentionally expand inside the Nix-provided shell.
-          # shellcheck disable=SC2016
-          nix develop -c bash -euo pipefail -c '
-            home=$(mktemp -d)
-            trap "rm -rf -- \"$home\"" EXIT
-            unshare --user --map-root-user --net env HOME="$home" make -j2 check
-          '
-
-  macos:
-    name: macOS native suite
-    runs-on: macos-15
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31
-      - name: Native build, all core tests, CLI regressions and affected verifiers
-        run: |
-          nix develop -c make -j3 all check-core check-e2e build/tests/detectors/test_boxoauth build/tests/detectors/test_rabbitmq
-          nix develop -c build/tests/detectors/test_boxoauth
-          nix develop -c build/tests/detectors/test_rabbitmq
-      - name: Test release planning
-        run: python3 -m unittest discover -s tests -p test_ci_release.py -v
-
-  docker:
-    name: Shipped Docker image and pre-commit hook
-    runs-on: ubuntu-24.04
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      - name: Enable isolated user namespaces on the disposable runner
-        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-      - name: Build the production Dockerfile, not a substitute test image
-        run: docker build --build-arg VCS_REF="$GITHUB_SHA" -t briar:ci .
-      - name: Exercise the exact shipped static executable
-        run: |
-          mkdir -p dist
-          container=$(docker create --network=none briar:ci)
-          trap 'docker rm -f "$container" >/dev/null' EXIT
-          docker cp "$container:/briar" dist/briar
-          test "$(docker image inspect briar:ci --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}')" = "$GITHUB_SHA"
-          unshare --user --map-root-user --net python3 tests/core/e2e.py dist/briar
-          unshare --user --map-root-user --net python3 tests/core/cli_failures.py dist/briar
       - name: Install pinned hook test tooling
         run: python3 -m pip install pre-commit==4.7.0
-      - name: Validate and exercise repository Docker hook
-        run: |
-          pre-commit validate-manifest .pre-commit-hooks.yaml
-          python3 tools/ci_hook_smoke.py "$PWD"
-      - name: Archive the tested image with checksum
-        run: |
-          docker save briar:ci | gzip -n > dist/briar-linux-amd64.docker.tar.gz
-          cd dist
-          sha256sum briar-linux-amd64.docker.tar.gz > SHA256SUMS
+      - name: Run the same container acceptance gate as local development
+        run: make check-container DOCKER_IMAGE=briar:ci VCS_REF="$GITHUB_SHA"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: tested-docker-image
@@ -99,7 +37,7 @@ jobs:
 
   release:
     name: Publish tested release
-    needs: [linux, macos, docker]
+    needs: [container]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -114,12 +52,14 @@ jobs:
         with:
           name: tested-docker-image
           path: dist
-      - name: Verify tested artifact and choose stable tag
+      - name: Verify tested artifact and choose a non-stale stable tag
         id: version
         run: |
           (cd dist && sha256sum -c SHA256SUMS)
+          git fetch --no-tags origin master:refs/remotes/origin/master
           python3 tools/ci_release.py >> "$GITHUB_OUTPUT"
       - name: Create a release tag at this exact tested commit
+        if: steps.version.outputs.publish == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
@@ -131,5 +71,6 @@ jobs:
               --title "$RELEASE_TAG" --generate-notes \
               dist/briar-linux-amd64.docker.tar.gz dist/SHA256SUMS
           fi
-          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq '.object.sha')" = "$GITHUB_SHA"
+          git fetch --no-tags origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+          test "$(git rev-parse "$RELEASE_TAG^{commit}")" = "$GITHUB_SHA"
           gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,isDraft,isPrerelease

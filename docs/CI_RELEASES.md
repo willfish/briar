@@ -1,50 +1,55 @@
 # CI and releases
 
-`.github/workflows/ci.yml` validates every PR and push to `master`:
+Every PR and push to `master` runs `make check-container`, the same acceptance
+gate required locally by `AGENTS.md`.
 
-- **Linux native:** pinned Nix environment, complete `make check` (core and all detector tests, HTTP/proxy fixtures, end-to-end and process-failure tests), in user/network namespaces without external networking. Workflow/shell lint and release-planner tests also run.
-- **macOS native:** same pinned Nix inputs; production CLI/library build, all core tests, complete CLI end-to-end corpus, Box OAuth and RabbitMQ synthetic verifier tests. The complete detector fault-injection suite is Linux-specific (syscall delegation, malloc/stdio interposition); it is NOT claimed to run on macOS. No provider credentials or live verification are used.
-- **Docker:** builds the existing production `Dockerfile` and checks its source-revision label. Exercises the exact shipped static executable through end-to-end/process-failure tests in isolated Linux namespaces. Runs the real source-built pre-commit Docker hook against clean and synthetic-finding fixtures, asserting failure/redaction/input immutability, and proves `pre-commit autoupdate` selects a newer tag using a disposable local tagged repository. C fault-injection tests stay on the Nix/glibc runner, not musl (see INTEGRATION_TESTING.md).
+- The separate Linux/glibc `test` Docker stage builds the full native C suite
+  using pinned Nix inputs. Tests, workflow/shell lint and release-planner
+  regressions run with no external networking and an empty HOME.
+- The production Alpine/scratch image is built separately. Its **uncompressed
+  image size must be at most 10,000,000 bytes**, including licenses. Python and
+  compiler dependencies are never shipped in it.
+- Existing end-to-end and process-failure suites exercise the exact shipped
+  executable inside the offline test container. Direct runtime-image checks use
+  the shipped non-root user and read-only fixtures. The real pre-commit Docker
+  hook checks clean input, synthetic findings, credential-safe output and input
+  immutability. A disposable tagged repository checks `pre-commit autoupdate`.
 
-The native macOS CLI explicitly ignores SIGPIPE before creating HTTP helper threads, so a broken stdout reports a normal failure instead of a deferred signal termination during cleanup. This is executable policy only; the library retains its signal-disposition behavior.
+Native macOS builds are not a release requirement. No provider credentials, live
+verification, privileged test containers or host namespace-policy changes are
+needed. See [integration testing](INTEGRATION_TESTING.md) for retained gaps.
 
 ## Publication
 
-Only a **push to master** whose three jobs all succeed reaches the publication job. PRs, fork runs and manual validation runs cannot publish. CI cannot merge PRs. Publication alone gets `contents: write`; test jobs have read-only repository permissions and do not persist checkout credentials.
+Only a successful **push to master** can publish. PRs and manual validation runs
+cannot publish or merge. Publication alone has `contents: write`; checkout
+credentials are not persisted.
 
-The first release is `v0.1.0`; later green master commits increment the highest stable version's patch component. Existing stable tags on the same commit are reused on rerun. Prerelease/non-semver tags are ignored. To intentionally change major/minor policy, change/review `tools/ci_release.py` rather than publishing an untested version manually.
+The publishing job refreshes `origin/master`. It skips a run unless its tested
+SHA is still current master and contains the highest stable tag's commit. This
+prevents an old failed run from creating a newer version of older source when
+retried. The workflow concurrency group serializes master runs.
 
-A release tag targets the **exact master SHA tested in that run**. Releases attach the already-tested Linux amd64 Docker-save archive and `SHA256SUMS`; artifacts are downloaded from the same workflow run and checksummed, not rebuilt in the publishing job. The archive loads `briar:ci` and carries the source revision label. macOS is tested, but no misleading standalone macOS executable with Nix-store library dependencies is published. Image registry/multi-architecture distribution is not part of this workflow.
+Without existing stable tags, the first version is `v0.1.0`. Later eligible
+commits increment the highest stable version's patch component. Stable tags on
+the same commit are reused on rerun; prerelease and non-semver tags are ignored.
 
-The master concurrency group serializes publication; PR updates can cancel obsolete PR runs, but cannot cancel master publication. If any test, build, hook check, artifact upload or checksum fails, **no release is published**. No `continue-on-error`, test bypass, tag-triggered shortcut or `pull_request_target` path exists.
+The release targets the **exact tested commit** and attaches the already-tested
+Linux amd64 Docker-save archive and `SHA256SUMS` from that workflow run, after
+checksum verification. Publication never rebuilds the image. The archive loads
+the image tag passed to Make, `briar:ci` in CI, and carries the source-revision
+label. Registry distribution, other architectures and native macOS binaries are
+outside this release contract.
 
 ## Consumers
 
-After the first green master release, use its stable tag in `.pre-commit-config.yaml`:
-
-```yaml
-repos:
-  - repo: https://github.com/willfish/briar
-    rev: v0.1.0
-    hooks:
-      - id: briar
-```
-
-Advance the pin with:
+Pin a reviewed stable tag in `.pre-commit-config.yaml`, then advance it explicitly:
 
 ```sh
 pre-commit autoupdate --repo https://github.com/willfish/briar
 pre-commit run briar --all-files
 ```
 
-`autoupdate` discovers Git release tags and edits the consumer's pinned `rev`; it does not run automatically or silently change consumers when a GitHub release appears. Commit the consumer config update, or use your existing updater to propose it. The Docker-language hook then builds from the tagged source revision. An image archive alone would not make `autoupdate` work; the tagged `.pre-commit-hooks.yaml` is the integration contract.
-
-## Local checks
-
-```sh
-nix develop -c actionlint .github/workflows/ci.yml
-python3 -m unittest discover -s tests -p test_ci_release.py -v
-nix develop -c make -j3 all check-core check-e2e
-```
-
-Use Linux for the complete suite and a running Docker engine for `tools/ci_hook_smoke.py`. A locally green subset is not evidence of green hosted CI; inspect all three checks before merging.
+Commit the updated consumer config or use an updater PR. A new GitHub release
+does not silently change consumer pins. The tagged `.pre-commit-hooks.yaml`
+remains the source-built hook contract; an image archive alone is not enough.

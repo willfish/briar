@@ -45,6 +45,23 @@ COPY container/licenses/ /out/licenses/dependencies/
 # Decimal MB, including notices. Fail rather than silently grow past the budget.
 RUN test "$(du -sb /out | cut -f1)" -lt 10000000
 
+# Test tooling is deliberately separate from the small musl/scratch runtime.
+# Nix 2.35.5; native fault-injection fixtures require glibc, not musl.
+FROM nixos/nix@sha256:9305de534abed691d0f569502a4962a3a072ea8e888502c453ecfe35ae182867 AS test
+ARG BUILD_JOBS=4
+WORKDIR /build
+COPY flake.nix flake.lock ./
+RUN nix --extra-experimental-features 'nix-command flakes' print-dev-env > /etc/briar-test-env \
+    && ln -s "$(command -v bash)" /bin/bash
+COPY Makefile ./
+COPY include/ include/
+COPY src/ src/
+COPY tests/ tests/
+COPY tools/ tools/
+COPY .github/workflows/ .github/workflows/
+RUN bash -c '. /etc/briar-test-env; make -s -j"$BUILD_JOBS" all test-binaries'
+ENTRYPOINT ["bash", "tools/ci_container_entrypoint.sh"]
+
 FROM scratch
 ARG VCS_REF=unknown
 LABEL org.opencontainers.image.source="https://github.com/willfish/briar" \

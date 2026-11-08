@@ -150,16 +150,18 @@ class CliFailures(unittest.TestCase):
         self.assertEqual(stdout, expected.stdout)
 
     def test_permission_denied(self):
-        # A user-namespace root may still have DAC override. Drop that capability
-        # rather than silently skipping this boundary when tests run as root.
-        self.assertIsNotNone(shutil.which('setpriv'), 'util-linux setpriv is required')
         path = self.directory / KEY.decode()
         path.write_bytes(SOURCE)
         path.chmod(0)
         self.addCleanup(path.chmod, 0o600)
-        result = subprocess.run(['setpriv', '--bounding-set=-dac_override,-dac_read_search',
-                                 str(BINARY), 'filesystem', str(path), *OPTIONS],
-                                cwd=self.directory, env=self.env, capture_output=True, timeout=10)
+        command = [str(BINARY), 'filesystem', str(path), *OPTIONS]
+        # Namespace root can override mode bits; a cap-drop=ALL container cannot
+        # and also cannot call setpriv to drop capabilities it no longer has.
+        if os.access(path, os.R_OK):
+            self.assertIsNotNone(shutil.which('setpriv'), 'util-linux setpriv is required')
+            command = ['setpriv', '--bounding-set=-dac_override,-dac_read_search', *command]
+        result = subprocess.run(command,
+                                 cwd=self.directory, env=self.env, capture_output=True, timeout=10)
         self.failed(result, 'cannot open filesystem input')
 
     def test_stdin_read_error(self):

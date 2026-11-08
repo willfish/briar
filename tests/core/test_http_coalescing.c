@@ -141,17 +141,9 @@ static int backend_send(void *user, const br_scan_ctx *ctx, const br_http_reques
     pthread_cond_broadcast(&b->changed);
     while (!b->open && now_ms() < ctx->deadline_monotonic_ms) {
         int64_t until = ctx->deadline_monotonic_ms;
-#ifdef __APPLE__
-        int64_t remaining = until - now_ms();
-        if (remaining <= 0) break;
-        struct timespec t = {.tv_sec = (time_t)(remaining / 1000),
-                             .tv_nsec = (long)(remaining % 1000) * 1000000};
-        pthread_cond_timedwait_relative_np(&b->changed, &b->mutex, &t);
-#else
         struct timespec t = {.tv_sec = (time_t)(until / 1000),
                              .tv_nsec = (long)(until % 1000) * 1000000};
         pthread_cond_timedwait(&b->changed, &b->mutex, &t);
-#endif
     }
     bool expired = now_ms() >= ctx->deadline_monotonic_ms;
     bool inspect = b->inspect, failed = b->fail_send;
@@ -218,9 +210,7 @@ static backend *new_backend(void)
     CHECK(b && !pthread_mutex_init(&b->mutex, NULL));
     pthread_condattr_t a;
     CHECK(!pthread_condattr_init(&a));
-#ifndef __APPLE__
     CHECK(!pthread_condattr_setclock(&a, CLOCK_MONOTONIC));
-#endif
     CHECK(!pthread_cond_init(&b->changed, &a));
     CHECK(!pthread_condattr_destroy(&a));
     return b;
