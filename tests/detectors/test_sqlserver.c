@@ -36,12 +36,16 @@ static const char redacted[] =
 
 static int ping_mode;
 static char seen_address[128], seen_dsn[512];
+static bool seen_skip_predial;
+static unsigned ping_calls;
 
 static int ping(const br_scan_ctx *ctx, const char *address, const char *dsn,
                 bool *verified, bool *is_mssql, int32_t *number, char **ordinary, char **fatal)
 {
-    CHECK(ctx && address && dsn);
-    snprintf(seen_address, sizeof(seen_address), "%s", address);
+    CHECK(ctx && dsn);
+    ++ping_calls;
+    seen_skip_predial = address == NULL;
+    snprintf(seen_address, sizeof(seen_address), "%s", address ? address : "");
     snprintf(seen_dsn, sizeof(seen_dsn), "%s", dsn);
     *verified = false;
     *is_mssql = false;
@@ -67,6 +71,48 @@ static void check_parts(const br_result *result)
     CHECK(json_object_object_get_ex(result->secret_parts, "database", &part) && !strcmp(json_object_get_string(part), "master"));
     CHECK(json_object_object_get_ex(result->secret_parts, "user", &part) && !strcmp(json_object_get_string(part), "sa"));
     CHECK(json_object_object_get_ex(result->secret_parts, "password", &part) && !strcmp(json_object_get_string(part), "P@ssw0rd!"));
+}
+
+static void check_predial(const br_detector *detector, const br_scan_ctx *ctx)
+{
+    static const struct { const char *server, *address, *authority; } cases[] = {
+        {"Server=db01", "db01:1433", "db01"},
+        {"Data Source=db01", "db01:1433", "db01"},
+        {"Server=db01,1444", "db01:1444", "db01:1444"},
+        {"Server=db01;Port=1444", "db01:1444", "db01:1444"},
+        {"Server=db01\\SALES", NULL, "db01/SALES"},
+        {"Server=db01\\SALES,1444", "db01:1444", "db01:1444/SALES"},
+        {"Server=db01\\SALES;Port=1444", "db01:1444", "db01:1444/SALES"},
+        {"Server=db01;Port=0", "db01:1433", "db01"},
+        {"Server=db01\\SALES;Port=0", NULL, "db01/SALES"},
+        {"Server=2001:db8::1", "[2001:db8::1]:1433", "2001:db8::1"},
+    };
+    ping_mode = 0;
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        char input[256], url[512], masked[512], clean[512];
+        snprintf(input, sizeof(input), "%s;Database=master;User ID=sa;Password=P@ssw0rd!;", cases[i].server);
+        snprintf(url, sizeof(url), "sqlserver://sa:P%%40ssw0rd%%21@%s?database=master&dial+timeout=15&disableretry=false", cases[i].authority);
+        snprintf(masked, sizeof(masked), "sqlserver://sa:********@%s?database=master&dial+timeout=15&disableretry=false", cases[i].authority);
+        snprintf(clean, sizeof(clean), "sqlserver://sa:P%%40ssw0rd%%21@%s?database=master&dial+timeout=3&disableretry=true", cases[i].authority);
+        unsigned before = ping_calls;
+        br_results offline = test_scan(detector, NULL, false, input, strlen(input));
+        CHECK(ping_calls == before);
+        CHECK(offline.len == 1 && !offline.items[0].verified);
+        CHECK(offline.items[0].raw.len == 9 && !memcmp(offline.items[0].raw.data, "P@ssw0rd!", 9));
+        CHECK(offline.items[0].raw_v2.len == strlen(url) && !memcmp(offline.items[0].raw_v2.data, url, strlen(url)));
+        CHECK(!strcmp(offline.items[0].redacted, masked));
+        br_results online = test_scan(detector, ctx, true, input, strlen(input));
+        CHECK(ping_calls == before + 1);
+        CHECK(online.len == 1 && online.items[0].verified && !online.items[0].verification_error);
+        CHECK(seen_skip_predial == (cases[i].address == NULL));
+        CHECK(!strcmp(seen_address, cases[i].address ? cases[i].address : ""));
+        CHECK(!strcmp(seen_dsn, clean));
+        CHECK(online.items[0].raw_v2.len == strlen(url) && !memcmp(online.items[0].raw_v2.data, url, strlen(url)));
+        CHECK(!strcmp(online.items[0].redacted, masked));
+        CHECK(json_object_equal(offline.items[0].secret_parts, online.items[0].secret_parts));
+        br_results_clear(&offline);
+        br_results_clear(&online);
+    }
 }
 
 int main(void)
@@ -105,10 +151,12 @@ int main(void)
     CHECK(br_sqlserver_set_ping(ping) == 0);
     br_transport transport = {0};
     br_scan_ctx ctx = {.transport = &transport};
+    check_predial(detector, &ctx);
     ping_mode = 0;
     results = test_scan(detector, &ctx, true, conn, strlen(conn));
     CHECK(results.len == 1 && results.items[0].verified);
-    CHECK(!strcmp(seen_address, "localhost:0"));
+    check_parts(&results.items[0]);
+    CHECK(!strcmp(seen_address, "localhost:1433"));
     CHECK(strstr(seen_dsn, "dial+timeout=3") && strstr(seen_dsn, "disableretry=true"));
     br_results_clear(&results);
     ping_mode = 1;

@@ -334,6 +334,9 @@ static int redact_url(const char *url, char **out)
     return 0;
 }
 
+/* address is the optional TCP pre-check target. NULL means skip the pre-check
+ * and let the injected driver resolve the named instance from dsn. It does not
+ * mean skip credential verification. The callback must tolerate NULL address. */
 typedef int (*sqlserver_ping_fn)(const br_scan_ctx *ctx, const char *address, const char *dsn,
                                  bool *verified, bool *is_mssql, int32_t *number,
                                  char **ordinary, char **fatal);
@@ -369,14 +372,22 @@ static int verify_sql(const br_scan_ctx *ctx, const mssql_cfg *cfg, br_result *r
     if (!sql_state || !sql_state->ping)
         return fail(error, "unsupported: SQL Server verification without injected ping");
     char address[128];
-    int n = snprintf(address, sizeof(address), "%s:%u", cfg->host ? cfg->host : "", cfg->port);
-    if (n < 0 || (size_t)n >= sizeof(address)) return fail(error, "cannot format SQL Server address");
+    const char *pre_dial = NULL;
+    if (cfg->port || !cfg->instance || !cfg->instance[0]) {
+        const char *host = cfg->host ? cfg->host : "";
+        unsigned port = cfg->port ? cfg->port : 1433;
+        bool ipv6 = strchr(host, ':') != NULL;
+        int n = snprintf(address, sizeof(address), "%s%s%s:%u",
+                         ipv6 ? "[" : "", host, ipv6 ? "]" : "", port);
+        if (n < 0 || (size_t)n >= sizeof(address)) return fail(error, "cannot format SQL Server address");
+        pre_dial = address;
+    }
     char *dsn = NULL;
     if (build_url(cfg, true, &dsn) != 0) return fail(error, "cannot format SQL Server verification URL");
     bool verified = false, is_mssql = false;
     int32_t number = 0;
     char *ordinary = NULL, *fatal = NULL;
-    int rc = sql_state->ping(ctx, address, dsn, &verified, &is_mssql, &number, &ordinary, &fatal);
+    int rc = sql_state->ping(ctx, pre_dial, dsn, &verified, &is_mssql, &number, &ordinary, &fatal);
     free(dsn);
     if (rc < 0) {
         if (error && !*error) *error = fatal ? fatal : strdup("unsupported: SQL Server ping failed");
