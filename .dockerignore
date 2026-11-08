@@ -13,3 +13,12 @@
 !container/
 !container/licenses/
 !container/licenses/**
+!flake.nix
+!flake.lock
+!tests/
+!tests/**
+!tools/
+!tools/**
+!.github/
+!.github/workflows/
+!.github/workflows/**

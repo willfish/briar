@@ -3,6 +3,7 @@
 .env
 .env.*
 /build/
+/dist/
 /state/
 __pycache__/
 *.pyc

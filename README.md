@@ -90,19 +90,19 @@ prebuilt-image use and the remaining scanning limits.
 
 ## Development
 
-Tests use synthetic credentials and injected or isolated transports, not live
-provider verification. Run the native checks with network isolation and an empty
-HOME:
+The release target is the Linux amd64 Docker image, not a native macOS build.
+With Docker, Make, Python 3 and pre-commit installed, run the same acceptance gate
+as CI:
 
 ```sh
-(
-  set -e
-  home=$(mktemp -d)
-  trap 'rm -rf -- "$home"' EXIT
-  direnv exec . flock state/build.lock unshare -Urn \
-    env HOME="$home" make -j2 check
-)
+make check-container
 ```
+
+This runs the complete native suite in a pinned Linux/glibc test image, then
+checks the exact shipped static executable, the non-root runtime image and the
+real pre-commit Docker hook. The runtime image must be at most **10,000,000
+uncompressed bytes**, including licenses. Test tools never enter the runtime
+image. Tests use synthetic credentials with no provider networking.
 
 [Integration testing](docs/INTEGRATION_TESTING.md) provides a single Python runner,
 coverage map and explicit parity gaps.

@@ -1,4 +1,5 @@
 import importlib.util
+from contextlib import contextmanager
 from pathlib import Path
 import subprocess
 import tempfile
@@ -12,6 +13,19 @@ SPEC.loader.exec_module(release)
 
 
 class ReleaseTests(unittest.TestCase):
+    @contextmanager
+    def repository(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            def git(*args):
+                return subprocess.check_output(['git', '-c', 'core.hooksPath=/dev/null', '-c', 'commit.gpgsign=false', '-c', 'tag.gpgsign=false', '-c', 'user.name=CI', '-c', 'user.email=ci@example.invalid', '-C', tmp, *args], text=True).strip()
+            git('init', '-q')
+            git('commit', '--allow-empty', '-qm', 'initial')
+            git('update-ref', 'refs/remotes/origin/master', 'HEAD')
+            yield tmp, git
+
+    def output(self, tmp):
+        return subprocess.check_output(['python3', str(ROOT / 'tools/ci_release.py')], cwd=tmp, text=True).strip()
+
     def test_initial_stable_release(self):
         self.assertEqual(release.plan([], []), 'v0.1.0')
 
@@ -29,18 +43,35 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(release.plan(['tag\nmalicious=value', 'v0.1.0'], []), 'v0.1.1')
 
     def test_real_git_tag_round_trip(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            def git(*args):
-                return subprocess.check_output(['git', '-c', 'core.hooksPath=/dev/null', '-c', 'commit.gpgsign=false', '-c', 'tag.gpgsign=false', '-C', tmp, *args], text=True).strip()
-            git('init', '-q')
-            git('-c', 'user.name=CI', '-c', 'user.email=ci@example.invalid', 'commit', '--allow-empty', '-qm', 'initial')
-            script = str(ROOT / 'tools/ci_release.py')
-            output = subprocess.check_output(['python3', script], cwd=tmp, text=True).strip()
-            self.assertEqual(output, 'tag=v0.1.0')
+        with self.repository() as (tmp, git):
+            output = self.output(tmp)
+            self.assertEqual(output, 'publish=true\ntag=v0.1.0')
             git('tag', 'v0.1.0')
-            self.assertEqual(subprocess.check_output(['python3', script], cwd=tmp, text=True).strip(), output)
-            git('-c', 'user.name=CI', '-c', 'user.email=ci@example.invalid', 'commit', '--allow-empty', '-qm', 'next')
-            self.assertEqual(subprocess.check_output(['python3', script], cwd=tmp, text=True).strip(), 'tag=v0.1.1')
+            self.assertEqual(self.output(tmp), output)
+            git('commit', '--allow-empty', '-qm', 'next')
+            git('update-ref', 'refs/remotes/origin/master', 'HEAD')
+            self.assertEqual(self.output(tmp), 'publish=true\ntag=v0.1.1')
+
+    def test_older_failed_run_cannot_release_after_newer_version(self):
+        with self.repository() as (tmp, git):
+            git('tag', 'v0.1.0')
+            git('commit', '--allow-empty', '-qm', 'older failed run')
+            old = git('rev-parse', 'HEAD')
+            git('commit', '--allow-empty', '-qm', 'newer released run')
+            git('tag', 'v0.1.1')
+            git('update-ref', 'refs/remotes/origin/master', 'HEAD')
+            git('checkout', '--detach', '-q', old)
+            self.assertEqual(self.output(tmp), 'publish=false')
+
+    def test_current_master_cannot_release_without_latest_stable_ancestor(self):
+        with self.repository() as (tmp, git):
+            original = git('rev-parse', 'HEAD')
+            git('commit', '--allow-empty', '-qm', 'released history')
+            git('tag', 'v0.1.1')
+            git('checkout', '--detach', '-q', original)
+            git('commit', '--allow-empty', '-qm', 'different history')
+            git('update-ref', 'refs/remotes/origin/master', 'HEAD')
+            self.assertEqual(self.output(tmp), 'publish=false')
 
 
 if __name__ == '__main__':

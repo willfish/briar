@@ -12,7 +12,8 @@
         let pkgs = import nixpkgs { inherit system; };
         in {
           default = pkgs.mkShell {
-            packages = with pkgs; [ pkg-config gnumake python3 actionlint shellcheck ];
+            packages = with pkgs; [ pkg-config gnumake python3 bash gitMinimal actionlint shellcheck ]
+              ++ nixpkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.iproute2 pkgs.util-linux ];
             buildInputs = with pkgs; [ pcre2 curl json_c openssl libxml2 ];
           };
         });

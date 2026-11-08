@@ -204,14 +204,7 @@ static int write_all(int fd, const unsigned char *data, size_t len)
     int masked = pthread_sigmask(SIG_BLOCK, &block, &previous);
     if (masked) { errno = masked; return -1; }
     int rc = -1, saved_errno = 0, prior = -1;
-    if (sigpending(&pending)) {
-        saved_errno = errno;
-        goto restore;
-    }
-    /* On Darwin sigismember is a boolean-valued macro. Separate assignment
-     * keeps the POSIX error check without comparing a boolean directly to 0. */
-    prior = sigismember(&pending, SIGPIPE);
-    if (prior < 0) {
+    if (sigpending(&pending) || (prior = sigismember(&pending, SIGPIPE)) < 0) {
         saved_errno = errno;
         goto restore;
     }
