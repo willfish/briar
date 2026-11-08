@@ -12,7 +12,7 @@
         let pkgs = import nixpkgs { inherit system; };
         in {
           default = pkgs.mkShell {
-            packages = with pkgs; [ pkg-config gnumake python3 ];
+            packages = with pkgs; [ pkg-config gnumake python3 actionlint shellcheck ];
             buildInputs = with pkgs; [ pcre2 curl json_c openssl libxml2 ];
           };
         });

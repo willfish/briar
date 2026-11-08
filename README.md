@@ -63,8 +63,11 @@ secrets**; treat the output as sensitive.
 ## Pre-commit with Docker
 
 Reference this repository from `.pre-commit-config.yaml`, pinning a reviewed
-commit that contains the hook. HTTPS access to the public repository requires no
-GitHub credentials.
+release tag (or a full commit SHA). After the first green master release,
+`pre-commit autoupdate --repo https://github.com/willfish/briar` advances the pin
+to newer release tags. HTTPS access to the public repository requires no
+GitHub credentials. See [CI and releases](docs/CI_RELEASES.md) for test gates and
+automatic publication; consumers still need to run and commit `autoupdate`.
 
 ```yaml
 repos:

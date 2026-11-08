@@ -811,6 +811,15 @@ int main(int argc, char **argv)
     br_native_http *http = NULL;
     br_prefilter *prefilter = NULL;
     int rc = 1;
+#ifdef __APPLE__
+    /* On Darwin a write-generated SIGPIPE can reach an HTTP helper thread.
+     * The CLI reports EPIPE through its exit status instead of dying later in
+     * cleanup. Keep this executable policy out of the embeddable library. */
+    struct sigaction ignored_pipe = { .sa_handler = SIG_IGN };
+    if (sigemptyset(&ignored_pipe.sa_mask) || sigaction(SIGPIPE, &ignored_pipe, NULL)) {
+        fail(&error, "cannot configure CLI SIGPIPE"); goto done;
+    }
+#endif
     struct sigaction action = { .sa_handler = stop_signal };
     if (sigemptyset(&action.sa_mask) || sigaction(SIGINT, &action, NULL) ||
         sigaction(SIGTERM, &action, NULL)) {
