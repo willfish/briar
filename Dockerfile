@@ -46,7 +46,9 @@ COPY container/licenses/ /out/licenses/dependencies/
 RUN test "$(du -sb /out | cut -f1)" -lt 10000000
 
 FROM scratch
+ARG VCS_REF=unknown
 LABEL org.opencontainers.image.source="https://github.com/willfish/briar" \
+      org.opencontainers.image.revision="${VCS_REF}" \
       org.opencontainers.image.licenses="AGPL-3.0-only"
 COPY --from=build /out/ /
 WORKDIR /src
