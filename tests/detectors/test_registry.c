@@ -647,11 +647,21 @@ static const registration expected[] = {
     {533, 0, "OpenCageData", "opencagedata", 32, true, -1},
     {20, 0, "Mailchimp", "-us", 36, true, -1},
     {439, 0, "Numverify", "numverify", 32, true, -1},
+    {1078, 0, "Serval", "svl_secret_", 63, true, -1},
 };
 
 /* Registration must dispatch real initialized scanners, not metadata stubs. */
 static void check_dispatch(const br_detector *detector, const registration *entry)
 {
+    if (entry->type == 1078) {
+        const char *secret = "svl_secret_pk_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg3VqCUe";
+        br_results results = test_scan(detector, NULL, false, secret, strlen(secret));
+        CHECK(results.len == 1 && results.items[0].detector_type == 1078);
+        CHECK(results.items[0].raw.len == strlen(secret));
+        CHECK(!memcmp(results.items[0].raw.data, secret, strlen(secret)));
+        br_results_clear(&results);
+        return;
+    }
     if (entry->type == 995) {
         char ck[65], cs[65], tk[65], ts[65], account[16], input[420];
         test_secret(ck, 64, 0); test_secret(cs, 64, 7); test_secret(tk, 64, 13); test_secret(ts, 64, 19);
@@ -3278,6 +3288,7 @@ int main(void)
     feature_gate_tests(368, "RevDetectorEnabled");
     feature_gate_tests(1060, "ShippoDetectorEnabled");
     feature_gate_tests(1069, "SolarwindsDetectorEnabled");
+    feature_gate_tests(1078, "ServalDetectorEnabled");
     feature_gate_tests(586, "TlyDetectorEnabled");
     feature_gate_tests(274, "UserDetectorEnabled");
     feature_gate_tests(817, "WitDetectorEnabled");

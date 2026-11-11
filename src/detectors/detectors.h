@@ -746,6 +746,7 @@ int br_sentrytoken_v1_init(const br_detector **out, char **error);
 int br_sentrytoken_v2_init(const br_detector **out, char **error);
 int br_serphouse_init(const br_detector **out, char **error);
 int br_serpstack_init(const br_detector **out, char **error);
+int br_serval_init(const br_detector **out, char **error);
 int br_sheety_init(const br_detector **out, char **error);
 int br_sherpadesk_init(const br_detector **out, char **error);
 int br_shipday_init(const br_detector **out, char **error);
