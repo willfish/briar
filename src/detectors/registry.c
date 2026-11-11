@@ -648,6 +648,7 @@ static const detector_factory named_factories[] = {
     br_opencagedata_init,
     br_mailchimp_init,
     br_numverify_init,
+    br_serval_init,
     br_mailgun_init,
     br_mandrill_init,
     br_manifest_init,
@@ -965,6 +966,15 @@ bool br_detector_is_default(const br_detector *detector, const br_json *feature_
 {
     if (detector && (!detector->custom_name || !detector->custom_name[0])) {
         switch (detector->type) {
+        case 1078: {
+            if (detector->version != 0) return false;
+            /* PR #5528 enables Serval in OSS main, not package-zero state. */
+            if (!feature_flags) return true;
+            if (!json_object_is_type(feature_flags, json_type_object)) return false;
+            br_json *enabled = NULL;
+            if (!json_object_object_get_ex(feature_flags, "ServalDetectorEnabled", &enabled)) return true;
+            return json_object_is_type(enabled, json_type_boolean) && json_object_get_boolean(enabled);
+        }
         case 100: {
             if (detector->version == 1) return true;
             if (detector->version != 2) return false;
@@ -1945,6 +1955,7 @@ const char *br_detector_type_name(int32_t type)
     case 87: return "SentryToken";
     case 613: return "Serphouse";
     case 561: return "SerpStack";
+    case 1078: return "Serval";
     case 469: return "Sheety";
     case 690: return "Sherpadesk";
     case 625: return "Shipday";

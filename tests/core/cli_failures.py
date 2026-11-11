@@ -97,6 +97,61 @@ class CliFailures(unittest.TestCase):
                 self.failed(self.invoke(['filesystem', str(good), str(path), *OPTIONS]), diagnostic)
                 self.assertEqual(good.read_bytes(), SOURCE)
 
+    def test_serval_offline_outputs(self):
+        # Generate synthetic, non-sequential fixtures: upstream's sequential
+        # examples are intentionally rejected by the engine's common FP filter.
+        import random
+        import zlib
+        alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        rng = random.Random(5528)
+        secrets = []
+        for tag in ('pk', 'wk', 'mk'):
+            payload = tag + '_' + ''.join(rng.choice(alphabet) for _ in range(43))
+            crc = zlib.crc32(payload.encode())
+            checksum = ''
+            for _ in range(6):
+                crc, digit = divmod(crc, 62)
+                checksum = alphabet[digit] + checksum
+            secrets.append(('svl_secret_' + payload + checksum).encode())
+        options = ['--json', '--no-verification', '--include-detectors=1078']
+        path = self.directory / 'serval.txt'
+        for secret, kind in zip(secrets, ('public_api', 'worker', 'managed_worker')):
+            with self.subTest(kind=kind):
+                source = b'\nsecret="' + secret + b'"\n'
+                path.write_bytes(source)
+                result = self.invoke(['filesystem', *options, '--', path.name])
+                self.assertEqual(result.returncode, 0, result.stderr)
+                rows = [json.loads(line) for line in result.stdout.splitlines()]
+                self.assertEqual(len(rows), 1)
+                self.assertEqual(rows[0]['Raw'], secret.decode())
+                self.assertEqual(rows[0]['RawV2'], '')
+                self.assertEqual(rows[0]['SecretParts'], {'client_secret': secret.decode()})
+                self.assertEqual(rows[0]['ExtraData'], {'key_type': kind})
+                self.assertFalse(rows[0]['Verified'])
+                self.assertIn(b'limited native slice', result.stderr)
+                self.assertNotIn(secret, result.stderr)
+                excluded = self.invoke(['stdin', *options, '--exclude-detectors=Serval'], source=secret)
+                self.assertEqual(excluded.returncode, 1)
+                self.assertEqual(excluded.stdout, b'')
+                self.assertNotIn(secret, excluded.stderr)
+                hook = self.invoke(['pre-commit', '--', path.name])
+                self.assertEqual(hook.returncode, 183, hook.stderr)
+                self.assertIn(b'Serval', hook.stdout)
+                self.assertIn(b'"serval.txt":2: Serval (PLAIN)', hook.stdout)
+                self.assertNotIn(secret, hook.stdout + hook.stderr)
+                self.assertEqual(hook.stderr, b'')
+                self.assertEqual(path.read_bytes(), source)
+                # Invalid checksum must be a quiet clean hook run, not a failure.
+                path.write_bytes(secret[:-1] + (b'1' if secret[-1:] == b'0' else b'0') + b'\n')
+                clean = self.invoke(['pre-commit', '--', path.name])
+                self.assertEqual((clean.returncode, clean.stdout, clean.stderr), (0, b'', b''))
+                # Failure after an earlier finding must not print any findings.
+                path.write_bytes(source)
+                failure = self.invoke(['pre-commit', '--', path.name, 'missing.txt'])
+                self.assertEqual(failure.returncode, 1)
+                self.assertEqual(failure.stdout, b'')
+                self.assertNotIn(secret, failure.stderr)
+
     def test_stream_large_files(self):
         path = self.directory / 'large.txt'
         for size in (65535, 65536, 65537, 71680, 74752, 2 * 1024 * 1024):
